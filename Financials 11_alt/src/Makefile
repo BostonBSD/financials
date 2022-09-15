@@ -6,4 +6,3 @@ WARN=-Wall -Wextra
 
 financials: $(SRC)
 	$(CC) -Ofast -s -lm -o ../build/$@ $(SRC) $(CFLAGS) $(LIBS) $(WARN)
-	../build/$@
