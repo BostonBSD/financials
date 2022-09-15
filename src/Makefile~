@@ -1,8 +1,0 @@
-CC=clang
-SRC=bullion.c file.c
-CFLAGS=-I/usr/local/include/gtk-3.0 -I/usr/local/include/pango-1.0 -I/usr/local/include -I/usr/local/include/glib-2.0 -I/usr/local/lib/glib-2.0/include -I/usr/local/include/harfbuzz -I/usr/local/include/freetype2 -I/usr/local/include/fribidi -I/usr/local/include/cairo -I/usr/local/include/pixman-1 -I/usr/local/include/libpng16 -I/usr/local/include/gdk-pixbuf-2.0 -I/usr/local/include/gio-unix-2.0 -I/usr/local/include/libepoll-shim -I/usr/local/include/atk-1.0 -I/usr/local/include/at-spi2-atk/2.0 -I/usr/local/include/dbus-1.0 -I/usr/local/lib/dbus-1.0/include -I/usr/local/include/at-spi-2.0 -D_THREAD_SAFE -I/usr/local/include/json-glib-1.0 -pthread
-LIBS=-L/usr/local/lib -lgtk-3 -lgdk-3 -lpangocairo-1.0 -lpango-1.0 -lharfbuzz -latk-1.0 -lcairo-gobject -lcairo -lpthread -lgdk_pixbuf-2.0 -ljson-glib-1.0 -lgio-2.0 -lgobject-2.0 -lglib-2.0 -lintl -lcurl
-WARN=-Wall -Wextra -Werror
-
-bullion: $(SRC)
-	$(CC) -o ../build/$@ $(SRC) $(CFLAGS) $(LIBS) $(WARN)
