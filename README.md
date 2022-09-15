@@ -14,7 +14,8 @@ mkdir build
 
 and type: 
 
-src/make
+cd src
+make
 
 The resulting binary should be in the build directory,
 which you can copy to wherever your user binaries are installed.
