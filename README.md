@@ -3,7 +3,9 @@ This is a very amature side project, proceed at your own risk!
 
 Keep track of personal financial data such as gold/silver prices and stock prices.  Can also calculate RSI and fetch historical data via Yahoo!
 
-This application depends upon the following development packages to compile:
+This application depends upon the following development packages to compile.
+Their package name may vary depending upon the distro; libgtk3 instead of 
+gtk3 for example:
 
 gtk+-3.0 json-glib-1.0 glib-2.0 libcurl sqlite3 cmake clang/gcc
 
