@@ -15,6 +15,7 @@ mkdir build
 and type: 
 
 cd src
+
 make
 
 The resulting binary should be in the build directory,
