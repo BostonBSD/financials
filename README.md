@@ -22,4 +22,4 @@ which can be copied to wherever the user binaries are installed.
 
 The user needs an account at finnhub.io, which will give them an access key.
 
-I've tested builds on FreeBSD 13.1 and Fedora 36.
+Has been tested on FreeBSD 13.1 and Fedora 35.
