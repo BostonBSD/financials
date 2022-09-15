@@ -30,3 +30,6 @@ there were some issues on the latest Ubuntu and Debian builds
 due to their Gtk3.0 packages being out of date.
 
 Requires at least Gtk3 version 3.24.34 or later to build and run.
+
+Earlier versions of Gtk3 will fail with a runtime error: 
+"cannot parse enum"
