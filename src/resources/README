@@ -5,3 +5,15 @@ in this folder.
 Then run this command in this folder:
 
 glib-compile-resources --generate-source resources.xml
+
+-------------
+The glade file isn't necessary to compile, but it would be rather 
+difficult for anyone to alter the appearance without it here.
+
+"/financials.glade" is the reference to the UI resource in the 
+namespace, but is not a reference to a file, only the GUI description
+which is defined in a binary format within resources.c
+
+The icon file is already referenced from the glade file and defined
+in binary format from resources.c.  So basically referenced and stored
+in binary format from resources.c.
