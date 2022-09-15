@@ -1,0 +1,7 @@
+To generate another resources.c file from a glade file,
+name the glade file "financials.glade" and replace that file 
+in this folder.
+
+Then run this command in this folder:
+
+glib-compile-resources --generate-source resources.xml
