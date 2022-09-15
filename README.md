@@ -18,8 +18,8 @@ cd src
 make
 
 The resulting binary should be in the build directory,
-which you can copy to wherever your user binaries are installed.
+which can be copied to wherever the user binaries are installed.
 
-You need an account at finnhub.io, which will give you an access key.
+The user needs an account at finnhub.io, which will give them an access key.
 
 I've tested builds on FreeBSD 13.1 and Fedora 36.
