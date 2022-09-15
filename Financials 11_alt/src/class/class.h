@@ -74,7 +74,7 @@ typedef struct {
     /* Data Variables */
     MemType JSON;
 
-	unsigned int* num_shares_stock_int;            /* 2 Bytes, count up to 65535, on 64 bit BSD/Linux machines */
+	unsigned int* num_shares_stock_int;            
 
     double* current_price_stock_f;
     double* high_stock_f; 
