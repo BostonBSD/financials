@@ -107,9 +107,6 @@ void Semaphore_Destruct ()
 
 int main (int argc, char *argv[])
 {
-    /* Parse Command Line Options */
-    ParseFinancialOptions( argc, argv );
-
     /* Initialize some of our class instances */
     Folder = class_init_equity_folder ();
     Precious = class_init_metal ();

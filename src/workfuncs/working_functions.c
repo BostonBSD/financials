@@ -31,7 +31,6 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "../financials.h"
-#include <getopt.h>
 
 int AlphaAsc (const void *a, const void *b)
 /* This is a callback function for stdlib sorting functions. 
@@ -109,42 +108,6 @@ void ResetEquity(equity_folder *F) {
         F->Equity = temp;
         F->size = 0;
     }
-}
-
-void ParseFinancialOptions(int argc, char *argv[]){
-
-    /* Parse options using GNU's getopt.h, which parses long and short options.  
-    If this creates a licensing issue use the getopt() function from unistd.h, 
-    which only parses short options. */
-
-    int option; 
-    while (1)
-    {
-        static struct option long_options[] =
-        {
-          /* These options don’t set a flag.
-             We distinguish them by their indices. */
-            {"help",     no_argument,       0, 'h'}
-        };
-
-        /* getopt_long stores the option index here. */
-        int option_index = 0;
-
-        option = getopt_long (argc, argv, "h", long_options, &option_index);
-
-        /* Detect the end of the options. */
-        if (option == -1) break;
-
-        switch (option)
-        {
-            case 'h':
-                printf("No Help Required For Start.\n");
-                break;
-            case '?':
-                /* getopt_long already printed an error message. */
-                exit(EXIT_FAILURE);
-        }
-    }    
 }
 
 void PerformCalculations () 
