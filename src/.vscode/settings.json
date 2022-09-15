@@ -1,0 +1,5 @@
+{
+    "C_Cpp_Runner.cCompilerPath": "clang",
+    "C_Cpp_Runner.cStandard": "c99",
+    "C_Cpp.autocompleteAddParentheses": true
+}

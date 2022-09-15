@@ -1,0 +1,66 @@
+#include <stdlib.h>
+#include<string.h>
+
+#include <curl/curl.h>
+
+typedef struct{
+    size_t size;
+    char *memory;
+}MemType;
+
+size_t write_callback(char *ptr, size_t size, size_t nmemb, void *userdata){// cURL callback function [read in datastream to memory]
+    // This prototype is defined by cURL, with an argument at the end for our data structure.
+    // This function is repeatedly called by cURL until there is no more data in the data stream; *ptr.
+    size_t realsize = size * nmemb;// The number of bytes in the datastream [there is no NULL char]
+
+    MemType *mem = (MemType *)userdata;
+    char *tmp = realloc(mem->memory, mem->size + realsize + 1);// We add 1 for the NULL char.
+
+    if (tmp == NULL){
+        printf("Not Enough Memory, realloc returned NULL.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    mem->memory = tmp;
+    memcpy(&(mem->memory[mem->size]), ptr, realsize);// Starting at the last element copy in datastream
+    mem->size += realsize;// The actual size is realsize + 1, however realsize gives us the location of the last element.
+    mem->memory[mem->size] = 0;// The datastream doesn't include a NULL char, so we zeroize the last element.
+    // We overwrite the NULL char on the next callback iteration, if any.
+    return realsize;// cURL crosschecks the datastream with this return value.
+}
+
+char *GetData(char *url, char *key){// Take in a URL and a KEY, request data from remote server.
+    CURLcode ret;
+    CURL *hnd;
+    struct curl_slist *list = NULL;
+    MemType output;
+    output.memory = malloc(1);
+    output.size = 0;
+
+    hnd = curl_easy_init();
+
+    if(hnd){
+        list = curl_slist_append(list, key);// Add the key to a curl string list.
+
+        curl_easy_setopt(hnd, CURLOPT_BUFFERSIZE, 102400L);
+        curl_easy_setopt(hnd, CURLOPT_URL, url);// Set the request URL
+        curl_easy_setopt(hnd, CURLOPT_HTTPHEADER, list);// Set the key in the http header.
+        curl_easy_setopt(hnd, CURLOPT_NOPROGRESS, 1L);
+        curl_easy_setopt(hnd, CURLOPT_USERAGENT, "curl/7.76.0");
+        curl_easy_setopt(hnd, CURLOPT_MAXREDIRS, 50L);
+        curl_easy_setopt(hnd, CURLOPT_HTTP_VERSION, (long)CURL_HTTP_VERSION_2TLS);
+        curl_easy_setopt(hnd, CURLOPT_FTP_SKIP_PASV_IP, 1L);
+        curl_easy_setopt(hnd, CURLOPT_TCP_KEEPALIVE, 1L);
+        curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, write_callback);// The callback function to write data to.
+        curl_easy_setopt(hnd, CURLOPT_WRITEDATA, (void *)&output);// Send the address of the data struct to callback func.
+
+        ret = curl_easy_perform(hnd);
+        curl_slist_free_all(list);
+        curl_easy_cleanup(hnd);
+        hnd = NULL;
+    }else{
+		output.memory[0] = '\0';
+	}    
+
+    return output.memory;// Return the requested data as a char string.
+}

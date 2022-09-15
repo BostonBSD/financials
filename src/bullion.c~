@@ -1,0 +1,117 @@
+/*
+Copyright (c) 2021 BostonBSD. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+    (1) Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+
+    (2) Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in
+    the documentation and/or other materials provided with the
+    distribution.
+
+    (3)The name of the author may not be used to
+    endorse or promote products derived from this software without
+    specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+
+To Compile {doesn't work in the fish shell}
+clang `pkg-config --cflags gtk+-3.0 json-glib-1.0 glib-2.0 libcurl` -o bullion bullion.c `pkg-config --libs gtk+-3.0 json-glib-1.0 glib-2.0 libcurl` -lpthread -Wall -Wextra -Werror
+-Wall -Wextra -Werror, flags turn on more warnings and make them errors.
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <pthread.h>
+
+#include <gtk/gtk.h>
+#include <glib-object.h>
+
+#define CH_SIZE 64
+#define UI "<?xml version=\"1.0\" encoding=\"UTF-8\"?><!-- Generated with glade 3.38.1 --><interface> <requires lib=\"gtk+\" version=\"3.24\"/> <object class=\"GtkWindow\" id=\"window\"> <property name=\"visible\">True</property> <property name=\"can-focus\">True</property> <property name=\"border-width\">5</property> <property name=\"window-position\">center</property> <property name=\"default-width\">400</property> <property name=\"default-height\">300</property> <property name=\"icon\">17222_bar_bullion_gold_icon.png</property> <child> <!-- n-columns=3 n-rows=10 --> <object class=\"GtkGrid\"> <property name=\"visible\">True</property> <property name=\"can-focus\">False</property> <property name=\"row-homogeneous\">True</property> <property name=\"column-homogeneous\">True</property> <child> <object class=\"GtkLabel\" id=\"GoldLabel\"> <property name=\"visible\">True</property> <property name=\"can-focus\">False</property> <property name=\"label\" translatable=\"yes\">Gold</property> <attributes> <attribute name=\"font-desc\" value=\"Serif 10\"/> <attribute name=\"underline\" value=\"True\"/> </attributes> </object> <packing> <property name=\"left-attach\">1</property> <property name=\"top-attach\">0</property> </packing> </child> <child> <object class=\"GtkLabel\" id=\"PremiumValueLabel\"> <property name=\"visible\">True</property> <property name=\"can-focus\">False</property> <property name=\"label\" translatable=\"yes\">Premium Value</property> <attributes> <attribute name=\"font-desc\" value=\"Serif 10\"/> </attributes> </object> <packing> <property name=\"left-attach\">1</property> <property name=\"top-attach\">1</property> </packing> </child> <child> <object class=\"GtkLabel\" id=\"OuncesLabel\"> <property name=\"visible\">True</property> <property name=\"can-focus\">False</property> <property name=\"label\" translatable=\"yes\">Ounces</property> <attributes> <attribute name=\"font-desc\" value=\"Serif 10\"/> </attributes> </object> <packing> <property name=\"left-attach\">2</property> <property name=\"top-attach\">1</property> </packing> </child> <child> <object class=\"GtkLabel\" id=\"SilverLabel\"> <property name=\"visible\">True</property> <property name=\"can-focus\">False</property> <property name=\"label\" translatable=\"yes\">Silver</property> <attributes> <attribute name=\"font-desc\" value=\"Serif 10\"/> <attribute name=\"underline\" value=\"True\"/> </attributes> </object> <packing> <property name=\"left-attach\">1</property> <property name=\"top-attach\">3</property> </packing> </child> <child> <object class=\"GtkLabel\" id=\"CurrentSpotPriceGoldDisplay\"> <property name=\"visible\">True</property> <property name=\"can-focus\">False</property> <attributes> <attribute name=\"font-desc\" value=\"Serif 10\"/> </attributes> </object> <packing> <property name=\"left-attach\">0</property> <property name=\"top-attach\">2</property> </packing> </child> <child> <object class=\"GtkEntry\" id=\"GoldPremiumValueTextBox\"> <property name=\"visible\">True</property> <property name=\"can-focus\">True</property> <property name=\"text\" translatable=\"yes\">$109.99</property> </object> <packing> <property name=\"left-attach\">1</property> <property name=\"top-attach\">2</property> </packing> </child> <child> <object class=\"GtkEntry\" id=\"GoldOuncesTextBox\"> <property name=\"visible\">True</property> <property name=\"can-focus\">True</property> <property name=\"text\" translatable=\"yes\">1.00</property> </object> <packing> <property name=\"left-attach\">2</property> <property name=\"top-attach\">2</property> </packing> </child> <child> <object class=\"GtkButton\" id=\"Close\"> <property name=\"label\" translatable=\"yes\">Close</property> <property name=\"visible\">True</property> <property name=\"can-focus\">True</property> <property name=\"receives-default\">True</property> <property name=\"halign\">center</property> </object> <packing> <property name=\"left-attach\">2</property> <property name=\"top-attach\">9</property> </packing> </child> <child> <object class=\"GtkButton\" id=\"PortfolioValue\"> <property name=\"label\" translatable=\"yes\">Portfolio Value</property> <property name=\"visible\">True</property> <property name=\"can-focus\">True</property> <property name=\"receives-default\">True</property> <property name=\"halign\">center</property> </object> <packing> <property name=\"left-attach\">1</property> <property name=\"top-attach\">9</property> </packing> </child> <child> <object class=\"GtkButton\" id=\"GetSpotPrice\"> <property name=\"label\" translatable=\"yes\">Get Spot Price</property> <property name=\"visible\">True</property> <property name=\"can-focus\">True</property> <property name=\"receives-default\">True</property> <property name=\"halign\">center</property> </object> <packing> <property name=\"left-attach\">0</property> <property name=\"top-attach\">9</property> </packing> </child> <child> <object class=\"GtkLabel\" id=\"PortfolioValueTotalDisplay\"> <property name=\"visible\">True</property> <property name=\"can-focus\">False</property> <attributes> <attribute name=\"font-desc\" value=\"Serif 10\"/> </attributes> </object> <packing> <property name=\"left-attach\">2</property> <property name=\"top-attach\">8</property> </packing> </child> <child> <object class=\"GtkLabel\" id=\"PortfolioValueSilverDisplay\"> <property name=\"visible\">True</property> <property name=\"can-focus\">False</property> <attributes> <attribute name=\"font-desc\" value=\"Serif 10\"/> </attributes> </object> <packing> <property name=\"left-attach\">1</property> <property name=\"top-attach\">8</property> </packing> </child> <child> <object class=\"GtkLabel\" id=\"PortfolioValueGoldDisplay\"> <property name=\"visible\">True</property> <property name=\"can-focus\">False</property> <attributes> <attribute name=\"font-desc\" value=\"Serif 10\"/> </attributes> </object> <packing> <property name=\"left-attach\">0</property> <property name=\"top-attach\">8</property> </packing> </child> <child> <object class=\"GtkLabel\" id=\"TotalLabel\"> <property name=\"visible\">True</property> <property name=\"can-focus\">False</property> <property name=\"label\" translatable=\"yes\">Total</property> <attributes> <attribute name=\"font-desc\" value=\"Serif 10\"/> <attribute name=\"underline\" value=\"True\"/> </attributes> </object> <packing> <property name=\"left-attach\">2</property> <property name=\"top-attach\">7</property> </packing> </child> <child> <object class=\"GtkLabel\" id=\"SilverLabel1\"> <property name=\"visible\">True</property> <property name=\"can-focus\">False</property> <property name=\"label\" translatable=\"yes\">Silver</property> <attributes> <attribute name=\"font-desc\" value=\"Serif 10\"/> <attribute name=\"underline\" value=\"True\"/> </attributes> </object> <packing> <property name=\"left-attach\">1</property> <property name=\"top-attach\">7</property> </packing> </child> <child> <object class=\"GtkLabel\" id=\"GoldLabel1\"> <property name=\"visible\">True</property> <property name=\"can-focus\">False</property> <property name=\"label\" translatable=\"yes\">Gold</property> <attributes> <attribute name=\"font-desc\" value=\"Serif 10\"/> <attribute name=\"underline\" value=\"True\"/> </attributes> </object> <packing> <property name=\"left-attach\">0</property> <property name=\"top-attach\">7</property> </packing> </child> <child> <object class=\"GtkLabel\" id=\"PortfolioValueLabel\"> <property name=\"visible\">True</property> <property name=\"can-focus\">False</property> <property name=\"label\" translatable=\"yes\">Portfolio Value</property> <attributes> <attribute name=\"font-desc\" value=\"Serif 10\"/> </attributes> </object> <packing> <property name=\"left-attach\">1</property> <property name=\"top-attach\">6</property> </packing> </child> <child> <object class=\"GtkEntry\" id=\"SilverOuncesTextBox\"> <property name=\"visible\">True</property> <property name=\"can-focus\">True</property> <property name=\"text\" translatable=\"yes\">25.00</property> </object> <packing> <property name=\"left-attach\">2</property> <property name=\"top-attach\">5</property> </packing> </child> <child> <object class=\"GtkEntry\" id=\"SilverPremiumValueTextBox\"> <property name=\"visible\">True</property> <property name=\"can-focus\">True</property> <property name=\"text\" translatable=\"yes\">$6.39</property> </object> <packing> <property name=\"left-attach\">1</property> <property name=\"top-attach\">5</property> </packing> </child> <child> <object class=\"GtkLabel\" id=\"CurrentSpotPriceSilverDisplay\"> <property name=\"visible\">True</property> <property name=\"can-focus\">False</property> <attributes> <attribute name=\"font-desc\" value=\"Serif 10\"/> </attributes> </object> <packing> <property name=\"left-attach\">0</property> <property name=\"top-attach\">5</property> </packing> </child> <child> <object class=\"GtkLabel\" id=\"CurrentSpotPriceLabel\"> <property name=\"visible\">True</property> <property name=\"can-focus\">False</property> <property name=\"label\" translatable=\"yes\">Current Spot Price</property> <attributes> <attribute name=\"font-desc\" value=\"Serif 10\"/> </attributes> </object> <packing> <property name=\"left-attach\">0</property> <property name=\"top-attach\">1</property> </packing> </child> <child> <object class=\"GtkLabel\" id=\"CurrentSpotPriceLabel1\"> <property name=\"visible\">True</property> <property name=\"can-focus\">False</property> <property name=\"label\" translatable=\"yes\">Current Spot Price</property> <attributes> <attribute name=\"font-desc\" value=\"Serif 10\"/> </attributes> </object> <packing> <property name=\"left-attach\">0</property> <property name=\"top-attach\">4</property> </packing> </child> <child> <object class=\"GtkLabel\" id=\"PremiumValueLabel1\"> <property name=\"visible\">True</property> <property name=\"can-focus\">False</property> <property name=\"label\" translatable=\"yes\">Premium Value</property> <attributes> <attribute name=\"font-desc\" value=\"Serif 10\"/> </attributes> </object> <packing> <property name=\"left-attach\">1</property> <property name=\"top-attach\">4</property> </packing> </child> <child> <object class=\"GtkLabel\" id=\"OuncesLabel1\"> <property name=\"visible\">True</property> <property name=\"can-focus\">False</property> <property name=\"label\" translatable=\"yes\">Ounces</property> <attributes> <attribute name=\"font-desc\" value=\"Serif 10\"/> </attributes> </object> <packing> <property name=\"left-attach\">2</property> <property name=\"top-attach\">4</property> </packing> </child> <child> <placeholder/> </child> <child> <placeholder/> </child> <child> <placeholder/> </child> <child> <placeholder/> </child> <child> <placeholder/> </child> <child> <placeholder/> </child> </object> </child> </object></interface>"
+
+GtkBuilder *builder;
+static double spot_price_silver_f = 0.0; // Passing data between button clicks is easier with globals.
+static double spot_price_gold_f = 0.0;
+char curl_url_silver[CH_SIZE], curl_url_gold[CH_SIZE], curl_key[CH_SIZE];
+
+void *JsonExtract(char*,double*);
+char *GetData(char*,char*);
+void *SetData(char*,double*);
+void InitializeData();
+void PrintPortfolioValue();
+
+void *FetchDataThread(){// A new thread; fetches data, parses data, and sets the GUI label.
+    char *JSON_GOLD = GetData(curl_url_gold, curl_key); // Get JSON data.
+    char *JSON_SILVER = GetData(curl_url_silver, curl_key); // Get JSON data.
+
+    JsonExtract(JSON_GOLD, &spot_price_gold_f); // Extract items from JSON data.
+    JsonExtract(JSON_SILVER, &spot_price_silver_f); // Extract items from JSON data.
+
+    SetData("CurrentSpotPriceGoldDisplay", &spot_price_gold_f); // Set label.
+    SetData("CurrentSpotPriceSilverDisplay", &spot_price_silver_f); // Set label.
+
+    free(JSON_GOLD);
+    free(JSON_SILVER); // Free memory.
+    return NULL;
+}
+
+static void GetSpotPrice ()// Initiate a thread
+{
+    // This will prevent the program from locking up while fetching data.
+    pthread_t thread_id;
+    pthread_create(&thread_id, NULL, FetchDataThread, NULL);// Create a thread, pass the func and NULL arg to it.
+}
+
+int main (int argc, char *argv[])
+{
+    GObject *window,*button;
+    GError *error = NULL;
+
+    gtk_init (&argc, &argv);
+
+    /* Construct a GtkBuilder instance and load our UI description */
+    builder = gtk_builder_new ();
+    if (gtk_builder_add_from_string (builder, UI, strlen(UI), &error) == 0)
+    {
+        g_printerr ("Error loading user interface: %s\n", error->message);
+        g_clear_error (&error);
+        exit(EXIT_FAILURE);
+    }
+
+    InitializeData();// Set up textboxes, data URLs, and the Key with initial parameters.
+
+    /* Connect signal handlers to the constructed widgets. */
+    window = gtk_builder_get_object (builder, "window");
+    g_signal_connect (window, "destroy", G_CALLBACK (gtk_main_quit), NULL);
+
+    button = gtk_builder_get_object (builder, "GetSpotPrice");
+    g_signal_connect (button, "clicked", G_CALLBACK (GetSpotPrice), NULL);
+
+    button = gtk_builder_get_object (builder, "PortfolioValue");
+    g_signal_connect (button, "clicked", G_CALLBACK (PrintPortfolioValue), NULL);
+
+    button = gtk_builder_get_object (builder, "Close");
+    g_signal_connect (button, "clicked", G_CALLBACK (gtk_main_quit), NULL);
+
+    gtk_main();// Display the GUI window.
+
+    g_object_unref (window);
+    g_object_unref (button);
+    return 0;
+}
