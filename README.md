@@ -1,4 +1,4 @@
-# finhub.io-stock-ticker
+# finnhub.io-stock-ticker
 This is a very amature side project, proceed at your own risk!
 
 Keeps track of personal financial data such as gold/silver prices and stock prices.  Can also calculate RSI and fetch historical data via Yahoo!
@@ -20,6 +20,6 @@ make
 The resulting binary should be in the build directory,
 which you can copy to wherever your user binaries are installed.
 
-You need an account at finhub.io, which will give you an access key.
+You need an account at finnhub.io, which will give you an access key.
 
 I've tested builds on FreeBSD 13.1 and Fedora 36.
