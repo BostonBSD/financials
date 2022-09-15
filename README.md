@@ -5,7 +5,7 @@ Keep track of personal financial data such as gold/silver prices and stock price
 
 This application depends upon the following development packages to compile:
 
-gtk+-3.0 json-glib-1.0 glib-2.0 libcurl sqlite3 cmake
+gtk+-3.0 json-glib-1.0 glib-2.0 libcurl sqlite3 cmake clang/gcc
 
 Once these development packages are installed, open a terminal to the project root directory and make a build directory: 
 
