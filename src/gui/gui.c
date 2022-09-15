@@ -224,7 +224,7 @@ int CursorMoveCashEntryBoxGUI ()
 
 int ShowHideBullionWindow ()
 {
-    //get the GObject and cast as a GtkWidget
+    /* get the GObject and cast as a GtkWidget */
     GtkWidget* window = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionWindow") );
     gboolean visible = gtk_widget_is_visible ( window );
 
@@ -339,7 +339,7 @@ int CursorMoveBullionEntryBoxGUI ()
 
 int ShowHideAboutWindow ()
 {
-    //get the GObject and cast as a GtkWidget
+    /* get the GObject and cast as a GtkWidget */
     GtkWidget* window = GTK_WIDGET ( gtk_builder_get_object (builder, "AboutWindow") );
     gboolean visible = gtk_widget_is_visible ( window );
 
@@ -689,7 +689,7 @@ int ViewRSICompletionSet (){
 
 int ShowHideViewRSIWindow ()
 {
-    //get the GObject and cast as a GtkWidget
+    /* get the GObject and cast as a GtkWidget */
     GtkWidget* window = GTK_WIDGET ( gtk_builder_get_object (builder, "ViewRSIWindow") );
     gboolean visible = gtk_widget_is_visible ( window );
     
@@ -1026,9 +1026,6 @@ int RSIMakeGUI ()
     GtkListStore *store = NULL;
     GtkWidget* list = GTK_WIDGET ( gtk_builder_get_object (builder, "ViewRSITreeView") );
 
-    /* Clear the current TreeView model */ 
-    //RSITreeViewClear ();
-
     /* Set the columns for the new TreeView model */
     RSISetColumns ();
 
@@ -1048,7 +1045,7 @@ int TreeViewClear(){
     GtkWidget* ProgressBar = GTK_WIDGET ( gtk_builder_get_object (builder, "ProgressBar") );
     gtk_progress_bar_set_text ( GTK_PROGRESS_BAR( ProgressBar ), "Financial Client" );
 
-    /* Clear the GtkTreeView. */
+    /* Clear the main window's GtkTreeView. */
     GtkWidget* list = GTK_WIDGET ( gtk_builder_get_object (builder, "TreeView") );
     GtkTreeViewColumn *column;
     gint n = gtk_tree_view_get_n_columns (GTK_TREE_VIEW(list));
@@ -1268,11 +1265,6 @@ GtkListStore * MakeDefaultStore (){
 
 int MakeGUIOne ()
 { 
-    /* This will lock the function up until the main thread finishes the call to it.
-       We do not need it in this program (multiple threads cannot call this function), 
-       but is here for compliance. */
-    g_mutex_lock(&mutex_interface);
-
     GtkListStore *store = NULL;
     GtkWidget* list = GTK_WIDGET ( gtk_builder_get_object (builder, "TreeView") );
 
@@ -1292,7 +1284,6 @@ int MakeGUIOne ()
     /* Set the list header as invisible. */
     gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(list), FALSE);
 
-    g_mutex_unlock(&mutex_interface);
     return 0;
 }
 
@@ -1524,7 +1515,7 @@ gboolean view_onButtonPressed (GtkWidget *treeview, GdkEventButton *event)
 
 static void SetAboutInfoLabel ()
 {
-    // Set the About window license.    
+    /* Set the About window license. */
     GtkWidget* Label = GTK_WIDGET ( gtk_builder_get_object (builder, "AboutLicenseLabel") );
     gtk_label_set_text ( GTK_LABEL ( Label ), LICENSE);
 }

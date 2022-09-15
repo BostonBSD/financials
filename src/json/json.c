@@ -33,7 +33,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <json-glib/json-glib.h>
 
 void *JsonExtractEquity(char *str, double *current_price_f, double *high_f, double *low_f, double *opening_f, double *prev_closing_f, double *ch_share_f, double *ch_percent_f)
-/* Take in a string of JSON data, and a reference to a price double. */
+/* Take in a string of JSON data, and references to several double parameters. */
 {
     JsonParser *parser = json_parser_new ();
 

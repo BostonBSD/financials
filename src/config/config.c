@@ -103,6 +103,9 @@ void ConfigDirectoryProcessing ( char *home_dir )
 }
 
 void ReadConfig(metal* M, meta* Data, equity_folder* F){
+    /* We aren't using a config text file any longer, but the sqlite db file
+       serves as a config file for all intents and purposes. */
+       
     /* Make sure the config directory exists. */
     ConfigDirectoryProcessing ( Data->home_dir_ch );
 

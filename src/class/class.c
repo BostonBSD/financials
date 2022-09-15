@@ -56,7 +56,9 @@ static double EntirePortfolio (const double *bullion, const double *equity, cons
 static char* DoubleToString (const double *num) 
 /* Take in a double pointer [the datatype is double] and convert to a monetary format string. */
 {
-    /* This will prevent our threads from corrupting each other. */
+    /* This will prevent our threads from corrupting each other. 
+       we have different classes pointing to the same function address
+       in the main thread stack memory.  These classes are declaired globally. */
     pthread_mutex_lock( &mutex_working[0] );
     
     /* Char variables are 1 byte long, no need to scale strlen() by sizeof(char). */
@@ -78,10 +80,6 @@ static double StringToDouble (const char *str) {
 
     char *newstr = (char*) malloc( strlen( str )+1 );
     strcpy( newstr, str );
-    
-    /* I didn't incorporate this function because it isn't in the stdlib, but here for reference 
-    strdup() A posix function that incorporates malloc with a strcpy for convenience */
-    //char *newstr = strdup(str); 
 
     FormatStr( newstr );
     double num = strtod( newstr, NULL );
@@ -144,7 +142,6 @@ bullion* class_init_bullion ()
     strcpy( new_class->port_value_ch,"$0.00" );
 
     strcpy( new_class->ounce_ch,"0.000" );
-    //strcpy( new_class->curl_url,"http://" );
 
     *new_class->ounce_f = 0.0;
     *new_class->spot_price_f = 0.0;
@@ -287,7 +284,6 @@ meta* class_init_meta_data ()
     *new_class->updates_hours_f = 1.0;
 
     *new_class->fetching_data_bool = false;
-    //*new_class->bullion_populated_bool = false;
 
     /* Set The User's Home Directory */
     /* We need to get the path to the User's home directory: */
@@ -356,7 +352,6 @@ void class_destruct_bullion (bullion* bullion_class)
     if ( bullion_class->port_value_ch ) free( bullion_class->port_value_ch );            
 
     if ( bullion_class->ounce_ch ) free( bullion_class->ounce_ch );                 
-    //if ( bullion_class->curl_url ) free( bullion_class->curl_url );
 
     /* Free Memory From Class Object */
     if ( bullion_class ) {

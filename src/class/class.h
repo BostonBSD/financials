@@ -140,7 +140,6 @@ typedef struct {
     char* sqlite_db_path_ch;                /* Path to the sqlite db file */
 
     bool* fetching_data_bool;               /* Indicates a fetch operation in progress. */
-    //bool* bullion_populated_bool;           /* Indicates whether bullion prices have been populated. */
 
     /* 
        Methods or Functions

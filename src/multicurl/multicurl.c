@@ -35,7 +35,6 @@ POSSIBILITY OF SUCH DAMAGE.
                     from this header.  */
 
 #define MAX_WAIT_MSECS 250
-//1*1000 /* Wait max. 5 seconds */
 
 static size_t write_callback(char *ptr, size_t size, size_t nmemb, void *userdata)
 /* cURL callback function [read in datastream to memory]
@@ -134,7 +133,6 @@ int PerformMultiCurl(CURLM * mh, double size)
     res = curl_multi_perform(mh, &still_running);
     if(res != CURLM_OK) {
             fprintf(stderr, "error: curl_multi_perform() returned %d\n", (int)res);
-            //return NULL;
     }  
     do {
         int numfds=0;
@@ -142,7 +140,6 @@ int PerformMultiCurl(CURLM * mh, double size)
         if(res != CURLM_OK) {
             fprintf(stderr, "error: curl_multi_wait() returned %d\n", (int)res);
             break;
-            //return NULL;
         }        
 
         /* Update the GUI Progress Bar */
@@ -153,7 +150,6 @@ int PerformMultiCurl(CURLM * mh, double size)
         if(res != CURLM_OK) {
             fprintf(stderr, "error: curl_multi_perform() returned %d\n", (int)res);
             break;
-            //return NULL;
     }  
         /* if there are still transfers, loop! */
     } while(still_running);
@@ -199,7 +195,6 @@ int PerformMultiCurl_no_prog(CURLM * mh)
     res = curl_multi_perform(mh, &still_running);
     if(res != CURLM_OK) {
             fprintf(stderr, "error: curl_multi_perform() returned %d\n", (int)res);
-            //return NULL;
     }  
     do {
         int numfds=0;
@@ -207,14 +202,12 @@ int PerformMultiCurl_no_prog(CURLM * mh)
         if(res != CURLM_OK) {
             fprintf(stderr, "error: curl_multi_wait() returned %d\n", (int)res);
             break;
-            //return NULL;
         }        
 
         res = curl_multi_perform(mh, &still_running);
         if(res != CURLM_OK) {
             fprintf(stderr, "error: curl_multi_perform() returned %d\n", (int)res);
             break;
-            //return NULL;
     }  
         /* if there are still transfers, loop! */
     } while(still_running);

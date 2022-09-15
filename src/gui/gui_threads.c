@@ -263,11 +263,7 @@ void *GUIThreadHandler(void *data){
             /* Clear the current TreeView model */ 
             gdk_threads_add_idle( RSITreeViewClear, NULL );
 
-            /* Set the columns for the new TreeView model */
-            //RSISetColumns ();
-
-            /* Set up the storage container */
-            //GtkListStore *store = MakeRSIStore ();
+            /* Fetch, set, and display the RSI treeview model */
             gdk_threads_add_idle( RSIMakeGUI, NULL );
             break;
         case VIEW_RSI_CURSOR_MOVE:

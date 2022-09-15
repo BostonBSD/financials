@@ -32,6 +32,10 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef UI_HEADER_H
 #define UI_HEADER_H
 
+/* This header file is for any ancillary strings or 
+   other data that the UI requires prior to the Gtk 
+   main loop. */
+
 /* A string of the BSD 3 Clause License displayed in the About Window. */
 #ifndef LICENSE
 #define LICENSE                                                                \
