@@ -22,6 +22,9 @@ which can be copied to wherever the user binaries are installed.
 
 The user needs an account at finnhub.io, which will give them an access key.
 
+----------------------------------------------------------
 Has been tested on FreeBSD 13.1 and Fedora 35, 
 there were some issues on the latest Ubuntu and Debian builds 
 due to their Gtk3.0 packages being out of date.
+
+Requires at least Gtk3 version 3.24.34 or later to build.
