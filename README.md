@@ -7,8 +7,7 @@ This application depends upon the following packages:
 
 gtk+-3.0 json-glib-1.0 glib-2.0 libcurl sqlite3 cmake
 
-Once these packages are installed, open a terminal to the project root directory.
-make a build directory: 
+Once these packages are installed, open a terminal to the project root directory and make a build directory: 
 
 mkdir build
 
