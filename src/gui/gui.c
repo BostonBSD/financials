@@ -932,8 +932,11 @@ void SetRSIStore (GtkListStore *store) {
     csv_array = parse_csv( line );
     prev_price = strtod( csv_array[ 4 ], NULL );
     free_csv_line( csv_array );
-    
-    while ( fgets( line, 1024, fp) != NULL ) {
+
+    pthread_mutex_lock( &mutex_working[0] );
+
+    while ( fgets( line, 1024, fp) != NULL ) {       
+
         chomp( line );
     	csv_array = parse_csv( line );
     	
@@ -983,7 +986,10 @@ void SetRSIStore (GtkListStore *store) {
             free( change_ch );
 
             c++;
+
     	}
+        
+        pthread_mutex_unlock( &mutex_working[0] );
     	
         free( prev_closing_ch );
     	free_csv_line( csv_array );

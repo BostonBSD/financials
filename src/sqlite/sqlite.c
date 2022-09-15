@@ -56,6 +56,8 @@ int equity_callback(void *data, int argc, char **argv, char **ColName) {
 }
 
 int cash_callback(void *data, int argc, char **argv, char **ColName) {
+    pthread_mutex_lock( &mutex_working[0] );
+
     /* argv[0] is id, argv[1] is value */
     if ( argc != 2 ) return 1;
     if ( strcmp( ColName[0], "Id") != 0 ) return 1;
@@ -69,10 +71,13 @@ int cash_callback(void *data, int argc, char **argv, char **ColName) {
     /* To make sure it's formatted correctly. */
     mdata->cash_ch = mdata->DoubToStr( mdata->cash_f );
 
+    pthread_mutex_unlock( &mutex_working[0] );
     return 0;
 }
 
 int bullion_callback(void *data, int argc, char **argv, char **ColName) {
+    pthread_mutex_lock( &mutex_working[0] );
+
     if ( argc != 4 ) return 1;
     if ( strcmp( ColName[0], "Id") != 0 ) return 1;
     if ( strcmp( ColName[1], "Metal") != 0 ) return 1;
@@ -111,6 +116,7 @@ int bullion_callback(void *data, int argc, char **argv, char **ColName) {
         m->Silver->premium_ch = m->Silver->DoubToStr( m->Silver->premium_f );
     }
 
+    pthread_mutex_unlock( &mutex_working[0] );
     return 0;
 }
 

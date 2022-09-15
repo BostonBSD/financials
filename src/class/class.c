@@ -56,10 +56,10 @@ static double EntirePortfolio (const double *bullion, const double *equity, cons
 static char* DoubleToString (const double *num) 
 /* Take in a double pointer [the datatype is double] and convert to a monetary format string. */
 {
-    /* This will prevent our threads from corrupting each other. 
-       we have different classes pointing to the same function address
-       in the main thread stack memory.  These classes are declaired globally. */
-    pthread_mutex_lock( &mutex_working[0] );
+    /* This class function requires a mutex around it to prevent our 
+       threads from corrupting each other. We have different classes 
+       pointing to the same function address in the main thread stack 
+       memory.  These classes are declaired globally. */
     
     /* Char variables are 1 byte long, no need to scale strlen() by sizeof(char). */
     char* str = (char*) malloc( strlen("############.##")+1 ); 
@@ -70,13 +70,12 @@ static char* DoubleToString (const double *num)
     setlocale(LC_ALL, "en_US.UTF-8");  
     strfmon(str, strlen("############.##"), "%(.3n", *num);
 
-    pthread_mutex_unlock( &mutex_working[0] );
     return str;
 }
 
 static double StringToDouble (const char *str) {
-    /* This will prevent our threads from corrupting each other. */
-    pthread_mutex_lock( &mutex_working[0] );
+    /* This class function requires a mutex around it to
+       prevent our threads from corrupting each other. */
 
     char *newstr = (char*) malloc( strlen( str )+1 );
     strcpy( newstr, str );
@@ -86,7 +85,6 @@ static double StringToDouble (const char *str) {
 
     free( newstr );
 
-    pthread_mutex_unlock( &mutex_working[0] );
     return num;
 }
 

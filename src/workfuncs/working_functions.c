@@ -113,6 +113,8 @@ void ResetEquity(equity_folder *F) {
 void PerformCalculations () 
 /* calc portfolio values and populate character strings. */
 {
+    pthread_mutex_lock( &mutex_working[0] );
+
     *Precious->Silver->port_value_f = Precious->Silver->Stake( Precious->Silver->ounce_f, Precious->Silver->premium_f, Precious->Silver->spot_price_f );
     *Precious->Gold->port_value_f = Precious->Gold->Stake( Precious->Gold->ounce_f, Precious->Gold->premium_f, Precious->Gold->spot_price_f );
 
@@ -171,6 +173,8 @@ void PerformCalculations ()
     len = strlen("###.###%%") + 1;
     MetaData->portfolio_port_value_p_chg_ch = (char*) malloc ( len );
     snprintf( MetaData->portfolio_port_value_p_chg_ch, len, "%.3lf%%", *MetaData->portfolio_port_value_p_chg_f );
+
+    pthread_mutex_unlock( &mutex_working[0] );
 }
 
 int MultiCurlProcessing () {
@@ -268,6 +272,8 @@ void ParseBullionData_Yahoo (double *silver_f, double *gold_f){
 }
 
 void PopulateBullionPrice_Yahoo (){
+    pthread_mutex_lock( &mutex_working[0] );
+
     ParseBullionData_Yahoo ( Precious->Silver->spot_price_f, Precious->Gold->spot_price_f );    
 
     /* Convert the double values into string values. */
@@ -275,9 +281,13 @@ void PopulateBullionPrice_Yahoo (){
     free( Precious->Silver->spot_price_ch );
     Precious->Gold->spot_price_ch = Precious->Gold->DoubToStr( Precious->Gold->spot_price_f );
     Precious->Silver->spot_price_ch = Precious->Silver->DoubToStr( Precious->Silver->spot_price_f );
+
+    pthread_mutex_unlock( &mutex_working[0] );
 }
 
 void JSONProcessing () {
+    pthread_mutex_lock( &mutex_working[0] );
+
     size_t len;
 
     for( unsigned short c = 0; c < Folder->size; c++ ) 
@@ -332,6 +342,8 @@ void JSONProcessing () {
 
         free( Folder->Equity[ c ]->change_value_ch );
         Folder->Equity[ c ]->change_value_ch = Folder->Equity[ c ]->DoubToStr( Folder->Equity[ c ]->change_value_f );
+
+        pthread_mutex_unlock( &mutex_working[0] );
     }
 }
 
