@@ -51,5 +51,7 @@ In a falling market a Neutral indicator can be taken as a Sale Watch.
 
 The indicator is not calibrated for rising and falling trendlines.
 
+Typically, an RSI less than 30 is oversold, and an RSI greater than 70 is overbought.
+
 The indicator can be used to make short term trade decisions, but is relatively 
 useless for long term investing.
