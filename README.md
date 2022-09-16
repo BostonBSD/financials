@@ -1,6 +1,7 @@
 # finnhub.io-stock-ticker
-<img src="/financials.png" height="50%" width="50%" >
 Keep track of personal financial data such as gold/silver prices and stock prices.  Can also calculate RSI and fetch historical data via Yahoo!
+
+<img src="/financials.png" height="60%" width="60%" >
 
 This application depends upon the following development packages to compile.
 Their package name may vary depending upon the distro; libgtk3 instead of 
