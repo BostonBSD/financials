@@ -130,13 +130,13 @@ int PerformMultiCurl(CURLM * mh, double size)
     int msgs_left = 0;
     double fraction = 0.0f;
 
-    res = curl_multi_perform(mh, &still_running);
+    res = (CURLcode)curl_multi_perform(mh, &still_running);
     if(res != (CURLcode)CURLM_OK) {
             fprintf(stderr, "error: curl_multi_perform() returned %d\n", (int)res);
     }  
     do {
         int numfds=0;
-        res = curl_multi_wait(mh, NULL, 0, MAX_WAIT_MSECS, &numfds);
+        res = (CURLcode)curl_multi_wait(mh, NULL, 0, MAX_WAIT_MSECS, &numfds);
         if(res != (CURLcode)CURLM_OK) {
             fprintf(stderr, "error: curl_multi_wait() returned %d\n", (int)res);
             break;
@@ -146,7 +146,7 @@ int PerformMultiCurl(CURLM * mh, double size)
         fraction = 1 - ( still_running / size );
         UpDateProgressBarGUI ( &fraction );
 
-        res = curl_multi_perform(mh, &still_running);
+        res = (CURLcode)curl_multi_perform(mh, &still_running);
         if(res != (CURLcode)CURLM_OK) {
             fprintf(stderr, "error: curl_multi_perform() returned %d\n", (int)res);
             break;
@@ -192,19 +192,19 @@ int PerformMultiCurl_no_prog(CURLM * mh)
     int still_running = 0;
     int msgs_left = 0;
 
-    res = curl_multi_perform(mh, &still_running);
+    res = (CURLcode)curl_multi_perform(mh, &still_running);
     if(res != (CURLcode)CURLM_OK) {
             fprintf(stderr, "error: curl_multi_perform() returned %d\n", (int)res);
     }  
     do {
         int numfds=0;
-        res = curl_multi_wait(mh, NULL, 0, MAX_WAIT_MSECS, &numfds);
+        res = (CURLcode)curl_multi_wait(mh, NULL, 0, MAX_WAIT_MSECS, &numfds);
         if(res != (CURLcode)CURLM_OK) {
             fprintf(stderr, "error: curl_multi_wait() returned %d\n", (int)res);
             break;
         }        
 
-        res = curl_multi_perform(mh, &still_running);
+        res = (CURLcode)curl_multi_perform(mh, &still_running);
         if(res != (CURLcode)CURLM_OK) {
             fprintf(stderr, "error: curl_multi_perform() returned %d\n", (int)res);
             break;
