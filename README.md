@@ -3,6 +3,13 @@ Keep track of personal financial data such as gold/silver prices and stock price
 
 <img src="/financials.png" height="60%" width="60%" >
 
+<style type="text/css">
+  .left{float:left;}
+</style>
+
+<img class="left" src="/financials.png" />
+<img class="left" src="/financials2.png" />
+
 This application depends upon the following development packages to compile.
 Their package name may vary depending upon the distro; libgtk3 instead of 
 gtk3 for example:
