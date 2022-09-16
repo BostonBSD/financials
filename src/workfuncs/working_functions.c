@@ -342,9 +342,8 @@ void JSONProcessing () {
 
         free( Folder->Equity[ c ]->change_value_ch );
         Folder->Equity[ c ]->change_value_ch = Folder->Equity[ c ]->DoubToStr( Folder->Equity[ c ]->change_value_f );
-
-        pthread_mutex_unlock( &mutex_working[0] );
     }
+    pthread_mutex_unlock( &mutex_working[0] );
 }
 
 struct tm NYTimeComponents(){
