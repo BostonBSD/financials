@@ -40,7 +40,7 @@ selection (inclusion of other data service providers).
 
 RSI INDICATOR NOTE: 
 
-The RSI indicator is primarily a measure of speculative fluctuation and not anything intrinsic to the corporation, 
+The RSI indicator is a measure of speculative fluctuation and not anything intrinsic to the corporation, 
 which also has an influence on the stock price.
 
 Anomalies in the industry and in the corporation can create a false positive.  
@@ -51,3 +51,5 @@ In a falling market a Neutral indicator can be taken as a Sale Watch.
 
 The indicator is not calibrated for rising and falling trendlines.
 
+The indicator can be used to make short term trade decisions, but is relatively useless for
+long term investing.
