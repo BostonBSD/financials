@@ -47,5 +47,6 @@ Anomalies in the industry and in the corporation can create a false positive.
 
 In a rising market a Neutral indicator can be taken as a Purchase Watch.
 In a falling market a Neutral indicator can be taken as a Sale Watch.
+
 The indicator is not calibrated for rising and falling trendlines.
 
