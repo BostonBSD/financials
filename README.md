@@ -4,7 +4,7 @@ Keep track of personal financial data such as gold/silver prices and stock price
 <img src="/financials.png" height="60%" width="60%" >
 <p float="left">
   <img src="/financials.png" height="60%" width="60%" >
-  <img src="/financials2.png" height="60%" width="60%" > 
+  <img src="/financials2.png" height="10%" width="10%" > 
 </p>
 
 This application depends upon the following development packages to compile.
