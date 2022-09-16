@@ -131,13 +131,13 @@ int PerformMultiCurl(CURLM * mh, double size)
     double fraction = 0.0f;
 
     res = curl_multi_perform(mh, &still_running);
-    if(res != CURLM_OK) {
+    if(res != (CURLcode)CURLM_OK) {
             fprintf(stderr, "error: curl_multi_perform() returned %d\n", (int)res);
     }  
     do {
         int numfds=0;
         res = curl_multi_wait(mh, NULL, 0, MAX_WAIT_MSECS, &numfds);
-        if(res != CURLM_OK) {
+        if(res != (CURLcode)CURLM_OK) {
             fprintf(stderr, "error: curl_multi_wait() returned %d\n", (int)res);
             break;
         }        
@@ -147,7 +147,7 @@ int PerformMultiCurl(CURLM * mh, double size)
         UpDateProgressBarGUI ( &fraction );
 
         res = curl_multi_perform(mh, &still_running);
-        if(res != CURLM_OK) {
+        if(res != (CURLcode)CURLM_OK) {
             fprintf(stderr, "error: curl_multi_perform() returned %d\n", (int)res);
             break;
     }  
@@ -164,7 +164,7 @@ int PerformMultiCurl(CURLM * mh, double size)
             hnd = msg->easy_handle;
 
             return_code = msg->data.result;
-            if(return_code!=CURLE_OK) {
+            if(return_code != (CURLcode)CURLE_OK) {
                 fprintf(stderr, "CURL error code: %d\n", msg->data.result);
                 continue;
             }
@@ -180,7 +180,7 @@ int PerformMultiCurl(CURLM * mh, double size)
 
     curl_multi_cleanup(mh);
     curl_global_cleanup();
-    return return_code;
+    return (int)return_code;
 }
 
 int PerformMultiCurl_no_prog(CURLM * mh)
@@ -193,19 +193,19 @@ int PerformMultiCurl_no_prog(CURLM * mh)
     int msgs_left = 0;
 
     res = curl_multi_perform(mh, &still_running);
-    if(res != CURLM_OK) {
+    if(res != (CURLcode)CURLM_OK) {
             fprintf(stderr, "error: curl_multi_perform() returned %d\n", (int)res);
     }  
     do {
         int numfds=0;
         res = curl_multi_wait(mh, NULL, 0, MAX_WAIT_MSECS, &numfds);
-        if(res != CURLM_OK) {
+        if(res != (CURLcode)CURLM_OK) {
             fprintf(stderr, "error: curl_multi_wait() returned %d\n", (int)res);
             break;
         }        
 
         res = curl_multi_perform(mh, &still_running);
-        if(res != CURLM_OK) {
+        if(res != (CURLcode)CURLM_OK) {
             fprintf(stderr, "error: curl_multi_perform() returned %d\n", (int)res);
             break;
     }  
@@ -218,7 +218,7 @@ int PerformMultiCurl_no_prog(CURLM * mh)
             hnd = msg->easy_handle;
 
             return_code = msg->data.result;
-            if(return_code!=CURLE_OK) {
+            if(return_code != (CURLcode)CURLE_OK) {
                 fprintf(stderr, "CURL error code: %d\n", msg->data.result);
                 continue;
             }
@@ -234,5 +234,5 @@ int PerformMultiCurl_no_prog(CURLM * mh)
 
     curl_multi_cleanup(mh);
     curl_global_cleanup();
-    return return_code;
+    return (int)return_code;
 }
