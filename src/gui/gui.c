@@ -986,7 +986,6 @@ void SetRSIStore (GtkListStore *store) {
             free( change_ch );
 
             c++;
-
     	}        
     	
         free( prev_closing_ch );

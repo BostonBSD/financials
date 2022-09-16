@@ -278,7 +278,18 @@ void *GUIThreadHandler(void *data){
             break;
         case DISPLAY_TIME:
             /* The Mutexes are in the LocalAndNYTime, TimeToClose, and 
-               SecondsToOpen functions to reduce synchronization overhead.    
+               SecondsToOpen functions to reduce synchronization overhead.
+
+               Mutexes are required here because we are changing the process 
+               locale from local time to New York time and back again.
+
+               This is a single process multithreaded application. 
+
+               EDIT: I took the mutexes out because they were causing a timing 
+               issue, if this proves consequential they can be put back.
+               //pthread_mutex_lock( &mutex_working[3] );
+               //pthread_mutex_unlock( &mutex_working[3] );
+               Is the clock mutex. 
             */
 
             while(1){
@@ -310,7 +321,7 @@ void *GUIThreadHandler(void *data){
                     NY_Time = NYTimeComponents ();
                     holiday = IsHoliday ( NY_Time );
                 } 
-                seconds_to_open = SecondsToOpen ();              
+                seconds_to_open = SecondsToOpen ();             
             }
             break;
 

@@ -351,8 +351,6 @@ struct tm NYTimeComponents(){
     time_t currenttime;
     struct tm NY_tz;
 
-    //pthread_mutex_lock( &mutex_working[3] );
-
     time( &currenttime );
 
     /* Get the localtime in NY from Epoch seconds */
@@ -366,8 +364,6 @@ struct tm NYTimeComponents(){
     /* Reset the TZ env variable. */
     tz_var ? setenv("TZ", tz_var, 1) : unsetenv( "TZ" );
     tzset();
-
-    //pthread_mutex_unlock( &mutex_working[3] );
 
     return NY_tz;
 }
@@ -458,8 +454,6 @@ void LocalAndNYTime (int *h, int *m, int *month, int *day_month, int *day_week, 
     time_t currenttime;
     struct tm Local_NY_tz;
 
-    pthread_mutex_lock( &mutex_working[3] );
-
     time( &currenttime );
 
     /* Get the localtime and NY time from Epoch seconds */
@@ -471,7 +465,7 @@ void LocalAndNYTime (int *h, int *m, int *month, int *day_month, int *day_week, 
     *day_month = Local_NY_tz.tm_mday;
     *day_week = Local_NY_tz.tm_wday;
     *year = Local_NY_tz.tm_year + 1900;
-    
+   
     Local_NY_tz = NYTimeComponents ();
 
     *ny_h = (Local_NY_tz.tm_hour)%24;
@@ -479,9 +473,7 @@ void LocalAndNYTime (int *h, int *m, int *month, int *day_month, int *day_week, 
     *ny_month = Local_NY_tz.tm_mon;
     *ny_day_month = Local_NY_tz.tm_mday;
     *ny_day_week = Local_NY_tz.tm_wday;
-    *ny_year = Local_NY_tz.tm_year + 1900;
-
-    pthread_mutex_unlock( &mutex_working[3] );   
+    *ny_year = Local_NY_tz.tm_year + 1900;  
 }
 
 void easter(int year, int *month, int *day)
@@ -573,8 +565,6 @@ bool TimeToClose (int *h_r, int *m_r, int *s_r) {
     /* The NYSE/NASDAQ Markets are open from 09:30 to 16:00 EST. */
     struct tm NY_tz;
     bool closed;
-
-    pthread_mutex_lock( &mutex_working[3] );
     
     /* Get the localtime in NY from Epoch seconds */
     /* Accounts if it is DST or STD time in NY. */
@@ -585,9 +575,7 @@ bool TimeToClose (int *h_r, int *m_r, int *s_r) {
     int sec = NY_tz.tm_sec;
     int weekday = NY_tz.tm_wday;
 
-    int hour_open_NY, hour_closed_NY;
-
-    pthread_mutex_unlock( &mutex_working[3] );
+    int hour_open_NY, hour_closed_NY;    
 
     hour_open_NY = 9;
     hour_closed_NY = 16;
@@ -621,8 +609,6 @@ unsigned int SecondsToOpen () {
     time_t currenttime, futuretime;
     unsigned int diff;
 
-    pthread_mutex_lock( &mutex_working[3] );
-
     /* The current time in Epoch seconds */
     time( &currenttime );
 
@@ -648,8 +634,6 @@ unsigned int SecondsToOpen () {
         /* Reset the TZ env variable. */
         tz_var ? setenv("TZ", tz_var, 1) : unsetenv( "TZ" );
         tzset();
-
-        pthread_mutex_unlock( &mutex_working[3] );
 
         /* The market is open. */
         return 0;
@@ -686,8 +670,6 @@ unsigned int SecondsToOpen () {
     /* Reset the TZ env variable. */
     tz_var ? setenv("TZ", tz_var, 1) : unsetenv( "TZ" );
     tzset();
-
-    pthread_mutex_unlock( &mutex_working[3] );
     
     /* The market is closed, reopens in this many seconds. */
     diff = (unsigned int) difftime( futuretime, currenttime );
