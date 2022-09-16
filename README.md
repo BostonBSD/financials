@@ -1,6 +1,4 @@
 # finnhub.io-stock-ticker
-This is a very amature side project, proceed at your own risk!
-
 Keep track of personal financial data such as gold/silver prices and stock prices.  Can also calculate RSI and fetch historical data via Yahoo!
 
 This application depends upon the following development packages to compile.
