@@ -49,7 +49,7 @@ int equity_callback(void *data, int argc, char **argv, char **ColName) {
     strcpy( F->Equity[ F->size ]->symbol_stock_ch , argv[1] ? argv[1] : "NULL" );
 
     /* Add The Shares To the Folder */
-    *F->Equity[ F->size ]->num_shares_stock_int = (unsigned int)strtol( argv[2] ? argv[2] : "NULL", NULL, 10 );
+    *F->Equity[ F->size ]->num_shares_stock_int = (unsigned int)strtol( argv[2] ? argv[2] : "0", NULL, 10 );
     F->size++;
 
     return 0;
