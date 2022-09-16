@@ -25,3 +25,8 @@ The user needs an account at finnhub.io, which will give them an access key.
 ----------------------------------------------------------
 Has been tested on FreeBSD 13.1, Fedora 35, 
 the latest Debian release, and Ubuntu 22.04.
+
+----------------------------------------------------------
+
+Some additional features could include cryptocurrency, bullion stats, and api 
+selection [ to include other data service providers ].
