@@ -34,7 +34,7 @@ the latest Debian release, and Ubuntu 22.04.
 ----------------------------------------------------------
 
 Some additional features could include cryptocurrency, bullion stats, and api 
-selection (inclusion of other data service providers).
+selection (inclusion of other data service providers), RSI trendline calibration.
 
 ----------------------------------------------------------
 
