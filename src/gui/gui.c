@@ -987,14 +987,14 @@ void SetRSIStore (GtkListStore *store) {
 
             c++;
 
-    	}
-        
-        pthread_mutex_unlock( &mutex_working[0] );
+    	}        
     	
         free( prev_closing_ch );
     	free_csv_line( csv_array );
     	counter++;
     }
+
+    pthread_mutex_unlock( &mutex_working[0] );
     
     fclose( fp );
     free( MyOutputStruct.memory ); 
