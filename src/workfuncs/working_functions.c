@@ -374,7 +374,7 @@ unsigned int ClockSleepSeconds (){
 
     time( &currenttime );
     localtime_r( &currenttime, &Local_tz );
-    return ( 59 - Local_tz.tm_sec );
+    return ( 60 - Local_tz.tm_sec );
 }
 
 char* MonthNameStr ( int month ){
