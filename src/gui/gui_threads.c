@@ -98,6 +98,8 @@ void *GUIThreadHandler(void *data){
 
             /* The number of seconds to keep looping. */
             loop_val = 3600 * *MetaData->updates_hours_f;
+            /* If the hours to run is zero, run one loop iteration. */
+            if( loop_val == 0 ) loop_val = 1;
 
             time( &current_time );
             end_time = current_time + (time_t)loop_val;
