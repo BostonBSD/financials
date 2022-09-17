@@ -25,7 +25,7 @@ make
 The resulting binary should be in the build directory,
 which can be copied to wherever the user binaries are installed.
 
-The user needs an account at finnhub.io, which will give them an access key.
+The user needs a free account at finnhub.io, which will give them an access key.
 
 ----------------------------------------------------------
 Has been tested on FreeBSD 13.1, Fedora 35, 
