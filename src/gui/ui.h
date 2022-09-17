@@ -32,8 +32,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef UI_HEADER_H
 #define UI_HEADER_H
 
-/* This header file is for any ancillary strings or 
-   other data that the UI requires prior to the Gtk 
+/* This header file is for any ancillary strings or
+   other data that the UI requires prior to the Gtk
    main loop. */
 
 /* A string of the BSD 3 Clause License displayed in the About Window. */
@@ -85,7 +85,10 @@ POSSIBILITY OF SUCH DAMAGE.
   "LIABILITY, WHETHER\nIN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING "  \
   "FROM, OUT "                                                                 \
   "OF OR IN\nCONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN "    \
-  "THE SOFTWARE.\n\n"
+  "THE SOFTWARE."                                                          \
+  "\n\n----------------------------------------------------\nApplication "     \
+  "Icon\n----------------------------------------------------\nMarket "        \
+  "analysis icon created by Freepik @ freepik.com\n\n"
 #endif /* LICENSE */
 
 #endif /* UI_HEADER_H */

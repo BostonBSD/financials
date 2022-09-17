@@ -56,8 +56,7 @@ typedef struct {
     char* spot_price_ch;            
     char* premium_ch; 
     char* port_value_ch;                    /* Total current investment in this metal. */
-
-    char* ounce_ch;                         /* Number of ounces (we don't need a double var for this). */
+    char* ounce_ch;                         /* Number of ounces. */
 
     /* 
        Methods or Functions
