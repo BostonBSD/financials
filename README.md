@@ -58,9 +58,11 @@ useless for long term investing.
 
 You want to sell when the stock is overbought.  
 You want to buy when the stock is oversold.
+
 ----------------------------------------------------------
+
 <p float="center">
-  <img src="/src/resources/Stocks-icon.png" height="75%" width="75%" > 
+  <img src="/src/resources/Stocks-icon.png" height="25%" width="25%" > 
 </p>
 <a href="https://www.flaticon.com/free-icons/market-analysis" title="market analysis icons">Market analysis icons created by Freepik - Flaticon</a>
 
