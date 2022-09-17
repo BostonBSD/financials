@@ -45,9 +45,9 @@ to the corporation, which also has an influence on the stock price.
 
 Anomalies in the industry and in the corporation can create a false positive.  
 
-On a rising trendline an RSI of 50 can be taken as an Oversold Watch signal.
+On a rising trendline an RSI of 50 can be taken as an Oversold signal.
 
-On a falling trendline an RSI of 50 can be taken as an Overbought Watch signal.
+On a falling trendline an RSI of 50 can be taken as an Overbought signal.
 
 The indicator is not calibrated for rising and falling trendlines.
 
