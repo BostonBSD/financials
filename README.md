@@ -45,9 +45,9 @@ to the corporation, which also has an influence on the stock price.
 
 Anomalies in the industry and in the corporation can create a false positive.  
 
-In a rising market a Neutral indicator can be taken as an Oversold Watch signal.
+In a rising market an RSI of 50 can be taken as an Oversold Watch signal.
 
-In a falling market a Neutral indicator can be taken as an Overbought Watch signal.
+In a falling market an RSI of 50 can be taken as an Overbought Watch signal.
 
 The indicator is not calibrated for rising and falling trendlines.
 
