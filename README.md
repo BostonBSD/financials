@@ -65,7 +65,7 @@ You want to buy when the stock is oversold.
   <img src="/src/resources/Stocks-icon.png" height="15%" width="15%" > 
 </p>
 
-<a href="https://www.flaticon.com/free-icons/market-analysis" title="Trends icons">Trends icon created by Freepik - Flaticon</a>
+<a href="https://www.flaticon.com/free-icons/trends" title="Trends icons">Trends icon created by Freepik - Flaticon</a>
 
 <a href="https://media.flaticon.com/license/license.pdf" title="Trends Icon License" target="_blank" rel="noopener noreferrer">Trends Icon License</a>
 
