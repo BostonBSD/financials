@@ -67,5 +67,5 @@ You want to buy when the stock is oversold.
 
 <a href="https://www.flaticon.com/free-icons/market-analysis" title="market analysis icons">Market analysis icons created by Freepik - Flaticon</a>
 
-<a href="https://media.flaticon.com/license/license.pdf" title="Market Analysis Icon License</a>
+<a href="https://media.flaticon.com/license/license.pdf" title="Market Analysis Icon License">Market Analysis Icon License</a>
 
