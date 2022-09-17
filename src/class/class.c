@@ -62,7 +62,7 @@ static char* DoubleToString (const double *num)
     /* "" is the default system locale, the C.UTF-8 locale does not have a monetary 
        format and is the default on FreeBSD unless changed by the admin. 
     */
-    setlocale(LC_ALL, "en_US.UTF-8");  
+    setlocale(LC_ALL, LOCALE);  
     strfmon(str, strlen("############.##"), "%(.3n", *num);
 
     return str;

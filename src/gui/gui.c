@@ -961,7 +961,7 @@ void SetRSIStore (GtkListStore *store) {
             change_ch = MetaData->DoubToStr( &change );
             volume = strtol( csv_array[ 6 ], NULL, 10 );
 
-            setlocale(LC_NUMERIC, "en_US");
+            setlocale(LC_NUMERIC, LOCALE);
             snprintf(gain_ch, 10, "%0.03f%%", gain);
             snprintf(rsi_ch, 10, "%0.03f", rsi);
             snprintf(volume_ch, 15, "%'ld", volume);

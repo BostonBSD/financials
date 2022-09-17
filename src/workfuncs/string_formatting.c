@@ -120,7 +120,7 @@ char* StringToMonetary (const char *s) {
     char* str = (char*) malloc ( strlen( "############.####" )+1 ); 
 
     /* From the locale man page: By default, C programs start in the "C" locale. */
-    setlocale ( LC_ALL, "en_US.UTF-8" ); 
+    setlocale ( LC_ALL, LOCALE ); 
     strfmon ( str, strlen ( "############.####" ), "%(.3n", num );
 
     pthread_mutex_unlock ( &mutex_working[0] );
