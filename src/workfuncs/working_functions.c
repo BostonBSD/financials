@@ -706,21 +706,15 @@ double calc_rsi ( double avg_gain, double avg_loss ){
 char *rsi_indicator( double rsi )
 /* Return an indicator string. Do not free return value (faster using stack memory). */
 {
-    char *poss_sell = "Possible Sell";
-    char *sell_watch = "Sell Watch";
-    char *neutral = "Neutral";
-    char *purch_watch = "Purchase Watch";
-    char *poss_purch = "Possible Purchase";
-
     if ( rsi >= 70 ) {
-        return poss_sell;
+        return "Overbought";
 	} else if ( rsi >= 60 && rsi < 70 ) {
-        return sell_watch;
+        return "Overbought Watch";
 	} else if ( rsi > 40 && rsi < 60 ) {
-        return neutral;
+        return "Neutral";
 	} else if ( rsi > 30 && rsi <= 40 ) {
-        return purch_watch;
+        return "Oversold Watch";
 	} else {
-        return poss_purch;
+        return "Oversold";
 	}
 }
