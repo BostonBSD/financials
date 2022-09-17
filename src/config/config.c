@@ -33,7 +33,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../financials.h"
 
 
-void ConfigDirectoryProcessing ( char *home_dir )
+void ConfigDirectoryProcessing ( const char *home_dir )
 /* Check if the "~/.config" and "~/.config/financials" directories exist.
    if they do not exist then create them. */
 {
