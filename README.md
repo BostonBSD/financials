@@ -45,9 +45,9 @@ to the corporation, which also has an influence on the stock price.
 
 Anomalies in the industry and in the corporation can create a false positive.  
 
-In a rising market a Neutral indicator can be taken as a Purchase Watch.
+In a rising market a Neutral indicator can be taken as a Oversold Watch signal.
 
-In a falling market a Neutral indicator can be taken as a Sale Watch.
+In a falling market a Neutral indicator can be taken as a Overbought Watch signal.
 
 The indicator is not calibrated for rising and falling trendlines.
 
