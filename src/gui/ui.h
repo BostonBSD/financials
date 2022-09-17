@@ -85,10 +85,10 @@ POSSIBILITY OF SUCH DAMAGE.
   "LIABILITY, WHETHER\nIN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING "  \
   "FROM, OUT "                                                                 \
   "OF OR IN\nCONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN "    \
-  "THE SOFTWARE."                                                          \
+  "THE SOFTWARE."                                                              \
   "\n\n----------------------------------------------------\nApplication "     \
-  "Icon\n----------------------------------------------------\nMarket "        \
-  "analysis icon created by Freepik @ freepik.com\n\n"
+  "Icon\n----------------------------------------------------\nTrends icon "   \
+  "designed by Freepik from Flaticon\n\n"
 #endif /* LICENSE */
 
 #endif /* UI_HEADER_H */
