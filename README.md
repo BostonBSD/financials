@@ -56,5 +56,5 @@ Typically, an RSI less than 30 is oversold, and an RSI greater than 70 is overbo
 The indicator can be used to make short term trade decisions, but is relatively 
 useless for long term investing.
 
-You want to sell when the RSI is overbought.  
-You want to buy when the RSI is oversold.
+You want to sell when the stock is overbought.  
+You want to buy when the stock is oversold.
