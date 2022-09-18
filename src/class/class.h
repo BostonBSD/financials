@@ -149,6 +149,7 @@ typedef struct {
     char* sqlite_db_path_ch;                /* Path to the sqlite db file */
 
     bool* fetching_data_bool;               /* Indicates a fetch operation in progress. */
+    bool* holiday_bool;                     /* Indicates if today is a holiday. */
 
     /* 
        Methods or Functions

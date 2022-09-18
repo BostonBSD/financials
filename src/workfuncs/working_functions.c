@@ -213,7 +213,6 @@ int MultiCurlProcessing () {
 void GetBullionUrl_Yahoo ( char** SilverUrl, char** GoldUrl ){
     time_t end_time, start_time;
     struct tm NY_tz = NYTimeComponents ();
-    bool holiday = IsHoliday( NY_tz );
     size_t len;
 
     time( &end_time );
@@ -228,12 +227,12 @@ void GetBullionUrl_Yahoo ( char** SilverUrl, char** GoldUrl ){
         start_time = end_time - 86400;
 
     /* if today is a monday holiday in NY */
-    } else if (holiday && NY_tz.tm_wday == 1){
+    } else if (*MetaData->holiday_bool && NY_tz.tm_wday == 1){
         /* the start time needs to be Friday, so minus three days */
         start_time = end_time - (86400 * 3);
 
     /* if today is a non-monday holiday in NY */
-    } else if (holiday && NY_tz.tm_wday != 1){
+    } else if (*MetaData->holiday_bool && NY_tz.tm_wday != 1){
         /* the start time needs to be yesterday, so minus one day */
         start_time = end_time - 86400;
 
@@ -619,19 +618,7 @@ bool TimeToClose (int *h_r, int *m_r, int *s_r) {
         *s_r = 59 - sec;
         closed = false;
 
-        /* Check if it is a holiday in NY. 
-           We should not have to check if it is a holiday every second.
-           I'll think about a different solution.
-
-           The labeling would be different for a holiday,
-           which is the only reason.
-
-           If we separate the open/close bool from the
-           time values we could probably make this more 
-           efficient.  Split them into two different 
-           functions.
-        */
-        if( IsHoliday( NY_tz ) ) {
+        if( *MetaData->holiday_bool ) {
             *h_r = 0;
             *m_r = 0;
             *s_r = 0;

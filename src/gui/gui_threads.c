@@ -75,16 +75,11 @@ void *GUIThreadHandler(void *data){
     double loop_val, diff, seconds_per_iteration;
     time_t current_time, end_time;
     time_t start_curl, end_curl;
-    bool holiday;
     struct tm NY_Time; 
 
     switch ( index_signal )
     {
         case FETCH_DATA_BTN:
-            /* If today is a holiday only loop once. */
-            NY_Time = NYTimeComponents ();
-            holiday = IsHoliday ( NY_Time );
-
             /* The number of seconds between data fetch operations. */
             if( *MetaData->updates_per_min_f <= 0 ){
                 seconds_per_iteration = 0;
@@ -124,11 +119,10 @@ void *GUIThreadHandler(void *data){
                 gdk_threads_add_idle ( MakeGUIOne, NULL );
 
                 pthread_mutex_unlock( &mutex_working[2] );
-
-                /* If the market is closed or a holiday only loop once. */
+           
                 seconds_to_open = SecondsToOpen ();
-
-                if( seconds_to_open != 0 || holiday ) {
+                /* If the market is closed or today is a holiday only loop once. */
+                if( seconds_to_open != 0 || *MetaData->holiday_bool ) {
                     break;
                 }
 
@@ -304,26 +298,26 @@ void *GUIThreadHandler(void *data){
             break;
         case DISPLAY_TIME_OPEN_INDICATOR:
             NY_Time = NYTimeComponents ();
-            holiday = IsHoliday ( NY_Time );
+            *MetaData->holiday_bool = IsHoliday ( NY_Time );
             seconds_to_open = SecondsToOpen ();
 
             while(1){
-                if ( holiday ) {
+                if ( *MetaData->holiday_bool ) {
                     gdk_threads_add_idle ( DisplayTimeRemaining, NULL );
                     sleep(  3600 * ( (9 + 24) - NY_Time.tm_hour ) );
                     NY_Time = NYTimeComponents ();
-                    holiday = IsHoliday ( NY_Time );
+                    *MetaData->holiday_bool = IsHoliday ( NY_Time );
                 }
 
-                if ( !holiday && seconds_to_open == 0 ){
+                if ( !(*MetaData->holiday_bool) && seconds_to_open == 0 ){
                     gdk_threads_add_idle ( DisplayTimeRemaining, NULL );
                     sleep( 1 );
                     
-                } else if ( !holiday && seconds_to_open > 0 ){
+                } else if ( !(*MetaData->holiday_bool) && seconds_to_open > 0 ){
                     gdk_threads_add_idle ( DisplayTimeRemaining, NULL );
                     sleep( seconds_to_open );
                     NY_Time = NYTimeComponents ();
-                    holiday = IsHoliday ( NY_Time );
+                    *MetaData->holiday_bool = IsHoliday ( NY_Time );
                 } 
                 seconds_to_open = SecondsToOpen ();             
             }

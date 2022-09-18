@@ -1552,7 +1552,7 @@ int DisplayTimeRemaining(){
     GtkWidget* TimeRemLabel = GTK_WIDGET ( gtk_builder_get_object (builder, "TimeLeftLabel") );
     int h, m, s;
     char time_left_ch[10];
-    bool isclosed, holiday;
+    bool isclosed;
     struct tm NY_Time; 
 
     isclosed = TimeToClose ( &h, &m, &s );
@@ -1564,14 +1564,10 @@ int DisplayTimeRemaining(){
     }
     
     if ( isclosed ) {
-        /* We aren't really calling these two functions every second.
-           If the market is closed it will sleep until open. */ 
-        NY_Time = NYTimeComponents ();
-        holiday = IsHoliday ( NY_Time );
-
-        if ( !holiday ) {
+        if ( !(*MetaData->holiday_bool) ) {
             gtk_label_set_text ( GTK_LABEL ( CloseLabel ), "Market Closed" );
         } else {
+            NY_Time = NYTimeComponents ();
             gtk_label_set_text ( GTK_LABEL ( CloseLabel ), WhichHoliday ( NY_Time ) );
         }
     }

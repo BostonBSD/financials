@@ -249,6 +249,7 @@ meta* class_init_meta_data ()
     new_class->portfolio_port_value_p_chg_ch = (char*) malloc( strlen("000.000%%")+1 ); 
 
     new_class->fetching_data_bool = (bool*) malloc( sizeof(bool) );
+    new_class->holiday_bool = (bool*) malloc( sizeof(bool) );
 
     /* Initialize Variables */
     strcpy( new_class->stock_url, FINNHUB_URL );
@@ -274,6 +275,7 @@ meta* class_init_meta_data ()
     *new_class->updates_hours_f = 1.0;
 
     *new_class->fetching_data_bool = false;
+    *new_class->holiday_bool = false;
 
     /* Set The User's Home Directory */
     /* We need to get the path to the User's home directory: */
