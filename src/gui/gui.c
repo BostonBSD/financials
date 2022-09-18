@@ -1558,8 +1558,14 @@ int DisplayTimeRemaining(){
     isclosed = TimeToClose ( &h, &m, &s );
     snprintf ( time_left_ch, 10, "%02d:%02d:%02d", h, m, s);
     gtk_label_set_text ( GTK_LABEL ( TimeRemLabel ), time_left_ch );
-    if ( !isclosed ) { gtk_label_set_text ( GTK_LABEL ( CloseLabel ), "Market Closes In" ); return 0; }
-    if ( isclosed ) { 
+    if ( !isclosed ) { 
+        gtk_label_set_text ( GTK_LABEL ( CloseLabel ), "Market Closes In" ); 
+        return 0; 
+    }
+    
+    if ( isclosed ) {
+        /* We aren't really calling these two functions every second.
+           If the market is closed it will sleep until open. */ 
         NY_Time = NYTimeComponents ();
         holiday = IsHoliday ( NY_Time );
 

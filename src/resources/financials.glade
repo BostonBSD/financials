@@ -556,8 +556,8 @@
             <property name="halign">center</property>
             <property name="valign">center</property>
             <property name="margin-bottom">20</property>
-            <accelerator key="c" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
             <accelerator key="c" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+            <accelerator key="c" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
           </object>
           <packing>
             <property name="left-attach">0</property>
@@ -642,8 +642,8 @@
             <property name="halign">center</property>
             <property name="valign">end</property>
             <property name="margin-bottom">20</property>
-            <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
             <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+            <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
           </object>
           <packing>
             <property name="left-attach">2</property>
@@ -1296,7 +1296,7 @@
                           <attribute name="font-desc" value="Oxygen Mono 10"/>
                           <attribute name="weight" value="ultraheavy"/>
                           <attribute name="stretch" value="semi-expanded"/>
-                          <attribute name="foreground" value="#024f62fc21a0"/>
+                          <attribute name="foreground" value="#09023610962f"/>
                         </attributes>
                       </object>
                       <packing>

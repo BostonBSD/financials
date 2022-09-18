@@ -35,7 +35,19 @@ POSSIBILITY OF SUCH DAMAGE.
 /* We need the MemType struct from this header file. */
 #include "../multicurl/multicurl.h"
 
-/* method prototypes used by these classes
+/* These two macros define initial URL values before the user sets up the 
+   application. */
+/* The finnhub.io stock quote URL */
+#ifndef FINNHUB_URL
+#define FINNHUB_URL "https://finnhub.io/api/v1/quote?symbol="
+#endif
+
+/* The finnhub.io URL account token */
+#ifndef FINNHUB_URL_TOKEN
+#define FINNHUB_URL_TOKEN "&token=<YOUR ACCOUNT KEY>"
+#endif
+
+/* Method prototypes used by these classes
    Define the function pointer type here. */
 typedef double sub_func_b_t (const unsigned int*,const double*);
 typedef double sub_func_c_t (const double*,const double*,const double*);
@@ -46,8 +58,6 @@ typedef double sub_func_f_t (const char*);
 /* class type definitions (emulated class definitions; C doesn't really have class types) */
 typedef struct {
     /* Data Variables */
-    MemType JSON;
-
 	double* spot_price_f;
     double* premium_f;
     double* port_value_f;

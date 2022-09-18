@@ -236,8 +236,8 @@ meta* class_init_meta_data ()
     new_class->updates_per_min_f = (double*) malloc( sizeof(double) );
     new_class->updates_hours_f = (double*) malloc( sizeof(double) );
 
-    new_class->stock_url = (char*) malloc( strlen("https://finnhub.io/api/v1/quote?symbol=")+1 );
-	new_class->curl_key = (char*) malloc( strlen("&token=<YOUR ACCOUNT KEY>")+1 );                 
+    new_class->stock_url = (char*) malloc( strlen( FINNHUB_URL )+1 );
+	new_class->curl_key = (char*) malloc( strlen( FINNHUB_URL_TOKEN )+1 );                 
 
     new_class->cash_ch = (char*) malloc( strlen("$0.00")+1 );                  
     new_class->bullion_port_value_ch = (char*) malloc( strlen("$0.00")+1 );    
@@ -251,8 +251,8 @@ meta* class_init_meta_data ()
     new_class->fetching_data_bool = (bool*) malloc( sizeof(bool) );
 
     /* Initialize Variables */
-    strcpy( new_class->stock_url,"https://finnhub.io/api/v1/quote?symbol=" );
-    strcpy( new_class->curl_key,"&token=<YOUR ACCOUNT KEY>" );
+    strcpy( new_class->stock_url, FINNHUB_URL );
+    strcpy( new_class->curl_key, FINNHUB_URL_TOKEN );
     strcpy( new_class->cash_ch,"$0.00" );
     strcpy( new_class->bullion_port_value_ch,"$0.00" );
     strcpy( new_class->stock_port_value_ch,"$0.00" );

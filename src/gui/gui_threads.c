@@ -71,8 +71,8 @@ void *GUIThreadHandler(void *data){
        thread [same index signal] to terminate, before running. */
     sem_wait( &semaphore[ index_signal ] );
 
-    unsigned int seconds, seconds_to_open;
-    double loop_val, diff;
+    unsigned int seconds_to_open;
+    double loop_val, diff, seconds_per_iteration;
     time_t current_time, end_time;
     time_t start_curl, end_curl;
     bool holiday;
@@ -85,16 +85,16 @@ void *GUIThreadHandler(void *data){
             NY_Time = NYTimeComponents ();
             holiday = IsHoliday ( NY_Time );
 
-            if( *MetaData->updates_per_min_f == 0 ){
-                seconds = 0;
+            /* The number of seconds between data fetch operations. */
+            if( *MetaData->updates_per_min_f <= 0 ){
+                seconds_per_iteration = 0;
             } else {
-                /* The seconds value is truncated from double -> int casting */
-                seconds = (unsigned int)( 60 / *MetaData->updates_per_min_f );
+                seconds_per_iteration = 60 / *MetaData->updates_per_min_f;
             }
 
             /* Because loop_val is not always evenly divisible by the
-               seconds value, our loop will finish in an approximate 
-               length of time plus the slack seconds. */
+               seconds_per_iteration value, our loop will finish in an 
+               approximate length of time plus the slack seconds. */
 
             /* The number of seconds to keep looping. */
             loop_val = 3600 * *MetaData->updates_hours_f;
@@ -120,7 +120,7 @@ void *GUIThreadHandler(void *data){
                 JSONProcessing ();
                 PerformCalculations ();
 
-                /* Set Gtk treeview box. */
+                /* Set Gtk treeview. */
                 gdk_threads_add_idle ( MakeGUIOne, NULL );
 
                 pthread_mutex_unlock( &mutex_working[2] );
@@ -128,16 +128,18 @@ void *GUIThreadHandler(void *data){
                 /* If the market is closed or a holiday only loop once. */
                 seconds_to_open = SecondsToOpen ();
 
-                if( seconds_to_open != 0 || holiday || loop_val == 0 ) {
+                if( seconds_to_open != 0 || holiday ) {
                     break;
                 }
 
+                /* Find out how long cURL processing took. */
                 time( &end_curl );
                 diff = difftime( end_curl, start_curl );                
 
-                /* Wait this many seconds, accounts for cURL processing time. */
-                if( diff < seconds ){
-                    sleep( ( seconds - (unsigned int)diff ) );
+                /* Wait this many seconds, accounts for cURL processing time. 
+                   We have double to int casting trunction here. */
+                if( diff < seconds_per_iteration ){
+                    sleep( (unsigned int)( seconds_per_iteration - diff ) );
                 }
 
                 /* Find the current epoch time. */

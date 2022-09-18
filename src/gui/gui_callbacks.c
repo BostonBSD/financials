@@ -48,11 +48,11 @@ function, which takes two parameters. */
 
     /* Initiate a thread */
         
-    /* Threads will prevent the program from locking up while fetching data 
+    /* Threads will prevent the program from blocking the Gtk loop. 
     (we could also use gthreads). */
     
     pthread_t thread_id;
-    /* Create a thread, pass the func and double click variable reference to it. */
+    /* Create a thread, pass the func and widget signal to it. */
     pthread_create( &thread_id, NULL, GUIThreadHandler, data );
 }
 

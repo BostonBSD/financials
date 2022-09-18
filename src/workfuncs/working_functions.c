@@ -80,9 +80,18 @@ void AddStock(equity_folder* F)
 
 void ResetEquity(equity_folder *F) {
     if (F->size == 0){
-        /* If there are no stocks in the config file, 
-        we need to keep freeing this to prevent a memory 
-        leak on subsequent file reads. */
+        /*
+        We do not know if F->size = 0 means that the stock** array already 
+        exists or not.
+
+        This is the only place where the stock** array is created.
+
+        There are multiple points in the code where a zero size array
+        could be reset, some where the array exists, some where it does not 
+        exist, so we need to keep freeing this to prevent a memory leak.
+
+        This function is only called from sqlite.c
+        */
         free( F->Equity ); 
         stock** temp = (stock**) malloc( sizeof(stock*) );
                 
@@ -202,20 +211,47 @@ int MultiCurlProcessing () {
 }
 
 void GetBullionUrl_Yahoo ( char** SilverUrl, char** GoldUrl ){
-    time_t currenttime;
+    time_t end_time, start_time;
+    struct tm NY_tz = NYTimeComponents ();
+    bool holiday = IsHoliday( NY_tz );
     size_t len;
 
-    time( &currenttime );
+    time( &end_time );
+    /* if today is Sunday in NY */
+    if ( NY_tz.tm_wday == 0 ){
+        /* the start time needs to be Friday, so minus two days */
+        start_time = end_time - (86400 * 2);
+
+    /* if today is Saturday in NY */
+    } else  if ( NY_tz.tm_wday == 6 ){   
+        /* the start time needs to be Friday, so minus one day */
+        start_time = end_time - 86400;
+
+    /* if today is a monday holiday in NY */
+    } else if (holiday && NY_tz.tm_wday == 1){
+        /* the start time needs to be Friday, so minus three days */
+        start_time = end_time - (86400 * 3);
+
+    /* if today is a non-monday holiday in NY */
+    } else if (holiday && NY_tz.tm_wday != 1){
+        /* the start time needs to be yesterday, so minus one day */
+        start_time = end_time - 86400;
+
+    } else {
+        start_time = end_time;
+    }
+
     char *silver_symbol_ch = "SI=F";
     char *gold_symbol_ch = "GC=F";
 
     len = strlen( silver_symbol_ch ) + strlen( YAHOO_URL_START ) + strlen( YAHOO_URL_MIDDLE_ONE ) + strlen( YAHOO_URL_MIDDLE_TWO ) + strlen( YAHOO_URL_END ) + 25;
     SilverUrl[0] = malloc ( len );
-    snprintf(SilverUrl[0], len, YAHOO_URL_START"%s"YAHOO_URL_MIDDLE_ONE"%d"YAHOO_URL_MIDDLE_TWO"%d"YAHOO_URL_END, silver_symbol_ch, (int)currenttime, (int)currenttime);
-
+    snprintf(SilverUrl[0], len, YAHOO_URL_START"%s"YAHOO_URL_MIDDLE_ONE"%d"YAHOO_URL_MIDDLE_TWO"%d"YAHOO_URL_END, silver_symbol_ch, (int)start_time, (int)end_time);
+    
     len = strlen( gold_symbol_ch ) + strlen( YAHOO_URL_START ) + strlen( YAHOO_URL_MIDDLE_ONE ) + strlen( YAHOO_URL_MIDDLE_TWO ) + strlen( YAHOO_URL_END ) + 25;
     GoldUrl[0] = malloc ( len );
-    snprintf(GoldUrl[0], len, YAHOO_URL_START"%s"YAHOO_URL_MIDDLE_ONE"%d"YAHOO_URL_MIDDLE_TWO"%d"YAHOO_URL_END, gold_symbol_ch, (int)currenttime, (int)currenttime);
+    snprintf(GoldUrl[0], len, YAHOO_URL_START"%s"YAHOO_URL_MIDDLE_ONE"%d"YAHOO_URL_MIDDLE_TWO"%d"YAHOO_URL_END, gold_symbol_ch, (int)start_time, (int)end_time);
+
 }
 
 void FetchBullionData_Yahoo ( MemType *SilverOutput, MemType *GoldOutput ){
@@ -243,7 +279,6 @@ void ParseBullionData_Yahoo (double *silver_f, double *gold_f){
     
     /* Get rid of the header line from the file stream */
     if (fgets( line, 1024, fp) == NULL) { fclose( fp ); return; }
-    
     /* Get the current spot price */
     if (fgets( line, 1024, fp) == NULL) { fclose( fp ); return; }
     
@@ -411,11 +446,8 @@ char* MonthNameStr ( int month ){
         case 10:
             return "November";
             break;
-        case 11:
-            return "December";
-            break;
         default:
-            return "Smarch";
+            return "December";
             break;
     }
 }
@@ -440,11 +472,8 @@ char* WeekDayStr ( int weekday ){
         case 5:
             return "Friday";
             break;
-        case 6:
-            return "Saturday";
-            break;
         default:
-            return "The eighth day of the week";
+            return "Saturday";
             break;
     }
 }
@@ -540,18 +569,18 @@ bool IsHoliday (struct tm NY_tz){
     /* Memorial Day */
     if(NY_tz.tm_mon == 4 && NY_tz.tm_wday == 1 && NY_tz.tm_mday >= 25 && NY_tz.tm_mday <= 31) return true;
     /* Juneteenth Day */
-    if(NY_tz.tm_mon == 5 && NY_tz.tm_wday == 1 && NY_tz.tm_mday >= 19 && NY_tz.tm_mday <= 21) return true;
     if(NY_tz.tm_mon == 5 && NY_tz.tm_mday == 19 ) return true;
+    if(NY_tz.tm_mon == 5 && NY_tz.tm_wday == 1 && NY_tz.tm_mday >= 19 && NY_tz.tm_mday <= 21) return true;
     /* US Independence Day */
-    if(NY_tz.tm_mon == 6 && NY_tz.tm_wday == 1 && NY_tz.tm_mday >= 4 && NY_tz.tm_mday <= 6) return true;
     if(NY_tz.tm_mon == 6 && NY_tz.tm_mday == 4 ) return true;
+    if(NY_tz.tm_mon == 6 && NY_tz.tm_wday == 1 && NY_tz.tm_mday >= 4 && NY_tz.tm_mday <= 6) return true;
     /* Labor Day */
     if(NY_tz.tm_mon == 8 && NY_tz.tm_wday == 1 && NY_tz.tm_mday >= 1 && NY_tz.tm_mday <= 7) return true;
     /* Thanksgiving Day */
     if(NY_tz.tm_mon == 10 && NY_tz.tm_wday == 4 && NY_tz.tm_mday >= 22 && NY_tz.tm_mday <= 28) return true;
     /* Christmas Day */
-    if(NY_tz.tm_mon == 11 && NY_tz.tm_wday == 1 && NY_tz.tm_mday >= 25 && NY_tz.tm_mday <= 27) return true;
     if(NY_tz.tm_mon == 11 && NY_tz.tm_mday == 25 ) return true;
+    if(NY_tz.tm_mon == 11 && NY_tz.tm_wday == 1 && NY_tz.tm_mday >= 25 && NY_tz.tm_mday <= 27) return true;
     /* Good Friday */
     int month, day;
     easter( (int)NY_tz.tm_year, &month, &day ); /* Finds the date of easter for a given year. */
@@ -590,7 +619,18 @@ bool TimeToClose (int *h_r, int *m_r, int *s_r) {
         *s_r = 59 - sec;
         closed = false;
 
-        /* Check if it is a holiday in NY. */
+        /* Check if it is a holiday in NY. 
+           We should not have to check if it is a holiday every second.
+           I'll think about a different solution.
+
+           The labeling would be different for a holiday,
+           which is the only reason.
+
+           If we separate the open/close bool from the
+           time values we could probably make this more 
+           efficient.  Split them into two different 
+           functions.
+        */
         if( IsHoliday( NY_tz ) ) {
             *h_r = 0;
             *m_r = 0;
