@@ -607,7 +607,7 @@ bool TimeToClose (int *h_r, int *m_r, int *s_r) {
     hour_open_NY = 9;
     hour_closed_NY = 16;
     
-    if( hour < hour_open_NY || ( hour == hour_open_NY && min < 30 ) || hour >= hour_closed_NY || weekday == 0 || weekday == 6 ){
+    if( *MetaData->holiday_bool || hour < hour_open_NY || ( hour == hour_open_NY && min < 30 ) || hour >= hour_closed_NY || weekday == 0 || weekday == 6 ){
         *h_r = 0;
         *m_r = 0;
         *s_r = 0;
@@ -617,13 +617,6 @@ bool TimeToClose (int *h_r, int *m_r, int *s_r) {
         *m_r = 59 - min;
         *s_r = 59 - sec;
         closed = false;
-
-        if( *MetaData->holiday_bool ) {
-            *h_r = 0;
-            *m_r = 0;
-            *s_r = 0;
-            closed = true;
-        }
     }
     return closed;
 }
@@ -640,8 +633,14 @@ unsigned int SecondsToOpen () {
 
     /* Get the localtime in NY from Epoch seconds 
        We need to do this to account for DST changes when
-       determining the future Epoch time. */
+       determining the future Epoch time. 
+    */
     
+    /* We cannot use the NYTimeComponents() function here
+       because we need to get the epoch seconds assuming we
+       are still in the NY timezone.  NYTimeComponents()
+       resets the timezone back to the local timezone.
+    */
     char *tz_var = getenv( "TZ" );
     setenv("TZ", "America/New_York", 1);
     tzset();
