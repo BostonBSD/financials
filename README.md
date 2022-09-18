@@ -34,7 +34,7 @@ Debian “bullseye”, and Ubuntu 22.04.
 ----------------------------------------------------------
 
 Some additional features could include cryptocurrency, bullion stats, api selection 
-(inclusion of other data service providers), other metals, and RSI trendline calibration.
+(inclusion of other data service providers), market indices, other metals, and RSI trendline calibration.
 
 ----------------------------------------------------------
 
