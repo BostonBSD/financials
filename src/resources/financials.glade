@@ -9,6 +9,7 @@
     <property name="default-width">450</property>
     <property name="default-height">375</property>
     <property name="destroy-with-parent">True</property>
+    <property name="icon">Stocks-icon.png</property>
     <property name="skip-taskbar-hint">True</property>
     <property name="skip-pager-hint">True</property>
     <child>
@@ -145,6 +146,7 @@
     <property name="default-width">350</property>
     <property name="default-height">300</property>
     <property name="destroy-with-parent">True</property>
+    <property name="icon">Stocks-icon.png</property>
     <property name="skip-taskbar-hint">True</property>
     <property name="skip-pager-hint">True</property>
     <child>
@@ -380,6 +382,7 @@
     <property name="default-width">300</property>
     <property name="default-height">300</property>
     <property name="destroy-with-parent">True</property>
+    <property name="icon">Stocks-icon.png</property>
     <property name="skip-taskbar-hint">True</property>
     <property name="skip-pager-hint">True</property>
     <child>
@@ -539,6 +542,7 @@
     <property name="default-width">440</property>
     <property name="default-height">250</property>
     <property name="destroy-with-parent">True</property>
+    <property name="icon">Stocks-icon.png</property>
     <child>
       <!-- n-columns=3 n-rows=6 -->
       <object class="GtkGrid">
@@ -556,8 +560,8 @@
             <property name="halign">center</property>
             <property name="valign">center</property>
             <property name="margin-bottom">20</property>
-            <accelerator key="c" signal="activate" modifiers="GDK_CONTROL_MASK"/>
             <accelerator key="c" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+            <accelerator key="c" signal="activate" modifiers="GDK_CONTROL_MASK"/>
           </object>
           <packing>
             <property name="left-attach">0</property>
@@ -642,8 +646,8 @@
             <property name="halign">center</property>
             <property name="valign">end</property>
             <property name="margin-bottom">20</property>
-            <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
             <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+            <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
           </object>
           <packing>
             <property name="left-attach">2</property>
@@ -1127,6 +1131,7 @@
     <property name="can-focus">False</property>
     <property name="default-width">875</property>
     <property name="default-height">700</property>
+    <property name="icon">Stocks-icon.png</property>
     <child>
       <object class="GtkScrolledWindow" id="ViewRSIScrolledWindow">
         <property name="visible">True</property>
@@ -1353,6 +1358,7 @@
     <property name="default-width">550</property>
     <property name="default-height">300</property>
     <property name="destroy-with-parent">True</property>
+    <property name="icon">Stocks-icon.png</property>
     <property name="skip-taskbar-hint">True</property>
     <property name="skip-pager-hint">True</property>
     <child>
