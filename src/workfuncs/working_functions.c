@@ -405,9 +405,7 @@ unsigned int ClockSleepSeconds (){
 
     time( &currenttime );
 
-    /* Ensure the local timezone is set */
-    MetaData->local_tz_ch ? setenv("TZ", MetaData->local_tz_ch, 1) : unsetenv( "TZ" );
-    tzset();
+    /* The timezone here isn't relevant. */
     localtime_r( &currenttime, &Local_tz );
     return ( 60 - Local_tz.tm_sec );
 }
@@ -486,6 +484,9 @@ void LocalAndNYTime (int *h, int *m, int *month, int *day_month, int *day_week, 
     time( &currenttime );
 
     /* Get the localtime and NY time from Epoch seconds */
+
+    /* This should be the only place in the code where the
+       local timezone needs to be set. */
 
     /* Ensure the local timezone is set */
     MetaData->local_tz_ch ? setenv("TZ", MetaData->local_tz_ch, 1) : unsetenv( "TZ" );
@@ -643,9 +644,9 @@ unsigned int SecondsToOpen () {
     */
     
     /* We cannot use the NYTimeComponents() function here
-       because we need to get the epoch seconds assuming we
-       are still in the NY timezone.  NYTimeComponents()
-       resets the timezone back to the local timezone.
+       because we need to get the future epoch time based  
+       off of the NY timezone.  NYTimeComponents() resets the 
+       timezone back to the local timezone.
     */
 
     setenv("TZ", "America/New_York", 1);
