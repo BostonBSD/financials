@@ -336,18 +336,7 @@ void *GUIThreadHandler(void *data){
             gtk_main_quit ();
 
             /* Free the symbol to security name mapping array. */
-            if ( security_symbol ){
-                for(int i=0; i<symbolcount; i++ ){
-                    /* Free the string members */
-                    free( security_symbol[ i ]->symbol );
-                    free( security_symbol[ i ]->security_name );
-                    /* Free the memory that the address is pointing to */
-                    free( security_symbol[ i ] );
-                }
-                /* Free the array of pointer addresses */
-                free( security_symbol );
-                symbolcount = 0;
-            }
+            symbol_security_name_map_destruct ();
 
             pthread_mutex_unlock( &mutex_working[2] );
             break;

@@ -87,3 +87,15 @@ gboolean CallbackHandler_alt ( GtkWidget *window )
     */
     return false;
 }
+
+gboolean GUICallbackHandler_comp (GtkEntryCompletion *completion, GtkTreeModel *model, GtkTreeIter *iter )
+{
+    assert ( completion );
+    GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ViewRSISymbolEntryBox") );
+    gchar *item;
+    /* when a match is selected insert column zero instead of column 1 */
+    gtk_tree_model_get ( model, iter, 0, &item, -1 );
+    gtk_entry_set_text (GTK_ENTRY( EntryBox ), item );
+    free( item );
+    return true;
+}

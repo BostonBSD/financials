@@ -522,9 +522,27 @@ int ShowHideAddRemoveSecurityWindow ()
     return 0;
 }
 
+void symbol_security_name_map_destruct () {
+    if ( security_symbol ){
+        for(int i=0; i<symbolcount; i++ ){
+            /* Free the string members */
+            free( security_symbol[ i ]->symbol );
+            free( security_symbol[ i ]->security_name );
+            /* Free the memory that the address is pointing to */
+            free( security_symbol[ i ] );
+        }
+        /* Free the array of pointer addresses */
+        free( security_symbol );
+        security_symbol = NULL;
+        symbolcount = 0;
+    }
+}
+
 gboolean ViewRSICompletionMatchFunc( GtkEntryCompletion *completion, const gchar *key, GtkTreeIter *iter ) {
     GtkTreeModel *model = gtk_entry_completion_get_model ( completion );
     gchar *item;
+    /* We are finding matches based off of column 0, however, 
+       we display column 1 in our 2 column model */
     gtk_tree_model_get ( model, iter, 0, &item, -1 );
     gboolean ans = false;
 
@@ -541,7 +559,7 @@ gboolean ViewRSICompletionMatchFunc( GtkEntryCompletion *completion, const gchar
 GtkListStore *CompletionSymbolFetch ()
 /* This function is only meant to be run once, at application startup. */
 {
-    GtkListStore *store = gtk_list_store_new(1, G_TYPE_STRING);
+    GtkListStore *store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
     char *tofree;
     GtkTreeIter iter;
 
@@ -577,6 +595,7 @@ GtkListStore *CompletionSymbolFetch ()
             	free( output );
             	fclose( fp[0] ); 
                 fclose( fp[1] );
+                symbol_security_name_map_destruct ();
             	return 0;
         }
 
@@ -658,13 +677,14 @@ GtkListStore *CompletionSymbolFetch ()
 
     /* Sort the security symbol array, this merges both lists into one sorted list. */
     qsort( &security_symbol[ 0 ], symbolcount, sizeof(symbol_to_security_name_container*), AlphaAscSecName );
-
+    char item[30];
     /* Populate the GtkListStore with the string of stock symbols. */
     for ( int i=0; i<symbolcount; i++ ){
+        snprintf(item, 30, "%s\t%s", security_symbol[ i ]->symbol, security_symbol[ i ]->security_name );
 
         gtk_list_store_append( store, &iter );
-        gtk_list_store_set( store, &iter, 0, security_symbol[ i ]->symbol, -1 );
-
+        /* Completion is going to match off of column 0, but display column 1 */
+        gtk_list_store_set( store, &iter, 0, security_symbol[ i ]->symbol, 1, item, -1 );
     }
 
     free( Nasdaq_Struct.memory );
@@ -680,9 +700,15 @@ int ViewRSICompletionSet (){
     gtk_entry_completion_set_model(completion, GTK_TREE_MODEL( store ));
     gtk_entry_completion_set_match_func(completion, (GtkEntryCompletionMatchFunc)ViewRSICompletionMatchFunc, NULL, NULL);
     gtk_entry_set_completion( GTK_ENTRY( EntryBox ), completion );
-    gtk_entry_completion_set_text_column( completion, 0 );
-    gtk_entry_completion_set_inline_completion ( completion, TRUE );
-    gtk_entry_completion_set_inline_selection ( completion, TRUE );
+    /* The text column to display is column 1 */
+    gtk_entry_completion_set_text_column( completion, 1 );
+    gtk_entry_completion_set_inline_completion ( completion, FALSE );
+    gtk_entry_completion_set_inline_selection ( completion, FALSE );
+    gtk_entry_completion_set_popup_completion( completion, TRUE );
+    /* The text column to insert is column 0
+       We use a callback on the match-selected signal and insert the text from column 0 instead of column 1
+    */
+    g_signal_connect ( G_OBJECT( completion ), "match-selected", G_CALLBACK ( GUICallbackHandler_comp ), NULL );
 
     return 0;
 }
@@ -1722,7 +1748,11 @@ void GUISignalConnect ()
     pthread_create( &thread_id, NULL, GUIThreadHandler, (void *)DISPLAY_TIME );
     pthread_create( &thread_id, NULL, GUIThreadHandler, (void *)DISPLAY_TIME_OPEN_INDICATOR );
 
-    /* Set up the RSIView Window's EntryBox Completion Widget */
+    /* Set up the RSIView Window's EntryBox Completion Widget 
+       This will download the NYSE and NASDAQ symbol list when the application loads.
+       If there is no internet connection or the server is unavailable cURL will return an
+       error, but otherwise the application should run as normal.
+    */
     pthread_create( &thread_id, NULL, GUIThreadHandler, (void *)VIEW_RSI_COMPLETION );
 }
 

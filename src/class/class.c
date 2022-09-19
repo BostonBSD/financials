@@ -485,6 +485,7 @@ void class_destruct_meta_data (meta* meta_class)
     if ( meta_class->sqlite_db_path_ch ) free( meta_class->sqlite_db_path_ch );
 
     if ( meta_class->fetching_data_bool ) free( meta_class->fetching_data_bool );
+    if ( meta_class->holiday_bool ) free( meta_class->holiday_bool );
     
     /* Free Memory From Class Object */
     if ( meta_class ) {
