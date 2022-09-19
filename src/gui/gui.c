@@ -545,21 +545,23 @@ gboolean ViewRSICompletionMatchFunc( GtkEntryCompletion *completion, const gchar
        we display column 2 in our 3 column model */
     gtk_tree_model_get ( model, iter, 0, &item_symb, -1 );
     gtk_tree_model_get ( model, iter, 1, &item_name, -1 );
-    gboolean ans = false, symbol_match = false, name_match = false;
+    gboolean ans = false, symbol_match = true, name_match = true;
 
     int N = 0;
     while( key[ N ] ){
-        symbol_match = ( tolower( key [ N ] ) == tolower( item_symb [ N ] ) );
-        name_match = ( tolower( key [ N ] ) == tolower( item_name [ N ] ) );
-
-        /* if either the symbol or the name match the key value, return true. */
-        ans = symbol_match || name_match;
-
-        if( ans == false ) break;
+        /* Only compare new key char if prev char was a match. */
+        if(symbol_match) symbol_match = ( tolower( key [ N ] ) == tolower( item_symb [ N ] ) );
+        if(name_match) name_match = ( tolower( key [ N ] ) == tolower( item_name [ N ] ) );
+        /* Break the loop if both the symbol and the name are not a match. */
+        if( (symbol_match == false) && (name_match == false) ) break;
         N++;
     }
+
+    /* if either the symbol or the name match the key value, return true. */
+    ans = symbol_match || name_match;
     g_free( item_symb );
     g_free( item_name );
+
     return ans;
 }
 
@@ -685,16 +687,21 @@ GtkListStore *CompletionSymbolFetch ()
     /* Sort the security symbol array, this merges both lists into one sorted list. */
     qsort( &security_symbol[ 0 ], symbolcount, sizeof(symbol_to_security_name_container*), AlphaAscSecName );
 
-    char item[35];
+    //char item[35];
+    char *item;
+    size_t len;
     /* Populate the GtkListStore with the string of stock symbols in column 0, stock names in column 1, 
        and symbols & names in column 2. */
     for ( int i=0; i<symbolcount; i++ ){
-        snprintf(item, 35, "%s - %s", security_symbol[ i ]->symbol, security_symbol[ i ]->security_name );
+        len = strlen ( security_symbol[ i ]->symbol ) + strlen ( security_symbol[ i ]->security_name ) + 4;
+        item = malloc ( len );
+        snprintf(item, len, "%s - %s", security_symbol[ i ]->symbol, security_symbol[ i ]->security_name );
 
         gtk_list_store_append( store, &iter );
         /* Completion is going to match off of columns 0 and 1, but display column 2 */
         /* Completion matches based off of the symbol or the company name, inserts the symbol, displays both */
         gtk_list_store_set( store, &iter, 0, security_symbol[ i ]->symbol, 1, security_symbol[ i ]->security_name, 2, item, -1 );
+        free( item );
     }
 
     free( Nasdaq_Struct.memory );
