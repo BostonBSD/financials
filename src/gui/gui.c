@@ -703,12 +703,14 @@ int ViewRSICompletionSet (){
     /* The text column to display is column 1 */
     gtk_entry_completion_set_text_column( completion, 1 );
     gtk_entry_completion_set_inline_completion ( completion, FALSE );
-    gtk_entry_completion_set_inline_selection ( completion, FALSE );
+    gtk_entry_completion_set_inline_selection ( completion, TRUE );
     gtk_entry_completion_set_popup_completion( completion, TRUE );
     /* The text column to insert is column 0
        We use a callback on the match-selected signal and insert the text from column 0 instead of column 1
+       We use a callback on the cursor-on-match signal and insert the text from column 0 instead of column 1
     */
-    g_signal_connect ( G_OBJECT( completion ), "match-selected", G_CALLBACK ( GUICallbackHandler_comp ), NULL );
+    g_signal_connect ( G_OBJECT( completion ), "match-selected", G_CALLBACK ( GUICallbackHandler_select_comp ), NULL );
+    g_signal_connect ( G_OBJECT( completion ), "cursor-on-match", G_CALLBACK ( GUICallbackHandler_cursor_comp ), NULL );
 
     return 0;
 }

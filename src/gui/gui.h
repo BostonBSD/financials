@@ -201,7 +201,8 @@ void symbol_security_name_map_destruct ();
 void AddRemoveSecuritySwitch (GtkSwitch*,bool,void*);
 void GUICallbackHandler (GtkWidget*,void*);
 gboolean CallbackHandler_alt (GtkWidget*);
-gboolean GUICallbackHandler_comp (GtkEntryCompletion*,GtkTreeModel*,GtkTreeIter*);
+gboolean GUICallbackHandler_select_comp (GtkEntryCompletion*,GtkTreeModel*,GtkTreeIter*);
+gboolean GUICallbackHandler_cursor_comp (GtkEntryCompletion*,GtkTreeModel*,GtkTreeIter*);
 
 /* GUI Thread Handler Function */
 void *GUIThreadHandler(void*);
