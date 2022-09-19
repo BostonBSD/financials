@@ -147,6 +147,7 @@ typedef struct {
 
     char* home_dir_ch;                      /* Path to the user's home directory */
     char* sqlite_db_path_ch;                /* Path to the sqlite db file */
+    char* local_tz_ch;                      /* The local timezone variable */
 
     bool* fetching_data_bool;               /* Indicates a fetch operation in progress. */
     bool* holiday_bool;                     /* Indicates if today is a holiday. */

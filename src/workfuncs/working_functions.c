@@ -387,15 +387,13 @@ struct tm NYTimeComponents(){
     time( &currenttime );
 
     /* Get the localtime in NY from Epoch seconds */
-    /* From the getenv() man page: The application should not modify the string pointed to
-       by the getenv() function.  So we do not free this string. */
-    char *tz_var = getenv( "TZ" );
+
     setenv("TZ", "America/New_York", 1);
     tzset();
     localtime_r( &currenttime, &NY_tz );
 
     /* Reset the TZ env variable. */
-    tz_var ? setenv("TZ", tz_var, 1) : unsetenv( "TZ" );
+    MetaData->local_tz_ch ? setenv("TZ", MetaData->local_tz_ch, 1) : unsetenv( "TZ" );
     tzset();
 
     return NY_tz;
@@ -406,6 +404,10 @@ unsigned int ClockSleepSeconds (){
     struct tm Local_tz;
 
     time( &currenttime );
+
+    /* Ensure the local timezone is set */
+    MetaData->local_tz_ch ? setenv("TZ", MetaData->local_tz_ch, 1) : unsetenv( "TZ" );
+    tzset();
     localtime_r( &currenttime, &Local_tz );
     return ( 60 - Local_tz.tm_sec );
 }
@@ -484,6 +486,10 @@ void LocalAndNYTime (int *h, int *m, int *month, int *day_month, int *day_week, 
     time( &currenttime );
 
     /* Get the localtime and NY time from Epoch seconds */
+
+    /* Ensure the local timezone is set */
+    MetaData->local_tz_ch ? setenv("TZ", MetaData->local_tz_ch, 1) : unsetenv( "TZ" );
+    tzset();
     localtime_r( &currenttime, &Local_NY_tz );
 
     *h = (Local_NY_tz.tm_hour)%24;
@@ -641,7 +647,7 @@ unsigned int SecondsToOpen () {
        are still in the NY timezone.  NYTimeComponents()
        resets the timezone back to the local timezone.
     */
-    char *tz_var = getenv( "TZ" );
+
     setenv("TZ", "America/New_York", 1);
     tzset();
     localtime_r( &currenttime, &NY_tz );
@@ -657,7 +663,7 @@ unsigned int SecondsToOpen () {
 
     if( ( hour > hour_open_NY || ( hour == hour_open_NY && min >= 30 ) ) && hour < hour_closed_NY && weekday != 0 && weekday != 6 ){
         /* Reset the TZ env variable. */
-        tz_var ? setenv("TZ", tz_var, 1) : unsetenv( "TZ" );
+        MetaData->local_tz_ch ? setenv("TZ", MetaData->local_tz_ch, 1) : unsetenv( "TZ" );
         tzset();
 
         /* The market is open. */
@@ -693,7 +699,7 @@ unsigned int SecondsToOpen () {
     futuretime = mktime( &NY_tz );
 
     /* Reset the TZ env variable. */
-    tz_var ? setenv("TZ", tz_var, 1) : unsetenv( "TZ" );
+    MetaData->local_tz_ch ? setenv("TZ", MetaData->local_tz_ch, 1) : unsetenv( "TZ" );
     tzset();
     
     /* The market is closed, reopens in this many seconds. */

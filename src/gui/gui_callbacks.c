@@ -94,12 +94,13 @@ gboolean GUICallbackHandler_select_comp (GtkEntryCompletion *completion, GtkTree
     assert ( completion );
     GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ViewRSISymbolEntryBox") );
     gchar *item;
-    /* when a match is selected insert column zero instead of column 1 */
+    /* when a match is selected insert column zero instead of column 2 */
     gtk_tree_model_get ( model, iter, 0, &item, -1 );
     gtk_entry_set_text (GTK_ENTRY( EntryBox ), item );
     int pos = strlen( item );
     free( item );
 
+    /* move the cursor to the end of the string */
     gtk_editable_set_position (GTK_EDITABLE( EntryBox ), pos );
     return true;
 }
@@ -110,12 +111,13 @@ gboolean GUICallbackHandler_cursor_comp (GtkEntryCompletion *completion, GtkTree
     assert ( completion );
     GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ViewRSISymbolEntryBox") );
     gchar *item;
-    /* when a match is highlighted insert column zero instead of column 1 */
+    /* when a match is highlighted insert column zero instead of column 2 */
     gtk_tree_model_get ( model, iter, 0, &item, -1 );
     gtk_entry_set_text (GTK_ENTRY( EntryBox ), item );
     int pos = strlen( item );
     free( item );
 
+    /* move the cursor to the end of the string */
     gtk_editable_set_position (GTK_EDITABLE( EntryBox ), pos );
     return true;
 }

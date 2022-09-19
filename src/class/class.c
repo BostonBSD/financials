@@ -297,6 +297,13 @@ meta* class_init_meta_data ()
     new_class->sqlite_db_path_ch = (char*) malloc( len );
     snprintf(new_class->sqlite_db_path_ch, len, "%s%s", pw->pw_dir, DB_FILE);
 
+    /* Get the local timezone variable for the process */
+
+    /* From the getenv() man page: The application should not modify the string pointed to
+       by the getenv() function.  So we do not free this string. */
+    char *tz_var = getenv( "TZ" );
+    tz_var ? (new_class->local_tz_ch = strdup( tz_var ) ) : ( new_class->local_tz_ch = NULL);
+
     /* Connect Function Pointers To Function Definitions */
     new_class->EntireStake = EntirePortfolio;
     new_class->BullionStake = BullionPortfolio;
@@ -483,6 +490,7 @@ void class_destruct_meta_data (meta* meta_class)
 
     if ( meta_class->home_dir_ch ) free( meta_class->home_dir_ch );
     if ( meta_class->sqlite_db_path_ch ) free( meta_class->sqlite_db_path_ch );
+    if ( meta_class->local_tz_ch ) free ( meta_class->local_tz_ch );
 
     if ( meta_class->fetching_data_bool ) free( meta_class->fetching_data_bool );
     if ( meta_class->holiday_bool ) free( meta_class->holiday_bool );
