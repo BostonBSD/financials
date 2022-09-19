@@ -10,7 +10,7 @@ glib-compile-resources --generate-source resources.xml
 The glade file isn't necessary to compile, but it would be rather 
 difficult for anyone to alter the appearance without it here.
 
-"/financials.glade" is the reference to the UI resource in the 
+"/financials.glade" [in gui.c] is the reference to the UI resource in the 
 GResources namespace, but is not a reference to a file, only the 
 GUI description which is defined in a binary format within resources.c
 
