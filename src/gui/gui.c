@@ -687,21 +687,16 @@ GtkListStore *CompletionSymbolFetch ()
     /* Sort the security symbol array, this merges both lists into one sorted list. */
     qsort( &security_symbol[ 0 ], symbolcount, sizeof(symbol_to_security_name_container*), AlphaAscSecName );
 
-    //char item[35];
-    char *item;
-    size_t len;
+    char item[35];
     /* Populate the GtkListStore with the string of stock symbols in column 0, stock names in column 1, 
        and symbols & names in column 2. */
     for ( int i=0; i<symbolcount; i++ ){
-        len = strlen ( security_symbol[ i ]->symbol ) + strlen ( security_symbol[ i ]->security_name ) + 4;
-        item = malloc ( len );
-        snprintf(item, len, "%s - %s", security_symbol[ i ]->symbol, security_symbol[ i ]->security_name );
+        snprintf(item, 35, "%s - %s", security_symbol[ i ]->symbol, security_symbol[ i ]->security_name );
 
         gtk_list_store_append( store, &iter );
         /* Completion is going to match off of columns 0 and 1, but display column 2 */
         /* Completion matches based off of the symbol or the company name, inserts the symbol, displays both */
         gtk_list_store_set( store, &iter, 0, security_symbol[ i ]->symbol, 1, security_symbol[ i ]->security_name, 2, item, -1 );
-        free( item );
     }
 
     free( Nasdaq_Struct.memory );
