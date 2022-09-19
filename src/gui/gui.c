@@ -540,26 +540,33 @@ void symbol_security_name_map_destruct () {
 
 gboolean ViewRSICompletionMatchFunc( GtkEntryCompletion *completion, const gchar *key, GtkTreeIter *iter ) {
     GtkTreeModel *model = gtk_entry_completion_get_model ( completion );
-    gchar *item;
-    /* We are finding matches based off of column 0, however, 
-       we display column 1 in our 2 column model */
-    gtk_tree_model_get ( model, iter, 0, &item, -1 );
-    gboolean ans = false;
+    gchar *item_symb, *item_name;
+    /* We are finding matches based off of column 0 and 1, however, 
+       we display column 2 in our 3 column model */
+    gtk_tree_model_get ( model, iter, 0, &item_symb, -1 );
+    gtk_tree_model_get ( model, iter, 1, &item_name, -1 );
+    gboolean ans = false, symbol_match = false, name_match = false;
 
     int N = 0;
     while( key[ N ] ){
-        ans = ( tolower( key [ N ] ) == tolower( item [ N ] ) );
+        symbol_match = ( tolower( key [ N ] ) == tolower( item_symb [ N ] ) );
+        name_match = ( tolower( key [ N ] ) == tolower( item_name [ N ] ) );
+
+        /* if either the symbol or the name match the key value, return true. */
+        ans = symbol_match || name_match;
+
         if( ans == false ) break;
-       N++;
+        N++;
     }
-    g_free( item );
+    g_free( item_symb );
+    g_free( item_name );
     return ans;
 }
 
 GtkListStore *CompletionSymbolFetch ()
 /* This function is only meant to be run once, at application startup. */
 {
-    GtkListStore *store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
+    GtkListStore *store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
     char *tofree;
     GtkTreeIter iter;
 
@@ -677,14 +684,17 @@ GtkListStore *CompletionSymbolFetch ()
 
     /* Sort the security symbol array, this merges both lists into one sorted list. */
     qsort( &security_symbol[ 0 ], symbolcount, sizeof(symbol_to_security_name_container*), AlphaAscSecName );
+
     char item[30];
-    /* Populate the GtkListStore with the string of stock symbols. */
+    /* Populate the GtkListStore with the string of stock symbols in column 0, stock names in column 1, 
+       and symbols & names in column 2. */
     for ( int i=0; i<symbolcount; i++ ){
-        snprintf(item, 30, "%s\t%s", security_symbol[ i ]->symbol, security_symbol[ i ]->security_name );
+        snprintf(item, 30, "%s - %s", security_symbol[ i ]->symbol, security_symbol[ i ]->security_name );
 
         gtk_list_store_append( store, &iter );
-        /* Completion is going to match off of column 0, but display column 1 */
-        gtk_list_store_set( store, &iter, 0, security_symbol[ i ]->symbol, 1, item, -1 );
+        /* Completion is going to match off of columns 0 and 1, but display column 2 */
+        /* Completion matches based off of the symbol or the company name, inserts the symbol, displays both */
+        gtk_list_store_set( store, &iter, 0, security_symbol[ i ]->symbol, 1, security_symbol[ i ]->security_name, 2, item, -1 );
     }
 
     free( Nasdaq_Struct.memory );
@@ -700,14 +710,17 @@ int ViewRSICompletionSet (){
     gtk_entry_completion_set_model(completion, GTK_TREE_MODEL( store ));
     gtk_entry_completion_set_match_func(completion, (GtkEntryCompletionMatchFunc)ViewRSICompletionMatchFunc, NULL, NULL);
     gtk_entry_set_completion( GTK_ENTRY( EntryBox ), completion );
-    /* The text column to display is column 1 */
-    gtk_entry_completion_set_text_column( completion, 1 );
+    /* The text column to display is column 2 */
+    gtk_entry_completion_set_text_column( completion, 2 );
     gtk_entry_completion_set_inline_completion ( completion, FALSE );
     gtk_entry_completion_set_inline_selection ( completion, TRUE );
-    gtk_entry_completion_set_popup_completion( completion, TRUE );
+    gtk_entry_completion_set_popup_completion ( completion, TRUE );
+    /* Must type at least two characters for completion to make suggestions,
+       reduces the number of results for single character keys. */
+    gtk_entry_completion_set_minimum_key_length ( completion, 2 );
     /* The text column to insert is column 0
-       We use a callback on the match-selected signal and insert the text from column 0 instead of column 1
-       We use a callback on the cursor-on-match signal and insert the text from column 0 instead of column 1
+       We use a callback on the match-selected signal and insert the text from column 0 instead of column 2
+       We use a callback on the cursor-on-match signal and insert the text from column 0 instead of column 2
     */
     g_signal_connect ( G_OBJECT( completion ), "match-selected", G_CALLBACK ( GUICallbackHandler_select_comp ), NULL );
     g_signal_connect ( G_OBJECT( completion ), "cursor-on-match", G_CALLBACK ( GUICallbackHandler_cursor_comp ), NULL );
