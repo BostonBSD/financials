@@ -154,6 +154,7 @@
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="orientation">vertical</property>
+        <property name="spacing">10</property>
         <property name="baseline-position">top</property>
         <child>
           <!-- n-columns=3 n-rows=1 -->
@@ -193,6 +194,7 @@
             <property name="can-focus">False</property>
             <property name="hexpand">True</property>
             <property name="vexpand">True</property>
+            <property name="row-spacing">10</property>
             <property name="column-homogeneous">True</property>
             <child>
               <object class="GtkLabel">
@@ -306,26 +308,9 @@
           <object class="GtkGrid">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="row-spacing">14</property>
             <property name="row-homogeneous">True</property>
             <property name="column-homogeneous">True</property>
-            <child>
-              <object class="GtkButton" id="AddRemoveBullionOKBTN">
-                <property name="label" translatable="yes">OK</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="can-default">True</property>
-                <property name="has-default">True</property>
-                <property name="receives-default">True</property>
-                <property name="tooltip-text" translatable="yes">Commit Changes</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
-                <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-              </object>
-              <packing>
-                <property name="left-attach">2</property>
-                <property name="top-attach">2</property>
-              </packing>
-            </child>
             <child>
               <object class="GtkButton" id="AddRemoveBullionCancelBTN">
                 <property name="label" translatable="yes">Cancel</property>
@@ -341,7 +326,25 @@
               </object>
               <packing>
                 <property name="left-attach">0</property>
-                <property name="top-attach">2</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="AddRemoveBullionOKBTN">
+                <property name="label" translatable="yes">OK</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="can-default">True</property>
+                <property name="has-default">True</property>
+                <property name="receives-default">True</property>
+                <property name="tooltip-text" translatable="yes">Commit Changes</property>
+                <property name="halign">center</property>
+                <property name="valign">center</property>
+                <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+              </object>
+              <packing>
+                <property name="left-attach">2</property>
+                <property name="top-attach">1</property>
               </packing>
             </child>
             <child>
@@ -367,8 +370,9 @@
             </child>
           </object>
           <packing>
-            <property name="expand">False</property>
+            <property name="expand">True</property>
             <property name="fill">True</property>
+            <property name="padding">5</property>
             <property name="position">2</property>
           </packing>
         </child>
@@ -866,7 +870,6 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="margin-bottom">3</property>
-                    <property name="label" translatable="yes">Current Financial Summary</property>
                     <property name="justify">center</property>
                     <attributes>
                       <attribute name="weight" value="medium"/>
@@ -1146,6 +1149,7 @@
               <object class="GtkGrid">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="row-spacing">10</property>
                 <child>
                   <!-- n-columns=3 n-rows=2 -->
                   <object class="GtkGrid">
@@ -1258,41 +1262,11 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel">
-                    <property name="height-request">5</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="margin-bottom">3</property>
-                    <property name="label" translatable="yes">View RSI Data</property>
-                    <property name="justify">center</property>
-                    <attributes>
-                      <attribute name="weight" value="medium"/>
-                      <attribute name="scale" value="1"/>
-                      <attribute name="underline" value="True"/>
-                    </attributes>
-                  </object>
-                  <packing>
-                    <property name="left-attach">0</property>
-                    <property name="top-attach">1</property>
-                  </packing>
-                </child>
-                <child>
                   <!-- n-columns=3 n-rows=3 -->
                   <object class="GtkGrid">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="column-homogeneous">True</property>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">RSI Data Provided by Yahoo! Finance</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">1</property>
-                        <property name="top-attach">1</property>
-                      </packing>
-                    </child>
                     <child>
                       <object class="GtkLabel" id="ViewRSIStockSymbolLabel">
                         <property name="visible">True</property>
@@ -1306,8 +1280,11 @@
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
-                        <property name="top-attach">2</property>
+                        <property name="top-attach">1</property>
                       </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
                     </child>
                     <child>
                       <placeholder/>
@@ -1334,6 +1311,17 @@
                   <packing>
                     <property name="left-attach">0</property>
                     <property name="top-attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">RSI Data Provided by Yahoo! Finance</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">1</property>
                   </packing>
                 </child>
                 <child>
@@ -1402,12 +1390,13 @@ Information</property>
           </packing>
         </child>
         <child>
-          <!-- n-columns=1 n-rows=8 -->
+          <!-- n-columns=1 n-rows=4 -->
           <object class="GtkGrid">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="hexpand">True</property>
             <property name="vexpand">True</property>
+            <property name="row-spacing">3</property>
             <property name="row-homogeneous">True</property>
             <property name="column-homogeneous">True</property>
             <child>
@@ -1419,19 +1408,7 @@ Information</property>
               </object>
               <packing>
                 <property name="left-attach">0</property>
-                <property name="top-attach">4</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">URL Key</property>
-                <property name="justify">center</property>
-              </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">6</property>
+                <property name="top-attach">0</property>
               </packing>
             </child>
             <child>
@@ -1448,7 +1425,19 @@ Information</property>
               </object>
               <packing>
                 <property name="left-attach">0</property>
-                <property name="top-attach">5</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">URL Key</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">2</property>
               </packing>
             </child>
             <child>
@@ -1465,20 +1454,8 @@ Information</property>
               </object>
               <packing>
                 <property name="left-attach">0</property>
-                <property name="top-attach">7</property>
+                <property name="top-attach">3</property>
               </packing>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
             </child>
           </object>
           <packing>

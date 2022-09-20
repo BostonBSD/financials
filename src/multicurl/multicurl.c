@@ -91,7 +91,7 @@ void *SetUpCurlHandle(CURLM *mh, char *url, MemType *output)
         curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, write_callback);
         /* Send the address of the data struct to callback func. */
         curl_easy_setopt(hnd, CURLOPT_WRITEDATA, (void *)output);
-        /* Timeout after 1 seconds. */
+        /* Timeout after 1 second. */
         curl_easy_setopt(hnd, CURLOPT_CONNECTTIMEOUT, 1);
         //curl_easy_setopt(hnd, CURLOPT_VERBOSE, 1);
 
@@ -121,7 +121,8 @@ CURLM *SetUpMultiCurlHandle(){
 }
 
 int PerformMultiCurl(CURLM * mh, double size)
-/* Take in a multi handle pointer, request data from remote server asynchronously. */
+/* Take in a multi handle pointer, request data from remote server asynchronously. 
+   Update the main window progress bar during transfer. */
 {
     CURLMsg *msg=NULL;
     CURL *hnd = NULL;
@@ -158,7 +159,8 @@ int PerformMultiCurl(CURLM * mh, double size)
     fraction = 0.0f;
     UpDateProgressBarGUI ( &fraction );
     
-    /* This portion of the code will clean up and remove the handles from memory, you could change this to make them more persistent */
+    /* This portion of the code will clean up and remove the handles from memory, 
+       you could change this to make them more persistent */
     while ((msg = curl_multi_info_read(mh, &msgs_left))) {
         if (msg->msg == CURLMSG_DONE) {
             hnd = msg->easy_handle;
@@ -184,7 +186,8 @@ int PerformMultiCurl(CURLM * mh, double size)
 }
 
 int PerformMultiCurl_no_prog(CURLM * mh)
-/* Take in a multi handle pointer, request data from remote server asynchronously. */
+/* Take in a multi handle pointer, request data from remote server asynchronously. 
+   Doesn't update any gui widgets during transfer.*/
 {
     CURLMsg *msg=NULL;
     CURL *hnd = NULL;
@@ -212,7 +215,8 @@ int PerformMultiCurl_no_prog(CURLM * mh)
         /* if there are still transfers, loop! */
     } while(still_running);
     
-    /* This portion of the code will clean up and remove the handles from memory, you could change this to make them more persistent */
+    /* This portion of the code will clean up and remove the handles from memory, 
+       you could change this to make them more persistent */
     while ((msg = curl_multi_info_read(mh, &msgs_left))) {
         if (msg->msg == CURLMSG_DONE) {
             hnd = msg->easy_handle;

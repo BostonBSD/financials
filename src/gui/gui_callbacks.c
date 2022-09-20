@@ -43,8 +43,8 @@ function, which takes two parameters. */
     /* The Gtk3.0 callback function prototype includes a state and 
        widget parameter, which we do not use, the following two 
        statements prevent a compiler warning/error. */
-    if( !( gtk_widget_get_sensitive ( GTK_WIDGET ( widget ) ) ) ) return;
-    if ( state != false && state != true ) return;
+    if( !( widget ) ) return;
+    if ( state == false && state == true ) return;
 
     /* Initiate a thread */
         
@@ -63,7 +63,7 @@ void GUICallbackHandler ( GtkWidget *widget, void *data )
     /* The Gtk3.0 callback function prototype includes a widget parameter, 
        which we do not use, the following statement prevents a compiler 
        warning/error. */
-    if( !( gtk_widget_get_sensitive ( widget ) ) ) return;    
+    if( !( widget ) ) return; 
     
     pthread_t thread_id;
     /* Create a thread, pass the func and widget signal to it. */
@@ -91,11 +91,14 @@ gboolean CallbackHandler_alt ( GtkWidget *window )
 gboolean GUICallbackHandler_select_comp (GtkEntryCompletion *completion, GtkTreeModel *model, GtkTreeIter *iter )
 /* activated when an item is selected from the completion list */
 {
-    assert ( completion );
+    if( !( completion ) ) return true;
     GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ViewRSISymbolEntryBox") );
     gchar *item;
     /* when a match is selected insert column zero instead of column 2 */
     gtk_tree_model_get ( model, iter, 0, &item, -1 );
+    /* This function is already blocking the gtk main loop, it's ok 
+       to change widgets here without using a "gdk_threads_add_idle" wrapper
+       function. */
     gtk_entry_set_text (GTK_ENTRY( EntryBox ), item );
     int pos = strlen( item );
     free( item );
@@ -108,11 +111,14 @@ gboolean GUICallbackHandler_select_comp (GtkEntryCompletion *completion, GtkTree
 gboolean GUICallbackHandler_cursor_comp (GtkEntryCompletion *completion, GtkTreeModel *model, GtkTreeIter *iter )
 /* activated when an item is highlighted from the completion list */
 {
-    assert ( completion );
+    if( !( completion ) ) return true;
     GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ViewRSISymbolEntryBox") );
     gchar *item;
     /* when a match is highlighted insert column zero instead of column 2 */
     gtk_tree_model_get ( model, iter, 0, &item, -1 );
+    /* This function is already blocking the gtk main loop, it's ok 
+       to change widgets here without using a "gdk_threads_add_idle" wrapper
+       function. */
     gtk_entry_set_text (GTK_ENTRY( EntryBox ), item );
     int pos = strlen( item );
     free( item );

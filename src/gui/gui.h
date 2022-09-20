@@ -160,9 +160,10 @@ typedef enum {
 
 /* Global Variables */
 extern GtkBuilder *builder;                                 /* The Gtk builder object */
-extern main_window_data MainWindowStruct;
+extern main_window_data MainWindowStruct;                   /* A struct that hold the size and position of 
+                                                               the main window. */
 extern symbol_to_security_name_container **security_symbol; /* A mapping between sec symbols and sec names */
-extern int symbolcount;
+extern int symbolcount;                                     /* The number of symbols in the mapping. */
 
 /* Working Functions */
 void SetUpGUI ();
