@@ -762,126 +762,10 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <child>
-              <!-- n-columns=1 n-rows=5 -->
+              <!-- n-columns=1 n-rows=4 -->
               <object class="GtkGrid">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <child>
-                  <!-- n-columns=3 n-rows=2 -->
-                  <object class="GtkGrid">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="row-homogeneous">True</property>
-                    <property name="column-homogeneous">True</property>
-                    <child>
-                      <object class="GtkButton" id="QuitBTN">
-                        <property name="label" translatable="yes">Quit</property>
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
-                        <property name="tooltip-text" translatable="yes">Quit this application.</property>
-                        <property name="halign">center</property>
-                        <property name="valign">end</property>
-                        <property name="margin-bottom">20</property>
-                        <accelerator key="q" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-                      </object>
-                      <packing>
-                        <property name="left-attach">2</property>
-                        <property name="top-attach">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="FetchDataBTN">
-                        <property name="label" translatable="yes">Fetch Data</property>
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
-                        <property name="tooltip-text" translatable="yes">Fetch data from the finnhub.io server.</property>
-                        <property name="halign">center</property>
-                        <property name="valign">end</property>
-                        <property name="margin-bottom">20</property>
-                        <accelerator key="f" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-                      </object>
-                      <packing>
-                        <property name="left-attach">0</property>
-                        <property name="top-attach">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkProgressBar" id="ProgressBar">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="pulse-step">0.20</property>
-                        <property name="text" translatable="yes">Not Connected</property>
-                        <property name="show-text">True</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">1</property>
-                        <property name="top-attach">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="left-attach">0</property>
-                    <property name="top-attach">4</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkScrolledWindow">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="hexpand">True</property>
-                    <property name="vexpand">True</property>
-                    <property name="shadow-type">in</property>
-                    <property name="min-content-height">10</property>
-                    <property name="propagate-natural-height">True</property>
-                    <child>
-                      <object class="GtkTreeView" id="TreeView">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="reorderable">True</property>
-                        <property name="hover-selection">True</property>
-                        <property name="enable-grid-lines">both</property>
-                        <property name="enable-tree-lines">True</property>
-                        <property name="activate-on-single-click">True</property>
-                        <child internal-child="selection">
-                          <object class="GtkTreeSelection"/>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="left-attach">0</property>
-                    <property name="top-attach">3</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="height-request">5</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="margin-bottom">3</property>
-                    <property name="justify">center</property>
-                    <attributes>
-                      <attribute name="weight" value="medium"/>
-                      <attribute name="scale" value="1"/>
-                      <attribute name="underline" value="True"/>
-                    </attributes>
-                  </object>
-                  <packing>
-                    <property name="left-attach">0</property>
-                    <property name="top-attach">1</property>
-                  </packing>
-                </child>
                 <child>
                   <object class="GtkMenuBar">
                     <property name="visible">True</property>
@@ -987,6 +871,8 @@
                   <object class="GtkGrid">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
+                    <property name="margin-top">20</property>
+                    <property name="margin-bottom">5</property>
                     <property name="column-homogeneous">True</property>
                     <child>
                       <object class="GtkLabel" id="MarketCloseLabel">
@@ -1120,7 +1006,105 @@
                   </object>
                   <packing>
                     <property name="left-attach">0</property>
+                    <property name="top-attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkScrolledWindow">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="hexpand">True</property>
+                    <property name="vexpand">True</property>
+                    <property name="shadow-type">in</property>
+                    <property name="min-content-height">10</property>
+                    <property name="propagate-natural-height">True</property>
+                    <child>
+                      <object class="GtkTreeView" id="TreeView">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="reorderable">True</property>
+                        <property name="hover-selection">True</property>
+                        <property name="enable-grid-lines">both</property>
+                        <property name="enable-tree-lines">True</property>
+                        <property name="activate-on-single-click">True</property>
+                        <child internal-child="selection">
+                          <object class="GtkTreeSelection"/>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="left-attach">0</property>
                     <property name="top-attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <!-- n-columns=3 n-rows=2 -->
+                  <object class="GtkGrid">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="row-homogeneous">True</property>
+                    <property name="column-homogeneous">True</property>
+                    <child>
+                      <object class="GtkButton" id="QuitBTN">
+                        <property name="label" translatable="yes">Quit</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="tooltip-text" translatable="yes">Quit this application.</property>
+                        <property name="halign">center</property>
+                        <property name="valign">end</property>
+                        <property name="margin-bottom">20</property>
+                        <accelerator key="q" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                      </object>
+                      <packing>
+                        <property name="left-attach">2</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="FetchDataBTN">
+                        <property name="label" translatable="yes">Fetch Data</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="tooltip-text" translatable="yes">Fetch data from the finnhub.io server.</property>
+                        <property name="halign">center</property>
+                        <property name="valign">end</property>
+                        <property name="margin-bottom">20</property>
+                        <accelerator key="f" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                      </object>
+                      <packing>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkProgressBar" id="ProgressBar">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="pulse-step">0.20</property>
+                        <property name="text" translatable="yes">Not Connected</property>
+                        <property name="show-text">True</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">1</property>
+                        <property name="top-attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">3</property>
                   </packing>
                 </child>
               </object>
@@ -1145,11 +1129,106 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <child>
-              <!-- n-columns=1 n-rows=5 -->
+              <!-- n-columns=1 n-rows=4 -->
               <object class="GtkGrid">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="row-spacing">10</property>
+                <property name="margin-top">10</property>
+                <property name="row-spacing">5</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">RSI Data Provided by Yahoo! Finance</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <!-- n-columns=3 n-rows=3 -->
+                  <object class="GtkGrid">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="margin-top">5</property>
+                    <property name="margin-bottom">5</property>
+                    <property name="column-homogeneous">True</property>
+                    <child>
+                      <object class="GtkLabel" id="ViewRSIStockSymbolLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <attributes>
+                          <attribute name="font-desc" value="Oxygen Mono 10"/>
+                          <attribute name="weight" value="bold"/>
+                          <attribute name="stretch" value="semi-expanded"/>
+                          <attribute name="foreground" value="#09023610962f"/>
+                        </attributes>
+                      </object>
+                      <packing>
+                        <property name="left-attach">1</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkScrolledWindow">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="hexpand">True</property>
+                    <property name="vexpand">True</property>
+                    <property name="shadow-type">in</property>
+                    <property name="min-content-height">10</property>
+                    <property name="propagate-natural-height">True</property>
+                    <child>
+                      <object class="GtkTreeView" id="ViewRSITreeView">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="reorderable">True</property>
+                        <property name="hover-selection">True</property>
+                        <property name="enable-grid-lines">both</property>
+                        <property name="enable-tree-lines">True</property>
+                        <property name="activate-on-single-click">True</property>
+                        <child internal-child="selection">
+                          <object class="GtkTreeSelection"/>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">2</property>
+                  </packing>
+                </child>
                 <child>
                   <!-- n-columns=3 n-rows=2 -->
                   <object class="GtkGrid">
@@ -1179,7 +1258,6 @@
                         <property name="label" translatable="yes">Fetch Data</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
-                        <property name="has-focus">True</property>
                         <property name="can-default">True</property>
                         <property name="has-default">True</property>
                         <property name="receives-default">True</property>
@@ -1229,103 +1307,8 @@
                   </object>
                   <packing>
                     <property name="left-attach">0</property>
-                    <property name="top-attach">4</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkScrolledWindow">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="hexpand">True</property>
-                    <property name="vexpand">True</property>
-                    <property name="shadow-type">in</property>
-                    <property name="min-content-height">10</property>
-                    <property name="propagate-natural-height">True</property>
-                    <child>
-                      <object class="GtkTreeView" id="ViewRSITreeView">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="reorderable">True</property>
-                        <property name="hover-selection">True</property>
-                        <property name="enable-grid-lines">both</property>
-                        <property name="enable-tree-lines">True</property>
-                        <property name="activate-on-single-click">True</property>
-                        <child internal-child="selection">
-                          <object class="GtkTreeSelection"/>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="left-attach">0</property>
                     <property name="top-attach">3</property>
                   </packing>
-                </child>
-                <child>
-                  <!-- n-columns=3 n-rows=3 -->
-                  <object class="GtkGrid">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="column-homogeneous">True</property>
-                    <child>
-                      <object class="GtkLabel" id="ViewRSIStockSymbolLabel">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Oxygen Mono 10"/>
-                          <attribute name="weight" value="ultraheavy"/>
-                          <attribute name="stretch" value="semi-expanded"/>
-                          <attribute name="foreground" value="#09023610962f"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="left-attach">1</property>
-                        <property name="top-attach">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="left-attach">0</property>
-                    <property name="top-attach">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">RSI Data Provided by Yahoo! Finance</property>
-                  </object>
-                  <packing>
-                    <property name="left-attach">0</property>
-                    <property name="top-attach">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <placeholder/>
                 </child>
               </object>
             </child>
