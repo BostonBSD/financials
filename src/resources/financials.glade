@@ -16,6 +16,8 @@
       <object class="GtkBox">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
+        <property name="margin-start">5</property>
+        <property name="margin-end">5</property>
         <property name="margin-top">10</property>
         <property name="margin-bottom">10</property>
         <property name="orientation">vertical</property>
@@ -503,6 +505,7 @@
       <object class="GtkGrid">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
+        <property name="margin-end">20</property>
         <property name="row-homogeneous">True</property>
         <property name="column-homogeneous">True</property>
         <child>
@@ -514,9 +517,10 @@
             <property name="tooltip-text" translatable="yes">Cancel Changes</property>
             <property name="halign">center</property>
             <property name="valign">center</property>
+            <property name="margin-top">5</property>
             <property name="margin-bottom">20</property>
-            <accelerator key="c" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
             <accelerator key="c" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+            <accelerator key="c" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
           </object>
           <packing>
             <property name="left-attach">0</property>
@@ -580,6 +584,8 @@
             <property name="tooltip-text" translatable="yes">Select a table.</property>
             <property name="halign">center</property>
             <property name="valign">center</property>
+            <property name="margin-start">10</property>
+            <property name="margin-end">10</property>
             <property name="active">0</property>
             <property name="button-sensitivity">off</property>
             <items>
@@ -600,9 +606,10 @@
             <property name="tooltip-text" translatable="yes">Commit Changes</property>
             <property name="halign">center</property>
             <property name="valign">end</property>
+            <property name="margin-top">5</property>
             <property name="margin-bottom">20</property>
-            <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
             <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+            <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
           </object>
           <packing>
             <property name="left-attach">2</property>
@@ -700,7 +707,7 @@
   <object class="GtkApplicationWindow" id="MainWindow">
     <property name="visible">True</property>
     <property name="can-focus">True</property>
-    <property name="default-width">850</property>
+    <property name="default-width">875</property>
     <property name="default-height">825</property>
     <property name="icon">Stocks-icon.png</property>
     <child>
@@ -964,6 +971,8 @@
                   <object class="GtkScrolledWindow">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
+                    <property name="margin-start">10</property>
+                    <property name="margin-end">10</property>
                     <property name="hexpand">True</property>
                     <property name="vexpand">True</property>
                     <property name="shadow-type">in</property>
@@ -1067,7 +1076,7 @@
   </object>
   <object class="GtkWindow" id="ViewRSIWindow">
     <property name="can-focus">False</property>
-    <property name="default-width">875</property>
+    <property name="default-width">900</property>
     <property name="default-height">700</property>
     <property name="icon">Stocks-icon.png</property>
     <child>
@@ -1155,6 +1164,8 @@
                   <object class="GtkScrolledWindow">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
+                    <property name="margin-start">10</property>
+                    <property name="margin-end">10</property>
                     <property name="hexpand">True</property>
                     <property name="vexpand">True</property>
                     <property name="shadow-type">in</property>
@@ -1328,6 +1339,8 @@
           <object class="GtkGrid">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="margin-start">10</property>
+            <property name="margin-end">10</property>
             <property name="hexpand">True</property>
             <property name="vexpand">True</property>
             <property name="row-spacing">3</property>

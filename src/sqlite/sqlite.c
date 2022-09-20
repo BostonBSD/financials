@@ -241,7 +241,7 @@ void SqliteProcessing (equity_folder* F, metal *M, meta *D){
     if( MainWindowStruct.width == 0 || MainWindowStruct.height == 0 ){
         /* The Original Production Size, if never run before */
         MainWindowStruct.height = 850;
-        MainWindowStruct.width = 825;
+        MainWindowStruct.width = 900;
     }
 
     if( MainWindowStruct.x_pos == 0 && MainWindowStruct.y_pos == 0 ){
