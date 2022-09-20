@@ -35,7 +35,6 @@ Debian “bullseye”, and Ubuntu 22.04.
 
 Some additional features could include cryptocurrency, bullion stats, api selection 
 (inclusion of other data service providers), market indices, other metals, and RSI trendline calibration.
-The finnhub api is easier to work with than the Yahoo! api, if only because it doesn't require a timestamp, however, the yahoo api provides a richer set of data and doesn't require an account.
 
 ----------------------------------------------------------
 
