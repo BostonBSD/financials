@@ -354,6 +354,23 @@ int ShowHideAboutWindow ()
     return 0;
 }
 
+int ShowHideShortcutWindow ()
+{
+    /* get the GObject and cast as a GtkWidget */
+    GtkWidget* window = GTK_WIDGET ( gtk_builder_get_object (builder, "ShortcutWindow") );
+    gboolean visible = gtk_widget_is_visible ( window );
+
+    if ( visible ){
+        gtk_widget_set_visible ( window, false );
+    } else {
+        gtk_widget_set_visible ( window, true );
+
+        //window = GTK_WIDGET ( gtk_builder_get_object (builder, "ShortcutScrolledWindow") );
+        //gtk_scrolled_window_set_vadjustment (GTK_SCROLLED_WINDOW( window ), NULL);
+    }
+    return 0;
+}
+
 int CursorMoveAddRemoveSecurityEntryBoxGUI ()
 {
     GtkWidget* Button = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecurityOkBTN") );
@@ -710,6 +727,7 @@ int ViewRSICompletionSet (){
     GtkListStore *store = CompletionSymbolFetch ();
 
     gtk_entry_completion_set_model(completion, GTK_TREE_MODEL( store ));
+    g_object_unref( store );
     gtk_entry_completion_set_match_func(completion, (GtkEntryCompletionMatchFunc)ViewRSICompletionMatchFunc, NULL, NULL);
     gtk_entry_set_completion( GTK_ENTRY( EntryBox ), completion );
     /* The text column to display is column 2 */
@@ -1638,8 +1656,12 @@ void GUISignalConnect ()
     g_signal_connect ( button, "clicked", G_CALLBACK ( GUICallbackHandler ), (void *)FETCH_DATA_BTN );
     gtk_widget_grab_focus ( GTK_WIDGET ( button ) );
 
+    button = gtk_builder_get_object (builder, "MainMenuQuitBTN");
+    g_signal_connect ( button, "activate", G_CALLBACK ( GUICallbackHandler ), (void *)EXIT_APPLICATION );
+
     button = gtk_builder_get_object (builder, "QuitBTN");
     g_signal_connect ( button, "clicked", G_CALLBACK ( GUICallbackHandler ), (void *)EXIT_APPLICATION );
+
 
     button = gtk_builder_get_object (builder, "MainMenuAddRemoveSecurityBTN");
     g_signal_connect ( button, "activate", G_CALLBACK ( GUICallbackHandler ), (void *)ADD_REMOVE_SEC_BTN );
@@ -1674,6 +1696,16 @@ void GUISignalConnect ()
 
     button = gtk_builder_get_object (builder, "AboutOKBTN");
     g_signal_connect ( button, "clicked", G_CALLBACK ( GUICallbackHandler ), (void *)ABOUT_BTN );
+
+
+    button = gtk_builder_get_object (builder, "MainMenuShortcutBTN");
+    g_signal_connect ( button, "activate", G_CALLBACK ( GUICallbackHandler ), (void *)SHORTCUT_KEYS_BTN );
+
+    window = gtk_builder_get_object (builder, "ShortcutWindow");
+    g_signal_connect( window, "delete_event", G_CALLBACK( gtk_widget_hide_on_delete ), NULL);
+
+    button = gtk_builder_get_object (builder, "ShortcutOKBTN");
+    g_signal_connect ( button, "clicked", G_CALLBACK ( GUICallbackHandler ), (void *)SHORTCUT_KEYS_BTN );
 
 
     button = gtk_builder_get_object (builder, "MainMenuAddRemoveBullionBTN");

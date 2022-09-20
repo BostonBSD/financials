@@ -201,30 +201,6 @@
               <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Gold Premium</property>
-                <property name="justify">center</property>
-              </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">2</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Silver Ounces</property>
-                <property name="justify">center</property>
-              </object>
-              <packing>
-                <property name="left-attach">1</property>
-                <property name="top-attach">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="label" translatable="yes">Silver Premium</property>
                 <property name="justify">center</property>
               </object>
@@ -247,7 +223,32 @@
               </packing>
             </child>
             <child>
-              <object class="GtkEntry" id="AddRemoveBullionGoldPremiumEntryBox">
+              <object class="GtkEntry" id="AddRemoveBullionSilverPremiumEntryBox">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="halign">center</property>
+                <property name="valign">center</property>
+                <property name="input-purpose">alpha</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Silver Ounces</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="AddRemoveBullionSilverOuncesEntryBox">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="halign">center</property>
@@ -260,7 +261,19 @@
               </packing>
             </child>
             <child>
-              <object class="GtkEntry" id="AddRemoveBullionSilverOuncesEntryBox">
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Gold Premium</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="AddRemoveBullionGoldPremiumEntryBox">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="halign">center</property>
@@ -270,19 +283,6 @@
               <packing>
                 <property name="left-attach">1</property>
                 <property name="top-attach">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkEntry" id="AddRemoveBullionSilverPremiumEntryBox">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
-                <property name="input-purpose">alpha</property>
-              </object>
-              <packing>
-                <property name="left-attach">1</property>
-                <property name="top-attach">3</property>
               </packing>
             </child>
           </object>
@@ -740,39 +740,26 @@
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <child>
-                              <object class="GtkMenuItem" id="MainMenuAddRemoveSecurityBTN">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">Add/Remove Equity</property>
-                                <accelerator key="a" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkMenuItem" id="MainMenuAddRemoveBullionBTN">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">Change Bullion Values</property>
-                                <accelerator key="b" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkMenuItem" id="MainMenuAddRemoveCashBTN">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">Change Cash Value</property>
-                                <accelerator key="c" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-                              </object>
-                            </child>
-                            <child>
                               <object class="GtkMenuItem" id="MainMenuViewRSIBTN">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">View RSI Data</property>
+                                <property name="label" translatable="yes">_RSI</property>
+                                <property name="use-underline">True</property>
                                 <accelerator key="r" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkMenuItem" id="MainMenuQuitBTN">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">_Quit</property>
+                                <property name="use-underline">True</property>
+                                <accelerator key="q" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                               </object>
                             </child>
                           </object>
                         </child>
+                        <accelerator key="f" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                       </object>
                     </child>
                     <child>
@@ -789,12 +776,41 @@
                               <object class="GtkMenuItem" id="MainMenuChangeAPIinfoBTN">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">Edit API Info</property>
-                                <accelerator key="u" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                                <property name="label" translatable="yes">A_PI</property>
+                                <property name="use-underline">True</property>
+                                <accelerator key="p" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkMenuItem" id="MainMenuAddRemoveSecurityBTN">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">_Securities</property>
+                                <property name="use-underline">True</property>
+                                <accelerator key="s" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkMenuItem" id="MainMenuAddRemoveBullionBTN">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">_Bullion</property>
+                                <property name="use-underline">True</property>
+                                <accelerator key="b" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkMenuItem" id="MainMenuAddRemoveCashBTN">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">_Cash</property>
+                                <property name="use-underline">True</property>
+                                <accelerator key="c" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                               </object>
                             </child>
                           </object>
                         </child>
+                        <accelerator key="h" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                       </object>
                     </child>
                     <child>
@@ -808,15 +824,26 @@
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <child>
+                              <object class="GtkMenuItem" id="MainMenuShortcutBTN">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">_Keyboard Shortcuts</property>
+                                <property name="use-underline">True</property>
+                                <accelerator key="k" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                              </object>
+                            </child>
+                            <child>
                               <object class="GtkMenuItem" id="MainMenuAboutBTN">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">About</property>
-                                <accelerator key="h" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                                <property name="label" translatable="yes">_About</property>
+                                <property name="use-underline">True</property>
+                                <accelerator key="a" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                               </object>
                             </child>
                           </object>
                         </child>
+                        <accelerator key="h" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                       </object>
                     </child>
                   </object>
@@ -1016,7 +1043,6 @@
                         <property name="halign">center</property>
                         <property name="valign">end</property>
                         <property name="margin-bottom">20</property>
-                        <accelerator key="q" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                       </object>
                       <packing>
                         <property name="left-attach">2</property>
@@ -1029,11 +1055,11 @@
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
-                        <property name="tooltip-text" translatable="yes">Fetch data from the finnhub.io server.</property>
+                        <property name="tooltip-text" translatable="yes">Fetch data from Finnhub.io</property>
                         <property name="halign">center</property>
                         <property name="valign">end</property>
                         <property name="margin-bottom">20</property>
-                        <accelerator key="f" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                        <accelerator key="d" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                       </object>
                       <packing>
                         <property name="left-attach">0</property>
@@ -1071,6 +1097,132 @@
               </object>
             </child>
           </object>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkWindow" id="ShortcutWindow">
+    <property name="can-focus">False</property>
+    <property name="can-default">True</property>
+    <property name="resizable">False</property>
+    <property name="default-width">350</property>
+    <property name="default-height">600</property>
+    <property name="destroy-with-parent">True</property>
+    <property name="icon">Stocks-icon.png</property>
+    <property name="skip-taskbar-hint">True</property>
+    <property name="skip-pager-hint">True</property>
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="margin-start">5</property>
+        <property name="margin-end">5</property>
+        <property name="margin-top">10</property>
+        <property name="margin-bottom">10</property>
+        <property name="orientation">vertical</property>
+        <property name="baseline-position">top</property>
+        <child>
+          <object class="GtkScrolledWindow" id="ShortcutScrolledWindow">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="halign">center</property>
+            <property name="valign">center</property>
+            <property name="shadow-type">in</property>
+            <property name="min-content-width">200</property>
+            <property name="min-content-height">500</property>
+            <child>
+              <object class="GtkViewport">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="halign">center</property>
+                <property name="valign">center</property>
+                <property name="vexpand">True</property>
+                <property name="shadow-type">etched-in</property>
+                <child>
+                  <object class="GtkLabel" id="ShortcutLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="halign">center</property>
+                    <property name="valign">center</property>
+                    <property name="label" translatable="yes">Main Window
+-----------------------------------------------
+	RSI			&lt;ctrl&gt; r 
+	Quit		&lt;ctrl&gt; q
+
+	API			&lt;ctrl&gt; p
+	Securities	&lt;ctrl&gt; s
+	Bullion		&lt;ctrl&gt; b
+	Cash		&lt;ctrl&gt; c
+
+	Shortcut Keys	&lt;ctrl&gt; k
+	About		&lt;ctrl&gt; a
+
+	Fetch Data	&lt;ctrl&gt; d
+
+RSI Window
+-----------------------------------------------
+	Fetch Data	&lt;ctrl&gt; d
+	Close		&lt;ctrl&gt; c
+
+All other windows:
+-----------------------------------------------
+	OK			&lt;ctrl&gt; o
+	Cancel		&lt;ctrl&gt; c</property>
+                    <property name="selectable">True</property>
+                    <attributes>
+                      <attribute name="font-desc" value="Roboto 8"/>
+                    </attributes>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <!-- n-columns=3 n-rows=1 -->
+          <object class="GtkGrid">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="margin-top">10</property>
+            <property name="column-homogeneous">True</property>
+            <child>
+              <object class="GtkButton" id="ShortcutOKBTN">
+                <property name="label" translatable="yes">OK</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="can-default">True</property>
+                <property name="has-default">True</property>
+                <property name="receives-default">True</property>
+                <property name="tooltip-text" translatable="yes">Close this window</property>
+                <property name="halign">center</property>
+                <property name="valign">center</property>
+                <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
         </child>
       </object>
     </child>
@@ -1228,7 +1380,7 @@
                         <property name="halign">center</property>
                         <property name="valign">end</property>
                         <property name="margin-bottom">20</property>
-                        <accelerator key="f" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                        <accelerator key="d" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                       </object>
                       <packing>
                         <property name="left-attach">0</property>

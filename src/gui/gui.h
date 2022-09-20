@@ -150,7 +150,7 @@ typedef enum {
     VIEW_RSI_FETCH_DATA_BTN,
     VIEW_RSI_CURSOR_MOVE,
     VIEW_RSI_COMPLETION,
-    APPLICATION_WINDOW_SHOW,
+    SHORTCUT_KEYS_BTN,
     DISPLAY_TIME,
     DISPLAY_TIME_OPEN_INDICATOR,
     EXIT_APPLICATION, 
@@ -174,6 +174,7 @@ int OKSecurityAddRemoveSecurityWindow ();
 int ChangedAddRemoveSecurityComboBox ();
 int CursorMoveAddRemoveSecurityEntryBoxGUI ();
 int ShowHideAboutWindow ();
+int ShowHideShortcutWindow ();
 int ShowHideBullionWindow ();
 int OKBullionWindow ();
 int CursorMoveBullionEntryBoxGUI ();

@@ -274,6 +274,9 @@ void *GUIThreadHandler(void *data){
             //gdk_threads_add_idle( ViewRSICompletionSet, NULL );
             ViewRSICompletionSet ();
             break;
+        case SHORTCUT_KEYS_BTN:
+            gdk_threads_add_idle( ShowHideShortcutWindow, NULL );
+            break;
         case DISPLAY_TIME:
             /* The Mutexes are in the LocalAndNYTime, TimeToClose, and 
                SecondsToOpen functions to reduce synchronization overhead.
