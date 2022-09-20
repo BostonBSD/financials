@@ -364,9 +364,6 @@ int ShowHideShortcutWindow ()
         gtk_widget_set_visible ( window, false );
     } else {
         gtk_widget_set_visible ( window, true );
-
-        //window = GTK_WIDGET ( gtk_builder_get_object (builder, "ShortcutScrolledWindow") );
-        //gtk_scrolled_window_set_vadjustment (GTK_SCROLLED_WINDOW( window ), NULL);
     }
     return 0;
 }
@@ -1498,7 +1495,7 @@ gboolean view_onButtonPressed (GtkWidget *treeview, GdkEventButton *event)
                     g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onDeleteAllEquityRows ), my_data);
                     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
-                    menuitem = gtk_menu_item_new_with_label("Add/Edit Equity");
+                    menuitem = gtk_menu_item_new_with_label("Add / Edit Equity");
                     g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onAddRow ), my_data);
                     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
@@ -1516,7 +1513,7 @@ gboolean view_onButtonPressed (GtkWidget *treeview, GdkEventButton *event)
                     g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onDeleteAllEquityRows ), my_data);
                     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
-                    menuitem = gtk_menu_item_new_with_label("Add/Edit Equity");
+                    menuitem = gtk_menu_item_new_with_label("Add / Edit Equity");
                     g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onAddRow ), my_data);
                     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
