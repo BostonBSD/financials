@@ -1648,7 +1648,7 @@ static void SetKeyboardShortcuts (){
     gtk_list_store_append( store, &iter );
     gtk_list_store_set( store, &iter, 0, "OK", 1, "<Ctrl> o", -1 );
     gtk_list_store_append( store, &iter );
-    gtk_list_store_set( store, &iter, 0, "Close", 1, "<Ctrl> c", -1 );
+    gtk_list_store_set( store, &iter, 0, "Cancel", 1, "<Ctrl> c", -1 );
 
 
     /* Add the store of data to the TreeView. */
