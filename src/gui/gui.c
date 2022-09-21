@@ -371,6 +371,9 @@ int ShowHideShortcutWindow ()
     if ( visible ){
         gtk_widget_set_visible ( window, false );
     } else {
+        GtkWidget* button = GTK_WIDGET ( gtk_builder_get_object (builder, "ShortcutOKBTN") );
+        gtk_widget_grab_focus ( button );
+
         gtk_widget_set_visible ( window, true );
     }
     return 0;
