@@ -901,7 +901,8 @@ char *GetSecurityNameFromMapping(char *s)
     item = (symbol_to_security_name_container**) bsearch (s, &security_symbol[0], symbolcount, sizeof (symbol_to_security_name_container*), symsearchfunc);
 
     if ( item != NULL ){
-        /* The pointer is not freed. It points to an item in the security_symbol array and not a duplicate. */
+        /* The item pointer is not freed. It points to an item in the 
+           security_symbol array and not a duplicate. */
         return strdup( item[ 0 ]->security_name );
     } else {
         return NULL;

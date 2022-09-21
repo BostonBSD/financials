@@ -65,7 +65,7 @@ int cash_callback(void *data, int argc, char **argv, char **ColName) {
 
     meta *mdata = (meta*)data;
 
-    *mdata->cash_f = mdata->StrToDoub( argv[1] );
+    *mdata->cash_f = mdata->StrToDoub( argv[1] ? argv[1] : "0" );
     free( mdata->cash_ch );
 
     /* To make sure it's formatted correctly. */
@@ -76,6 +76,7 @@ int cash_callback(void *data, int argc, char **argv, char **ColName) {
 }
 
 int bullion_callback(void *data, int argc, char **argv, char **ColName) {
+    /* argv[0] is Id, argv[1] is Metal, argv[2] is Ounces, argv[3] is Premium */
     pthread_mutex_lock( &mutex_working[0] );
 
     if ( argc != 4 ) return 1;
@@ -87,14 +88,14 @@ int bullion_callback(void *data, int argc, char **argv, char **ColName) {
     metal *m = (metal*)data;
 
     if( strcasecmp( argv[1], "gold" ) == 0 ){
-        *m->Gold->ounce_f = m->Gold->StrToDoub ( argv[2] );
+        *m->Gold->ounce_f = m->Gold->StrToDoub ( argv[2] ? argv[2] : "0" );
 
         free( m->Gold->ounce_ch );
-        m->Gold->ounce_ch = strdup ( argv[2] );
+        m->Gold->ounce_ch = strdup ( argv[2] ? argv[2] : "0" );
         /* To make sure it's formatted correctly. */
         FormatStr( m->Gold->ounce_ch );
         
-        *m->Gold->premium_f = m->Gold->StrToDoub ( argv[3] );
+        *m->Gold->premium_f = m->Gold->StrToDoub ( argv[3] ? argv[3] : "0" );
 
         free( m->Gold->premium_ch );
         /* To make sure it's formatted correctly. */
@@ -102,14 +103,14 @@ int bullion_callback(void *data, int argc, char **argv, char **ColName) {
     }
 
     if( strcasecmp( argv[1], "silver" ) == 0 ){
-        *m->Silver->ounce_f = m->Silver->StrToDoub ( argv[2] );
+        *m->Silver->ounce_f = m->Silver->StrToDoub ( argv[2] ? argv[2] : "0" );
 
         free( m->Silver->ounce_ch );
-        m->Silver->ounce_ch = strdup ( argv[2] );
+        m->Silver->ounce_ch = strdup ( argv[2] ? argv[2] : "0" );
         /* To make sure it's formatted correctly. */
         FormatStr( m->Silver->ounce_ch );
         
-        *m->Silver->premium_f = m->Silver->StrToDoub ( argv[3] );
+        *m->Silver->premium_f = m->Silver->StrToDoub ( argv[3] ? argv[3] : "0" );
 
         free( m->Silver->premium_ch );
         /* To make sure it's formatted correctly. */
@@ -121,7 +122,7 @@ int bullion_callback(void *data, int argc, char **argv, char **ColName) {
 }
 
 int api_callback(void *data, int argc, char **argv, char **ColName) {
-    /* argv[0] is Id, argv[1] is Keyword, argv[1] is Data */
+    /* argv[0] is Id, argv[1] is Keyword, argv[2] is Data */
     if ( argc != 3 ) return 1;
     if ( strcmp( ColName[0], "Id") != 0 ) return 1;
     if ( strcmp( ColName[1], "Keyword") != 0 ) return 1;
@@ -130,20 +131,20 @@ int api_callback(void *data, int argc, char **argv, char **ColName) {
     meta *mdata = (meta*)data;
     if ( strcasecmp( argv[1], "Stock_URL") == 0){
         free ( mdata->stock_url );
-        mdata->stock_url = strdup( argv[2] );
+        mdata->stock_url = strdup( argv[2] ? argv[2] : FINNHUB_URL );
     }
 
     if ( strcasecmp( argv[1], "URL_KEY") == 0){
         free ( mdata->curl_key );
-        mdata->curl_key = strdup( argv[2] );
+        mdata->curl_key = strdup( argv[2] ? argv[2] : FINNHUB_URL_TOKEN );
     }
 
     if ( strcasecmp( argv[1], "Updates_Per_Min") == 0){
-        *mdata->updates_per_min_f = strtod( argv[2], NULL );
+        *mdata->updates_per_min_f = strtod( argv[2] ? argv[2] : "6", NULL );
     }
 
     if ( strcasecmp( argv[1], "Updates_Hours") == 0){
-        *mdata->updates_hours_f = strtod( argv[2], NULL );
+        *mdata->updates_hours_f = strtod( argv[2] ? argv[2] : "1", NULL );
     }
 
     return 0;
@@ -157,8 +158,8 @@ int wndwsz_callback(void *data, int argc, char **argv, char **ColName) {
     if ( strcmp( ColName[2], "Width") != 0 ) return 1;
 
     main_window_data *window = (main_window_data*)data;
-    window->height = (int)strtol( argv[1], NULL, 10 );
-    window->width = (int)strtol( argv[2], NULL, 10 );
+    window->height = (int)strtol( argv[1] ? argv[1] : "0", NULL, 10 );
+    window->width = (int)strtol( argv[2] ? argv[2] : "0", NULL, 10 );
     
     return 0;
 }
@@ -171,19 +172,13 @@ int wndwpos_callback(void *data, int argc, char **argv, char **ColName) {
     if ( strcmp( ColName[2], "Y") != 0 ) return 1;
 
     main_window_data *window = (main_window_data*)data;
-    window->x_pos = (int)strtol( argv[1], NULL, 10 );
-    window->y_pos = (int)strtol( argv[2], NULL, 10 );
+    window->x_pos = (int)strtol( argv[1] ? argv[1] : "0", NULL, 10 );
+    window->y_pos = (int)strtol( argv[2] ? argv[2] : "0", NULL, 10 );
     
     return 0;
 }
 
-void SqliteProcessing (equity_folder* F, metal *M, meta *D){
-    char    *err_msg = 0;
-    sqlite3 *db;
-
-    /* Open the sqlite database file. */
-    int rc = sqlite3_open( D->sqlite_db_path_ch, &db );
-
+void ErrorCheck( int rc, sqlite3 *db ){
     if (rc != SQLITE_OK) {
 
        fprintf( stderr, "Cannot open sqlite3 database: %s\n", sqlite3_errmsg( db ) );
@@ -191,52 +186,60 @@ void SqliteProcessing (equity_folder* F, metal *M, meta *D){
 
        exit ( EXIT_FAILURE );
     }
+}
+
+void SqliteProcessing (equity_folder* F, metal *M, meta *D){
+    char    *err_msg = 0;
+    sqlite3 *db;
+
+    /* Open the sqlite database file. */
+    ErrorCheck( sqlite3_open( D->sqlite_db_path_ch, &db ), db );
 
     /* Create the equity table if it doesn't already exist. */
     char *sql_cmd = "CREATE TABLE IF NOT EXISTS equity(Id INTEGER PRIMARY KEY, Symbol TEXT NOT NULL, Shares TEXT NOT NULL);";
-    rc = sqlite3_exec(db, sql_cmd, 0, 0, &err_msg);
+    ErrorCheck( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg), db );
 
     /* Create the bullion table if it doesn't already exist. */
     sql_cmd = "CREATE TABLE IF NOT EXISTS bullion(Id INTEGER PRIMARY KEY, Metal TEXT NOT NULL, Ounces TEXT NOT NULL, Premium TEXT NOT NULL);";
-    rc = sqlite3_exec(db, sql_cmd, 0, 0, &err_msg);
+    ErrorCheck( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg), db );
 
     /* Create the cash table if it doesn't already exist. */
     sql_cmd = "CREATE TABLE IF NOT EXISTS cash(Id INTEGER PRIMARY KEY, Value TEXT NOT NULL);";
-    rc = sqlite3_exec(db, sql_cmd, 0, 0, &err_msg);
+    ErrorCheck( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg), db );
 
     /* Create the apidata table if it doesn't already exist. */
     sql_cmd = "CREATE TABLE IF NOT EXISTS apidata(Id INTEGER PRIMARY KEY, Keyword TEXT NOT NULL, Data TEXT NOT NULL);";
-    rc = sqlite3_exec(db, sql_cmd, 0, 0, &err_msg);
+    ErrorCheck( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg), db );
 
     /* Create the mainwindowsize table if it doesn't already exist. */
     sql_cmd = "CREATE TABLE IF NOT EXISTS mainwindowsize(Id INTEGER PRIMARY KEY, Height TEXT NOT NULL, Width TEXT NOT NULL);";
-    rc = sqlite3_exec(db, sql_cmd, 0, 0, &err_msg);
+    ErrorCheck( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg), db );
 
     /* Create the mainwindowpos table if it doesn't already exist. */
     sql_cmd = "CREATE TABLE IF NOT EXISTS mainwindowpos(Id INTEGER PRIMARY KEY, X TEXT NOT NULL, Y TEXT NOT NULL);";
-    rc = sqlite3_exec(db, sql_cmd, 0, 0, &err_msg);
+    ErrorCheck( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg), db );
 
     /* Reset Equity Folder */
     ResetEquity ( F );
 
     /* Populate class/struct instances with saved data. */
     sql_cmd = "SELECT * FROM equity;";
-    rc = sqlite3_exec(db, sql_cmd, equity_callback, F, &err_msg);
+    ErrorCheck( sqlite3_exec(db, sql_cmd, equity_callback, F, &err_msg), db );
 
     sql_cmd = "SELECT * FROM bullion;";
-    rc = sqlite3_exec(db, sql_cmd, bullion_callback, M, &err_msg);
+    ErrorCheck( sqlite3_exec(db, sql_cmd, bullion_callback, M, &err_msg), db );
 
     sql_cmd = "SELECT * FROM cash;";
-    rc = sqlite3_exec(db, sql_cmd, cash_callback, D, &err_msg);
+    ErrorCheck( sqlite3_exec(db, sql_cmd, cash_callback, D, &err_msg), db );
 
     sql_cmd = "SELECT * FROM apidata;";
-    rc = sqlite3_exec(db, sql_cmd, api_callback, D, &err_msg);
+    ErrorCheck( sqlite3_exec(db, sql_cmd, api_callback, D, &err_msg), db );
 
     sql_cmd = "SELECT * FROM mainwindowsize;";
-    rc = sqlite3_exec(db, sql_cmd, wndwsz_callback, &MainWindowStruct, &err_msg);
+    ErrorCheck( sqlite3_exec(db, sql_cmd, wndwsz_callback, &MainWindowStruct, &err_msg), db );
 
     sql_cmd = "SELECT * FROM mainwindowpos;";
-    rc = sqlite3_exec(db, sql_cmd, wndwpos_callback, &MainWindowStruct, &err_msg);
+    ErrorCheck( sqlite3_exec(db, sql_cmd, wndwpos_callback, &MainWindowStruct, &err_msg), db );
 
     if( MainWindowStruct.width == 0 || MainWindowStruct.height == 0 ){
         /* The Original Production Size, if never run before */
@@ -263,34 +266,26 @@ void SqliteAddEquity (char *symbol, char *shares, equity_folder *F){
     sqlite3 *db;
 
     /* Open the sqlite database file. */
-    int rc = sqlite3_open( MetaData->sqlite_db_path_ch, &db );
-
-    if (rc != SQLITE_OK) {
-
-       fprintf( stderr, "Cannot open sqlite3 database: %s\n", sqlite3_errmsg( db ) );
-       sqlite3_close(db);
-
-       exit ( EXIT_FAILURE );
-    }
+    ErrorCheck( sqlite3_open( MetaData->sqlite_db_path_ch, &db ), db );
 
     /* Delete entry if already exists, then insert entry. */
     len = strlen("DELETE FROM equity WHERE Symbol = '';") + strlen( symbol ) + 1;
     char *sql_cmd = (char*) malloc( len );
     snprintf( sql_cmd, len, "DELETE FROM equity WHERE Symbol = '%s';", symbol );
-    rc = sqlite3_exec(db, sql_cmd, 0, 0, &err_msg);
+    ErrorCheck( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg), db );
     free( sql_cmd );
 
     len = strlen("INSERT INTO equity VALUES(null, '', '');") + strlen( symbol ) + strlen( shares ) + 1;
     sql_cmd = (char*) malloc( len );
     snprintf( sql_cmd, len, "INSERT INTO equity VALUES(null, '%s', '%s');", symbol, shares );
-    rc = sqlite3_exec(db, sql_cmd, 0, 0, &err_msg);
+    ErrorCheck( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg), db );
     free( sql_cmd );
     
     /* Reset Equity Folder */
     ResetEquity ( F );
 
     sql_cmd = "SELECT * FROM equity;";
-    rc = sqlite3_exec(db, sql_cmd, equity_callback, F, &err_msg);
+    ErrorCheck( sqlite3_exec(db, sql_cmd, equity_callback, F, &err_msg), db );
 
     /* Close the sqlite database file. */
     sqlite3_close( db );
@@ -305,31 +300,23 @@ void SqliteAddBullion (char *metal_name, char *ounces, char *premium, metal *M){
     sqlite3 *db;
 
     /* Open the sqlite database file. */
-    int rc = sqlite3_open( MetaData->sqlite_db_path_ch, &db );
-
-    if (rc != SQLITE_OK) {
-
-       fprintf( stderr, "Cannot open sqlite3 database: %s\n", sqlite3_errmsg( db ) );
-       sqlite3_close(db);
-
-       exit ( EXIT_FAILURE );
-    }
+    ErrorCheck( sqlite3_open( MetaData->sqlite_db_path_ch, &db ), db );
 
     /* Delete entry if already exists, then insert entry. */
     len = strlen("DELETE FROM bullion WHERE Metal = '';") + strlen( metal_name ) + 1;
     char *sql_cmd = (char*) malloc( len );
     snprintf( sql_cmd, len, "DELETE FROM bullion WHERE Metal = '%s';", metal_name);
-    rc = sqlite3_exec(db, sql_cmd, 0, 0, &err_msg);
+    ErrorCheck( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg), db );
     free( sql_cmd );
     len = strlen("INSERT INTO bullion VALUES(null, '', '', '');") + strlen( metal_name ) + strlen( ounces ) + strlen( premium ) + 1;
     sql_cmd = (char*) malloc( len );
     snprintf( sql_cmd, len, "INSERT INTO bullion VALUES(null, '%s', '%s', '%s');", metal_name, ounces, premium );
-    rc = sqlite3_exec(db, sql_cmd, 0, 0, &err_msg);
+    ErrorCheck( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg), db );
     free( sql_cmd );
 
     /* Update the metal handle. */
     sql_cmd = "SELECT * FROM bullion;";
-    rc = sqlite3_exec(db, sql_cmd, bullion_callback, M, &err_msg);
+    ErrorCheck( sqlite3_exec(db, sql_cmd, bullion_callback, M, &err_msg), db );
 
     /* Close the sqlite database file. */
     sqlite3_close( db );
@@ -341,32 +328,24 @@ void SqliteAddCash (char *value, meta *D){
     sqlite3 *db;
 
     /* Open the sqlite database file. */
-    int rc = sqlite3_open( D->sqlite_db_path_ch, &db );
-
-    if (rc != SQLITE_OK) {
-
-       fprintf( stderr, "Cannot open sqlite3 database: %s\n", sqlite3_errmsg( db ) );
-       sqlite3_close(db);
-
-       exit ( EXIT_FAILURE );
-    }
+    ErrorCheck( sqlite3_open( D->sqlite_db_path_ch, &db ), db );
 
     /* Delete entry if already exists, then insert entry. */
     len = strlen("DELETE FROM cash WHERE Id = 1;") + 1;
     char *sql_cmd = (char*) malloc( len );
     snprintf( sql_cmd, len, "DELETE FROM cash WHERE Id = 1;");
-    rc = sqlite3_exec(db, sql_cmd, 0, 0, &err_msg);
+    ErrorCheck( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg), db );
     free( sql_cmd );
 
     len = strlen("INSERT INTO cash VALUES(1, '');") + strlen( value ) + 1;
     sql_cmd = (char*) malloc( len );
     snprintf( sql_cmd, len, "INSERT INTO cash VALUES(1, '%s');", value );
-    rc = sqlite3_exec(db, sql_cmd, 0, 0, &err_msg);
+    ErrorCheck( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg), db );
     free( sql_cmd );
     
     /* Update the cash value in the meta class. */
     sql_cmd = "SELECT * FROM cash;";
-    rc = sqlite3_exec(db, sql_cmd, cash_callback, D, &err_msg);
+    ErrorCheck( sqlite3_exec(db, sql_cmd, cash_callback, D, &err_msg), db );
 
     /* Close the sqlite database file. */
     sqlite3_close( db );
@@ -378,32 +357,24 @@ void SqliteAddAPIData (char *keyword, char *data, meta *D){
     sqlite3 *db;
 
     /* Open the sqlite database file. */
-    int rc = sqlite3_open( D->sqlite_db_path_ch, &db );
-
-    if (rc != SQLITE_OK) {
-
-       fprintf( stderr, "Cannot open sqlite3 database: %s\n", sqlite3_errmsg( db ) );
-       sqlite3_close(db);
-
-       exit ( EXIT_FAILURE );
-    }
+    ErrorCheck( sqlite3_open( D->sqlite_db_path_ch, &db ), db );
 
     /* Delete entry if already exists, then insert entry. */
     len = strlen("DELETE FROM apidata WHERE Keyword = '';") + strlen( keyword ) + 1;
     char *sql_cmd = (char*) malloc( len );
     snprintf( sql_cmd, len, "DELETE FROM apidata WHERE Keyword = '%s';", keyword);
-    rc = sqlite3_exec(db, sql_cmd, 0, 0, &err_msg);
+    ErrorCheck( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg), db );
     free( sql_cmd );
 
     len = strlen("INSERT INTO apidata VALUES(null, '', '');") + strlen( keyword ) + strlen( data ) + 1;
     sql_cmd = (char*) malloc( len );
     snprintf( sql_cmd, len, "INSERT INTO apidata VALUES(null, '%s', '%s');", keyword, data );
-    rc = sqlite3_exec(db, sql_cmd, 0, 0, &err_msg);
+    ErrorCheck( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg), db );
     free( sql_cmd );
     
     /* Update the API data in the MetaData class. */
     sql_cmd = "SELECT * FROM apidata;";
-    rc = sqlite3_exec(db, sql_cmd, api_callback, D, &err_msg);
+    ErrorCheck( sqlite3_exec(db, sql_cmd, api_callback, D, &err_msg), db );
 
     /* Close the sqlite database file. */
     sqlite3_close( db );
@@ -415,29 +386,20 @@ void SqliteRemoveEquity (char *symbol, equity_folder *F){
     sqlite3 *db;
 
     /* Open the sqlite database file. */
-    int rc = sqlite3_open( MetaData->sqlite_db_path_ch, &db );
-
-    if (rc != SQLITE_OK) {
-
-       fprintf( stderr, "Cannot open sqlite3 database: %s\n", sqlite3_errmsg( db ) );
-       /* Close the sqlite database file. */
-        sqlite3_close( db );
-
-       exit ( EXIT_FAILURE );
-    }
+    ErrorCheck( sqlite3_open( MetaData->sqlite_db_path_ch, &db ), db );
 
     /* Delete entry if already exists. */
     len = strlen("DELETE FROM equity WHERE Symbol = '';") + strlen( symbol ) + 1;
     char *sql_cmd = (char*) malloc( len );
     snprintf( sql_cmd, len, "DELETE FROM equity WHERE Symbol = '%s';", symbol );
-    rc = sqlite3_exec(db, sql_cmd, 0, 0, &err_msg);
+    ErrorCheck( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg), db );
     free( sql_cmd );
     
     /* Reset Equity Folder */
     ResetEquity ( F );
 
     sql_cmd = "SELECT * FROM equity;";
-    rc = sqlite3_exec(db, sql_cmd, equity_callback, F, &err_msg);
+    ErrorCheck( sqlite3_exec(db, sql_cmd, equity_callback, F, &err_msg), db );
 
     /* Close the sqlite database file. */
     sqlite3_close( db );
@@ -451,23 +413,14 @@ void SqliteRemoveAllEquity (equity_folder *F){
     sqlite3 *db;
 
     /* Open the sqlite database file. */
-    int rc = sqlite3_open( MetaData->sqlite_db_path_ch, &db );
-
-    if (rc != SQLITE_OK) {
-
-       fprintf( stderr, "Cannot open sqlite3 database: %s\n", sqlite3_errmsg( db ) );
-       /* Close the sqlite database file. */
-        sqlite3_close( db );
-
-       exit ( EXIT_FAILURE );
-    }
+    ErrorCheck( sqlite3_open( MetaData->sqlite_db_path_ch, &db ), db );
 
     /* Drop the equity table and create a new one. */
     char *sql_cmd = "DROP TABLE equity;";
-    rc = sqlite3_exec(db, sql_cmd, 0, 0, &err_msg);
+    ErrorCheck( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg), db );
 
     sql_cmd = "CREATE TABLE IF NOT EXISTS equity(Id INTEGER PRIMARY KEY, Symbol TEXT NOT NULL, Shares TEXT NOT NULL);";
-    rc = sqlite3_exec(db, sql_cmd, 0, 0, &err_msg);
+    ErrorCheck( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg), db );
 
     /* Close the sqlite database file. */
     sqlite3_close( db );
@@ -482,23 +435,15 @@ void SqliteChangeWindowSize (int width, int height){
     sqlite3 *db;
 
     /* Open the sqlite database file. */
-    int rc = sqlite3_open( MetaData->sqlite_db_path_ch, &db );
-
-    if (rc != SQLITE_OK) {
-
-       fprintf( stderr, "Cannot open sqlite3 database: %s\n", sqlite3_errmsg( db ) );
-       sqlite3_close(db);
-
-       exit ( EXIT_FAILURE );
-    }
+    ErrorCheck( sqlite3_open( MetaData->sqlite_db_path_ch, &db ), db );
 
     /* Delete entry if already exists, then insert entry. */
-    rc = sqlite3_exec(db, "DELETE FROM mainwindowsize WHERE Id = 1;", 0, 0, &err_msg);
+    ErrorCheck( sqlite3_exec(db, "DELETE FROM mainwindowsize WHERE Id = 1;", 0, 0, &err_msg), db );
 
     len = strlen("INSERT INTO mainwindowsize VALUES(1, '', '');") + 64;
     char *sql_cmd = (char*) malloc( len );
     snprintf( sql_cmd, len, "INSERT INTO mainwindowsize VALUES(1, '%d', '%d');", height, width );
-    rc = sqlite3_exec(db, sql_cmd, 0, 0, &err_msg);
+    ErrorCheck( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg), db );
     free( sql_cmd );
 
     /* Close the sqlite database file. */
@@ -511,23 +456,15 @@ void SqliteChangeWindowPos (int x, int y){
     sqlite3 *db;
 
     /* Open the sqlite database file. */
-    int rc = sqlite3_open( MetaData->sqlite_db_path_ch, &db );
-
-    if (rc != SQLITE_OK) {
-
-       fprintf( stderr, "Cannot open sqlite3 database: %s\n", sqlite3_errmsg( db ) );
-       sqlite3_close(db);
-
-       exit ( EXIT_FAILURE );
-    }
+    ErrorCheck( sqlite3_open( MetaData->sqlite_db_path_ch, &db ), db );
 
     /* Delete entry if already exists, then insert entry. */
-    rc = sqlite3_exec(db, "DELETE FROM mainwindowpos WHERE Id = 1;", 0, 0, &err_msg);
+    ErrorCheck( sqlite3_exec(db, "DELETE FROM mainwindowpos WHERE Id = 1;", 0, 0, &err_msg), db );
 
     len = strlen("INSERT INTO mainwindowpos VALUES(1, '', '');") + 64;
     char *sql_cmd = (char*) malloc( len );
     snprintf( sql_cmd, len, "INSERT INTO mainwindowpos VALUES(1, '%d', '%d');", x, y );
-    rc = sqlite3_exec(db, sql_cmd, 0, 0, &err_msg);
+    ErrorCheck( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg), db );
     free( sql_cmd );
 
     /* Close the sqlite database file. */

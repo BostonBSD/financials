@@ -92,7 +92,7 @@ void ResetEquity(equity_folder *F) {
 
         This function is only called from sqlite.c
         */
-        free( F->Equity ); 
+        if ( F->Equity ) free( F->Equity ); 
         stock** temp = (stock**) malloc( sizeof(stock*) );
                 
         if (temp == NULL){
@@ -168,7 +168,8 @@ void PerformCalculations ()
     free( MetaData->portfolio_port_value_ch );
     MetaData->portfolio_port_value_ch = MetaData->DoubToStr( MetaData->portfolio_port_value_f );
 
-    /* Edit the next line as needed. */
+    /* Edit the next line as needed, if you want to 
+       add a change value besides equity to the portfolio. */
     *MetaData->portfolio_port_value_chg_f = *MetaData->stock_port_value_chg_f;
     prev_value = *MetaData->portfolio_port_value_f - *MetaData->portfolio_port_value_chg_f;
     *MetaData->portfolio_port_value_p_chg_f = 100 * ( *MetaData->portfolio_port_value_chg_f / prev_value );
