@@ -524,8 +524,8 @@
             <property name="valign">center</property>
             <property name="margin-top">5</property>
             <property name="margin-bottom">20</property>
-            <accelerator key="c" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
             <accelerator key="c" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+            <accelerator key="c" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
           </object>
           <packing>
             <property name="left-attach">0</property>
@@ -613,8 +613,8 @@
             <property name="valign">end</property>
             <property name="margin-top">5</property>
             <property name="margin-bottom">20</property>
-            <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
             <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+            <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
           </object>
           <packing>
             <property name="left-attach">2</property>
@@ -1110,8 +1110,8 @@
     <property name="can-default">True</property>
     <property name="title" translatable="yes">Keyboard Shortcuts</property>
     <property name="resizable">False</property>
-    <property name="default-width">350</property>
-    <property name="default-height">600</property>
+    <property name="default-width">250</property>
+    <property name="default-height">775</property>
     <property name="destroy-with-parent">True</property>
     <property name="icon">Stocks-icon.png</property>
     <property name="skip-taskbar-hint">True</property>
@@ -1120,8 +1120,8 @@
       <object class="GtkBox">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="margin-start">5</property>
-        <property name="margin-end">5</property>
+        <property name="margin-start">6</property>
+        <property name="margin-end">6</property>
         <property name="margin-top">10</property>
         <property name="margin-bottom">10</property>
         <property name="orientation">vertical</property>
@@ -1130,57 +1130,15 @@
           <object class="GtkScrolledWindow" id="ShortcutScrolledWindow">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="halign">center</property>
-            <property name="valign">center</property>
             <property name="shadow-type">in</property>
             <property name="min-content-width">200</property>
             <property name="min-content-height">500</property>
             <child>
-              <object class="GtkViewport">
+              <object class="GtkTreeView" id="ShortcutWindowTreeView">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
-                <property name="vexpand">True</property>
-                <property name="shadow-type">etched-in</property>
-                <child>
-                  <object class="GtkLabel" id="ShortcutLabel">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="halign">center</property>
-                    <property name="valign">center</property>
-                    <property name="label" translatable="yes">Main Window
------------------------------------------------
-	File			&lt;alt&gt; f
-	RSI			&lt;ctrl&gt; r 
-	Quit		&lt;ctrl&gt; q
-
-	Edit			&lt;alt&gt; e
-	API			&lt;ctrl&gt; p
-	Securities	&lt;ctrl&gt; s
-	Bullion		&lt;ctrl&gt; b
-	Cash		&lt;ctrl&gt; c
-
-	Help		&lt;alt&gt; h
-	Shortcut Keys	&lt;ctrl&gt; k
-	About		&lt;ctrl&gt; a
-
-	Fetch Data	&lt;ctrl&gt; d
-
-RSI Window
------------------------------------------------
-	Fetch Data	&lt;ctrl&gt; d
-	Close		&lt;ctrl&gt; c
-
-All other windows:
------------------------------------------------
-	OK			&lt;ctrl&gt; o
-	Cancel		&lt;ctrl&gt; c</property>
-                    <property name="selectable">True</property>
-                    <attributes>
-                      <attribute name="font-desc" value="Roboto 8"/>
-                    </attributes>
-                  </object>
+                <property name="can-focus">True</property>
+                <child internal-child="selection">
+                  <object class="GtkTreeSelection"/>
                 </child>
               </object>
             </child>
@@ -1192,44 +1150,23 @@ All other windows:
           </packing>
         </child>
         <child>
-          <placeholder/>
-        </child>
-        <child>
-          <!-- n-columns=3 n-rows=1 -->
-          <object class="GtkGrid">
+          <object class="GtkButton" id="ShortcutOKBTN">
+            <property name="label" translatable="yes">OK</property>
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
+            <property name="can-focus">True</property>
+            <property name="can-default">True</property>
+            <property name="has-default">True</property>
+            <property name="receives-default">True</property>
+            <property name="tooltip-text" translatable="yes">Close this window</property>
+            <property name="halign">center</property>
+            <property name="valign">center</property>
             <property name="margin-top">10</property>
-            <property name="column-homogeneous">True</property>
-            <child>
-              <object class="GtkButton" id="ShortcutOKBTN">
-                <property name="label" translatable="yes">OK</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="can-default">True</property>
-                <property name="has-default">True</property>
-                <property name="receives-default">True</property>
-                <property name="tooltip-text" translatable="yes">Close this window</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
-                <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-              </object>
-              <packing>
-                <property name="left-attach">1</property>
-                <property name="top-attach">0</property>
-              </packing>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
+            <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
           </object>
           <packing>
-            <property name="expand">True</property>
+            <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">2</property>
+            <property name="position">1</property>
           </packing>
         </child>
       </object>

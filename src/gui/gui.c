@@ -579,6 +579,96 @@ gboolean ViewRSICompletionMatchFunc( GtkEntryCompletion *completion, const gchar
     return ans;
 }
 
+void SetKeyboardShortcuts (){
+    GtkWidget* TreeView = GTK_WIDGET ( gtk_builder_get_object (builder, "ShortcutWindowTreeView") );
+
+    GtkCellRenderer *renderer;
+    GtkTreeViewColumn *column;
+
+    /* In order to display a model/store we need to set the TreeView Columns. */
+    renderer = gtk_cell_renderer_text_new ();
+    column = gtk_tree_view_column_new_with_attributes("Column Header 1", renderer, "text", 0, NULL);
+    gtk_tree_view_column_set_resizable (column, true);
+    gtk_tree_view_column_set_visible (column, true);
+    gtk_tree_view_column_set_min_width (column, 0);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(TreeView), column);
+
+    renderer = gtk_cell_renderer_text_new ();
+    column = gtk_tree_view_column_new_with_attributes("Column Header 2", renderer, "text", 1, NULL);
+    gtk_tree_view_column_set_resizable (column, true);
+    gtk_tree_view_column_set_visible (column, true);
+    gtk_tree_view_column_set_min_width (column, 0);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(TreeView), column);
+
+    /* Here we set the rows for the 2 column store */
+    GtkListStore *store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
+    GtkTreeIter iter;
+
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_set( store, &iter, 0, "Application Window", -1 );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_set( store, &iter, 0, "----------------------------------", -1 );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_set( store, &iter, 0, "File", 1, "<Alt> f", -1 );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_set( store, &iter, 0, "RSI", 1, "<Ctrl> r", -1 );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_set( store, &iter, 0, "Quit", 1, "<Ctrl> q", -1 );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_set( store, &iter, 0, "Edit", 1, "<Alt> e", -1 );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_set( store, &iter, 0, "API", 1, "<Ctrl> p", -1 );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_set( store, &iter, 0, "Securities", 1, "<Ctrl> s", -1 );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_set( store, &iter, 0, "Bullion", 1, "<Ctrl> b", -1 );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_set( store, &iter, 0, "Cash", 1, "<Ctrl> c", -1 );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_set( store, &iter, 0, "Help", 1, "<Alt> h", -1 );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_set( store, &iter, 0, "Shortcut Keys", 1, "<Ctrl> k", -1 );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_set( store, &iter, 0, "About", 1, "<Ctrl> a", -1 );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_set( store, &iter, 0, "Fetch Data", 1, "<Ctrl> d", -1 );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_set( store, &iter, 0, "Quit", 1, "<Ctrl> q", -1 );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_set( store, &iter, 0, "RSI Window", -1 );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_set( store, &iter, 0, "----------------------------------", -1 );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_set( store, &iter, 0, "Fetch Data", 1, "<Ctrl> d", -1 );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_set( store, &iter, 0, "Close", 1, "<Ctrl> c", -1 );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_set( store, &iter, 0, "All Other Windows", -1 );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_set( store, &iter, 0, "----------------------------------", -1 );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_set( store, &iter, 0, "OK", 1, "<Ctrl> o", -1 );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_set( store, &iter, 0, "Close", 1, "<Ctrl> c", -1 );
+
+
+    /* Add the store of data to the TreeView. */
+    gtk_tree_view_set_model(GTK_TREE_VIEW(TreeView), GTK_TREE_MODEL(store));
+    g_object_unref( store );
+
+    /* Set the TreeView header as invisible. */
+    gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(TreeView), false);
+
+    /* Make the TreeView unselectable. */
+    GtkTreeSelection *select = gtk_tree_view_get_selection ( GTK_TREE_VIEW (TreeView) );
+    gtk_tree_selection_set_mode (select, GTK_SELECTION_NONE);
+}
+
 GtkListStore *CompletionSymbolFetch ()
 /* This function is only meant to be run once, at application startup. */
 {
@@ -1821,6 +1911,8 @@ void SetUpGUI ()
         g_clear_error ( &error );
         exit( EXIT_FAILURE );
     }
+
+    SetKeyboardShortcuts ();
 
     /* Add the license to the About window. */
     SetAboutInfoLabel ();
