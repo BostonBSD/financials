@@ -513,6 +513,7 @@ int ShowHideAddRemoveSecurityWindow ()
 
         EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecuritySharesEntryBox") );
         gtk_entry_set_text ( GTK_ENTRY( EntryBox ), "" );
+        g_object_set ( G_OBJECT ( EntryBox ), "activates-default", TRUE, NULL );
 
         /* Reset ComboBox */
         gtk_combo_box_text_remove_all ( GTK_COMBO_BOX_TEXT ( ComboBox ) );
