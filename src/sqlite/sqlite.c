@@ -179,8 +179,8 @@ int wndwpos_callback(void *data, int argc, char **argv, char **ColName) {
 }
 
 void ErrorMsg( sqlite3 *db ){
-    sqlite3_close(db);
     fprintf( stderr, "Cannot open sqlite3 database: %s\n", sqlite3_errmsg( db ) );
+    sqlite3_close(db);
     exit ( EXIT_FAILURE );
 }
 
