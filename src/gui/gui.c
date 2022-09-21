@@ -74,9 +74,11 @@ int ShowHideAPIWindow ()
         GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoEquityUrlEntryBox") );
         gtk_entry_set_text ( GTK_ENTRY( EntryBox ), MetaData->stock_url );
         gtk_widget_grab_focus ( EntryBox );
+        g_object_set ( G_OBJECT ( EntryBox ), "activates-default", TRUE, NULL );
 
         EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoUrlKeyEntryBox") );
         gtk_entry_set_text ( GTK_ENTRY( EntryBox ), MetaData->curl_key );
+        g_object_set ( G_OBJECT ( EntryBox ), "activates-default", TRUE, NULL );
 
         GtkWidget* ComboBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoUpPerMinComboBox") );
         gtk_combo_box_set_active ( GTK_COMBO_BOX( ComboBox ), (int)*MetaData->updates_per_min_f);
@@ -84,6 +86,7 @@ int ShowHideAPIWindow ()
         GtkWidget* SpinBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoHoursSpinBox") );
         GtkAdjustment* Adjustment = gtk_spin_button_get_adjustment ( GTK_SPIN_BUTTON ( SpinBox ) );
         gtk_adjustment_set_value ( Adjustment, *MetaData->updates_hours_f );
+        g_object_set ( G_OBJECT ( SpinBox ), "activates-default", TRUE, NULL );
 
         gtk_widget_set_visible ( window, true );
     }
@@ -181,6 +184,7 @@ int ShowHideCashWindow ()
         FormatStr( temp );
         gtk_entry_set_text ( GTK_ENTRY( EntryBox ), temp );
         free( temp );
+        g_object_set ( G_OBJECT ( EntryBox ), "activates-default", TRUE, NULL );
 
         gtk_widget_grab_focus ( EntryBox );
         gtk_widget_set_visible ( window, true );
@@ -238,24 +242,28 @@ int ShowHideBullionWindow ()
         gtk_entry_set_text ( GTK_ENTRY( EntryBox ), Precious->Gold->ounce_ch );
         free( temp );
         gtk_widget_grab_focus ( EntryBox );
+        g_object_set ( G_OBJECT ( EntryBox ), "activates-default", TRUE, NULL );
 
         EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionGoldPremiumEntryBox") );
         temp = strdup( Precious->Gold->premium_ch );
         FormatStr( temp );
         gtk_entry_set_text ( GTK_ENTRY( EntryBox ), temp );
         free( temp );
+        g_object_set ( G_OBJECT ( EntryBox ), "activates-default", TRUE, NULL );
 
         EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionSilverOuncesEntryBox") );
         temp = strdup( Precious->Silver->ounce_ch );
         FormatStr( temp );
         gtk_entry_set_text ( GTK_ENTRY( EntryBox ), temp );
         free( temp );
+        g_object_set ( G_OBJECT ( EntryBox ), "activates-default", TRUE, NULL );
 
         EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionSilverPremiumEntryBox") );
         temp = strdup( Precious->Silver->premium_ch );
         FormatStr( temp );
         gtk_entry_set_text ( GTK_ENTRY( EntryBox ), temp );
         free( temp );
+        g_object_set ( G_OBJECT ( EntryBox ), "activates-default", TRUE, NULL );
 
         gtk_widget_set_visible ( window, true );
     }
