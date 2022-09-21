@@ -1110,6 +1110,9 @@ int RSIMakeGUI ()
    
     /* Set the list header as visible. */
     gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(list), TRUE);
+
+    /* Remove Grid Lines. */
+    gtk_tree_view_set_grid_lines ( GTK_TREE_VIEW ( list ), GTK_TREE_VIEW_GRID_LINES_NONE );
     return 0;
 }
 
@@ -1356,6 +1359,9 @@ int MakeGUIOne ()
     /* Set the list header as invisible. */
     gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(list), FALSE);
 
+    /* Remove Grid Lines. */
+    gtk_tree_view_set_grid_lines ( GTK_TREE_VIEW ( list ), GTK_TREE_VIEW_GRID_LINES_NONE );
+
     return 0;
 }
 
@@ -1378,6 +1384,9 @@ int DefaultTreeView () {
    
     /* Set the list header as invisible. */
     gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(list), FALSE);
+
+    /* Remove Grid Lines. */
+    gtk_tree_view_set_grid_lines ( GTK_TREE_VIEW ( list ), GTK_TREE_VIEW_GRID_LINES_NONE );
     return 0;
 }
 
@@ -1664,15 +1673,18 @@ static void SetKeyboardShortcuts (){
 
 
     /* Add the store of data to the TreeView. */
-    gtk_tree_view_set_model(GTK_TREE_VIEW(TreeView), GTK_TREE_MODEL(store));
+    gtk_tree_view_set_model( GTK_TREE_VIEW(TreeView), GTK_TREE_MODEL ( store ) );
     g_object_unref( store );
 
     /* Set the TreeView header as invisible. */
-    gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(TreeView), false);
+    gtk_tree_view_set_headers_visible( GTK_TREE_VIEW(TreeView), false );
 
     /* Make the TreeView unselectable. */
-    GtkTreeSelection *select = gtk_tree_view_get_selection ( GTK_TREE_VIEW (TreeView) );
-    gtk_tree_selection_set_mode (select, GTK_SELECTION_NONE);
+    GtkTreeSelection *select = gtk_tree_view_get_selection ( GTK_TREE_VIEW ( TreeView ) );
+    gtk_tree_selection_set_mode ( select, GTK_SELECTION_NONE );
+
+    /* Remove TreeView Grid Lines. */
+    gtk_tree_view_set_grid_lines ( GTK_TREE_VIEW ( TreeView ), GTK_TREE_VIEW_GRID_LINES_NONE );
 }
 
 static void SetAboutInfoLabel ()
@@ -1683,21 +1695,13 @@ static void SetAboutInfoLabel ()
 }
 
 int DisplayTime (){
-    GtkWidget* LocalTimeLabel = GTK_WIDGET ( gtk_builder_get_object (builder, "LocalTimeLabel") );
-    GtkWidget* LocalDateLabel = GTK_WIDGET ( gtk_builder_get_object (builder, "LocalDateLabel") );
     GtkWidget* NewYorkTimeLabel = GTK_WIDGET ( gtk_builder_get_object (builder, "NYTimeLabel") );
     GtkWidget* NewYorkDateLabel = GTK_WIDGET ( gtk_builder_get_object (builder, "NYDateLabel") );
-    int h, m, month, day_month, day_week, year, ny_h, ny_m, ny_month, ny_day_month, ny_day_week, ny_year;
+    int ny_h, ny_m, ny_month, ny_day_month, ny_day_week, ny_year;
     char time_ch[30];
 
-    /* Get the current local and New York time */
-    LocalAndNYTime( &h, &m, &month, &day_month, &day_week, &year, &ny_h, &ny_m, &ny_month, &ny_day_month, &ny_day_week, &ny_year );
-
-    /* Set the local date and time labels */
-    snprintf( time_ch, 30, "%s, %s %d, %d", WeekDayStr( day_week ), MonthNameStr( month ), day_month, year );
-    gtk_label_set_text ( GTK_LABEL ( LocalDateLabel ), time_ch );
-    snprintf( time_ch, 30, "%02d:%02d", h, m );
-    gtk_label_set_text ( GTK_LABEL ( LocalTimeLabel ), time_ch );
+    /* Get the current New York time */
+    NYTime( &ny_h, &ny_m, &ny_month, &ny_day_month, &ny_day_week, &ny_year );
 
     /* Set the New York date and time labels */
     snprintf( time_ch, 30, "%s, %s %d, %d", WeekDayStr( ny_day_week ), MonthNameStr( ny_month ), ny_day_month, ny_year );
@@ -1708,7 +1712,7 @@ int DisplayTime (){
     return 0;
 }
 
-int DisplayTimeRemaining(){
+int DisplayTimeRemaining (){
     GtkWidget* CloseLabel = GTK_WIDGET ( gtk_builder_get_object (builder, "MarketCloseLabel") );
     GtkWidget* TimeRemLabel = GTK_WIDGET ( gtk_builder_get_object (builder, "TimeLeftLabel") );
     int h, m, s;
@@ -1888,7 +1892,7 @@ void GUISignalConnect ()
     button = gtk_builder_get_object (builder, "ViewRSISymbolEntryBox");
     g_signal_connect ( button, "changed", G_CALLBACK ( GUICallbackHandler ), (void *)VIEW_RSI_CURSOR_MOVE );
 
-
+    /* This is the main window's TreeView ( There was only one treeview when I started ). */
     button = gtk_builder_get_object (builder, "TreeView");
     g_signal_connect ( button, "button-press-event", G_CALLBACK( view_onButtonPressed ), NULL );
 

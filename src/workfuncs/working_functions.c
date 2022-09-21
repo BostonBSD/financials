@@ -478,37 +478,18 @@ char* WeekDayStr ( int weekday ){
     }
 }
 
-void LocalAndNYTime (int *h, int *m, int *month, int *day_month, int *day_week, int *year, int *ny_h, int *ny_m, int *ny_month, int *ny_day_month, int *ny_day_week, int *ny_year) {
-    time_t currenttime;
-    struct tm Local_NY_tz;
+void NYTime (int *ny_h, int *ny_m, int *ny_month, int *ny_day_month, int *ny_day_week, int *ny_year) {
+    struct tm NY_tz;
 
-    time( &currenttime );
+    /* Get the NY time from Epoch seconds */
+    NY_tz = NYTimeComponents ();
 
-    /* Get the localtime and NY time from Epoch seconds */
-
-    /* This should be the only place in the code where the
-       local timezone needs to be set. */
-
-    /* Ensure the local timezone is set */
-    MetaData->local_tz_ch ? setenv("TZ", MetaData->local_tz_ch, 1) : unsetenv( "TZ" );
-    tzset();
-    localtime_r( &currenttime, &Local_NY_tz );
-
-    *h = (Local_NY_tz.tm_hour)%24;
-    *m = Local_NY_tz.tm_min;
-    *month = Local_NY_tz.tm_mon;
-    *day_month = Local_NY_tz.tm_mday;
-    *day_week = Local_NY_tz.tm_wday;
-    *year = Local_NY_tz.tm_year + 1900;
-   
-    Local_NY_tz = NYTimeComponents ();
-
-    *ny_h = (Local_NY_tz.tm_hour)%24;
-    *ny_m = Local_NY_tz.tm_min;
-    *ny_month = Local_NY_tz.tm_mon;
-    *ny_day_month = Local_NY_tz.tm_mday;
-    *ny_day_week = Local_NY_tz.tm_wday;
-    *ny_year = Local_NY_tz.tm_year + 1900;  
+    *ny_h = (NY_tz.tm_hour)%24;
+    *ny_m = NY_tz.tm_min;
+    *ny_month = NY_tz.tm_mon;
+    *ny_day_month = NY_tz.tm_mday;
+    *ny_day_week = NY_tz.tm_wday;
+    *ny_year = NY_tz.tm_year + 1900;  
 }
 
 void easter(int year, int *month, int *day)

@@ -125,7 +125,7 @@ void FormatStr(char *);
 char *StringToMonetary(const char *);
 void LowerCaseStr(char *);
 void UpperCaseStr(char *);
-void LocalAndNYTime (int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*);
+void NYTime (int*,int*,int*,int*,int*,int*);
 char* MonthNameStr (int);
 char* WeekDayStr (int);
 bool TimeToClose (int*,int*,int*);

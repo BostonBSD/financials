@@ -278,7 +278,7 @@ void *GUIThreadHandler(void *data){
             gdk_threads_add_idle( ShowHideShortcutWindow, NULL );
             break;
         case DISPLAY_TIME:
-            /* The Mutexes are in the LocalAndNYTime, TimeToClose, and 
+            /* The Mutexes are in the NYTime, TimeToClose, and 
                SecondsToOpen functions to reduce synchronization overhead.
 
                Mutexes are required here because we are changing the process 
@@ -291,6 +291,8 @@ void *GUIThreadHandler(void *data){
                //pthread_mutex_lock( &mutex_working[3] );
                //pthread_mutex_unlock( &mutex_working[3] );
                Is the clock mutex. 
+
+               We might be able to fix this by always using New York time.
             */
 
             while(1){

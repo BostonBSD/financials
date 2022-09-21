@@ -46,7 +46,7 @@ int equity_callback(void *data, int argc, char **argv, char **ColName) {
     free( F->Equity[ F->size ]->symbol_stock_ch ); 
 
     F->Equity[ F->size ]->symbol_stock_ch = (char*) malloc( strlen( argv[1] ? argv[1] : "NULL" )+1 );
-    strcpy( F->Equity[ F->size ]->symbol_stock_ch , argv[1] ? argv[1] : "NULL" );
+    strcpy( F->Equity[ F->size ]->symbol_stock_ch, argv[1] ? argv[1] : "NULL" );
 
     /* Add The Shares To the Folder */
     *F->Equity[ F->size ]->num_shares_stock_int = (unsigned int)strtol( argv[2] ? argv[2] : "0", NULL, 10 );

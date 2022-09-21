@@ -42,12 +42,12 @@ POSSIBILITY OF SUCH DAMAGE.
   "Copyright (c) 2022 BostonBSD. All rights reserved.\n\nRedistribution and "  \
   "use in source and binary forms, with or without\nmodification, are "        \
   "permitted provided that the following conditions "                          \
-  "are\nmet:\n\n\n\t(1)Redistributions of source code must retain the above "  \
+  "are\nmet:\n\n\n\t(1) Redistributions of source code must retain the above " \
   "copyright\n\tnotice, this list of conditions and the following "            \
-  "disclaimer.\n\n\t(2)Redistributions in binary form must reproduce the "     \
+  "disclaimer.\n\n\t(2) Redistributions in binary form must reproduce the "    \
   "above copyright\n\tnotice, this list of conditions and the following "      \
   "disclaimer\n\tin the documentation and/or other materials provided with "   \
-  "the\n\tdistribution.\n\n\t(3)The name of the author may not be used "       \
+  "the\n\tdistribution.\n\n\t(3) The name of the author may not be used "      \
   "to\n\tendorse or promote products derived from this software "              \
   "without\n\tspecific prior written permission.\n\nTHIS SOFTWARE IS "         \
   "PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR\nIMPLIED WARRANTIES, "  \
