@@ -76,6 +76,8 @@ void *GUIThreadHandler(void *data){
     time_t current_time, end_time;
     time_t start_curl, end_curl;
     struct tm NY_Time; 
+    MemType *RSIOutput;
+    char *sec_name, *symbol;
 
     switch ( index_signal )
     {
@@ -258,11 +260,25 @@ void *GUIThreadHandler(void *data){
             gdk_threads_add_idle( ShowHideViewRSIWindow, NULL );
             break;
         case VIEW_RSI_FETCH_DATA_BTN:
+            /* Perform multicurl here,
+               doesn't block the gui main loop 
+               Also get the symbol string.
+               */
+            RSIOutput = RSIMulticurlProcessing ( &symbol );
+
             /* Clear the current TreeView model */ 
             gdk_threads_add_idle( RSITreeViewClear, NULL );
 
-            /* Fetch, set, and display the RSI treeview model */
-            gdk_threads_add_idle( RSIMakeGUI, NULL );
+            /* Get the security name from the symbol. */ 
+            sec_name = GetSecurityNameFromMapping( symbol );
+            free( symbol );
+
+            /* Set the security name label, this function runs inside the Gtk Loop. 
+               And will free the sec_name string. */
+            gdk_threads_add_idle( SetSecurityNameLabel, (void*)sec_name );
+
+            /* Set and display the RSI treeview model */
+            gdk_threads_add_idle( RSIMakeGUI, (void*)RSIOutput );
             break;
         case VIEW_RSI_CURSOR_MOVE:
             gdk_threads_add_idle( RSICursorMove, NULL );

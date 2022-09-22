@@ -40,6 +40,9 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "ui.h"
 #include "../csv/csv.h"
 
+/* We need the MemType struct from this header file. */
+#include "../multicurl/multicurl.h"
+
 #ifndef YAHOO_URL_START
 #define YAHOO_URL_START "https://query1.finance.yahoo.com/v7/finance/download/"
 #endif
@@ -203,13 +206,16 @@ int DisplayTime ();
 int DisplayTimeRemaining ();
 int ShowHideViewRSIWindow ();
 int RSITreeViewClear();
-int RSIMakeGUI ();
+int RSIMakeGUI (void*);
 int RSICursorMove ();
 int RSISetColumns ();
 int ViewRSICompletionSet ();
 GtkListStore* MakeRSIStore ();
 void symbol_security_name_map_destruct ();
 void CompletionSymbolFetch ();
+MemType* RSIMulticurlProcessing ();
+char* GetSecurityNameFromMapping(const char*);
+int SetSecurityNameLabel (void*);
 
 /* GUI Callback Functions */
 void AddRemoveSecuritySwitch (GtkSwitch*,bool,void*);

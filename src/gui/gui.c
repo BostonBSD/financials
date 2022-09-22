@@ -909,7 +909,7 @@ int symsearchfunc(const void * a, const void * b){
    return strcasecmp( aa, bb[0]->symbol ); 
 }
 
-char *GetSecurityNameFromMapping(char *s)
+char *GetSecurityNameFromMapping(const char *s)
 /* Look for a Security Name using the Symbol as a key value.
    Must free return value. */
 {
@@ -930,18 +930,11 @@ char *GetSecurityNameFromMapping(char *s)
     }
 }
 
-char* RSIGetSymbol()
-/* Get the stock symbol from the EntryBox. Get the security name using the symbol.
-   Set the security name to a Gtklabel, return the symbol.
-   Must free return value. */
-{
-    GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ViewRSISymbolEntryBox") );
-    char* s = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
-    UpperCaseStr ( s );
+int SetSecurityNameLabel (void *data){
+    char* sec_name;
+    data ? (sec_name = (char*)data) : (sec_name = NULL);
 
     GtkWidget* Label = GTK_WIDGET ( gtk_builder_get_object (builder, "ViewRSIStockSymbolLabel") );
-
-    char* sec_name = GetSecurityNameFromMapping( s );
 
     if ( sec_name != NULL ){
         gtk_label_set_text ( GTK_LABEL ( Label ), sec_name );
@@ -949,45 +942,72 @@ char* RSIGetSymbol()
     } else {
         gtk_label_set_text ( GTK_LABEL ( Label ), "Unknown Security Name" );
     }
+    return 0;
+}
+
+char* RSIGetSymbol()
+/* Get the stock symbol from the EntryBox. Get the security name using the symbol.
+   Set the security name to a Gtklabel, return the symbol.
+   Must free return value. 
+   
+   Because we are not setting any widgets, we should not worry about crashing Gtk outside
+   the Gtk Main Loop.
+
+   If there are any problems, RSIMulticurlProcessing can be placed into the Gtk Main Loop,
+   it will block the Gtk loop, but it won't crash Gtk, put "RSIMulticurlProcessing ();" into
+   the "RSIMakeGUI();" function.
+*/
+{
+    GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ViewRSISymbolEntryBox") );
+    char* s = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
+    UpperCaseStr ( s );
 
     return s;
 }
 
-char* RSIGetURL(){
+void RSIGetSymbolAndURL (char **url,char **symbol){
     time_t start, end;
     size_t len;
 
     RSIPeriod( &end, &start );
-    char *symbol_ch = RSIGetSymbol();
+    symbol[0] = RSIGetSymbol();
 
-    len = strlen( symbol_ch ) + strlen( YAHOO_URL_START ) + strlen( YAHOO_URL_MIDDLE_ONE ) + strlen( YAHOO_URL_MIDDLE_TWO ) + strlen( YAHOO_URL_END ) + 25;
-    char* Url = malloc ( len );
-    snprintf(Url, len, YAHOO_URL_START"%s"YAHOO_URL_MIDDLE_ONE"%d"YAHOO_URL_MIDDLE_TWO"%d"YAHOO_URL_END, symbol_ch, (int)start, (int)end);
-
-    free( symbol_ch );
-    return Url;
+    len = strlen( symbol[0] ) + strlen( YAHOO_URL_START ) + strlen( YAHOO_URL_MIDDLE_ONE ) + strlen( YAHOO_URL_MIDDLE_TWO ) + strlen( YAHOO_URL_END ) + 25;
+    url[0] = malloc ( len );
+    snprintf(url[0], len, YAHOO_URL_START"%s"YAHOO_URL_MIDDLE_ONE"%d"YAHOO_URL_MIDDLE_TWO"%d"YAHOO_URL_END, symbol[0], (int)start, (int)end);
 }
 
-void SetRSIStore (GtkListStore *store) {
+MemType *RSIMulticurlProcessing (char **symbol){
+    char *MyUrl=NULL;
+    RSIGetSymbolAndURL (&MyUrl, symbol);
+
+    CURLM *mult_hnd = SetUpMultiCurlHandle();
+    MemType *MyOutputStruct = (MemType*)malloc( sizeof(*MyOutputStruct) );
+
+    SetUpCurlHandle( mult_hnd, MyUrl, MyOutputStruct );
+    if ( PerformMultiCurl_no_prog( mult_hnd ) != 0 ) { free ( MyUrl ); return NULL; }
+    free ( MyUrl );
+
+    return MyOutputStruct;
+}
+
+void SetRSIStore (GtkListStore *store, void *data) {
+    MemType *MyOutputStruct;
+    data ? (MyOutputStruct = (MemType*)data) : (MyOutputStruct = NULL);
+
     double gain, avg_gain = 0, avg_loss = 0, cur_price, prev_price, rsi, change;
     char *price_ch, *high_ch, *low_ch, *opening_ch, *prev_closing_ch, *change_ch, *indicator_ch;
     char gain_ch[10], rsi_ch[10], volume_ch[15];
-    char *MyUrl = RSIGetURL ();
     long volume;
     int *new_order = (int*)malloc (1), *tmp;
 
     GtkTreeIter iter;
 
-    CURLM *mult_hnd = SetUpMultiCurlHandle();
-    MemType MyOutputStruct;
-    SetUpCurlHandle( mult_hnd, MyUrl, &MyOutputStruct );
-    if ( PerformMultiCurl_no_prog( mult_hnd ) != 0 ) { free( new_order ); free ( MyUrl ); return; }
-    free ( MyUrl );
-
-    if( MyOutputStruct.memory == NULL ) { free( new_order ); return; }
+    if( MyOutputStruct == NULL ) { free( new_order ); return; }
+    if( MyOutputStruct->memory == NULL ) { free( new_order ); return; }
 
     /* Convert a String to a File Pointer Stream for Reading */
-    FILE* fp = fmemopen( (void*)MyOutputStruct.memory, strlen( MyOutputStruct.memory ) + 1, "r" );
+    FILE* fp = fmemopen( (void*)MyOutputStruct->memory, strlen( MyOutputStruct->memory ) + 1, "r" );
     
     int counter = 0, c = 0;
     char line[1024];
@@ -1071,7 +1091,10 @@ void SetRSIStore (GtkListStore *store) {
     }
     
     fclose( fp );
-    free( MyOutputStruct.memory ); 
+
+    /* Free MyOutputStruct */
+    free( MyOutputStruct->memory );
+    free( MyOutputStruct );  
     if ( c > 0){
         /* For the zero row, c = 1 after one iteration, so subtract one
            before the next calculation. */
@@ -1089,19 +1112,19 @@ void SetRSIStore (GtkListStore *store) {
     }
 }
 
-GtkListStore* MakeRSIStore ()
+GtkListStore* MakeRSIStore (void *data)
 { 
     GtkListStore *store;
 
     /* Set up the storage container with the number of columns and column type */
     store = gtk_list_store_new(RSI_N_COLUMNS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 
-    /* Add data to the storage container. */
-    SetRSIStore (store); 
+    /* Add data to the storage container, pass in the outputstruct pointer. */
+    SetRSIStore ( store, data ); 
     return store;
 }
 
-int RSIMakeGUI ()
+int RSIMakeGUI (void *data)
 {
     GtkListStore *store = NULL;
     GtkWidget* list = GTK_WIDGET ( gtk_builder_get_object (builder, "ViewRSITreeView") );
@@ -1109,8 +1132,8 @@ int RSIMakeGUI ()
     /* Set the columns for the new TreeView model */
     RSISetColumns ();
 
-    /* Set up the storage container */
-    store = MakeRSIStore ();   
+    /* Set up the storage container, pass in the outputstruct pointer. */
+    store = MakeRSIStore ( data );   
     
     /* Add the store of data to the list. */
     gtk_tree_view_set_model(GTK_TREE_VIEW(list), GTK_TREE_MODEL(store));
