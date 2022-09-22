@@ -44,7 +44,9 @@ void SqliteRemoveAllEquity (equity_folder*);
 void SqliteAddBullion (char*,char*,char*,metal*);
 void SqliteAddCash (char*,meta*);
 void SqliteAddAPIData (char*,char*,meta*);
-void SqliteChangeWindowSize (int,int);
-void SqliteChangeWindowPos (int,int);
+void SqliteChangeMainWindowSize (int,int);
+void SqliteChangeMainWindowPos (int,int);
+void SqliteChangeRSIWindowSize (int,int);
+void SqliteChangeRSIWindowPos (int,int);
 
 #endif /* SQLITE_HEADER_H */

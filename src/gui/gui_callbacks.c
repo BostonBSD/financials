@@ -70,17 +70,36 @@ void GUICallbackHandler ( GtkWidget *widget, void *data )
     pthread_create( &thread_id, NULL, GUIThreadHandler, data );
 }
 
-gboolean CallbackHandler_alt ( GtkWidget *window )
+gboolean CallbackHandler_Window_Data ( GtkWidget *window, GdkEvent *event, void *data )
 {
+    /*
+        The "event->configure.x" and "event->configure.y" data members are slightly
+        less accurate than the gtk_window_get_position function, so we're not using 
+        the GdkEvent data type.
+    */
+    if( !( event ) ) return false;
     gint width, height, x, y;
     gtk_window_get_size ( GTK_WINDOW( window ), &width, &height );
     gtk_window_get_position ( GTK_WINDOW ( window ), &x, &y );
 
-    MainWindowStruct.width = (int)width;
-    MainWindowStruct.height = (int)height;
-    
-    MainWindowStruct.x_pos = (int)x;
-    MainWindowStruct.y_pos = (int)y;
+    int s = (int)((uintptr_t)data);    
+
+    switch( s ){
+        case GUI_MAIN_WINDOW:
+            WindowStruct.main_width = (int)width;
+            WindowStruct.main_height = (int)height;
+
+            WindowStruct.main_x_pos = (int)x;
+            WindowStruct.main_y_pos = (int)y;
+            break;
+        case GUI_RSI_WINDOW:
+            WindowStruct.rsi_width = (int)width;
+            WindowStruct.rsi_height = (int)height;
+            
+            WindowStruct.rsi_x_pos = (int)x;
+            WindowStruct.rsi_y_pos = (int)y;
+            break;    
+    }
 
     /* TRUE to stop other handlers from being invoked for the event. 
        FALSE to propagate the event further. 

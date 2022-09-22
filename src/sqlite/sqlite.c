@@ -150,30 +150,58 @@ int api_callback(void *data, int argc, char **argv, char **ColName) {
     return 0;
 }
 
-int wndwsz_callback(void *data, int argc, char **argv, char **ColName) {
+int main_wndwsz_callback(void *data, int argc, char **argv, char **ColName) {
     /* argv[0] is Id, argv[1] is height, argv[2] is width */
     if ( argc != 3 ) return 1;
     if ( strcmp( ColName[0], "Id") != 0 ) return 1;
     if ( strcmp( ColName[1], "Height") != 0 ) return 1;
     if ( strcmp( ColName[2], "Width") != 0 ) return 1;
 
-    main_window_data *window = (main_window_data*)data;
-    window->height = (int)strtol( argv[1] ? argv[1] : "0", NULL, 10 );
-    window->width = (int)strtol( argv[2] ? argv[2] : "0", NULL, 10 );
+    window_data *window = (window_data*)data;
+    window->main_height = (int)strtol( argv[1] ? argv[1] : "0", NULL, 10 );
+    window->main_width = (int)strtol( argv[2] ? argv[2] : "0", NULL, 10 );
     
     return 0;
 }
 
-int wndwpos_callback(void *data, int argc, char **argv, char **ColName) {
+int main_wndwpos_callback(void *data, int argc, char **argv, char **ColName) {
     /* argv[0] is Id, argv[1] is X, argv[2] is Y */
     if ( argc != 3 ) return 1;
     if ( strcmp( ColName[0], "Id") != 0 ) return 1;
     if ( strcmp( ColName[1], "X") != 0 ) return 1;
     if ( strcmp( ColName[2], "Y") != 0 ) return 1;
 
-    main_window_data *window = (main_window_data*)data;
-    window->x_pos = (int)strtol( argv[1] ? argv[1] : "0", NULL, 10 );
-    window->y_pos = (int)strtol( argv[2] ? argv[2] : "0", NULL, 10 );
+    window_data *window = (window_data*)data;
+    window->main_x_pos = (int)strtol( argv[1] ? argv[1] : "0", NULL, 10 );
+    window->main_y_pos = (int)strtol( argv[2] ? argv[2] : "0", NULL, 10 );
+    
+    return 0;
+}
+
+int rsi_wndwsz_callback(void *data, int argc, char **argv, char **ColName) {
+    /* argv[0] is Id, argv[1] is height, argv[2] is width */
+    if ( argc != 3 ) return 1;
+    if ( strcmp( ColName[0], "Id") != 0 ) return 1;
+    if ( strcmp( ColName[1], "Height") != 0 ) return 1;
+    if ( strcmp( ColName[2], "Width") != 0 ) return 1;
+
+    window_data *window = (window_data*)data;
+    window->rsi_height = (int)strtol( argv[1] ? argv[1] : "0", NULL, 10 );
+    window->rsi_width = (int)strtol( argv[2] ? argv[2] : "0", NULL, 10 );
+    
+    return 0;
+}
+
+int rsi_wndwpos_callback(void *data, int argc, char **argv, char **ColName) {
+    /* argv[0] is Id, argv[1] is X, argv[2] is Y */
+    if ( argc != 3 ) return 1;
+    if ( strcmp( ColName[0], "Id") != 0 ) return 1;
+    if ( strcmp( ColName[1], "X") != 0 ) return 1;
+    if ( strcmp( ColName[2], "Y") != 0 ) return 1;
+
+    window_data *window = (window_data*)data;
+    window->rsi_x_pos = (int)strtol( argv[1] ? argv[1] : "0", NULL, 10 );
+    window->rsi_y_pos = (int)strtol( argv[2] ? argv[2] : "0", NULL, 10 );
     
     return 0;
 }
@@ -215,6 +243,14 @@ void SqliteProcessing (equity_folder* F, metal *M, meta *D){
     sql_cmd = "CREATE TABLE IF NOT EXISTS mainwindowpos(Id INTEGER PRIMARY KEY, X TEXT NOT NULL, Y TEXT NOT NULL);";
     if ( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK ) ErrorMsg( db );
 
+    /* Create the rsiwindowsize table if it doesn't already exist. */
+    sql_cmd = "CREATE TABLE IF NOT EXISTS rsiwindowsize(Id INTEGER PRIMARY KEY, Height TEXT NOT NULL, Width TEXT NOT NULL);";
+    if ( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK ) ErrorMsg( db );
+
+    /* Create the rsiwindowpos table if it doesn't already exist. */
+    sql_cmd = "CREATE TABLE IF NOT EXISTS rsiwindowpos(Id INTEGER PRIMARY KEY, X TEXT NOT NULL, Y TEXT NOT NULL);";
+    if ( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK ) ErrorMsg( db );
+
     /* Reset Equity Folder */
     ResetEquity ( F );
 
@@ -232,21 +268,37 @@ void SqliteProcessing (equity_folder* F, metal *M, meta *D){
     if ( sqlite3_exec(db, sql_cmd, api_callback, D, &err_msg) != SQLITE_OK ) ErrorMsg( db );
 
     sql_cmd = "SELECT * FROM mainwindowsize;";
-    if ( sqlite3_exec(db, sql_cmd, wndwsz_callback, &MainWindowStruct, &err_msg) != SQLITE_OK ) ErrorMsg( db );
+    if ( sqlite3_exec(db, sql_cmd, main_wndwsz_callback, &WindowStruct, &err_msg) != SQLITE_OK ) ErrorMsg( db );
 
     sql_cmd = "SELECT * FROM mainwindowpos;";
-    if ( sqlite3_exec(db, sql_cmd, wndwpos_callback, &MainWindowStruct, &err_msg) != SQLITE_OK ) ErrorMsg( db );
+    if ( sqlite3_exec(db, sql_cmd, main_wndwpos_callback, &WindowStruct, &err_msg) != SQLITE_OK ) ErrorMsg( db );
 
-    if( MainWindowStruct.width == 0 || MainWindowStruct.height == 0 ){
+    sql_cmd = "SELECT * FROM rsiwindowsize;";
+    if ( sqlite3_exec(db, sql_cmd, rsi_wndwsz_callback, &WindowStruct, &err_msg) != SQLITE_OK ) ErrorMsg( db );
+
+    sql_cmd = "SELECT * FROM rsiwindowpos;";
+    if ( sqlite3_exec(db, sql_cmd, rsi_wndwpos_callback, &WindowStruct, &err_msg) != SQLITE_OK ) ErrorMsg( db );
+
+    if( WindowStruct.main_width == 0 || WindowStruct.main_height == 0 ){
         /* The Original Production Size, if never run before */
-        MainWindowStruct.height = 850;
-        MainWindowStruct.width = 900;
+        WindowStruct.main_width = 900;
+        WindowStruct.main_height = 850;
     }
 
-    if( MainWindowStruct.x_pos == 0 && MainWindowStruct.y_pos == 0 ){
-        /* The Original Production position, if never run before */
-        MainWindowStruct.x_pos = 0;
-        MainWindowStruct.y_pos = 35;
+    if( WindowStruct.main_x_pos == 0 && WindowStruct.main_y_pos == 0 ){
+        WindowStruct.main_x_pos = 0;
+        WindowStruct.main_y_pos = 32;
+    }
+
+    if( WindowStruct.rsi_width == 0 || WindowStruct.rsi_height == 0 ){
+        /* The Original Production Size, if never run before */
+        WindowStruct.rsi_width = 925;
+        WindowStruct.rsi_height = 700;
+    }
+
+    if( WindowStruct.rsi_x_pos == 0 && WindowStruct.rsi_y_pos == 0 ){
+        WindowStruct.rsi_x_pos = 0;
+        WindowStruct.rsi_y_pos = 32;
     }
 
     /* Close the sqlite database file. */
@@ -425,7 +477,7 @@ void SqliteRemoveAllEquity (equity_folder *F){
     ResetEquity ( F );
 }
 
-void SqliteChangeWindowSize (int width, int height){
+void SqliteChangeMainWindowSize (int width, int height){
     size_t  len;
     char    *err_msg = 0;
     sqlite3 *db;
@@ -446,7 +498,7 @@ void SqliteChangeWindowSize (int width, int height){
     sqlite3_close( db );
 }
 
-void SqliteChangeWindowPos (int x, int y){
+void SqliteChangeMainWindowPos (int x, int y){
     size_t  len;
     char    *err_msg = 0;
     sqlite3 *db;
@@ -460,6 +512,48 @@ void SqliteChangeWindowPos (int x, int y){
     len = strlen("INSERT INTO mainwindowpos VALUES(1, '', '');") + 64;
     char *sql_cmd = (char*) malloc( len );
     snprintf( sql_cmd, len, "INSERT INTO mainwindowpos VALUES(1, '%d', '%d');", x, y );
+    if ( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK ) ErrorMsg( db );
+    free( sql_cmd );
+
+    /* Close the sqlite database file. */
+    sqlite3_close( db );
+}
+
+void SqliteChangeRSIWindowSize (int width, int height){
+    size_t  len;
+    char    *err_msg = 0;
+    sqlite3 *db;
+
+    /* Open the sqlite database file. */
+    if ( sqlite3_open( MetaData->sqlite_db_path_ch, &db) != SQLITE_OK ) ErrorMsg( db );
+
+    /* Delete entry if already exists, then insert entry. */
+    if ( sqlite3_exec(db, "DELETE FROM rsiwindowsize WHERE Id = 1;", 0, 0, &err_msg) != SQLITE_OK ) ErrorMsg( db );
+
+    len = strlen("INSERT INTO rsiwindowsize VALUES(1, '', '');") + 64;
+    char *sql_cmd = (char*) malloc( len );
+    snprintf( sql_cmd, len, "INSERT INTO rsiwindowsize VALUES(1, '%d', '%d');", height, width );
+    if ( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK ) ErrorMsg( db );
+    free( sql_cmd );
+
+    /* Close the sqlite database file. */
+    sqlite3_close( db );
+}
+
+void SqliteChangeRSIWindowPos (int x, int y){
+    size_t  len;
+    char    *err_msg = 0;
+    sqlite3 *db;
+
+    /* Open the sqlite database file. */
+    if ( sqlite3_open( MetaData->sqlite_db_path_ch, &db) != SQLITE_OK ) ErrorMsg( db );
+
+    /* Delete entry if already exists, then insert entry. */
+    if ( sqlite3_exec(db, "DELETE FROM rsiwindowpos WHERE Id = 1;", 0, 0, &err_msg) != SQLITE_OK ) ErrorMsg( db );
+
+    len = strlen("INSERT INTO rsiwindowpos VALUES(1, '', '');") + 64;
+    char *sql_cmd = (char*) malloc( len );
+    snprintf( sql_cmd, len, "INSERT INTO rsiwindowpos VALUES(1, '%d', '%d');", x, y );
     if ( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK ) ErrorMsg( db );
     free( sql_cmd );
 

@@ -334,8 +334,10 @@ void *GUIThreadHandler(void *data){
             pthread_mutex_lock( &mutex_working[2] );
 
             /* Save the Window Size and Location. */
-            SqliteChangeWindowSize ( MainWindowStruct.width, MainWindowStruct.height );
-            SqliteChangeWindowPos ( MainWindowStruct.x_pos, MainWindowStruct.y_pos );
+            SqliteChangeMainWindowSize ( WindowStruct.main_width , WindowStruct.main_height );
+            SqliteChangeMainWindowPos ( WindowStruct.main_x_pos, WindowStruct.main_y_pos );
+            SqliteChangeRSIWindowSize ( WindowStruct.rsi_width, WindowStruct.rsi_height );
+            SqliteChangeRSIWindowPos ( WindowStruct.rsi_x_pos, WindowStruct.rsi_y_pos );
 
             /* Exit the GTK main loop. */
             gtk_main_quit ();

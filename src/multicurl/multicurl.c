@@ -34,7 +34,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../gui/gui.h" /* We need a function, void UpDateProgressBarGUI (double*), 
                     from this header.  */
 
-#define MAX_WAIT_MSECS 250
+#define MAX_WAIT_MSECS 5000
 
 static size_t write_callback(char *ptr, size_t size, size_t nmemb, void *userdata)
 /* cURL callback function [read in datastream to memory]
@@ -91,8 +91,8 @@ void *SetUpCurlHandle(CURLM *mh, char *url, MemType *output)
         curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, write_callback);
         /* Send the address of the data struct to callback func. */
         curl_easy_setopt(hnd, CURLOPT_WRITEDATA, (void *)output);
-        /* Timeout after 1 second. */
-        curl_easy_setopt(hnd, CURLOPT_CONNECTTIMEOUT, 1);
+        /* Timeout after 5 seconds. */
+        curl_easy_setopt(hnd, CURLOPT_CONNECTTIMEOUT, 5);
         //curl_easy_setopt(hnd, CURLOPT_VERBOSE, 1);
 
         curl_multi_add_handle(mh, hnd);

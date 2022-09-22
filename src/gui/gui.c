@@ -33,7 +33,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../financials.h"
 
 GtkBuilder *builder;
-main_window_data MainWindowStruct;
+window_data WindowStruct;
 symbol_to_security_name_container **security_symbol;
 int symbolcount = 0;
 
@@ -769,7 +769,12 @@ int ShowHideViewRSIWindow ()
     
     if ( visible ){
         gtk_widget_set_visible ( window, false );
+        gtk_window_resize ( GTK_WINDOW ( window ), WindowStruct.rsi_width, WindowStruct.rsi_height );
+        gtk_window_move ( GTK_WINDOW ( window ), WindowStruct.rsi_x_pos, WindowStruct.rsi_y_pos );
     } else {
+        gtk_window_resize ( GTK_WINDOW ( window ), WindowStruct.rsi_width, WindowStruct.rsi_height );
+        gtk_window_move ( GTK_WINDOW ( window ), WindowStruct.rsi_x_pos, WindowStruct.rsi_y_pos );
+
         GtkWidget* Button = GTK_WIDGET ( gtk_builder_get_object (builder, "ViewRSIFetchDataBTN") );
         gtk_widget_set_sensitive ( Button, false );
         g_object_set ( G_OBJECT ( Button ), "can-default", TRUE, "has-default", TRUE, NULL );
@@ -1755,9 +1760,9 @@ void GUISignalConnect ()
        casting truncation. */
     window = gtk_builder_get_object (builder, "MainWindow");
     g_signal_connect ( window, "destroy", G_CALLBACK ( GUICallbackHandler ), (void *)EXIT_APPLICATION );
-    g_signal_connect ( window, "configure-event", G_CALLBACK ( CallbackHandler_alt ), NULL );
-    gtk_window_resize ( GTK_WINDOW ( window ), MainWindowStruct.width, MainWindowStruct.height );
-    gtk_window_move ( GTK_WINDOW ( window ), MainWindowStruct.x_pos, MainWindowStruct.y_pos );
+    g_signal_connect ( window, "configure-event", G_CALLBACK ( CallbackHandler_Window_Data ), (void *)GUI_MAIN_WINDOW );
+    gtk_window_resize ( GTK_WINDOW ( window ), WindowStruct.main_width, WindowStruct.main_height );
+    gtk_window_move ( GTK_WINDOW ( window ), WindowStruct.main_x_pos, WindowStruct.main_y_pos );
 
     button = gtk_builder_get_object (builder, "FetchDataBTN");
     g_signal_connect ( button, "clicked", G_CALLBACK ( GUICallbackHandler ), (void *)FETCH_DATA_BTN );
@@ -1885,6 +1890,9 @@ void GUISignalConnect ()
 
     window = gtk_builder_get_object (builder, "ViewRSIWindow");
     g_signal_connect( window, "delete_event", G_CALLBACK( gtk_widget_hide_on_delete ), NULL);
+    g_signal_connect ( window, "configure-event", G_CALLBACK ( CallbackHandler_Window_Data ), (void *)GUI_RSI_WINDOW );
+    gtk_window_resize ( GTK_WINDOW ( window ), WindowStruct.rsi_width, WindowStruct.rsi_height );
+    gtk_window_move ( GTK_WINDOW ( window ), WindowStruct.rsi_x_pos, WindowStruct.rsi_y_pos );
 
     button = gtk_builder_get_object (builder, "ViewRSICloseBTN");
     g_signal_connect ( button, "clicked", G_CALLBACK ( GUICallbackHandler ), (void *)VIEW_RSI_BTN );

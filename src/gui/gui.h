@@ -77,11 +77,22 @@ typedef struct {
 } right_click_container;
 
 typedef struct {
-  int height;
-  int width;
-  int x_pos;
-  int y_pos;
-} main_window_data;
+  int main_height;
+  int main_width;
+  int main_x_pos;
+  int main_y_pos;
+  int rsi_height;
+  int rsi_width;
+  int rsi_x_pos;
+  int rsi_y_pos;
+} window_data;
+
+/* Window Signals */
+enum {
+  GUI_MAIN_WINDOW,
+  GUI_RSI_WINDOW
+};
+
 
 /* TreeView Data Column Type */
 enum {
@@ -160,7 +171,7 @@ typedef enum {
 
 /* Global Variables */
 extern GtkBuilder *builder;                                 /* The Gtk builder object */
-extern main_window_data MainWindowStruct;                   /* A struct that hold the size and position of 
+extern window_data WindowStruct;                        /* A struct that hold the size and position of 
                                                                the main window. */
 extern symbol_to_security_name_container **security_symbol; /* A mapping between sec symbols and sec names */
 extern int symbolcount;                                     /* The number of symbols in the mapping. */
@@ -203,7 +214,7 @@ void CompletionSymbolFetch ();
 /* GUI Callback Functions */
 void AddRemoveSecuritySwitch (GtkSwitch*,bool,void*);
 void GUICallbackHandler (GtkWidget*,void*);
-gboolean CallbackHandler_alt (GtkWidget*);
+gboolean CallbackHandler_Window_Data (GtkWidget*,GdkEvent*,void*);
 gboolean GUICallbackHandler_select_comp (GtkEntryCompletion*,GtkTreeModel*,GtkTreeIter*);
 gboolean GUICallbackHandler_cursor_comp (GtkEntryCompletion*,GtkTreeModel*,GtkTreeIter*);
 

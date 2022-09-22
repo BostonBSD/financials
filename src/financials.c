@@ -112,11 +112,15 @@ int main (int argc, char *argv[])
     Precious = class_init_metal ();
     MetaData = class_init_meta_data ();
 
-    /* Initialize the MainWindow size and position. */
-    MainWindowStruct.height = 0;
-    MainWindowStruct.width = 0;
-    MainWindowStruct.x_pos = 0;
-    MainWindowStruct.y_pos = 0;
+    /* Initialize the Main and RSI Window size and position. */
+    WindowStruct.main_height = 0;
+    WindowStruct.main_width = 0;
+    WindowStruct.main_x_pos = 0;
+    WindowStruct.main_y_pos = 0;
+    WindowStruct.rsi_height = 0;
+    WindowStruct.rsi_width = 0;
+    WindowStruct.rsi_x_pos = 0;
+    WindowStruct.rsi_y_pos = 0;
 
     /* Read config file and populate associated variables */
 	ReadConfig( Precious, MetaData, Folder );
