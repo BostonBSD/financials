@@ -268,11 +268,11 @@ void *GUIThreadHandler(void *data){
             gdk_threads_add_idle( RSICursorMove, NULL );
             break;
         case VIEW_RSI_COMPLETION:
-            /* This thread won't block the Gtk main loop, but it may crash Gtk. */
-            /* If the program appears to crash on loading uncomment the next 
-               line and comment the line after. */
-            //gdk_threads_add_idle( ViewRSICompletionSet, NULL );
-            ViewRSICompletionSet ();
+            /* Fetch the stock symbols and names outside the Gtk
+               main loop, then create a GtkListStore and set it into
+               a GtkEntryCompletion widget. */
+            CompletionSymbolFetch ();
+            gdk_threads_add_idle( ViewRSICompletionSet, NULL );
             break;
         case SHORTCUT_KEYS_BTN:
             gdk_threads_add_idle( ShowHideShortcutWindow, NULL );

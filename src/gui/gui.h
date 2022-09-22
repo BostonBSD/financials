@@ -198,6 +198,7 @@ int RSISetColumns ();
 int ViewRSICompletionSet ();
 GtkListStore* MakeRSIStore ();
 void symbol_security_name_map_destruct ();
+void CompletionSymbolFetch ();
 
 /* GUI Callback Functions */
 void AddRemoveSecuritySwitch (GtkSwitch*,bool,void*);

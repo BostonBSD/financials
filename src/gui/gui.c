@@ -591,13 +591,11 @@ gboolean ViewRSICompletionMatchFunc( GtkEntryCompletion *completion, const gchar
     return ans;
 }
 
-GtkListStore *CompletionSymbolFetch ()
+void CompletionSymbolFetch ()
 /* This function is only meant to be run once, at application startup. */
 {
-    GtkListStore *store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+    
     char *tofree;
-    GtkTreeIter iter;
-
     char *line = malloc ( 1024 ), *line_start;
 	char *token;
 	char *output, *tmp, *original;
@@ -613,7 +611,7 @@ GtkListStore *CompletionSymbolFetch ()
    	MemType Nasdaq_Struct, NYSE_Struct;
     SetUpCurlHandle( mult_hnd, Nasdaq_Url, &Nasdaq_Struct );
     SetUpCurlHandle( mult_hnd, NYSE_Url, &NYSE_Struct );
-    if ( PerformMultiCurl_no_prog( mult_hnd ) != 0 ) { free( line ); free( security_symbol ); return store; }
+    if ( PerformMultiCurl_no_prog( mult_hnd ) != 0 ) { free( line ); free( security_symbol ); }
 
     /* Convert a String to a File Pointer Stream for Reading */
     FILE* fp[2];
@@ -631,7 +629,7 @@ GtkListStore *CompletionSymbolFetch ()
             	fclose( fp[0] ); 
                 fclose( fp[1] );
                 symbol_security_name_map_destruct ();
-            	return 0;
+            	return;
         }
 
         /* Read the file stream one line at a time */
@@ -711,7 +709,16 @@ GtkListStore *CompletionSymbolFetch ()
     free( line );
 
     /* Sort the security symbol array, this merges both lists into one sorted list. */
-    qsort( &security_symbol[ 0 ], symbolcount, sizeof(symbol_to_security_name_container*), AlphaAscSecName );
+    qsort( &security_symbol[ 0 ], symbolcount, sizeof(symbol_to_security_name_container*), AlphaAscSecName );    
+
+    free( Nasdaq_Struct.memory );
+    free( NYSE_Struct.memory );
+    return;
+}
+
+GtkListStore * CompletionSymbolSetStore (){
+    GtkListStore *store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+    GtkTreeIter iter;
 
     char item[35];
     /* Populate the GtkListStore with the string of stock symbols in column 0, stock names in column 1, 
@@ -724,16 +731,13 @@ GtkListStore *CompletionSymbolFetch ()
         /* Completion matches based off of the symbol or the company name, inserts the symbol, displays both */
         gtk_list_store_set( store, &iter, 0, security_symbol[ i ]->symbol, 1, security_symbol[ i ]->security_name, 2, item, -1 );
     }
-
-    free( Nasdaq_Struct.memory );
-    free( NYSE_Struct.memory );
     return store;
 }
 
 int ViewRSICompletionSet (){
     GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ViewRSISymbolEntryBox") );
     GtkEntryCompletion *completion = gtk_entry_completion_new();
-    GtkListStore *store = CompletionSymbolFetch ();
+    GtkListStore *store = CompletionSymbolSetStore(); 
 
     gtk_entry_completion_set_model(completion, GTK_TREE_MODEL( store ));
     g_object_unref( store );
@@ -919,7 +923,6 @@ char *GetSecurityNameFromMapping(char *s)
     } else {
         return NULL;
     }
-
 }
 
 char* RSIGetSymbol()
