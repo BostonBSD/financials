@@ -946,8 +946,7 @@ int SetSecurityNameLabel (void *data){
 }
 
 char* RSIGetSymbol()
-/* Get the stock symbol from the EntryBox. Get the security name using the symbol.
-   Set the security name to a Gtklabel, return the symbol.
+/* Get the stock symbol from the EntryBox.
    Must free return value. 
    
    Because we are not setting any widgets, we should not worry about crashing Gtk outside
@@ -968,9 +967,9 @@ char* RSIGetSymbol()
 void RSIGetSymbolAndURL (char **url,char **symbol){
     time_t start, end;
     size_t len;
-
-    RSIPeriod( &end, &start );
     symbol[0] = RSIGetSymbol();
+    
+    RSIPeriod( &end, &start );
 
     len = strlen( symbol[0] ) + strlen( YAHOO_URL_START ) + strlen( YAHOO_URL_MIDDLE_ONE ) + strlen( YAHOO_URL_MIDDLE_TWO ) + strlen( YAHOO_URL_END ) + 25;
     url[0] = malloc ( len );
