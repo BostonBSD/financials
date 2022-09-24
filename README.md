@@ -29,9 +29,9 @@ The user needs a free account at finnhub.io, which will give them an access key.
 
 Finnhub's free account has a maximum of 60 API calls per minute.
 
-If the software returns all zero values this means the API maxiumum has been reached and is not a problem with the software.
+If the software returns all zero values this means the API maximum has been reached, it is not a problem with the software.
 
-Bullion data is collected through Yahoo! [the Finnhub free account does not offer bullion data].
+Bullion data is collected through Yahoo! Finance [the Finnhub free account does not offer bullion data].
 
 ----------------------------------------------------------
 Has been tested on FreeBSD 13.1, Fedora 35, 
