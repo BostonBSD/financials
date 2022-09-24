@@ -227,12 +227,12 @@ void GetBullionUrl_Yahoo ( char** SilverUrl, char** GoldUrl ){
         /* the start time needs to be Friday, so minus one day */
         start_time = end_time - 86400;
 
-    /* if today is a monday holiday in NY */
+    /* if today is a Monday holiday in NY */
     } else if (*MetaData->holiday_bool && NY_tz.tm_wday == 1){
         /* the start time needs to be Friday, so minus three days */
         start_time = end_time - (86400 * 3);
 
-    /* if today is a non-monday holiday in NY */
+    /* if today is a non-Monday holiday in NY */
     } else if (*MetaData->holiday_bool && NY_tz.tm_wday != 1){
         /* the start time needs to be yesterday, so minus one day */
         start_time = end_time - 86400;
@@ -276,15 +276,14 @@ void ParseBullionData_Yahoo (double *silver_f, double *gold_f){
     
     char line[1024];
     char **csv_array;
-    
-    /* Get rid of the header line from the file stream */
-    if (fgets( line, 1024, fp) == NULL) { fclose( fp ); return; }
-    /* Get the current spot price */
-    if (fgets( line, 1024, fp) == NULL) { fclose( fp ); return; }
+
+    /* Yahoo! sometimes updates bullion when the equities markets are closed. 
+       The while loop iterates to the end of file to get the latest data. */
+    while (fgets( line, 1024, fp) != NULL);
     
     chomp( line );
     csv_array = parse_csv( line );
-    *silver_f = strtod( csv_array[ 4 ], NULL );
+    *silver_f = strtod( csv_array[ 4 ] ? csv_array[ 4 ] : "0", NULL );
     free_csv_line( csv_array );
     fclose( fp );
     free( SilverOutputStruct.memory ); 
@@ -292,15 +291,11 @@ void ParseBullionData_Yahoo (double *silver_f, double *gold_f){
     /* Convert a String to a File Pointer Stream for Reading */
     fp = fmemopen( (void*)GoldOutputStruct.memory, strlen( GoldOutputStruct.memory ) + 1, "r" );
     
-    /* Get rid of the header line from the file stream */
-    if (fgets( line, 1024, fp) == NULL) { fclose( fp ); return; }
-    
-    /* Get the current spot price */
-    if (fgets( line, 1024, fp) == NULL) { fclose( fp ); return; }
+    while (fgets( line, 1024, fp) != NULL);
     
     chomp( line );
     csv_array = parse_csv( line );
-    *gold_f = strtod( csv_array[ 4 ], NULL );
+    *gold_f = strtod( csv_array[ 4 ] ? csv_array[ 4 ] : "0", NULL );
     free_csv_line( csv_array );
     fclose( fp );
     free( GoldOutputStruct.memory ); 

@@ -489,6 +489,10 @@ int OKRemoveSecurityAddRemoveSecurityWindow ()
 
 int OKSecurityAddRemoveSecurityWindow ()
 {
+    /* This mutex prevents the program from crashing if a
+        FETCH_DATA_BTN signal is run in parallel with this thread. */
+    pthread_mutex_lock( &mutex_working[2] );
+
     GtkWidget* Switch = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecuritySwitch") );
     gboolean SwitchSet = gtk_switch_get_active ( GTK_SWITCH( Switch ) );
 
@@ -497,6 +501,8 @@ int OKSecurityAddRemoveSecurityWindow ()
     } else {
         OKRemoveSecurityAddRemoveSecurityWindow ();
     }
+
+    pthread_mutex_unlock( &mutex_working[2] );
 
     return 0;
 }
@@ -593,6 +599,11 @@ gboolean ViewRSICompletionMatchFunc( GtkEntryCompletion *completion, const gchar
 }
 
 int ViewRSICompletionSet (void *data){
+    /* This mutex prevents the program from crashing if an
+       EXIT_APPLICATION signal is run in parallel with this thread.
+    */
+    pthread_mutex_lock( &mutex_working[6] );
+
     GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ViewRSISymbolEntryBox") );
     GtkEntryCompletion *completion = gtk_entry_completion_new();
     GtkListStore *store = CompletionSymbolSetStore( data );
@@ -616,6 +627,7 @@ int ViewRSICompletionSet (void *data){
     g_signal_connect ( G_OBJECT( completion ), "match-selected", G_CALLBACK ( GUICallbackHandler_select_comp ), NULL );
     g_signal_connect ( G_OBJECT( completion ), "cursor-on-match", G_CALLBACK ( GUICallbackHandler_cursor_comp ), NULL );
 
+    pthread_mutex_unlock( &mutex_working[6] );
     return 0;
 }
 

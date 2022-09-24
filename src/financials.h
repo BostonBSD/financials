@@ -82,7 +82,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 /* The number of system mutexes */
 #ifndef MUTEX_NUMBER
-#define MUTEX_NUMBER 6
+#define MUTEX_NUMBER 7
 #endif
 
 /* The current locale */

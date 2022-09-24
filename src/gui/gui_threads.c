@@ -104,8 +104,10 @@ void *GUIThreadHandler(void *data){
             
             while( current_time < end_time && *MetaData->fetching_data_bool == true ){
                 /* This mutex prevents the program from crashing if an
-                   EXIT_APPLICATION or ADD_REMOVE_SEC_OK_BTN
-                   signal is run in parallel with this thread. */
+                   EXIT_APPLICATION, ADD_REMOVE_SEC_OK_BTN, 
+                   ADD_REMOVE_BUL_OK_BTN, ADD_REMOVE_CASH_OK_BTN, 
+                   or CHANGE_API_OK_BTN signal is run in parallel with 
+                   this thread. */
                 time( &start_curl );
                 pthread_mutex_lock( &mutex_working[2] );                
 
@@ -118,10 +120,10 @@ void *GUIThreadHandler(void *data){
                 JSONProcessing ();
                 PerformCalculations ();
 
+                pthread_mutex_unlock( &mutex_working[2] );
+
                 /* Set Gtk treeview. */
                 gdk_threads_add_idle ( MakeGUIOne, NULL );
-
-                pthread_mutex_unlock( &mutex_working[2] );
            
                 seconds_to_open = SecondsToOpen ();
                 /* If the market is closed or today is a holiday only loop once. */
@@ -155,21 +157,13 @@ void *GUIThreadHandler(void *data){
             break;
 
         case ADD_REMOVE_SEC_OK_BTN:            
-            /* We can pull this function out of the mutex block because
-               this thread is only run when the window is already visible
-               and associated widgets are reset when the window is already 
-               invisible. */
-            gdk_threads_add_idle( ShowHideAddRemoveSecurityWindow, NULL );
+            gdk_threads_add_idle( ShowHideAddRemoveSecurityWindow, NULL );            
 
-            /* This mutex prevents the program from crashing if a
-               FETCH_DATA_BTN signal is run in parallel with this thread. */
-            pthread_mutex_lock( &mutex_working[2] );
-            /* This function requires the window widgets to be set. */
+            /* The Mutex block is within this function. */
             gdk_threads_add_idle( OKSecurityAddRemoveSecurityWindow, NULL );
             
             if( *MetaData->fetching_data_bool == false ) gdk_threads_add_idle( DefaultTreeView, NULL );            
 
-            pthread_mutex_unlock( &mutex_working[2] );
             break;
 
         case ADD_REMOVE_SEC_CANCEL_BTN:
@@ -292,8 +286,23 @@ void *GUIThreadHandler(void *data){
             /* Fetch the stock symbols and names outside the Gtk
                main loop, then create a GtkListStore and set it into
                a GtkEntryCompletion widget. */
+
+            /* This mutex prevents the program from crashing if an
+               EXIT_APPLICATION signal is run in parallel with this thread.
+
+               This signal is only run once at application load.
+            */
+            pthread_mutex_lock( &mutex_working[6] );
+
             sym_map = CompletionSymbolFetch ();
+
+            pthread_mutex_unlock( &mutex_working[6] );
+
+            /* gdk_threads_add_idle is non-blocking, we need the same mutex
+               in the ViewRSICompletionSet function. */
             gdk_threads_add_idle( ViewRSICompletionSet, (void*)sym_map );
+
+            
             break;
         case SHORTCUT_KEYS_BTN:
             gdk_threads_add_idle( ShowHideShortcutWindow, NULL );
@@ -360,6 +369,10 @@ void *GUIThreadHandler(void *data){
             SqliteChangeRSIWindowSize ( WindowStruct.rsi_width, WindowStruct.rsi_height );
             SqliteChangeRSIWindowPos ( WindowStruct.rsi_x_pos, WindowStruct.rsi_y_pos );
 
+            /* This mutex prevents the program from crashing if a
+               VIEW_RSI_COMPLETION signal is run in parallel with this thread. */
+            pthread_mutex_lock( &mutex_working[6] );
+
             /* Exit the GTK main loop. */
             gtk_main_quit ();
 
@@ -367,6 +380,7 @@ void *GUIThreadHandler(void *data){
             symbol_security_name_map_destruct ( sym_map );
             free( sym_map );
 
+            pthread_mutex_unlock( &mutex_working[6] );
             pthread_mutex_unlock( &mutex_working[2] );
             break;
 
