@@ -26,6 +26,8 @@ The resulting binary should be in the build directory,
 which can be copied to wherever the user binaries are installed.
 
 The user needs a free account at finnhub.io, which will give them an access key.
+The finnhub.io free tier has a maximum of 60 API calls per minute.
+If the software returns all zero values, this means the API maxiumum has been reached, and is not a problem with the software.
 
 ----------------------------------------------------------
 Has been tested on FreeBSD 13.1, Fedora 35, 
