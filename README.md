@@ -45,16 +45,15 @@ to the corporation, which also has an influence on the stock price.
 
 Anomalies in the industry and in the corporation can create a false positive.  
 
-On a rising trendline an RSI of 50 can be taken as an Oversold signal.
+On a rising trendline an RSI of 50 can be taken as an oversold signal.
 
-On a falling trendline an RSI of 50 can be taken as an Overbought signal.
+On a falling trendline an RSI of 50 can be taken as an overbought signal.
 
 The indicator is not calibrated for rising and falling trendlines.
 
-Typically, an RSI less than 30 is oversold, and an RSI greater than 70 is overbought.
+Typically, an RSI less than 30 is oversold and an RSI greater than 70 is overbought.
 
-The indicator can be used to make short term trade decisions, but is relatively 
-useless for long term investing.
+The indicator can be used to make short term trade decisions, but is impractical for long term investing.
 
 You want to buy when the stock is oversold.
 
