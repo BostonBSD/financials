@@ -27,7 +27,7 @@ which can be copied to wherever the user binaries are installed.
 
 The user needs a free account at finnhub.io, which will give them an access key.
 
-The finnhub.io free tier has a maximum of 60 API calls per minute.
+Finnhub's free account has a maximum of 60 API calls per minute.
 
 If the software returns all zero values this means the API maxiumum has been reached and is not a problem with the software.
 
