@@ -733,3 +733,216 @@ char *rsi_indicator( double rsi )
         return "Oversold";
 	}
 }
+
+void symbol_security_name_map_destruct ( symbol_name_map* sn_map ) {
+    if ( sn_map->security_symbol ){
+        for(int i=0; i<sn_map->size; i++ ){
+            /* Free the string members */
+            free( sn_map->security_symbol[ i ]->symbol );
+            free( sn_map->security_symbol[ i ]->security_name );
+            /* Free the memory that the address is pointing to */
+            free( sn_map->security_symbol[ i ] );
+        }
+        /* Free the array of pointer addresses */
+        free( sn_map->security_symbol );
+        sn_map->security_symbol = NULL;
+        sn_map->size = 0;
+    }
+}
+
+void RSIPeriod(time_t *currenttime, time_t *starttime){
+    
+    /* Number of Seconds in a Year Plus Three Weeks */
+    int period = 31557600 + ( 604800 * 3 ); 
+
+    time( currenttime );
+    *starttime = *currenttime - (time_t)period;
+
+}
+
+char *RSIGetURL ( const char *symbol ){
+    time_t start, end;
+    size_t len;
+    
+    RSIPeriod( &end, &start );
+
+    len = strlen( symbol ) + strlen( YAHOO_URL_START ) + strlen( YAHOO_URL_MIDDLE_ONE ) + strlen( YAHOO_URL_MIDDLE_TWO ) + strlen( YAHOO_URL_END ) + 25;
+    char *url = malloc ( len );
+    snprintf(url, len, YAHOO_URL_START"%s"YAHOO_URL_MIDDLE_ONE"%d"YAHOO_URL_MIDDLE_TWO"%d"YAHOO_URL_END, symbol, (int)start, (int)end);
+
+    return url;
+}
+
+MemType *RSIMulticurlProcessing (const char *symbol){
+    char *MyUrl=NULL;
+    MyUrl = RSIGetURL ( symbol );
+
+    CURLM *mult_hnd = SetUpMultiCurlHandle();
+    MemType *MyOutputStruct = (MemType*)malloc( sizeof(*MyOutputStruct) );
+
+    SetUpCurlHandle( mult_hnd, MyUrl, MyOutputStruct );
+    if ( PerformMultiCurl_no_prog( mult_hnd ) != 0 ) { free ( MyUrl ); return NULL; }
+    free ( MyUrl );
+
+    return MyOutputStruct;
+}
+
+int symsearchfunc(const void * a, const void * b){
+    /* Cast the void pointer to a char pointer. */
+   char* aa = (char *)a;
+   /* Cast the void pointer to a double struct pointer. */
+   symbol_to_security_name_container** bb = (symbol_to_security_name_container **)b;
+
+   return strcasecmp( aa, bb[0]->symbol ); 
+}
+
+char *GetSecurityNameFromMapping(const char *s, symbol_name_map* sn_map)
+/* Look for a Security Name using the Symbol as a key value.
+   Must free return value. */
+{
+    symbol_to_security_name_container **item = NULL;
+
+    /* The second parameter is the same type as the return value. A double pointer to a struct. */
+    /* It's basically searching through an array of pointer addresses, the compare function dereferences
+       the pointer address to get the string we are comparing against. */
+    /* The array must already be sorted for bsearch to work. */
+    item = (symbol_to_security_name_container**) bsearch (s, &sn_map->security_symbol[0], sn_map->size, sizeof (symbol_to_security_name_container*), symsearchfunc);
+
+    if ( item != NULL ){
+        /* The item pointer is not freed. It points to an item in the 
+           security_symbol array and not a duplicate. */
+        return strdup( item[ 0 ]->security_name );
+    } else {
+        return NULL;
+    }
+}
+
+symbol_name_map *CompletionSymbolFetch ()
+/* This function is only meant to be run once, at application startup. */
+{
+    
+    char *tofree;
+    char *line = malloc ( 1024 ), *line_start;
+	char *token;
+	char *output, *tmp, *original;
+	short firstline = 1;
+	line_start = line;
+
+    symbol_name_map *sn_map = (symbol_name_map*) malloc ( sizeof(*sn_map) );
+    sn_map->security_symbol = malloc ( 1 );
+    sn_map->size = 0;
+    symbol_to_security_name_container **sec_sym_tmp = NULL;
+
+	CURLM *mult_hnd = SetUpMultiCurlHandle ();
+    char* Nasdaq_Url = NASDAQ_SYMBOL_URL; 
+    char* NYSE_Url = NYSE_SYMBOL_URL; 
+   	MemType Nasdaq_Struct, NYSE_Struct;
+    SetUpCurlHandle( mult_hnd, Nasdaq_Url, &Nasdaq_Struct );
+    SetUpCurlHandle( mult_hnd, NYSE_Url, &NYSE_Struct );
+    if ( PerformMultiCurl_no_prog( mult_hnd ) != 0 ) { free( line ); free( sn_map->security_symbol ); }
+
+    /* Convert a String to a File Pointer Stream for Reading */
+    FILE* fp[2];
+    fp[0] = fmemopen( (void*)Nasdaq_Struct.memory, strlen( Nasdaq_Struct.memory ) + 1, "r" );
+    fp[1] = fmemopen( (void*)NYSE_Struct.memory, strlen( NYSE_Struct.memory ) + 1, "r" );
+    
+    short k = 0;
+	while( k < 2 ){
+        /* Initialize the output string handle. */
+        output = malloc ( 1 );
+
+	    /* Get rid of the header line from the file stream */
+	    if ( fgets( line, 1024, fp[k] ) == NULL ) {
+            	free( output );
+            	fclose( fp[0] ); 
+                fclose( fp[1] );
+                /* Free the symbol to security name mapping array. */
+                symbol_security_name_map_destruct ( sn_map );
+            	return NULL;
+        }
+
+        /* Read the file stream one line at a time */
+        while ( fgets( line, 1024, fp[k] ) != NULL ) {
+            
+            /* Extract the symbol from the line. */
+           	if( ( token = strsep( &line, "|" ) ) != NULL ){
+                if ( check_symbol( token ) == false ){ line = line_start; continue; }
+
+           		original = strdup ( output );
+           		tmp = realloc( output, strlen ( token ) + strlen ( output ) + 2 );
+           		output = tmp;
+
+           		if ( firstline ) {
+           			snprintf( output, strlen ( token ) + 2, "%s", token );
+           			firstline = 0;
+           		} else {
+           			snprintf( output, strlen ( token ) + strlen ( output ) + 2, "%s|%s", original, token );
+           		}
+
+           		free ( original );
+           	}
+
+            /* Extract the security name from the line. */
+           	if( ( token = strsep( &line, "|" ) ) != NULL ){
+           		original = strdup ( output );
+           		tmp = realloc( output, strlen ( token ) + strlen ( output ) + 2 );
+           		output = tmp;
+
+           		snprintf( output, strlen ( token ) + strlen ( output ) + 2, "%s|%s", original, token );
+
+           		free ( original );
+                /* strsep moves the line pointer, we need to reset it so the pointer memory can be reused */
+                line = line_start;
+           	}
+        }
+        /* We aren't sure of the current location of the line pointer 
+           [the server's data places arbitrary separators at the end].
+           so we reset the line pointer before reading a second file. */
+        line = line_start;
+        firstline = 1;
+        fclose( fp[k] );    
+
+        /* Delete the last three entries from the output string */
+        tmp = strrchr( output, '|' );
+        *tmp = 0;
+        tmp = strrchr( output, '|' );
+        *tmp = 0;
+        tmp = strrchr( output, '|' );
+        *tmp = 0;
+
+        /* Populate the Security Symbol Array. The second list is concatenated after the first list. */
+        tofree = output;
+        bool symbol = true;
+        while ( ( token = strsep( &output, "|" ) ) != NULL ) {
+            if( symbol ){
+                /* Add another pointer address to the array */
+                sec_sym_tmp = realloc( sn_map->security_symbol, sizeof(symbol_to_security_name_container*) * (sn_map->size + 1) );
+                assert( sec_sym_tmp );
+                sn_map->security_symbol = sec_sym_tmp;
+                /* Allocate memory for that pointer address */
+                sn_map->security_symbol[ sn_map->size ] = malloc( sizeof(symbol_to_security_name_container) );
+                /* Populate the memory with the character string */
+                sn_map->security_symbol[ sn_map->size ]->symbol = strdup( token );
+                symbol = false;
+
+            } else {
+                /* Populate the memory with the character string and increment the symbolcount */
+                sn_map->security_symbol[ sn_map->size++ ]->security_name = strdup( token );
+                symbol = true;
+
+            }
+        }
+
+        /* Free the output string, so the handle can be reused on the second list. */
+        free( tofree );
+        k++;
+    } /* end while loop */
+    free( line );
+
+    /* Sort the security symbol array, this merges both lists into one sorted list. */
+    qsort( &sn_map->security_symbol[ 0 ], sn_map->size, sizeof(symbol_to_security_name_container*), AlphaAscSecName );    
+
+    free( Nasdaq_Struct.memory );
+    free( NYSE_Struct.memory );
+    return sn_map;
+}

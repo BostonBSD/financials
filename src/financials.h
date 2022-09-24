@@ -116,6 +116,11 @@ void PerformCalculations();
 int MultiCurlProcessing();
 void PopulateBullionPrice_Yahoo ();
 void JSONProcessing();
+MemType* RSIMulticurlProcessing (const char*);
+
+symbol_name_map* CompletionSymbolFetch ();
+char* GetSecurityNameFromMapping (const char*,symbol_name_map*);
+void symbol_security_name_map_destruct (symbol_name_map*);
 
 bool check_valid_string(const char *);
 bool check_if_string_double_number(const char *);
@@ -139,6 +144,7 @@ void summation(double,double*,double*);
 void calc_avg (double,double*,double*);
 double calc_rsi (double,double);
 void chomp(char*);
+bool check_symbol(const char*);
 char *rsi_indicator( double );
 
 #endif /* FINANCIALS_HEADER_H */

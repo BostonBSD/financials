@@ -40,9 +40,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "ui.h"
 #include "../csv/csv.h"
 
-/* We need the MemType struct from this header file. */
-#include "../multicurl/multicurl.h"
-
 #ifndef YAHOO_URL_START
 #define YAHOO_URL_START "https://query1.finance.yahoo.com/v7/finance/download/"
 #endif
@@ -69,10 +66,15 @@ POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 /* Structs and Enums */
-typedef struct {
+typedef struct {                                  /* A mapping between sec symbols and sec names */
   char* symbol;
   char* security_name;
 } symbol_to_security_name_container;
+
+typedef struct {                                  /* A handle to the symbol-name mapping array. */
+  symbol_to_security_name_container **security_symbol; 
+  int size;
+} symbol_name_map;
 
 typedef struct {
   char* type;
@@ -176,8 +178,6 @@ typedef enum {
 extern GtkBuilder *builder;                                 /* The Gtk builder object */
 extern window_data WindowStruct;                        /* A struct that hold the size and position of 
                                                                the main window. */
-extern symbol_to_security_name_container **security_symbol; /* A mapping between sec symbols and sec names */
-extern int symbolcount;                                     /* The number of symbols in the mapping. */
 
 /* Working Functions */
 void SetUpGUI ();
@@ -209,13 +209,10 @@ int RSITreeViewClear();
 int RSIMakeGUI (void*);
 int RSICursorMove ();
 int RSISetColumns ();
-int ViewRSICompletionSet ();
+int ViewRSICompletionSet (void*);
 GtkListStore* MakeRSIStore ();
-void symbol_security_name_map_destruct ();
-void CompletionSymbolFetch ();
-MemType* RSIMulticurlProcessing ();
-char* GetSecurityNameFromMapping(const char*);
 int SetSecurityNameLabel (void*);
+int RSIGetSymbol (char**);
 
 /* GUI Callback Functions */
 void AddRemoveSecuritySwitch (GtkSwitch*,bool,void*);

@@ -7,7 +7,7 @@
     <property name="can-default">True</property>
     <property name="title" translatable="yes">About</property>
     <property name="resizable">False</property>
-    <property name="default-width">500</property>
+    <property name="default-width">525</property>
     <property name="default-height">550</property>
     <property name="destroy-with-parent">True</property>
     <property name="icon">Stocks-icon.png</property>
@@ -492,8 +492,8 @@
             <property name="valign">center</property>
             <property name="margin-top">5</property>
             <property name="margin-bottom">20</property>
-            <accelerator key="c" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
             <accelerator key="c" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+            <accelerator key="c" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
           </object>
           <packing>
             <property name="left-attach">0</property>
@@ -583,8 +583,8 @@
             <property name="valign">end</property>
             <property name="margin-top">5</property>
             <property name="margin-bottom">20</property>
-            <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
             <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+            <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
           </object>
           <packing>
             <property name="left-attach">2</property>
@@ -1046,7 +1046,7 @@
     <property name="can-default">True</property>
     <property name="title" translatable="yes">Keyboard Shortcuts</property>
     <property name="resizable">False</property>
-    <property name="default-width">250</property>
+    <property name="default-width">280</property>
     <property name="default-height">775</property>
     <property name="destroy-with-parent">True</property>
     <property name="icon">Stocks-icon.png</property>

@@ -31,6 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "../financials.h"
+static symbol_name_map *sym_map;            /* A symbol to name map handle, only global to this file. */
 
 void *GUIThreadHandler(void *data){
     /* We're using data as a value rather than a pointer here.
@@ -133,7 +134,7 @@ void *GUIThreadHandler(void *data){
                 diff = difftime( end_curl, start_curl );                
 
                 /* Wait this many seconds, accounts for cURL processing time. 
-                   We have double to int casting trunction here. */
+                   We have double to int casting truncation here. */
                 if( diff < seconds_per_iteration ){
                     sleep( (unsigned int)( seconds_per_iteration - diff ) );
                 }
@@ -163,7 +164,7 @@ void *GUIThreadHandler(void *data){
             /* This mutex prevents the program from crashing if a
                FETCH_DATA_BTN signal is run in parallel with this thread. */
             pthread_mutex_lock( &mutex_working[2] );
-
+            /* This function requires the window widgets to be set. */
             gdk_threads_add_idle( OKSecurityAddRemoveSecurityWindow, NULL );
             
             if( *MetaData->fetching_data_bool == false ) gdk_threads_add_idle( DefaultTreeView, NULL );            
@@ -260,25 +261,29 @@ void *GUIThreadHandler(void *data){
             gdk_threads_add_idle( ShowHideViewRSIWindow, NULL );
             break;
         case VIEW_RSI_FETCH_DATA_BTN:
-            /* Perform multicurl here,
-               doesn't block the gui main loop 
-               Also get the symbol string.
+            /* Get the symbol string and perform multicurl here,
+               doesn't block the gui main loop. 
                */
-            RSIOutput = RSIMulticurlProcessing ( &symbol );
+            RSIGetSymbol( &symbol );
+            RSIOutput = RSIMulticurlProcessing ( symbol );
 
             /* Clear the current TreeView model */ 
             gdk_threads_add_idle( RSITreeViewClear, NULL );
 
-            /* Get the security name from the symbol. */ 
-            sec_name = GetSecurityNameFromMapping( symbol );
+            /* Get the security name from the symbol map. */ 
+            sec_name = GetSecurityNameFromMapping( symbol, sym_map );
             free( symbol );
 
             /* Set the security name label, this function runs inside the Gtk Loop. 
                And will free the sec_name string. */
             gdk_threads_add_idle( SetSecurityNameLabel, (void*)sec_name );
 
-            /* Set and display the RSI treeview model */
+            /* Set and display the RSI treeview model.
+               This function frees RSIOutput */
+            /* gdk_threads_add_idle doesn't block this thread, we cannot free 
+               RSIOutput here */
             gdk_threads_add_idle( RSIMakeGUI, (void*)RSIOutput );
+            
             break;
         case VIEW_RSI_CURSOR_MOVE:
             gdk_threads_add_idle( RSICursorMove, NULL );
@@ -287,8 +292,8 @@ void *GUIThreadHandler(void *data){
             /* Fetch the stock symbols and names outside the Gtk
                main loop, then create a GtkListStore and set it into
                a GtkEntryCompletion widget. */
-            CompletionSymbolFetch ();
-            gdk_threads_add_idle( ViewRSICompletionSet, NULL );
+            sym_map = CompletionSymbolFetch ();
+            gdk_threads_add_idle( ViewRSICompletionSet, (void*)sym_map );
             break;
         case SHORTCUT_KEYS_BTN:
             gdk_threads_add_idle( ShowHideShortcutWindow, NULL );
@@ -359,7 +364,8 @@ void *GUIThreadHandler(void *data){
             gtk_main_quit ();
 
             /* Free the symbol to security name mapping array. */
-            symbol_security_name_map_destruct ();
+            symbol_security_name_map_destruct ( sym_map );
+            free( sym_map );
 
             pthread_mutex_unlock( &mutex_working[2] );
             break;

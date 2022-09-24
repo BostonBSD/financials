@@ -34,8 +34,6 @@ POSSIBILITY OF SUCH DAMAGE.
 
 GtkBuilder *builder;
 window_data WindowStruct;
-symbol_to_security_name_container **security_symbol;
-int symbolcount = 0;
 
 int FetchDataBTNLabel (void* data){
     bool *fetching = (bool*)data;
@@ -548,20 +546,23 @@ int ShowHideAddRemoveSecurityWindow ()
     return 0;
 }
 
-void symbol_security_name_map_destruct () {
-    if ( security_symbol ){
-        for(int i=0; i<symbolcount; i++ ){
-            /* Free the string members */
-            free( security_symbol[ i ]->symbol );
-            free( security_symbol[ i ]->security_name );
-            /* Free the memory that the address is pointing to */
-            free( security_symbol[ i ] );
-        }
-        /* Free the array of pointer addresses */
-        free( security_symbol );
-        security_symbol = NULL;
-        symbolcount = 0;
+GtkListStore * CompletionSymbolSetStore ( void *data ){
+    symbol_name_map *sn_map = ( symbol_name_map* ) data;
+    GtkListStore *store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+    GtkTreeIter iter;
+
+    char item[35];
+    /* Populate the GtkListStore with the string of stock symbols in column 0, stock names in column 1, 
+       and symbols & names in column 2. */
+    for ( int i=0; i<sn_map->size; i++ ){
+        snprintf(item, 35, "%s - %s", sn_map->security_symbol[ i ]->symbol, sn_map->security_symbol[ i ]->security_name );
+
+        gtk_list_store_append( store, &iter );
+        /* Completion is going to match off of columns 0 and 1, but display column 2 */
+        /* Completion matches based off of the symbol or the company name, inserts the symbol, displays both */
+        gtk_list_store_set( store, &iter, 0, sn_map->security_symbol[ i ]->symbol, 1, sn_map->security_symbol[ i ]->security_name, 2, item, -1 );
     }
+    return store;
 }
 
 gboolean ViewRSICompletionMatchFunc( GtkEntryCompletion *completion, const gchar *key, GtkTreeIter *iter ) {
@@ -591,153 +592,10 @@ gboolean ViewRSICompletionMatchFunc( GtkEntryCompletion *completion, const gchar
     return ans;
 }
 
-void CompletionSymbolFetch ()
-/* This function is only meant to be run once, at application startup. */
-{
-    
-    char *tofree;
-    char *line = malloc ( 1024 ), *line_start;
-	char *token;
-	char *output, *tmp, *original;
-	short firstline = 1;
-	line_start = line;
-
-    security_symbol = malloc ( 1 );
-    symbol_to_security_name_container **sec_sym_tmp = NULL;
-
-	CURLM *mult_hnd = SetUpMultiCurlHandle ();
-    char* Nasdaq_Url = NASDAQ_SYMBOL_URL; 
-    char* NYSE_Url = NYSE_SYMBOL_URL; 
-   	MemType Nasdaq_Struct, NYSE_Struct;
-    SetUpCurlHandle( mult_hnd, Nasdaq_Url, &Nasdaq_Struct );
-    SetUpCurlHandle( mult_hnd, NYSE_Url, &NYSE_Struct );
-    if ( PerformMultiCurl_no_prog( mult_hnd ) != 0 ) { free( line ); free( security_symbol ); }
-
-    /* Convert a String to a File Pointer Stream for Reading */
-    FILE* fp[2];
-    fp[0] = fmemopen( (void*)Nasdaq_Struct.memory, strlen( Nasdaq_Struct.memory ) + 1, "r" );
-    fp[1] = fmemopen( (void*)NYSE_Struct.memory, strlen( NYSE_Struct.memory ) + 1, "r" );
-    
-    short k = 0;
-	while( k < 2 ){
-        /* Initialize the output string handle. */
-        output = malloc ( 1 );
-
-	    /* Get rid of the header line from the file stream */
-	    if ( fgets( line, 1024, fp[k] ) == NULL ) {
-            	free( output );
-            	fclose( fp[0] ); 
-                fclose( fp[1] );
-                symbol_security_name_map_destruct ();
-            	return;
-        }
-
-        /* Read the file stream one line at a time */
-        while ( fgets( line, 1024, fp[k] ) != NULL ) {
-            
-            /* Extract the symbol from the line. */
-           	if( ( token = strsep( &line, "|" ) ) != NULL ){
-           		original = strdup ( output );
-           		tmp = realloc( output, strlen ( token ) + strlen ( output ) + 2 );
-           		output = tmp;
-
-           		if ( firstline ) {
-           			snprintf( output, strlen ( token ) + 2, "%s", token );
-           			firstline = 0;
-           		} else {
-           			snprintf( output, strlen ( token ) + strlen ( output ) + 2, "%s|%s", original, token );
-           		}
-
-           		free ( original );
-           	}
-
-            /* Extract the security name from the line. */
-           	if( ( token = strsep( &line, "|" ) ) != NULL ){
-           		original = strdup ( output );
-           		tmp = realloc( output, strlen ( token ) + strlen ( output ) + 2 );
-           		output = tmp;
-
-           		snprintf( output, strlen ( token ) + strlen ( output ) + 2, "%s|%s", original, token );
-
-           		free ( original );
-                /* strsep moves the line pointer, we need to reset it so the pointer memory can be reused */
-                line = line_start;
-           	}
-        }
-        /* We aren't sure of the current location of the line pointer 
-           [the server's data places arbitrary separators at the end].
-           so we reset the line pointer before reading a second file. */
-        line = line_start;
-        firstline = 1;
-        fclose( fp[k] );    
-
-        /* Delete the last three entries from the output string */
-        tmp = strrchr( output, '|' );
-        *tmp = 0;
-        tmp = strrchr( output, '|' );
-        *tmp = 0;
-        tmp = strrchr( output, '|' );
-        *tmp = 0;
-
-        /* Populate the Security Symbol Array. The second list is concatenated after the first list. */
-        tofree = output;
-        bool symbol = true;
-        while ( ( token = strsep( &output, "|" ) ) != NULL ) {
-            if( symbol ){
-                /* Add another pointer address to the array */
-                sec_sym_tmp = realloc( security_symbol, sizeof(symbol_to_security_name_container*) * (symbolcount + 1) );
-                assert( sec_sym_tmp );
-                security_symbol = sec_sym_tmp;
-                /* Allocate memory for that pointer address */
-                security_symbol[ symbolcount ] = malloc( sizeof(symbol_to_security_name_container) );
-                /* Populate the memory with the character string */
-                security_symbol[ symbolcount ]->symbol = strdup( token );
-                symbol = false;
-
-            } else {
-                /* Populate the memory with the character string and increment the symbolcount */
-                security_symbol[ symbolcount++ ]->security_name = strdup( token );
-                symbol = true;
-
-            }
-        }
-
-        /* Free the output string, so the handle can be reused on the second list. */
-        free( tofree );
-        k++;
-    } /* end while loop */
-    free( line );
-
-    /* Sort the security symbol array, this merges both lists into one sorted list. */
-    qsort( &security_symbol[ 0 ], symbolcount, sizeof(symbol_to_security_name_container*), AlphaAscSecName );    
-
-    free( Nasdaq_Struct.memory );
-    free( NYSE_Struct.memory );
-    return;
-}
-
-GtkListStore * CompletionSymbolSetStore (){
-    GtkListStore *store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
-    GtkTreeIter iter;
-
-    char item[35];
-    /* Populate the GtkListStore with the string of stock symbols in column 0, stock names in column 1, 
-       and symbols & names in column 2. */
-    for ( int i=0; i<symbolcount; i++ ){
-        snprintf(item, 35, "%s - %s", security_symbol[ i ]->symbol, security_symbol[ i ]->security_name );
-
-        gtk_list_store_append( store, &iter );
-        /* Completion is going to match off of columns 0 and 1, but display column 2 */
-        /* Completion matches based off of the symbol or the company name, inserts the symbol, displays both */
-        gtk_list_store_set( store, &iter, 0, security_symbol[ i ]->symbol, 1, security_symbol[ i ]->security_name, 2, item, -1 );
-    }
-    return store;
-}
-
-int ViewRSICompletionSet (){
+int ViewRSICompletionSet (void *data){
     GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ViewRSISymbolEntryBox") );
     GtkEntryCompletion *completion = gtk_entry_completion_new();
-    GtkListStore *store = CompletionSymbolSetStore(); 
+    GtkListStore *store = CompletionSymbolSetStore( data );
 
     gtk_entry_completion_set_model(completion, GTK_TREE_MODEL( store ));
     g_object_unref( store );
@@ -890,46 +748,6 @@ int RSISetColumns ()
     return 0;
 }
 
-void RSIPeriod(time_t *currenttime, time_t *starttime){
-    
-    /* Number of Seconds in a Year Plus Three Weeks */
-    int period = 31557600 + ( 604800 * 3 ); 
-
-    time( currenttime );
-    *starttime = *currenttime - (time_t)period;
-
-}
-
-int symsearchfunc(const void * a, const void * b){
-    /* Cast the void pointer to a char pointer. */
-   char* aa = (char *)a;
-   /* Cast the void pointer to a double struct pointer. */
-   symbol_to_security_name_container** bb = (symbol_to_security_name_container **)b;
-
-   return strcasecmp( aa, bb[0]->symbol ); 
-}
-
-char *GetSecurityNameFromMapping(const char *s)
-/* Look for a Security Name using the Symbol as a key value.
-   Must free return value. */
-{
-    symbol_to_security_name_container **item = NULL;
-
-    /* The second parameter is the same type as the return value. A double pointer to a struct. */
-    /* It's basically searching through an array of pointer addresses, the compare function dereferences
-       the pointer address to get the string we are comparing against. */
-    /* The array must already be sorted for bsearch to work. */
-    item = (symbol_to_security_name_container**) bsearch (s, &security_symbol[0], symbolcount, sizeof (symbol_to_security_name_container*), symsearchfunc);
-
-    if ( item != NULL ){
-        /* The item pointer is not freed. It points to an item in the 
-           security_symbol array and not a duplicate. */
-        return strdup( item[ 0 ]->security_name );
-    } else {
-        return NULL;
-    }
-}
-
 int SetSecurityNameLabel (void *data){
     char* sec_name;
     data ? (sec_name = (char*)data) : (sec_name = NULL);
@@ -945,7 +763,7 @@ int SetSecurityNameLabel (void *data){
     return 0;
 }
 
-char* RSIGetSymbol()
+int RSIGetSymbol( char **s )
 /* Get the stock symbol from the EntryBox.
    Must free return value. 
    
@@ -958,36 +776,10 @@ char* RSIGetSymbol()
 */
 {
     GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ViewRSISymbolEntryBox") );
-    char* s = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
-    UpperCaseStr ( s );
+    s[0] = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
+    UpperCaseStr ( s[0] );
 
-    return s;
-}
-
-void RSIGetSymbolAndURL (char **url,char **symbol){
-    time_t start, end;
-    size_t len;
-    symbol[0] = RSIGetSymbol();
-    
-    RSIPeriod( &end, &start );
-
-    len = strlen( symbol[0] ) + strlen( YAHOO_URL_START ) + strlen( YAHOO_URL_MIDDLE_ONE ) + strlen( YAHOO_URL_MIDDLE_TWO ) + strlen( YAHOO_URL_END ) + 25;
-    url[0] = malloc ( len );
-    snprintf(url[0], len, YAHOO_URL_START"%s"YAHOO_URL_MIDDLE_ONE"%d"YAHOO_URL_MIDDLE_TWO"%d"YAHOO_URL_END, symbol[0], (int)start, (int)end);
-}
-
-MemType *RSIMulticurlProcessing (char **symbol){
-    char *MyUrl=NULL;
-    RSIGetSymbolAndURL (&MyUrl, symbol);
-
-    CURLM *mult_hnd = SetUpMultiCurlHandle();
-    MemType *MyOutputStruct = (MemType*)malloc( sizeof(*MyOutputStruct) );
-
-    SetUpCurlHandle( mult_hnd, MyUrl, MyOutputStruct );
-    if ( PerformMultiCurl_no_prog( mult_hnd ) != 0 ) { free ( MyUrl ); return NULL; }
-    free ( MyUrl );
-
-    return MyOutputStruct;
+    return 0;
 }
 
 void SetRSIStore (GtkListStore *store, void *data) {
@@ -1003,7 +795,7 @@ void SetRSIStore (GtkListStore *store, void *data) {
     GtkTreeIter iter;
 
     if( MyOutputStruct == NULL ) { free( new_order ); return; }
-    if( MyOutputStruct->memory == NULL ) { free( new_order ); return; }
+    if( MyOutputStruct->memory == NULL ) { free( new_order ); free( MyOutputStruct ); return; }
 
     /* Convert a String to a File Pointer Stream for Reading */
     FILE* fp = fmemopen( (void*)MyOutputStruct->memory, strlen( MyOutputStruct->memory ) + 1, "r" );
@@ -1041,6 +833,7 @@ void SetRSIStore (GtkListStore *store, void *data) {
         change = cur_price - prev_price;
         prev_closing_ch = MetaData->DoubToStr( &prev_price );
     	prev_price = cur_price;
+
     	if ( counter < 14 ) summation ( gain, &avg_gain, &avg_loss);
     	if ( counter == 13 ) { avg_gain = avg_gain / 14; avg_loss = avg_loss / 14; }
     	if ( counter >= 14 ) {
@@ -1081,7 +874,7 @@ void SetRSIStore (GtkListStore *store, void *data) {
             free( opening_ch );
             free( change_ch );
 
-            c++;
+            c++; /* The number of rows added to the TreeView */
     	}        
     	
         free( prev_closing_ch );
@@ -1094,6 +887,10 @@ void SetRSIStore (GtkListStore *store, void *data) {
     /* Free MyOutputStruct */
     free( MyOutputStruct->memory );
     free( MyOutputStruct );  
+
+    /* The rows were added to the TreeView first [earliest] to last [most recent],
+       we need to reverse this from last to first. 
+       The last [most recent] entry needs to be at the top. */
     if ( c > 0){
         /* For the zero row, c = 1 after one iteration, so subtract one
            before the next calculation. */
@@ -1119,6 +916,7 @@ GtkListStore* MakeRSIStore (void *data)
     store = gtk_list_store_new(RSI_N_COLUMNS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 
     /* Add data to the storage container, pass in the outputstruct pointer. */
+    /* This function frees data. */
     SetRSIStore ( store, data ); 
     return store;
 }
@@ -1132,6 +930,7 @@ int RSIMakeGUI (void *data)
     RSISetColumns ();
 
     /* Set up the storage container, pass in the outputstruct pointer. */
+    /* This function frees data. */
     store = MakeRSIStore ( data );   
     
     /* Add the store of data to the list. */
@@ -1961,6 +1760,7 @@ void SetUpGUI ()
         exit( EXIT_FAILURE );
     }
 
+    /* Add the keyboard shortcuts to the Keyboard Shortcut window. */
     SetKeyboardShortcuts ();
 
     /* Add the license to the About window. */

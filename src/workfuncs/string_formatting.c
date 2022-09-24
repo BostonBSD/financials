@@ -156,3 +156,14 @@ void chomp(char *s)
         }
     }
 }
+
+bool check_symbol( const char *s )
+/* Depository share symbols include dollars signs, which we don't want. */
+{ 
+    short n = 0;
+    while( s[n] ){
+        if( s[n] == '$' ) return false;
+        n++;
+    }
+    return true;
+}
