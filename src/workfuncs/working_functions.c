@@ -814,10 +814,9 @@ symbol_name_map *CompletionSymbolFetch ()
     SetUpCurlHandle( MetaData->NASDAQ_completion_hnd, MetaData->multicurl_cmpltn_hnd, Nasdaq_Url, &Nasdaq_Struct );
     SetUpCurlHandle( MetaData->NYSE_completion_hnd, MetaData->multicurl_cmpltn_hnd, NYSE_Url, &NYSE_Struct );
     if ( PerformMultiCurl_no_prog( MetaData->multicurl_cmpltn_hnd ) != 0 || *MetaData->multicurl_cancel_bool == true) { 
-        free( Nasdaq_Struct.memory );
-        free( NYSE_Struct.memory );        
-        free( line ); 
-        free( sn_map->sn_container_arr ); 
+        if ( Nasdaq_Struct.memory ) free( Nasdaq_Struct.memory );
+        if ( NYSE_Struct.memory ) free( NYSE_Struct.memory );       
+        if ( line ) free( line );
         return sn_map; 
     }
 
@@ -833,12 +832,12 @@ symbol_name_map *CompletionSymbolFetch ()
 
 	    /* Get rid of the header line from the file stream */
 	    if ( fgets( line, 1024, fp[k] ) == NULL ) {
-                free( line );
-            	free( output );
-            	fclose( fp[0] ); 
-                fclose( fp[1] );
-                free( Nasdaq_Struct.memory );
-                free( NYSE_Struct.memory );
+                if ( line ) free( line );
+            	if ( output ) free( output );
+            	if ( fp[0] ) fclose( fp[0] ); 
+                if ( fp[1] ) fclose( fp[1] );
+                if ( Nasdaq_Struct.memory ) free( Nasdaq_Struct.memory );
+                if ( NYSE_Struct.memory ) free( NYSE_Struct.memory );
             	return sn_map;
         }
 
@@ -878,12 +877,12 @@ symbol_name_map *CompletionSymbolFetch ()
 
             /* If we are exiting the application, return immediately. */
             if ( *MetaData->multicurl_cancel_bool == true ) {
-                fclose( fp[0] ); 
-                fclose( fp[1] );  
-                free( Nasdaq_Struct.memory );
-                free( NYSE_Struct.memory );
-                free( output );
-                free( line_start );
+                if ( fp[0] ) fclose( fp[0] ); 
+                if ( fp[1] ) fclose( fp[1] );  
+                if ( Nasdaq_Struct.memory ) free( Nasdaq_Struct.memory );
+                if ( NYSE_Struct.memory ) free( NYSE_Struct.memory );
+                if ( output ) free( output );
+                if ( line_start ) free( line_start );
                 return sn_map;
             }
         }
@@ -891,10 +890,9 @@ symbol_name_map *CompletionSymbolFetch ()
            [the server's data places arbitrary separators at the end].
            so we reset the line pointer before reading a second file. */
         line = line_start;
-        firstline = 1;
-        fclose( fp[k] );    
+        firstline = 1;  
 
-        /* Delete the last three entries from the output string */
+        /* Truncate the last three entries from the output string */
         tmp = strrchr( output, '|' );
         *tmp = 0;
         tmp = strrchr( output, '|' );
@@ -925,10 +923,10 @@ symbol_name_map *CompletionSymbolFetch ()
 
             /* If we are exiting the application, return immediately. */
             if ( *MetaData->multicurl_cancel_bool == true ) { 
-                free( Nasdaq_Struct.memory );
-                free( NYSE_Struct.memory );
-                free( tofree );
-                free( line ); 
+                if ( Nasdaq_Struct.memory ) free( Nasdaq_Struct.memory );
+                if ( NYSE_Struct.memory ) free( NYSE_Struct.memory );
+                if ( tofree ) free( tofree );
+                if ( line ) free( line ); 
                 return sn_map;
             }
         }
@@ -943,6 +941,8 @@ symbol_name_map *CompletionSymbolFetch ()
     /* Sort the security symbol array, this merges both lists into one sorted list. */
     qsort( &sn_map->sn_container_arr[ 0 ], sn_map->size, sizeof(symbol_to_security_name_container*), AlphaAscSecName );    
 
+    fclose( fp[0] ); 
+    fclose( fp[1] );
     free( Nasdaq_Struct.memory );
     free( NYSE_Struct.memory );
     return sn_map;
