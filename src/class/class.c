@@ -85,7 +85,6 @@ equity_folder* class_init_equity_folder ()
 {
     /* Allocate Memory For A New Class Handle */
     equity_folder* new_class_handle = (equity_folder*) malloc( sizeof(*new_class_handle) );
-    assert( new_class_handle != NULL );
 
     new_class_handle->Equity = NULL;
     new_class_handle->size = 0;
@@ -101,7 +100,6 @@ metal* class_init_metal ()
 {
     /* Allocate Memory For A New Class Handle */
     metal* new_class_handle = (metal*) malloc( sizeof(*new_class_handle) );
-    assert( new_class_handle != NULL );
 
     /* Initialize Class Objects */
     new_class_handle->Gold = class_init_bullion ();
@@ -118,7 +116,6 @@ bullion* class_init_bullion ()
 { 
     /* Allocate Memory For A New Class Object */
     bullion* new_class = (bullion*) malloc( sizeof(*new_class) ); 
-    assert( new_class != NULL );
 
     /* Allocate Memory For Variables */
     new_class->spot_price_f = (double*) malloc( sizeof(double) );
@@ -159,7 +156,6 @@ stock* class_init_equity ()
 { 
     /* Allocate Memory For A New Class Object */
     stock* new_class = (stock*) malloc( sizeof(*new_class) );
-    assert( new_class != NULL ); 
 	
     /* Allocate Memory For Variables */
     new_class->num_shares_stock_int = (unsigned int*) malloc( sizeof(unsigned int) );
@@ -232,7 +228,6 @@ meta* class_init_meta_data ()
 { 
     /* Allocate Memory For A New Class Object */
     meta* new_class = (meta*) malloc( sizeof(*new_class) );
-    assert( new_class != NULL );
 
     /* Allocate Memory For Variables */
     new_class->cash_f = (double*) malloc( sizeof(double) );

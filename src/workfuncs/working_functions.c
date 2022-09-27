@@ -909,7 +909,6 @@ symbol_name_map *CompletionSymbolFetch ()
             if( symbol ){
                 /* Add another pointer address to the array */
                 sec_sym_tmp = realloc( sn_map->sn_container_arr, sizeof(symbol_to_security_name_container*) * (sn_map->size + 1) );
-                assert( sec_sym_tmp );
                 sn_map->sn_container_arr = sec_sym_tmp;
                 /* Allocate memory for that pointer address */
                 sn_map->sn_container_arr[ sn_map->size ] = malloc( sizeof(symbol_to_security_name_container) );

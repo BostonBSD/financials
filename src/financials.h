@@ -51,7 +51,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <dirent.h>
 #include <errno.h>
 
-#include <assert.h>
 #include <pwd.h>
 #include <unistd.h>
 
