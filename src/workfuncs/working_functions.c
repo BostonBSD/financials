@@ -96,7 +96,7 @@ void ResetEquity(equity_folder *F) {
         stock** temp = (stock**) malloc( sizeof(stock*) );
                 
         if (temp == NULL){
-            printf("Not Enough Memory, realloc returned NULL.\n");
+            printf("Not Enough Memory, malloc returned NULL.\n");
             exit(EXIT_FAILURE);
         }
                 
@@ -110,7 +110,7 @@ void ResetEquity(equity_folder *F) {
         stock** temp = (stock**) malloc( sizeof(stock*) );
                 
         if (temp == NULL){
-            printf("Not Enough Memory, realloc returned NULL.\n");
+            printf("Not Enough Memory, malloc returned NULL.\n");
             exit(EXIT_FAILURE);
         }
                 
@@ -122,7 +122,7 @@ void ResetEquity(equity_folder *F) {
 void PerformCalculations () 
 /* calc portfolio values and populate character strings. */
 {
-    pthread_mutex_lock( &mutex_working[0] );
+    pthread_mutex_lock( &mutex_working [CLASS_MEMBER_MUTEX ] );
 
     *Precious->Silver->port_value_f = Precious->Silver->Stake( Precious->Silver->ounce_f, Precious->Silver->premium_f, Precious->Silver->spot_price_f );
     *Precious->Gold->port_value_f = Precious->Gold->Stake( Precious->Gold->ounce_f, Precious->Gold->premium_f, Precious->Gold->spot_price_f );
@@ -184,14 +184,11 @@ void PerformCalculations ()
     MetaData->portfolio_port_value_p_chg_ch = (char*) malloc ( len );
     snprintf( MetaData->portfolio_port_value_p_chg_ch, len, "%.3lf%%", *MetaData->portfolio_port_value_p_chg_f );
 
-    pthread_mutex_unlock( &mutex_working[0] );
+    pthread_mutex_unlock( &mutex_working [CLASS_MEMBER_MUTEX ] );
 }
 
 int MultiCurlProcessing () {
     size_t len;
-
-    /* Create a multi-cURL handle. */
-    CURLM *mult_hnd = SetUpMultiCurlHandle ();
  
     /* Cycle through the list of equities. */
     for( unsigned short c = 0; c < Folder->size; c++ ) { 
@@ -202,13 +199,13 @@ int MultiCurlProcessing () {
         Folder->Equity[ c ]->curl_url_stock_ch = (char*) malloc( len );
         snprintf( Folder->Equity[ c ]->curl_url_stock_ch, len, "%s%s%s", MetaData->stock_url, Folder->Equity[ c ]->symbol_stock_ch, MetaData->curl_key );
         
-        /* Create and add a cURL easy handle to the multi-cURL handle 
+        /* Add a cURL easy handle to the multi-cURL handle 
         (passing JSON output struct by reference) */
-        SetUpCurlHandle( mult_hnd, Folder->Equity[ c ]->curl_url_stock_ch, &Folder->Equity[ c ]->JSON );
+        SetUpCurlHandle( Folder->Equity[ c ]->easy_hnd, Folder->multicurl_hnd, Folder->Equity[ c ]->curl_url_stock_ch, &Folder->Equity[ c ]->JSON );
     }
 
     /* Perform the cURL requests simultaneously using multi-cURL. */
-    return PerformMultiCurl( mult_hnd, (double)Folder->size );
+    return PerformMultiCurl( Folder->multicurl_hnd, (double)Folder->size );
 }
 
 void GetBullionUrl_Yahoo ( char** SilverUrl, char** GoldUrl ){
@@ -258,10 +255,10 @@ void FetchBullionData_Yahoo ( MemType *SilverOutput, MemType *GoldOutput ){
     char *SilverUrl, *GoldUrl;
     GetBullionUrl_Yahoo( &SilverUrl, &GoldUrl );
 
-    CURLM *mult_hnd = SetUpMultiCurlHandle();
-    SetUpCurlHandle( mult_hnd, SilverUrl, SilverOutput );
-    SetUpCurlHandle( mult_hnd, GoldUrl, GoldOutput );
-    if ( PerformMultiCurl_no_prog( mult_hnd ) != 0 ) { free ( SilverUrl ); free ( GoldUrl ); return; }
+    //CURLM *mult_hnd = curl_multi_init();
+    SetUpCurlHandle( Precious->Silver->YAHOO_hnd, Precious->multicurl_hnd, SilverUrl, SilverOutput );
+    SetUpCurlHandle( Precious->Gold->YAHOO_hnd, Precious->multicurl_hnd, GoldUrl, GoldOutput );
+    if ( PerformMultiCurl_no_prog( Precious->multicurl_hnd ) != 0 ) { free ( SilverUrl ); free ( GoldUrl ); return; }
     free ( SilverUrl );
     free ( GoldUrl );
 }
@@ -270,6 +267,13 @@ void ParseBullionData_Yahoo (double *silver_f, double *gold_f){
     MemType SilverOutputStruct, GoldOutputStruct;
 
     FetchBullionData_Yahoo ( &SilverOutputStruct, &GoldOutputStruct );
+    if ( *MetaData->multicurl_cancel_bool == true ){
+        free( SilverOutputStruct.memory );
+        free( GoldOutputStruct.memory );
+        *silver_f = 0.0f;
+        *gold_f = 0.0f;
+        return;
+    }
 
     /* Convert a String to a File Pointer Stream for Reading */
     FILE* fp = fmemopen( (void*)SilverOutputStruct.memory, strlen( SilverOutputStruct.memory ) + 1, "r" );
@@ -302,7 +306,7 @@ void ParseBullionData_Yahoo (double *silver_f, double *gold_f){
 }
 
 void PopulateBullionPrice_Yahoo (){
-    pthread_mutex_lock( &mutex_working[0] );
+    pthread_mutex_lock( &mutex_working [CLASS_MEMBER_MUTEX ] );
 
     ParseBullionData_Yahoo ( Precious->Silver->spot_price_f, Precious->Gold->spot_price_f );    
 
@@ -312,11 +316,11 @@ void PopulateBullionPrice_Yahoo (){
     Precious->Gold->spot_price_ch = Precious->Gold->DoubToStr( Precious->Gold->spot_price_f );
     Precious->Silver->spot_price_ch = Precious->Silver->DoubToStr( Precious->Silver->spot_price_f );
 
-    pthread_mutex_unlock( &mutex_working[0] );
+    pthread_mutex_unlock( &mutex_working [CLASS_MEMBER_MUTEX ] );
 }
 
 void JSONProcessing () {
-    pthread_mutex_lock( &mutex_working[0] );
+    pthread_mutex_lock( &mutex_working [CLASS_MEMBER_MUTEX ] );
 
     size_t len;
 
@@ -373,37 +377,29 @@ void JSONProcessing () {
         free( Folder->Equity[ c ]->change_value_ch );
         Folder->Equity[ c ]->change_value_ch = Folder->Equity[ c ]->DoubToStr( Folder->Equity[ c ]->change_value_f );
     }
-    pthread_mutex_unlock( &mutex_working[0] );
+    pthread_mutex_unlock( &mutex_working [CLASS_MEMBER_MUTEX ] );
 }
 
-struct tm NYTimeComponents(){
+struct tm NYTimeComponents (){
     time_t currenttime;
     struct tm NY_tz;
 
     time( &currenttime );
 
     /* Get the localtime in NY from Epoch seconds */
-
-    setenv("TZ", "America/New_York", 1);
-    tzset();
     localtime_r( &currenttime, &NY_tz );
-
-    /* Reset the TZ env variable. */
-    MetaData->local_tz_ch ? setenv("TZ", MetaData->local_tz_ch, 1) : unsetenv( "TZ" );
-    tzset();
-
     return NY_tz;
 }
 
 unsigned int ClockSleepSeconds (){
     time_t currenttime;
-    struct tm Local_tz;
+    struct tm tm_struct;
 
     time( &currenttime );
 
     /* The timezone here isn't relevant. */
-    localtime_r( &currenttime, &Local_tz );
-    return ( 60 - Local_tz.tm_sec );
+    localtime_r( &currenttime, &tm_struct );
+    return ( 60 - tm_struct.tm_sec );
 }
 
 char* MonthNameStr ( int month ){
@@ -619,16 +615,8 @@ unsigned int SecondsToOpen () {
        We need to do this to account for DST changes when
        determining the future Epoch time. 
     */
-    
-    /* We cannot use the NYTimeComponents() function here
-       because we need to get the future epoch time based  
-       off of the NY timezone.  NYTimeComponents() resets the 
-       timezone back to the local timezone.
-    */
 
-    setenv("TZ", "America/New_York", 1);
-    tzset();
-    localtime_r( &currenttime, &NY_tz );
+    NY_tz = NYTimeComponents ();
     
 
     int hour = (NY_tz.tm_hour)%24;
@@ -640,9 +628,6 @@ unsigned int SecondsToOpen () {
     hour_closed_NY = 16;
 
     if( ( hour > hour_open_NY || ( hour == hour_open_NY && min >= 30 ) ) && hour < hour_closed_NY && weekday != 0 && weekday != 6 ){
-        /* Reset the TZ env variable. */
-        MetaData->local_tz_ch ? setenv("TZ", MetaData->local_tz_ch, 1) : unsetenv( "TZ" );
-        tzset();
 
         /* The market is open. */
         return 0;
@@ -675,10 +660,6 @@ unsigned int SecondsToOpen () {
     
     /* The future NY EST/EDST date to time in Epoch seconds. */
     futuretime = mktime( &NY_tz );
-
-    /* Reset the TZ env variable. */
-    MetaData->local_tz_ch ? setenv("TZ", MetaData->local_tz_ch, 1) : unsetenv( "TZ" );
-    tzset();
     
     /* The market is closed, reopens in this many seconds. */
     diff = (unsigned int) difftime( futuretime, currenttime );
@@ -730,17 +711,17 @@ char *rsi_indicator( double rsi )
 }
 
 void symbol_security_name_map_destruct ( symbol_name_map* sn_map ) {
-    if ( sn_map->security_symbol ){
+    if ( sn_map->sn_container_arr ){
         for(int i=0; i<sn_map->size; i++ ){
             /* Free the string members */
-            free( sn_map->security_symbol[ i ]->symbol );
-            free( sn_map->security_symbol[ i ]->security_name );
+            free( sn_map->sn_container_arr[ i ]->symbol );
+            free( sn_map->sn_container_arr[ i ]->security_name );
             /* Free the memory that the address is pointing to */
-            free( sn_map->security_symbol[ i ] );
+            free( sn_map->sn_container_arr[ i ] );
         }
         /* Free the array of pointer addresses */
-        free( sn_map->security_symbol );
-        sn_map->security_symbol = NULL;
+        free( sn_map->sn_container_arr );
+        sn_map->sn_container_arr = NULL;
         sn_map->size = 0;
     }
 }
@@ -772,11 +753,10 @@ MemType *RSIMulticurlProcessing (const char *symbol){
     char *MyUrl=NULL;
     MyUrl = RSIGetURL ( symbol );
 
-    CURLM *mult_hnd = SetUpMultiCurlHandle();
     MemType *MyOutputStruct = (MemType*)malloc( sizeof(*MyOutputStruct) );
 
-    SetUpCurlHandle( mult_hnd, MyUrl, MyOutputStruct );
-    if ( PerformMultiCurl_no_prog( mult_hnd ) != 0 ) { free ( MyUrl ); return NULL; }
+    SetUpCurlHandle( MetaData->rsi_hnd, MetaData->multicurl_rsi_hnd, MyUrl, MyOutputStruct );
+    if ( PerformMultiCurl_no_prog( MetaData->multicurl_rsi_hnd ) != 0 ) { free ( MyUrl ); return NULL; }
     free ( MyUrl );
 
     return MyOutputStruct;
@@ -801,11 +781,11 @@ char *GetSecurityNameFromMapping(const char *s, symbol_name_map* sn_map)
     /* It's basically searching through an array of pointer addresses, the compare function dereferences
        the pointer address to get the string we are comparing against. */
     /* The array must already be sorted for bsearch to work. */
-    item = (symbol_to_security_name_container**) bsearch (s, &sn_map->security_symbol[0], sn_map->size, sizeof (symbol_to_security_name_container*), symsearchfunc);
+    item = (symbol_to_security_name_container**) bsearch (s, &sn_map->sn_container_arr[0], sn_map->size, sizeof (symbol_to_security_name_container*), symsearchfunc);
 
     if ( item != NULL ){
         /* The item pointer is not freed. It points to an item in the 
-           security_symbol array and not a duplicate. */
+           sn_container_arr array and not a duplicate. */
         return strdup( item[ 0 ]->security_name );
     } else {
         return NULL;
@@ -824,17 +804,22 @@ symbol_name_map *CompletionSymbolFetch ()
 	line_start = line;
 
     symbol_name_map *sn_map = (symbol_name_map*) malloc ( sizeof(*sn_map) );
-    sn_map->security_symbol = malloc ( 1 );
+    sn_map->sn_container_arr = malloc ( 1 );
     sn_map->size = 0;
     symbol_to_security_name_container **sec_sym_tmp = NULL;
 
-	CURLM *mult_hnd = SetUpMultiCurlHandle ();
     char* Nasdaq_Url = NASDAQ_SYMBOL_URL; 
     char* NYSE_Url = NYSE_SYMBOL_URL; 
    	MemType Nasdaq_Struct, NYSE_Struct;
-    SetUpCurlHandle( mult_hnd, Nasdaq_Url, &Nasdaq_Struct );
-    SetUpCurlHandle( mult_hnd, NYSE_Url, &NYSE_Struct );
-    if ( PerformMultiCurl_no_prog( mult_hnd ) != 0 ) { free( line ); free( sn_map->security_symbol ); }
+    SetUpCurlHandle( MetaData->NASDAQ_completion_hnd, MetaData->multicurl_cmpltn_hnd, Nasdaq_Url, &Nasdaq_Struct );
+    SetUpCurlHandle( MetaData->NYSE_completion_hnd, MetaData->multicurl_cmpltn_hnd, NYSE_Url, &NYSE_Struct );
+    if ( PerformMultiCurl_no_prog( MetaData->multicurl_cmpltn_hnd ) != 0 || *MetaData->multicurl_cancel_bool == true) { 
+        free( Nasdaq_Struct.memory );
+        free( NYSE_Struct.memory );        
+        free( line ); 
+        free( sn_map->sn_container_arr ); 
+        return sn_map; 
+    }
 
     /* Convert a String to a File Pointer Stream for Reading */
     FILE* fp[2];
@@ -848,12 +833,13 @@ symbol_name_map *CompletionSymbolFetch ()
 
 	    /* Get rid of the header line from the file stream */
 	    if ( fgets( line, 1024, fp[k] ) == NULL ) {
+                free( line );
             	free( output );
             	fclose( fp[0] ); 
                 fclose( fp[1] );
-                /* Free the symbol to security name mapping array. */
-                symbol_security_name_map_destruct ( sn_map );
-            	return NULL;
+                free( Nasdaq_Struct.memory );
+                free( NYSE_Struct.memory );
+            	return sn_map;
         }
 
         /* Read the file stream one line at a time */
@@ -889,6 +875,17 @@ symbol_name_map *CompletionSymbolFetch ()
                 /* strsep moves the line pointer, we need to reset it so the pointer memory can be reused */
                 line = line_start;
            	}
+
+            /* If we are exiting the application, return immediately. */
+            if ( *MetaData->multicurl_cancel_bool == true ) {
+                fclose( fp[0] ); 
+                fclose( fp[1] );  
+                free( Nasdaq_Struct.memory );
+                free( NYSE_Struct.memory );
+                free( output );
+                free( line_start );
+                return sn_map;
+            }
         }
         /* We aren't sure of the current location of the line pointer 
            [the server's data places arbitrary separators at the end].
@@ -911,33 +908,86 @@ symbol_name_map *CompletionSymbolFetch ()
         while ( ( token = strsep( &output, "|" ) ) != NULL ) {
             if( symbol ){
                 /* Add another pointer address to the array */
-                sec_sym_tmp = realloc( sn_map->security_symbol, sizeof(symbol_to_security_name_container*) * (sn_map->size + 1) );
+                sec_sym_tmp = realloc( sn_map->sn_container_arr, sizeof(symbol_to_security_name_container*) * (sn_map->size + 1) );
                 assert( sec_sym_tmp );
-                sn_map->security_symbol = sec_sym_tmp;
+                sn_map->sn_container_arr = sec_sym_tmp;
                 /* Allocate memory for that pointer address */
-                sn_map->security_symbol[ sn_map->size ] = malloc( sizeof(symbol_to_security_name_container) );
+                sn_map->sn_container_arr[ sn_map->size ] = malloc( sizeof(symbol_to_security_name_container) );
                 /* Populate the memory with the character string */
-                sn_map->security_symbol[ sn_map->size ]->symbol = strdup( token );
+                sn_map->sn_container_arr[ sn_map->size ]->symbol = strdup( token );
                 symbol = false;
 
             } else {
                 /* Populate the memory with the character string and increment the symbolcount */
-                sn_map->security_symbol[ sn_map->size++ ]->security_name = strdup( token );
+                sn_map->sn_container_arr[ sn_map->size++ ]->security_name = strdup( token );
                 symbol = true;
 
+            }
+
+            /* If we are exiting the application, return immediately. */
+            if ( *MetaData->multicurl_cancel_bool == true ) { 
+                free( Nasdaq_Struct.memory );
+                free( NYSE_Struct.memory );
+                free( tofree );
+                free( line ); 
+                return sn_map;
             }
         }
 
         /* Free the output string, so the handle can be reused on the second list. */
         free( tofree );
         k++;
+
     } /* end while loop */
     free( line );
 
     /* Sort the security symbol array, this merges both lists into one sorted list. */
-    qsort( &sn_map->security_symbol[ 0 ], sn_map->size, sizeof(symbol_to_security_name_container*), AlphaAscSecName );    
+    qsort( &sn_map->sn_container_arr[ 0 ], sn_map->size, sizeof(symbol_to_security_name_container*), AlphaAscSecName );    
 
     free( Nasdaq_Struct.memory );
     free( NYSE_Struct.memory );
     return sn_map;
+}
+
+void stop_multicurl ()
+/* Removing the easy handle from the multihandle will stop the cURL data transfer
+   immediately. curl_multi_remove_handle does nothing if the easy handle is not
+   currently set in the multihandle. */
+{
+    /* Equity Multicurl Operation */
+    curl_multi_wakeup( Folder->multicurl_hnd );
+    pthread_mutex_lock( &mutex_working[ MULTICURL_PROG_MUTEX ] );
+
+    for(unsigned short i=0; i<Folder->size; i++){
+        curl_multi_remove_handle( Folder->multicurl_hnd, Folder->Equity[ i ]->easy_hnd );
+        
+    }
+
+    pthread_mutex_unlock( &mutex_working[ MULTICURL_PROG_MUTEX ] );
+
+    /* Bullion Multicurl Operation */
+    curl_multi_wakeup( Precious->multicurl_hnd );
+    pthread_mutex_lock( &mutex_working[ MULTICURL_NO_PROG_MUTEX ] );
+
+    curl_multi_remove_handle( Precious->multicurl_hnd, Precious->Gold->YAHOO_hnd );
+    curl_multi_remove_handle( Precious->multicurl_hnd, Precious->Silver->YAHOO_hnd );
+
+    pthread_mutex_unlock( &mutex_working[ MULTICURL_NO_PROG_MUTEX ] );
+
+    /* RSI Completion Fetch Multicurl Operation */
+    curl_multi_wakeup( MetaData->multicurl_cmpltn_hnd );
+    pthread_mutex_lock( &mutex_working[ MULTICURL_NO_PROG_MUTEX ] );
+
+    curl_multi_remove_handle( MetaData->multicurl_cmpltn_hnd, MetaData->NASDAQ_completion_hnd );
+    curl_multi_remove_handle( MetaData->multicurl_cmpltn_hnd, MetaData->NYSE_completion_hnd );
+
+    pthread_mutex_unlock( &mutex_working[ MULTICURL_NO_PROG_MUTEX ] );
+
+    /* RSI Data Multicurl Operation */
+    curl_multi_wakeup( MetaData->multicurl_rsi_hnd );
+    pthread_mutex_lock( &mutex_working[ MULTICURL_NO_PROG_MUTEX ] );
+
+    curl_multi_remove_handle( MetaData->multicurl_rsi_hnd, MetaData->rsi_hnd );
+
+    pthread_mutex_unlock( &mutex_working[ MULTICURL_NO_PROG_MUTEX ] );
 }

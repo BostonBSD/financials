@@ -118,12 +118,12 @@ gboolean GUICallbackHandler_select_comp (GtkEntryCompletion *completion, GtkTree
     /* This function is already blocking the gtk main loop, it's ok 
        to change widgets here without using a "gdk_threads_add_idle" wrapper
        function. */
-    gtk_entry_set_text (GTK_ENTRY( EntryBox ), item );
+    gtk_entry_set_text ( GTK_ENTRY( EntryBox ), item );
     int pos = strlen( item );
     free( item );
 
     /* move the cursor to the end of the string */
-    gtk_editable_set_position (GTK_EDITABLE( EntryBox ), pos );
+    gtk_editable_set_position ( GTK_EDITABLE( EntryBox ), pos );
     return true;
 }
 
@@ -138,11 +138,11 @@ gboolean GUICallbackHandler_cursor_comp (GtkEntryCompletion *completion, GtkTree
     /* This function is already blocking the gtk main loop, it's ok 
        to change widgets here without using a "gdk_threads_add_idle" wrapper
        function. */
-    gtk_entry_set_text (GTK_ENTRY( EntryBox ), item );
+    gtk_entry_set_text ( GTK_ENTRY( EntryBox ), item );
     int pos = strlen( item );
     free( item );
 
     /* move the cursor to the end of the string */
-    gtk_editable_set_position (GTK_EDITABLE( EntryBox ), pos );
+    gtk_editable_set_position ( GTK_EDITABLE( EntryBox ), pos );
     return true;
 }

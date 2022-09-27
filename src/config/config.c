@@ -102,7 +102,7 @@ void ConfigDirectoryProcessing ( const char *home_dir )
     free ( path );
 }
 
-void ReadConfig(metal* M, meta* Data, equity_folder* F){
+void ReadConfig (metal* M, meta* Data, equity_folder* F){
     /* We aren't using a config text file any longer, but the sqlite db file
        serves as a config file for all intents and purposes. */
        

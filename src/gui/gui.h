@@ -72,7 +72,7 @@ typedef struct {                                  /* A mapping between sec symbo
 } symbol_to_security_name_container;
 
 typedef struct {                                  /* A handle to the symbol-name mapping array. */
-  symbol_to_security_name_container **security_symbol; 
+  symbol_to_security_name_container **sn_container_arr; 
   int size;
 } symbol_name_map;
 
@@ -97,7 +97,6 @@ enum {
   GUI_MAIN_WINDOW,
   GUI_RSI_WINDOW
 };
-
 
 /* TreeView Data Column Type */
 enum {
@@ -170,7 +169,6 @@ typedef enum {
     DISPLAY_TIME,
     DISPLAY_TIME_OPEN_INDICATOR,
     EXIT_APPLICATION, 
-    EXIT_APPLICATION_DELETE_EVENT,
     SIGNAL_NUM
 } cb_signal;
 

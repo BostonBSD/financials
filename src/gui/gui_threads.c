@@ -56,11 +56,11 @@ void *GUIThreadHandler(void *data){
         gdk_threads_add_idle ( FetchDataBTNLabel, (void*)MetaData->fetching_data_bool );
 
     } else if ( index_signal == FETCH_DATA_BTN && *MetaData->fetching_data_bool == true ){
-        pthread_mutex_lock( &mutex_working[2] );   
+        pthread_mutex_lock( &mutex_working[ FETCH_DATA_MUTEX ] );   
         
         *MetaData->fetching_data_bool = false;
         
-        pthread_mutex_unlock( &mutex_working[2] );
+        pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
 
         gdk_threads_add_idle ( FetchDataBTNLabel, (void*)MetaData->fetching_data_bool );
         
@@ -108,19 +108,31 @@ void *GUIThreadHandler(void *data){
                    ADD_REMOVE_BUL_OK_BTN, ADD_REMOVE_CASH_OK_BTN, 
                    or CHANGE_API_OK_BTN signal is run in parallel with 
                    this thread. */
+
                 time( &start_curl );
-                pthread_mutex_lock( &mutex_working[2] );                
+                pthread_mutex_lock( &mutex_working[ FETCH_DATA_MUTEX ] ); 
+               
 
                 PopulateBullionPrice_Yahoo ();
+                if ( *MetaData->multicurl_cancel_bool == true ){
+                    pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
+                    break;
+                }
+
                 if ( MultiCurlProcessing () != 0 ) { 
                     gdk_threads_add_idle ( MakeGUIOne, NULL );
-                    pthread_mutex_unlock( &mutex_working[2] );
+                    pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
                     break;
-                 }
+                }
+                if ( *MetaData->multicurl_cancel_bool == true ){
+                    pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
+                    break;
+                }
+
                 JSONProcessing ();
                 PerformCalculations ();
 
-                pthread_mutex_unlock( &mutex_working[2] );
+                pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
 
                 /* Set Gtk treeview. */
                 gdk_threads_add_idle ( MakeGUIOne, NULL );
@@ -187,11 +199,11 @@ void *GUIThreadHandler(void *data){
             break;
 
         case ADD_REMOVE_BUL_OK_BTN:
-            pthread_mutex_lock( &mutex_working[2] ); 
+            pthread_mutex_lock( &mutex_working[ FETCH_DATA_MUTEX ] ); 
 
             OKBullionWindow ();
 
-            pthread_mutex_unlock( &mutex_working[2] );
+            pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
 
             gdk_threads_add_idle( ShowHideBullionWindow, NULL );
             if( *MetaData->fetching_data_bool == false ) gdk_threads_add_idle( DefaultTreeView, NULL );
@@ -210,11 +222,11 @@ void *GUIThreadHandler(void *data){
             break;
 
         case ADD_REMOVE_CASH_OK_BTN:
-            pthread_mutex_lock( &mutex_working[2] );
+            pthread_mutex_lock( &mutex_working[ FETCH_DATA_MUTEX ] );
 
             OKCashWindow ();
 
-            pthread_mutex_unlock( &mutex_working[2] );
+            pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
 
             gdk_threads_add_idle( ShowHideCashWindow, NULL );
             if( *MetaData->fetching_data_bool == false ) gdk_threads_add_idle( DefaultTreeView, NULL );
@@ -233,11 +245,11 @@ void *GUIThreadHandler(void *data){
             break;
 
         case CHANGE_API_OK_BTN:
-            pthread_mutex_lock( &mutex_working[2] );
+            pthread_mutex_lock( &mutex_working[ FETCH_DATA_MUTEX ] );
             
             OKAPIWindow ();
 
-            pthread_mutex_unlock( &mutex_working[2] );
+            pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
 
             gdk_threads_add_idle( ShowHideAPIWindow, NULL );
             break;
@@ -260,6 +272,12 @@ void *GUIThreadHandler(void *data){
                */
             RSIGetSymbol( &symbol );
             RSIOutput = RSIMulticurlProcessing ( symbol );
+            if ( *MetaData->multicurl_cancel_bool == true ){ 
+                free( symbol );
+                free ( RSIOutput->memory ); 
+                free ( RSIOutput );  
+                break;
+            }
 
             /* Clear the current TreeView model */ 
             gdk_threads_add_idle( RSITreeViewClear, NULL );
@@ -290,17 +308,23 @@ void *GUIThreadHandler(void *data){
             /* This mutex prevents the program from crashing if an
                EXIT_APPLICATION signal is run in parallel with this thread.
 
-               This signal is only run once at application load.
+               This signal is only run once at application start.
             */
-            pthread_mutex_lock( &mutex_working[6] );
+            pthread_mutex_lock( &mutex_working[ RSI_COMPLETION_FETCH_MUTEX ] );
 
             sym_map = CompletionSymbolFetch ();
 
-            pthread_mutex_unlock( &mutex_working[6] );
+            if ( *MetaData->multicurl_cancel_bool == true ) {
+                pthread_mutex_unlock( &mutex_working[ RSI_COMPLETION_FETCH_MUTEX ] );
+                break;
+            }
 
-            /* gdk_threads_add_idle is non-blocking, we need the same mutex
+            /* gdk_threads_add_idle is non-blocking, we need the mutex
                in the ViewRSICompletionSet function. */
-            gdk_threads_add_idle( ViewRSICompletionSet, (void*)sym_map );
+            if(sym_map) {
+                gdk_threads_add_idle( ViewRSICompletionSet, (void*)sym_map );
+                pthread_mutex_unlock( &mutex_working[ RSI_COMPLETION_FETCH_MUTEX ] );
+            }
 
             
             break;
@@ -308,21 +332,10 @@ void *GUIThreadHandler(void *data){
             gdk_threads_add_idle( ShowHideShortcutWindow, NULL );
             break;
         case DISPLAY_TIME:
-            /* The Mutexes are in the NYTime, TimeToClose, and 
-               SecondsToOpen functions to reduce synchronization overhead.
-
-               Mutexes are required here because we are changing the process 
-               locale from local time to New York time and back again.
-
+            /* 
                This is a single process multithreaded application. 
 
-               EDIT: I took the mutexes out because they were causing a timing 
-               issue, if this proves consequential they can be put back.
-               //pthread_mutex_lock( &mutex_working[3] );
-               //pthread_mutex_unlock( &mutex_working[3] );
-               Is the clock mutex. 
-
-               We might be able to fix this by always using New York time.
+               The process is always using New York time.
             */
 
             while(1){
@@ -359,19 +372,23 @@ void *GUIThreadHandler(void *data){
             break;
 
         case EXIT_APPLICATION:
+
+            *MetaData->multicurl_cancel_bool = true;
+            stop_multicurl ();
+
             /* This mutex prevents the program from crashing if a
                FETCH_DATA_BTN signal is run in parallel with this thread. */
-            pthread_mutex_lock( &mutex_working[2] );
+            pthread_mutex_lock( &mutex_working[ FETCH_DATA_MUTEX ] );
 
             /* Save the Window Size and Location. */
-            SqliteChangeMainWindowSize ( WindowStruct.main_width , WindowStruct.main_height );
-            SqliteChangeMainWindowPos ( WindowStruct.main_x_pos, WindowStruct.main_y_pos );
-            SqliteChangeRSIWindowSize ( WindowStruct.rsi_width, WindowStruct.rsi_height );
-            SqliteChangeRSIWindowPos ( WindowStruct.rsi_x_pos, WindowStruct.rsi_y_pos );
+            SqliteAddMainWindowSize ( WindowStruct.main_width , WindowStruct.main_height );
+            SqliteAddMainWindowPos ( WindowStruct.main_x_pos, WindowStruct.main_y_pos );
+            SqliteAddRSIWindowSize ( WindowStruct.rsi_width, WindowStruct.rsi_height );
+            SqliteAddRSIWindowPos ( WindowStruct.rsi_x_pos, WindowStruct.rsi_y_pos );
 
             /* This mutex prevents the program from crashing if a
                VIEW_RSI_COMPLETION signal is run in parallel with this thread. */
-            pthread_mutex_lock( &mutex_working[6] );
+            pthread_mutex_lock( &mutex_working[ RSI_COMPLETION_FETCH_MUTEX ] );
 
             /* Exit the GTK main loop. */
             gtk_main_quit ();
@@ -380,8 +397,8 @@ void *GUIThreadHandler(void *data){
             symbol_security_name_map_destruct ( sym_map );
             free( sym_map );
 
-            pthread_mutex_unlock( &mutex_working[6] );
-            pthread_mutex_unlock( &mutex_working[2] );
+            pthread_mutex_unlock( &mutex_working[ RSI_COMPLETION_FETCH_MUTEX ] );
+            pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
             break;
 
         default:

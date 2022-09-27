@@ -47,8 +47,7 @@ struct MemType {
 };
 
 /* Function Prototypes */
-void *SetUpCurlHandle (CURLM*,char*,MemType*);
-CURLM *SetUpMultiCurlHandle ();
+void *SetUpCurlHandle(CURL*,CURLM*,char*,MemType*);
 int PerformMultiCurl (CURLM*,double);
 int PerformMultiCurl_no_prog(CURLM*);
 

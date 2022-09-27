@@ -92,9 +92,6 @@ bool check_if_string_long_positive_number(const char* string)
 void FormatStr(char *s)
 /* Remove all dollar signs '$' and commas ',' from a string */
 {
-    /* This will prevent our threads from corrupting each other. */
-    pthread_mutex_lock(&mutex_working[1]);
-
     /* Read character by character until the null character is reached. */
     for(int i = 0; s[i] != '\0'; i++){
         /* If we find a '$' OR ',' character */
@@ -108,13 +105,9 @@ void FormatStr(char *s)
         i--; 
         }
     }
-
-    pthread_mutex_unlock(&mutex_working[1]);
 }
 
 char* StringToMonetary (const char *s) {
-    /* This will prevent our threads from corrupting each other. */
-    pthread_mutex_lock ( &mutex_working[0] );
     
     double num = strtod(s, NULL);
     char* str = (char*) malloc ( strlen( "############.####" )+1 ); 
@@ -123,7 +116,6 @@ char* StringToMonetary (const char *s) {
     setlocale ( LC_ALL, LOCALE ); 
     strfmon ( str, strlen ( "############.####" ), "%(.3n", num );
 
-    pthread_mutex_unlock ( &mutex_working[0] );
     return str;
 }
 
@@ -135,12 +127,10 @@ void LowerCaseStr(char *s){
 }
 
 void UpperCaseStr(char *s){
-    pthread_mutex_lock( &mutex_working[5] );
     /* Convert the string to uppercase letters */
     for(short i = 0; s[i]; i++){
         s[i] = toupper( s[i] );
     }
-    pthread_mutex_unlock( &mutex_working[5] );
 }
 
 void chomp(char *s)

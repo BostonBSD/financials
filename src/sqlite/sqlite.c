@@ -56,7 +56,7 @@ int equity_callback(void *data, int argc, char **argv, char **ColName) {
 }
 
 int cash_callback(void *data, int argc, char **argv, char **ColName) {
-    pthread_mutex_lock( &mutex_working[0] );
+    pthread_mutex_lock( &mutex_working [CLASS_MEMBER_MUTEX ] );
 
     /* argv[0] is id, argv[1] is value */
     if ( argc != 2 ) return 1;
@@ -71,13 +71,13 @@ int cash_callback(void *data, int argc, char **argv, char **ColName) {
     /* To make sure it's formatted correctly. */
     mdata->cash_ch = mdata->DoubToStr( mdata->cash_f );
 
-    pthread_mutex_unlock( &mutex_working[0] );
+    pthread_mutex_unlock( &mutex_working [CLASS_MEMBER_MUTEX ] );
     return 0;
 }
 
 int bullion_callback(void *data, int argc, char **argv, char **ColName) {
     /* argv[0] is Id, argv[1] is Metal, argv[2] is Ounces, argv[3] is Premium */
-    pthread_mutex_lock( &mutex_working[0] );
+    pthread_mutex_lock( &mutex_working [CLASS_MEMBER_MUTEX ] );
 
     if ( argc != 4 ) return 1;
     if ( strcmp( ColName[0], "Id") != 0 ) return 1;
@@ -117,7 +117,7 @@ int bullion_callback(void *data, int argc, char **argv, char **ColName) {
         m->Silver->premium_ch = m->Silver->DoubToStr( m->Silver->premium_f );
     }
 
-    pthread_mutex_unlock( &mutex_working[0] );
+    pthread_mutex_unlock( &mutex_working [CLASS_MEMBER_MUTEX ] );
     return 0;
 }
 
@@ -477,7 +477,7 @@ void SqliteRemoveAllEquity (equity_folder *F){
     ResetEquity ( F );
 }
 
-void SqliteChangeMainWindowSize (int width, int height){
+void SqliteAddMainWindowSize (int width, int height){
     size_t  len;
     char    *err_msg = 0;
     sqlite3 *db;
@@ -498,7 +498,7 @@ void SqliteChangeMainWindowSize (int width, int height){
     sqlite3_close( db );
 }
 
-void SqliteChangeMainWindowPos (int x, int y){
+void SqliteAddMainWindowPos (int x, int y){
     size_t  len;
     char    *err_msg = 0;
     sqlite3 *db;
@@ -519,7 +519,7 @@ void SqliteChangeMainWindowPos (int x, int y){
     sqlite3_close( db );
 }
 
-void SqliteChangeRSIWindowSize (int width, int height){
+void SqliteAddRSIWindowSize (int width, int height){
     size_t  len;
     char    *err_msg = 0;
     sqlite3 *db;
@@ -540,7 +540,7 @@ void SqliteChangeRSIWindowSize (int width, int height){
     sqlite3_close( db );
 }
 
-void SqliteChangeRSIWindowPos (int x, int y){
+void SqliteAddRSIWindowPos (int x, int y){
     size_t  len;
     char    *err_msg = 0;
     sqlite3 *db;

@@ -31,6 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "financials.h"
+#include <X11/Xlib.h>   /* We're only including this for the XInitThreads () function */
 
 equity_folder* Folder;  /* A handle to an array of stock class objects, can change dynamically. */    
 metal* Precious;        /* A handle to the bullion class object pointers. */
@@ -45,14 +46,6 @@ pthread_mutex_t mutex_working[ MUTEX_NUMBER ];    /* A Posix Mutex Array */
     interprocess communication, we use them here the same way as a mutex just 
     to illustrate their use. */
 sem_t semaphore[ SIGNAL_NUM ];                    /* A Posix Semaphore Array */
-
-void Destruct ()
-/* Free Memory */
-{
-    if ( Precious ) class_destruct_metal ( Precious );
-    if ( Folder ) class_destruct_equity_folder ( Folder );
-    if ( MetaData ) class_destruct_meta_data ( MetaData );
-}
 
 void Mutex_Init ()
 /* Initialize Mutexes */
@@ -105,14 +98,9 @@ void Semaphore_Destruct ()
     }
 }
 
-int main (int argc, char *argv[])
+void Window_Data_Init ()
+/* Initialize the Main and RSI Window size and position. */
 {
-    /* Initialize some of our class instances */
-    Folder = class_init_equity_folder ();
-    Precious = class_init_metal ();
-    MetaData = class_init_meta_data ();
-
-    /* Initialize the Main and RSI Window size and position. */
     WindowStruct.main_height = 0;
     WindowStruct.main_width = 0;
     WindowStruct.main_x_pos = 0;
@@ -121,20 +109,67 @@ int main (int argc, char *argv[])
     WindowStruct.rsi_width = 0;
     WindowStruct.rsi_x_pos = 0;
     WindowStruct.rsi_y_pos = 0;
+}
 
-    /* Read config file and populate associated variables */
-	ReadConfig( Precious, MetaData, Folder );
+void Class_Instance_Init ()
+/* Initialize some of our class instances */
+{
+    Folder = class_init_equity_folder ();
+    Precious = class_init_metal ();
+    MetaData = class_init_meta_data ();
+}
+
+void Class_Instance_Destruct ()
+/* Free Memory */
+{
+    if ( Precious ) class_destruct_metal ( Precious );
+    if ( Folder ) class_destruct_equity_folder ( Folder );
+    if ( MetaData ) class_destruct_meta_data ( MetaData );
+}
+
+void Set_New_York_Time_Zone ()
+/* Set the process time zone to New York */
+{
+    setenv("TZ", NEW_YORK_TIME_ZONE, 1);
+    tzset();
+}
+
+
+int main (int argc, char *argv[])
+{
+    /* Set the process time zone to New York */
+    Set_New_York_Time_Zone ();
+
+    /* Initialize some of our class instances */
+    /* This needs to be initialized before ReadConfig */
+    Class_Instance_Init ();
+
+    /* Initialize Xlib support for concurrent threads */
+    /* This needs to be initialized before gtk_init */
+
+    /* Some sources say this is not required because gdk_threads_add_idle
+       will do this automatically.  Other sources say they've experienced
+       problems without it while using gdk_threads_add_idle. */
+    XInitThreads ();
 
     /* Initialize gtk */
     gtk_init ( &argc, &argv );
 
     /* Initialize Mutexes */
+    /* This needs to be initialized before ReadConfig */
     Mutex_Init ();
 
     /* Initialize Semaphores */
     Semaphore_Init ();
 
-    /* Setup GUI widgets and display the GUI */
+    /* Initialize the Main and RSI Window size and position struct. */
+    /* This needs to be initialized before ReadConfig */
+    Window_Data_Init ();
+
+    /* Read config file and populate associated variables */
+	ReadConfig ( Precious, MetaData, Folder );
+
+    /* Set up GUI widgets and display the GUI */
     SetUpGUI ();
 
     /* Free Mutex Resources */
@@ -144,7 +179,7 @@ int main (int argc, char *argv[])
     Semaphore_Destruct ();
     
     /* Free Remaining Memory. */
-    Destruct ();
+    Class_Instance_Destruct ();
 
     return 0;
 }

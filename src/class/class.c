@@ -90,6 +90,9 @@ equity_folder* class_init_equity_folder ()
     new_class_handle->Equity = NULL;
     new_class_handle->size = 0;
 
+    /* Create a MultiCurl Handle */
+    new_class_handle->multicurl_hnd = curl_multi_init();
+
     /* Return Our Initialized Class Handle */
     return new_class_handle; 
 }
@@ -103,6 +106,9 @@ metal* class_init_metal ()
     /* Initialize Class Objects */
     new_class_handle->Gold = class_init_bullion ();
     new_class_handle->Silver = class_init_bullion ();
+
+    /* Create a MultiCurl Handle */
+    new_class_handle->multicurl_hnd = curl_multi_init();
 
     /* Return Our Initialized Class Handle */
     return new_class_handle; 
@@ -137,6 +143,8 @@ bullion* class_init_bullion ()
     *new_class->spot_price_f = 0.0;
     *new_class->premium_f = 0.0;
     *new_class->port_value_f = 0.0;
+
+    new_class->YAHOO_hnd = curl_easy_init ();
 
     /* Connect Function Pointers To Function Definitions */
     new_class->Stake = BullionPremStake;
@@ -207,7 +215,9 @@ stock* class_init_equity ()
     strcpy( new_class->current_investment_stock_ch,"$0.00" );
 
     strcpy( new_class->symbol_stock_ch,"NO_SYMBOL" );
-    strcpy( new_class->curl_url_stock_ch,"http://" );   
+    strcpy( new_class->curl_url_stock_ch,"http://" );  
+
+    new_class->easy_hnd = curl_easy_init ();
 
     /* Connect Function Pointers To Function Definitions */
     new_class->Stake = EquityStake;
@@ -250,6 +260,7 @@ meta* class_init_meta_data ()
 
     new_class->fetching_data_bool = (bool*) malloc( sizeof(bool) );
     new_class->holiday_bool = (bool*) malloc( sizeof(bool) );
+    new_class->multicurl_cancel_bool = (bool*) malloc( sizeof(bool) );
 
     /* Initialize Variables */
     strcpy( new_class->stock_url, FINNHUB_URL );
@@ -276,6 +287,14 @@ meta* class_init_meta_data ()
 
     *new_class->fetching_data_bool = false;
     *new_class->holiday_bool = false;
+    *new_class->multicurl_cancel_bool = false;
+
+    new_class->rsi_hnd = curl_easy_init ();
+    new_class->NASDAQ_completion_hnd = curl_easy_init ();
+    new_class->NYSE_completion_hnd = curl_easy_init ();
+
+    new_class->multicurl_cmpltn_hnd = curl_multi_init ();
+    new_class->multicurl_rsi_hnd = curl_multi_init ();
 
     /* Set The User's Home Directory */
     /* We need to get the path to the User's home directory: */
@@ -299,11 +318,6 @@ meta* class_init_meta_data ()
 
     /* Get the local timezone variable for the process */
 
-    /* From the getenv() man page: The application should not modify the string pointed to
-       by the getenv() function.  So we do not free this string. */
-    char *tz_var = getenv( "TZ" );
-    tz_var ? (new_class->local_tz_ch = strdup( tz_var ) ) : ( new_class->local_tz_ch = NULL);
-
     /* Connect Function Pointers To Function Definitions */
     new_class->EntireStake = EntirePortfolio;
     new_class->BullionStake = BullionPortfolio;
@@ -326,6 +340,8 @@ void class_destruct_equity_folder (equity_folder* F)
         free( F->Equity );
         F->Equity = NULL;
     } 
+
+    curl_multi_cleanup ( F->multicurl_hnd );
     if ( F ) free( F );
 
 }
@@ -335,6 +351,8 @@ void class_destruct_metal (metal* metal_handle)
     /* Free Memory From Class Objects */
     if ( metal_handle->Gold ) class_destruct_bullion ( metal_handle->Gold );
     if ( metal_handle->Silver ) class_destruct_bullion ( metal_handle->Silver );
+    if ( metal_handle->multicurl_hnd ) curl_multi_cleanup ( metal_handle->multicurl_hnd );
+
     if ( metal_handle ) free( metal_handle );
 }
 
@@ -350,7 +368,9 @@ void class_destruct_bullion (bullion* bullion_class)
     if ( bullion_class->premium_ch ) free( bullion_class->premium_ch ); 
     if ( bullion_class->port_value_ch ) free( bullion_class->port_value_ch );            
 
-    if ( bullion_class->ounce_ch ) free( bullion_class->ounce_ch );                 
+    if ( bullion_class->ounce_ch ) free( bullion_class->ounce_ch );   
+
+    if ( bullion_class->YAHOO_hnd ) curl_easy_cleanup( bullion_class->YAHOO_hnd );              
 
     /* Free Memory From Class Object */
     if ( bullion_class ) {
@@ -455,6 +475,8 @@ void class_destruct_equity (stock* stock_class)
         stock_class->curl_url_stock_ch = NULL;
     }
 
+    if ( stock_class->easy_hnd ) curl_easy_cleanup( stock_class->easy_hnd );
+
     /* Free Memory From Class Object */
     if ( stock_class ) {
         free( stock_class ); 
@@ -490,11 +512,19 @@ void class_destruct_meta_data (meta* meta_class)
 
     if ( meta_class->home_dir_ch ) free( meta_class->home_dir_ch );
     if ( meta_class->sqlite_db_path_ch ) free( meta_class->sqlite_db_path_ch );
-    if ( meta_class->local_tz_ch ) free ( meta_class->local_tz_ch );
 
     if ( meta_class->fetching_data_bool ) free( meta_class->fetching_data_bool );
     if ( meta_class->holiday_bool ) free( meta_class->holiday_bool );
-    
+    if ( meta_class->multicurl_cancel_bool ) free( meta_class->multicurl_cancel_bool );
+
+    if ( meta_class->NASDAQ_completion_hnd ) curl_easy_cleanup( meta_class->NASDAQ_completion_hnd );
+    if ( meta_class->NYSE_completion_hnd ) curl_easy_cleanup( meta_class->NYSE_completion_hnd );
+    if ( meta_class->rsi_hnd ) curl_easy_cleanup( meta_class->rsi_hnd );
+
+    if ( meta_class->multicurl_cmpltn_hnd ) curl_multi_cleanup ( meta_class->multicurl_cmpltn_hnd );
+    if ( meta_class->multicurl_rsi_hnd ) curl_multi_cleanup ( meta_class->multicurl_rsi_hnd );
+
+
     /* Free Memory From Class Object */
     if ( meta_class ) {
          free( meta_class ); 

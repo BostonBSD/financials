@@ -30,11 +30,9 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "../multicurl/multicurl.h"
-#include "../gui/gui.h" /* We need a function, void UpDateProgressBarGUI (double*), 
-                    from this header.  */
+#include "../financials.h"
 
-#define MAX_WAIT_MSECS 5000
+#define MAX_WAIT_MSECS 50
 
 static size_t write_callback(char *ptr, size_t size, size_t nmemb, void *userdata)
 /* cURL callback function [read in datastream to memory]
@@ -65,16 +63,12 @@ static size_t write_callback(char *ptr, size_t size, size_t nmemb, void *userdat
     return realsize;
 }
 
-void *SetUpCurlHandle(CURLM *mh, char *url, MemType *output)
-/* Take in a multihandle pointer address, a URL, and a struct pointer address, 
+void *SetUpCurlHandle(CURL *hnd, CURLM *mh, char *url, MemType *output)
+/* Take in an easy handle pointer address, a multihandle pointer address, a URL, and a struct pointer address, 
    add easy handle to multi handle. */
 {
-    CURL *hnd = NULL;
     output->memory = malloc(1);              /* Initialize the memory component of the structure. */
     output->size = 0;                        /* Initialize the size component of the structure. */
-
-    /* Initialize the cURL handle. */
-    hnd = curl_easy_init();
 
     if(hnd){
         /* Setup the cURL options. */
@@ -87,13 +81,18 @@ void *SetUpCurlHandle(CURLM *mh, char *url, MemType *output)
         curl_easy_setopt(hnd, CURLOPT_HTTP_VERSION, (long)CURL_HTTP_VERSION_2TLS);
         curl_easy_setopt(hnd, CURLOPT_FTP_SKIP_PASV_IP, 1L);
         curl_easy_setopt(hnd, CURLOPT_TCP_KEEPALIVE, 1L);
+        /* cURL advises to use this option in a multithreaded environment. */
+        /* It prevents unix signals during socket operations. */
+        curl_easy_setopt(hnd, CURLOPT_NOSIGNAL, 1L);
         /* The callback function to write data to. */
         curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, write_callback);
         /* Send the address of the data struct to callback func. */
         curl_easy_setopt(hnd, CURLOPT_WRITEDATA, (void *)output);
-        /* Timeout after 5 seconds. */
-        curl_easy_setopt(hnd, CURLOPT_CONNECTTIMEOUT, 5);
-        //curl_easy_setopt(hnd, CURLOPT_VERBOSE, 1);
+        /* Timeout after 2 seconds. */
+        curl_easy_setopt(hnd, CURLOPT_CONNECTTIMEOUT, 2);
+        /* Uncomment the next line for detailed info on
+           the connections cURL is communicating over. */
+        //curl_easy_setopt(hnd, CURLOPT_VERBOSE, 1L);
 
         curl_multi_add_handle(mh, hnd);
     }else{
@@ -106,24 +105,16 @@ void *SetUpCurlHandle(CURLM *mh, char *url, MemType *output)
     return NULL;
 }
 
-CURLM *SetUpMultiCurlHandle(){
-    curl_global_init(CURL_GLOBAL_ALL);
-
-    CURLM * mh = curl_multi_init();
-    
-    if(mh){
-        return mh;
-    }else{
-        printf("cURL Library Failed, curl_multi_init() returned NULL.\n");
-        exit(EXIT_FAILURE);
-    }
-    
-}
-
 int PerformMultiCurl(CURLM * mh, double size)
 /* Take in a multi handle pointer, request data from remote server asynchronously. 
    Update the main window progress bar during transfer. */
 {
+    curl_global_init(CURL_GLOBAL_ALL);
+    if(!mh){
+        printf("cURL Library Failed, curl_multi_init() returned NULL.\n");
+        exit(EXIT_FAILURE);
+    }
+
     CURLMsg *msg=NULL;
     CURL *hnd = NULL;
     CURLcode return_code = 0, res;
@@ -131,15 +122,18 @@ int PerformMultiCurl(CURLM * mh, double size)
     int msgs_left = 0;
     double fraction = 0.0f;
 
-    res = (CURLcode)curl_multi_perform(mh, &still_running);
-    if(res != (CURLcode)CURLM_OK) {
-            fprintf(stderr, "error: curl_multi_perform() returned %d\n", (int)res);
-    }  
     do {
         int numfds=0;
-        res = (CURLcode)curl_multi_wait(mh, NULL, 0, MAX_WAIT_MSECS, &numfds);
+        pthread_mutex_lock( &mutex_working[ MULTICURL_PROG_MUTEX ] );
+
+        res = (CURLcode)curl_multi_perform(mh, &still_running);
+
+        if ( res == (CURLcode)CURLM_OK ) res = (CURLcode)curl_multi_poll(mh, NULL, 0, MAX_WAIT_MSECS, &numfds);  
+    
+        pthread_mutex_unlock( &mutex_working[ MULTICURL_PROG_MUTEX ] );
+
         if(res != (CURLcode)CURLM_OK) {
-            fprintf(stderr, "error: curl_multi_wait() returned %d\n", (int)res);
+            fprintf(stderr, "curl_multi returned %d\n", (int)res);
             break;
         }        
 
@@ -147,40 +141,29 @@ int PerformMultiCurl(CURLM * mh, double size)
         fraction = 1 - ( still_running / size );
         UpDateProgressBarGUI ( &fraction );
 
-        res = (CURLcode)curl_multi_perform(mh, &still_running);
-        if(res != (CURLcode)CURLM_OK) {
-            fprintf(stderr, "error: curl_multi_perform() returned %d\n", (int)res);
-            break;
-    }  
-        /* if there are still transfers, loop! */
-    } while(still_running);
+    /* if there are still transfers, loop! */
+    } while ( still_running );
 
-    /* Update the GUI Progress Bar */
+    /* Reset the GUI Progress Bar */
     fraction = 0.0f;
     UpDateProgressBarGUI ( &fraction );
     
-    /* This portion of the code will clean up and remove the handles from memory, 
-       you could change this to make them more persistent */
+    /* This portion of the code will remove the easy handles from the mulltihandle. */
     while ((msg = curl_multi_info_read(mh, &msgs_left))) {
         if (msg->msg == CURLMSG_DONE) {
             hnd = msg->easy_handle;
-
             return_code = msg->data.result;
             if(return_code != (CURLcode)CURLE_OK) {
-                fprintf(stderr, "CURL error code: %d\n", msg->data.result);
+                fprintf(stderr, "CURL code: %d\n", msg->data.result);
                 continue;
             }
-
             curl_multi_remove_handle(mh, hnd);
-            curl_easy_cleanup(hnd);
-            hnd = NULL;
         }
         else {
             fprintf(stderr, "error: after curl_multi_info_read(), CURLMsg=%d\n", msg->msg);
         }
     }
 
-    curl_multi_cleanup(mh);
     curl_global_cleanup();
     return (int)return_code;
 }
@@ -189,54 +172,52 @@ int PerformMultiCurl_no_prog(CURLM * mh)
 /* Take in a multi handle pointer, request data from remote server asynchronously. 
    Doesn't update any gui widgets during transfer.*/
 {
+    curl_global_init(CURL_GLOBAL_ALL);
+    if(!mh){
+        printf("cURL Library Failed, curl_multi_init() returned NULL.\n");
+        exit(EXIT_FAILURE);
+    }
+
     CURLMsg *msg=NULL;
     CURL *hnd = NULL;
     CURLcode return_code = 0, res;
     int still_running = 0;
     int msgs_left = 0;
 
-    res = (CURLcode)curl_multi_perform(mh, &still_running);
-    if(res != (CURLcode)CURLM_OK) {
-            fprintf(stderr, "error: curl_multi_perform() returned %d\n", (int)res);
-    }  
     do {
         int numfds=0;
-        res = (CURLcode)curl_multi_wait(mh, NULL, 0, MAX_WAIT_MSECS, &numfds);
-        if(res != (CURLcode)CURLM_OK) {
-            fprintf(stderr, "error: curl_multi_wait() returned %d\n", (int)res);
-            break;
-        }        
+        pthread_mutex_lock( &mutex_working[ MULTICURL_NO_PROG_MUTEX ] );
 
         res = (CURLcode)curl_multi_perform(mh, &still_running);
+
+        if ( res == (CURLcode)CURLM_OK ) res = (CURLcode)curl_multi_poll(mh, NULL, 0, MAX_WAIT_MSECS, &numfds); 
+         
+        pthread_mutex_unlock( &mutex_working[ MULTICURL_NO_PROG_MUTEX ] );
+
         if(res != (CURLcode)CURLM_OK) {
-            fprintf(stderr, "error: curl_multi_perform() returned %d\n", (int)res);
+            fprintf(stderr, "curl_multi returned %d\n", (int)res);
             break;
-    }  
-        /* if there are still transfers, loop! */
-    } while(still_running);
+        } 
+
+    /* if there are still transfers, loop! */
+    } while ( still_running );
     
-    /* This portion of the code will clean up and remove the handles from memory, 
-       you could change this to make them more persistent */
+    /* This portion of the code will remove the easy handles from the mulltihandle. */
     while ((msg = curl_multi_info_read(mh, &msgs_left))) {
         if (msg->msg == CURLMSG_DONE) {
             hnd = msg->easy_handle;
-
             return_code = msg->data.result;
             if(return_code != (CURLcode)CURLE_OK) {
-                fprintf(stderr, "CURL error code: %d\n", msg->data.result);
+                fprintf(stderr, "CURL code: %d\n", msg->data.result);
                 continue;
             }
-
             curl_multi_remove_handle(mh, hnd);
-            curl_easy_cleanup(hnd);
-            hnd = NULL;
         }
         else {
             fprintf(stderr, "error: after curl_multi_info_read(), CURLMsg=%d\n", msg->msg);
         }
     }
 
-    curl_multi_cleanup(mh);
     curl_global_cleanup();
     return (int)return_code;
 }

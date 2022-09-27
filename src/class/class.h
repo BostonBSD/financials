@@ -68,6 +68,8 @@ typedef struct {
     char* port_value_ch;                    /* Total current investment in this metal. */
     char* ounce_ch;                         /* Number of ounces. */
 
+    CURL *YAHOO_hnd;                        /* Bullion cURL Easy Handle. */
+
     /* 
        Methods or Functions
        Create a function pointer from the type here.
@@ -109,6 +111,8 @@ typedef struct {
 	char* symbol_stock_ch;                  /* The stock symbol in all caps, it's used to create the stock request URL */
 	char* curl_url_stock_ch;                /* The assembled request URL, Each stock has it's own URL request */
 
+    CURL *easy_hnd;                         /* cURL Easy Handle. */
+
     /* 
        Methods or Functions
        Create a function pointer from the type here.
@@ -147,10 +151,16 @@ typedef struct {
 
     char* home_dir_ch;                      /* Path to the user's home directory */
     char* sqlite_db_path_ch;                /* Path to the sqlite db file */
-    char* local_tz_ch;                      /* The local timezone variable */
 
     bool* fetching_data_bool;               /* Indicates a fetch operation in progress. */
     bool* holiday_bool;                     /* Indicates if today is a holiday. */
+    bool* multicurl_cancel_bool;            /* Indicates if we should cancel the multicurl request. */
+
+    CURL *rsi_hnd;                          /* RSI Data cURL Easy Handle. */
+    CURL *NASDAQ_completion_hnd;            /* RSI NASDAQ Symbol list cURL Easy Handle. */
+    CURL *NYSE_completion_hnd;              /* RSI NYSE Symbol list cURL Easy Handle. */
+    CURLM *multicurl_cmpltn_hnd;            /* Multicurl Handle for the No Prog Multicurl function. */
+    CURLM *multicurl_rsi_hnd;               /* Multicurl Handle for the No Prog Multicurl function. */
 
     /* 
        Methods or Functions
@@ -167,13 +177,15 @@ typedef struct {
 typedef struct {
     /* Metal Handles */
 	bullion* Gold;
-    bullion* Silver;    
+    bullion* Silver;
+    CURLM *multicurl_hnd;                    /* Multicurl Handle. */    
 } metal;
 
 /* This is a handle to other class objects and not an emulation of a class object. */
 typedef struct {
 	stock** Equity;                          /* Equity Double Pointer Array */
-    unsigned short size;                    /* The number of stocks */
+    unsigned short size;                     /* The number of stocks */
+    CURLM *multicurl_hnd;                    /* Multicurl Handle. */
 } equity_folder;
 
 /* class init prototypes [these do not have to return pointers, but this program

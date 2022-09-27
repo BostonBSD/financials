@@ -80,27 +80,37 @@ POSSIBILITY OF SUCH DAMAGE.
 #define DB_FILE CONFIG_FILE_DIR "/financials.db"
 #endif
 
-/* The number of system mutexes */
-#ifndef MUTEX_NUMBER
-#define MUTEX_NUMBER 7
-#endif
-
 /* The current locale */
 #ifndef LOCALE
 #define LOCALE "en_US.UTF-8"
 #endif
 
-/* Structures */
+/* The New York time zone string */
+#ifndef NEW_YORK_TIME_ZONE
+#define NEW_YORK_TIME_ZONE "America/New_York"
+#endif
+
+/* Structs and enums */
+
+/* System mutex enum */
+enum {
+  CLASS_MEMBER_MUTEX,
+  FETCH_DATA_MUTEX,
+  MULTICURL_PROG_MUTEX,
+  MULTICURL_NO_PROG_MUTEX,
+  RSI_COMPLETION_FETCH_MUTEX,
+  MUTEX_NUMBER
+};
 
 /* Globals */
 extern GMutex mutex_interface;                        /* A GMutex */
 extern pthread_mutex_t mutex_working[ MUTEX_NUMBER ]; /* A Posix Mutex Array */
 extern sem_t semaphore[ SIGNAL_NUM ];                 /* A Posix Semaphore Array */
 
-extern equity_folder *Folder; /* A handle to an array of stock class objects, */
-                              /* can change dynamically. */
-extern metal *Precious; /* A handle to the bullion class object pointers. */
-extern meta *MetaData;  /* A class object pointer called MetaData. */
+extern equity_folder *Folder;   /* A handle to an array of stock class objects, */
+                                /* can change dynamically. */
+extern metal *Precious;         /* A handle to the bullion class object pointers. */
+extern meta *MetaData;          /* A class object pointer called MetaData. */
 
 /* Declarations  */
 void ReadConfig(metal*,meta*,equity_folder*);
@@ -146,5 +156,6 @@ double calc_rsi (double,double);
 void chomp(char*);
 bool check_symbol(const char*);
 char *rsi_indicator( double );
+void stop_multicurl ();
 
 #endif /* FINANCIALS_HEADER_H */

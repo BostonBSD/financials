@@ -491,7 +491,7 @@ int OKSecurityAddRemoveSecurityWindow ()
 {
     /* This mutex prevents the program from crashing if a
         FETCH_DATA_BTN signal is run in parallel with this thread. */
-    pthread_mutex_lock( &mutex_working[2] );
+    pthread_mutex_lock( &mutex_working[ FETCH_DATA_MUTEX ] );
 
     GtkWidget* Switch = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecuritySwitch") );
     gboolean SwitchSet = gtk_switch_get_active ( GTK_SWITCH( Switch ) );
@@ -502,7 +502,7 @@ int OKSecurityAddRemoveSecurityWindow ()
         OKRemoveSecurityAddRemoveSecurityWindow ();
     }
 
-    pthread_mutex_unlock( &mutex_working[2] );
+    pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
 
     return 0;
 }
@@ -560,13 +560,13 @@ GtkListStore * CompletionSymbolSetStore ( void *data ){
     char item[35];
     /* Populate the GtkListStore with the string of stock symbols in column 0, stock names in column 1, 
        and symbols & names in column 2. */
-    for ( int i=0; i<sn_map->size; i++ ){
-        snprintf(item, 35, "%s - %s", sn_map->security_symbol[ i ]->symbol, sn_map->security_symbol[ i ]->security_name );
+    for ( int i=0; i < sn_map->size; i++ ){
+        snprintf(item, 35, "%s - %s", sn_map->sn_container_arr[ i ]->symbol, sn_map->sn_container_arr[ i ]->security_name );
 
         gtk_list_store_append( store, &iter );
         /* Completion is going to match off of columns 0 and 1, but display column 2 */
         /* Completion matches based off of the symbol or the company name, inserts the symbol, displays both */
-        gtk_list_store_set( store, &iter, 0, sn_map->security_symbol[ i ]->symbol, 1, sn_map->security_symbol[ i ]->security_name, 2, item, -1 );
+        gtk_list_store_set( store, &iter, 0, sn_map->sn_container_arr[ i ]->symbol, 1, sn_map->sn_container_arr[ i ]->security_name, 2, item, -1 );
     }
     return store;
 }
@@ -599,17 +599,14 @@ gboolean ViewRSICompletionMatchFunc( GtkEntryCompletion *completion, const gchar
 }
 
 int ViewRSICompletionSet (void *data){
-    /* This mutex prevents the program from crashing if an
-       EXIT_APPLICATION signal is run in parallel with this thread.
-    */
-    pthread_mutex_lock( &mutex_working[6] );
+    pthread_mutex_lock( &mutex_working[ RSI_COMPLETION_FETCH_MUTEX ] );
 
     GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ViewRSISymbolEntryBox") );
     GtkEntryCompletion *completion = gtk_entry_completion_new();
     GtkListStore *store = CompletionSymbolSetStore( data );
 
     gtk_entry_completion_set_model(completion, GTK_TREE_MODEL( store ));
-    g_object_unref( store );
+    g_object_unref( G_OBJECT( store ) );
     gtk_entry_completion_set_match_func(completion, (GtkEntryCompletionMatchFunc)ViewRSICompletionMatchFunc, NULL, NULL);
     gtk_entry_set_completion( GTK_ENTRY( EntryBox ), completion );
     /* The text column to display is column 2 */
@@ -627,7 +624,9 @@ int ViewRSICompletionSet (void *data){
     g_signal_connect ( G_OBJECT( completion ), "match-selected", G_CALLBACK ( GUICallbackHandler_select_comp ), NULL );
     g_signal_connect ( G_OBJECT( completion ), "cursor-on-match", G_CALLBACK ( GUICallbackHandler_cursor_comp ), NULL );
 
-    pthread_mutex_unlock( &mutex_working[6] );
+    g_object_unref( G_OBJECT( completion ) );
+
+    pthread_mutex_unlock( &mutex_working[ RSI_COMPLETION_FETCH_MUTEX ] );
     return 0;
 }
 
@@ -1237,11 +1236,11 @@ void view_popup_menu_onDeleteRow (GtkWidget *menuitem, void *userdata)
     right_click_container *my_data = (right_click_container*) userdata;
 
     /* Prevent's Program From Crashing During A Data Fetch Operation */
-    pthread_mutex_lock( &mutex_working[2] );
+    pthread_mutex_lock( &mutex_working[ FETCH_DATA_MUTEX ] );
 
     SqliteRemoveEquity(my_data->symbol, Folder);
 
-    pthread_mutex_unlock( &mutex_working[2] );
+    pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
 
     if ( Folder->size == 0 && *MetaData->fetching_data_bool == true ){
         *MetaData->fetching_data_bool = false;
@@ -1261,11 +1260,11 @@ void view_popup_menu_onDeleteAllEquityRows (GtkWidget *menuitem, void *userdata)
     right_click_container *my_data = (right_click_container*) userdata;
 
     /* Prevent's Program From Crashing During A Data Fetch Operation */
-    pthread_mutex_lock( &mutex_working[2] );
+    pthread_mutex_lock( &mutex_working[ FETCH_DATA_MUTEX ] );
 
     SqliteRemoveAllEquity( Folder );
 
-    pthread_mutex_unlock( &mutex_working[2] );
+    pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
     
     if (*MetaData->fetching_data_bool == true){ 
         *MetaData->fetching_data_bool = false;
@@ -1741,6 +1740,8 @@ void GUISignalConnect ()
     g_signal_connect ( button, "button-press-event", G_CALLBACK( view_onButtonPressed ), NULL );
 
     /* Start the clock threads. */
+    /* gdk_threads_add_idle (in these threads) creates a pending event for the gtk_main loop.
+       When the gtk_main loop starts the event will be processed. */
     pthread_t thread_id;
     pthread_create( &thread_id, NULL, GUIThreadHandler, (void *)DISPLAY_TIME );
     pthread_create( &thread_id, NULL, GUIThreadHandler, (void *)DISPLAY_TIME_OPEN_INDICATOR );
@@ -1784,6 +1785,6 @@ void SetUpGUI ()
     /* Connect callback functions to corresponding GUI signals. */
     GUISignalConnect ();
 
-    /* Display the GUI window. */
+    /* Start the gtk_main loop. */
     gtk_main ();
 }
