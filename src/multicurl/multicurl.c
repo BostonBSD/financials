@@ -124,12 +124,19 @@ int PerformMultiCurl(CURLM * mh, double size)
 
     do {
         int numfds=0;
+
+        /* This will prevent other threads from interupting the transfer 
+           [they need to use the same mutex for this to work]. */
         pthread_mutex_lock( &mutex_working[ MULTICURL_PROG_MUTEX ] );
 
         res = (CURLcode)curl_multi_perform(mh, &still_running);
 
+        /* Notice MAX_WAIT_MSECS is a very small value,
+           now curl_multi_poll can be as fast as curl_multi_wait */
         if ( res == (CURLcode)CURLM_OK ) res = (CURLcode)curl_multi_poll(mh, NULL, 0, MAX_WAIT_MSECS, &numfds);  
     
+        /* This will allow other threads to interupt the transfer without
+           causing cURL to fail [they need to use the same mutex]. */
         pthread_mutex_unlock( &mutex_working[ MULTICURL_PROG_MUTEX ] );
 
         if(res != (CURLcode)CURLM_OK) {
@@ -186,12 +193,18 @@ int PerformMultiCurl_no_prog(CURLM * mh)
 
     do {
         int numfds=0;
+        /* This will prevent other threads from interupting the transfer 
+           [they need to use the same mutex for this to work]. */
         pthread_mutex_lock( &mutex_working[ MULTICURL_NO_PROG_MUTEX ] );
 
         res = (CURLcode)curl_multi_perform(mh, &still_running);
 
+        /* Notice MAX_WAIT_MSECS is a very small value,
+           now curl_multi_poll can be as fast as curl_multi_wait */
         if ( res == (CURLcode)CURLM_OK ) res = (CURLcode)curl_multi_poll(mh, NULL, 0, MAX_WAIT_MSECS, &numfds); 
          
+        /* This will allow other threads to interupt the transfer without
+           causing cURL to fail [they need to use the same mutex]. */
         pthread_mutex_unlock( &mutex_working[ MULTICURL_NO_PROG_MUTEX ] );
 
         if(res != (CURLcode)CURLM_OK) {

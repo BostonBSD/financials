@@ -900,26 +900,20 @@ symbol_name_map *CompletionSymbolFetch ()
         tmp = strrchr( output, '|' );
         *tmp = 0;
 
-        /* Populate the Security Symbol Array. The second list is concatenated after the first list. */
+        /* Populate the Symbol-Name Array. The second list is concatenated after the first list. */
         tofree = output;
-        bool symbol = true;
         while ( ( token = strsep( &output, "|" ) ) != NULL ) {
-            if( symbol ){
-                /* Add another pointer address to the array */
-                sec_sym_tmp = realloc( sn_map->sn_container_arr, sizeof(symbol_to_security_name_container*) * (sn_map->size + 1) );
-                sn_map->sn_container_arr = sec_sym_tmp;
-                /* Allocate memory for that pointer address */
-                sn_map->sn_container_arr[ sn_map->size ] = malloc( sizeof(symbol_to_security_name_container) );
-                /* Populate the memory with the character string */
-                sn_map->sn_container_arr[ sn_map->size ]->symbol = strdup( token );
-                symbol = false;
+            /* Add another pointer address to the array */
+            sec_sym_tmp = realloc( sn_map->sn_container_arr, sizeof(symbol_to_security_name_container*) * (sn_map->size + 1) );
+            sn_map->sn_container_arr = sec_sym_tmp;
+            /* Allocate memory for that pointer address */
+            sn_map->sn_container_arr[ sn_map->size ] = malloc( sizeof(symbol_to_security_name_container) );
+            /* Populate the memory with the symbol string */
+            sn_map->sn_container_arr[ sn_map->size ]->symbol = strdup( token );
 
-            } else {
-                /* Populate the memory with the character string and increment the symbolcount */
-                sn_map->sn_container_arr[ sn_map->size++ ]->security_name = strdup( token );
-                symbol = true;
-
-            }
+            token = strsep( &output, "|" );
+            /* Populate the memory with the security_name string and increment the size */
+            sn_map->sn_container_arr[ sn_map->size++ ]->security_name = strdup( token ? token : "EOF Incomplete Symbol List" );
 
             /* If we are exiting the application, return immediately. */
             if ( *MetaData->multicurl_cancel_bool == true ) { 
