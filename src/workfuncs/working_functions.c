@@ -923,6 +923,8 @@ symbol_name_map *CompletionSymbolFetch ()
 
             /* If we are exiting the application, return immediately. */
             if ( *MetaData->multicurl_cancel_bool == true ) { 
+                if ( fp[0] ) fclose( fp[0] ); 
+                if ( fp[1] ) fclose( fp[1] );
                 if ( Nasdaq_Struct.memory ) free( Nasdaq_Struct.memory );
                 if ( NYSE_Struct.memory ) free( NYSE_Struct.memory );
                 if ( tofree ) free( tofree );
