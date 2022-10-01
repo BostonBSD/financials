@@ -795,12 +795,8 @@ char *GetSecurityNameFromMapping(const char *s, symbol_name_map* sn_map)
 symbol_name_map *CompletionSymbolFetch ()
 /* This function is only meant to be run once, at application startup. */
 {
-    
-    char *tofree;
     char *line = malloc ( 1024 ), *line_start;
 	char *token;
-	char *output, *tmp, *original;
-	short firstline = 1;
 	line_start = line;
 
     symbol_name_map *sn_map = (symbol_name_map*) malloc ( sizeof(*sn_map) );
@@ -827,53 +823,30 @@ symbol_name_map *CompletionSymbolFetch ()
     
     short k = 0;
 	while( k < 2 ){
-        /* Initialize the output string handle. */
-        output = malloc ( 1 );
-
-	    /* Get rid of the header line from the file stream */
-	    if ( fgets( line, 1024, fp[k] ) == NULL ) {
-                if ( line ) free( line );
-            	if ( output ) free( output );
-            	if ( fp[0] ) fclose( fp[0] ); 
-                if ( fp[1] ) fclose( fp[1] );
-                if ( Nasdaq_Struct.memory ) free( Nasdaq_Struct.memory );
-                if ( NYSE_Struct.memory ) free( NYSE_Struct.memory );
-            	return sn_map;
-        }
-
         /* Read the file stream one line at a time */
+        /* Populate the Symbol-Name Array. The second list is concatenated after the first list. */
         while ( fgets( line, 1024, fp[k] ) != NULL ) {
             
             /* Extract the symbol from the line. */
-           	if( ( token = strsep( &line, "|" ) ) != NULL ){
-                if ( check_symbol( token ) == false ){ line = line_start; continue; }
+            token = strsep( &line, "|" );
+            if ( check_symbol( token ) == false ){ line = line_start; continue; }
 
-           		original = strdup ( output );
-           		tmp = realloc( output, strlen ( token ) + strlen ( output ) + 2 );
-           		output = tmp;
-
-           		if ( firstline ) {
-           			snprintf( output, strlen ( token ) + 2, "%s", token );
-           			firstline = 0;
-           		} else {
-           			snprintf( output, strlen ( token ) + strlen ( output ) + 2, "%s|%s", original, token );
-           		}
-
-           		free ( original );
-           	}
+            /* Increase the array to hold another pointer address */
+            sec_sym_tmp = realloc( sn_map->sn_container_arr, sizeof( symbol_to_security_name_container* ) * ( sn_map->size + 1 ) );
+            sn_map->sn_container_arr = sec_sym_tmp;
+            /* Allocate memory for a pointer address and add it to the array */
+            sn_map->sn_container_arr[ sn_map->size ] = malloc( sizeof( symbol_to_security_name_container ) );
+            /* Populate a data member with the symbol string */
+            sn_map->sn_container_arr[ sn_map->size ]->symbol = strdup( token ? token : "EOF Incomplete Symbol List" );
 
             /* Extract the security name from the line. */
-           	if( ( token = strsep( &line, "|" ) ) != NULL ){
-           		original = strdup ( output );
-           		tmp = realloc( output, strlen ( token ) + strlen ( output ) + 2 );
-           		output = tmp;
+            token = strsep( &line, "|" );
 
-           		snprintf( output, strlen ( token ) + strlen ( output ) + 2, "%s|%s", original, token );
+            /* Populate a data member with the security_name string and increment the size */
+            sn_map->sn_container_arr[ sn_map->size++ ]->security_name = strdup( token ? token : "EOF Incomplete Symbol List" );
 
-           		free ( original );
-                /* strsep moves the line pointer, we need to reset it so the pointer memory can be reused */
-                line = line_start;
-           	}
+            /* strsep moves the line pointer, we need to reset it so the pointer memory can be reused */
+            line = line_start;
 
             /* If we are exiting the application, return immediately. */
             if ( *MetaData->multicurl_cancel_bool == true ) {
@@ -881,54 +854,10 @@ symbol_name_map *CompletionSymbolFetch ()
                 if ( fp[1] ) fclose( fp[1] );  
                 if ( Nasdaq_Struct.memory ) free( Nasdaq_Struct.memory );
                 if ( NYSE_Struct.memory ) free( NYSE_Struct.memory );
-                if ( output ) free( output );
-                if ( line_start ) free( line_start );
+                if ( line ) free( line );
                 return sn_map;
             }
         }
-        /* We aren't sure of the current location of the line pointer 
-           [the server's data places arbitrary separators at the end].
-           so we reset the line pointer before reading a second file. */
-        line = line_start;
-        firstline = 1;  
-
-        /* Truncate the last three entries from the output string */
-        tmp = strrchr( output, '|' );
-        *tmp = 0;
-        tmp = strrchr( output, '|' );
-        *tmp = 0;
-        tmp = strrchr( output, '|' );
-        *tmp = 0;
-
-        /* Populate the Symbol-Name Array. The second list is concatenated after the first list. */
-        tofree = output;
-        while ( ( token = strsep( &output, "|" ) ) != NULL ) {
-            /* Add another pointer address to the array */
-            sec_sym_tmp = realloc( sn_map->sn_container_arr, sizeof(symbol_to_security_name_container*) * (sn_map->size + 1) );
-            sn_map->sn_container_arr = sec_sym_tmp;
-            /* Allocate memory for that pointer address */
-            sn_map->sn_container_arr[ sn_map->size ] = malloc( sizeof(symbol_to_security_name_container) );
-            /* Populate the memory with the symbol string */
-            sn_map->sn_container_arr[ sn_map->size ]->symbol = strdup( token );
-
-            token = strsep( &output, "|" );
-            /* Populate the memory with the security_name string and increment the size */
-            sn_map->sn_container_arr[ sn_map->size++ ]->security_name = strdup( token ? token : "EOF Incomplete Symbol List" );
-
-            /* If we are exiting the application, return immediately. */
-            if ( *MetaData->multicurl_cancel_bool == true ) { 
-                if ( fp[0] ) fclose( fp[0] ); 
-                if ( fp[1] ) fclose( fp[1] );
-                if ( Nasdaq_Struct.memory ) free( Nasdaq_Struct.memory );
-                if ( NYSE_Struct.memory ) free( NYSE_Struct.memory );
-                if ( tofree ) free( tofree );
-                if ( line ) free( line ); 
-                return sn_map;
-            }
-        }
-
-        /* Free the output string, so the handle can be reused on the second list. */
-        free( tofree );
         k++;
 
     } /* end while loop */
