@@ -46,7 +46,7 @@ Some additional features could include cryptocurrency, bullion stats, api select
 
 RSI INDICATOR NOTE: 
 
-The RSI indicator is a measure of speculative fluctuation and not anything intrinsic 
+The RSI indicator is a measure of speculative momentum and not anything intrinsic 
 to the corporation, which also has an influence on the stock price.
 
 Anomalies in the industry and in the corporation can create a false positive.  
