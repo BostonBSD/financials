@@ -138,7 +138,7 @@ void PerformCalculation_Strings () {
     free( Precious->Silver->change_value_ch );
     Precious->Silver->change_value_ch = Precious->Silver->DoubToStr( Precious->Silver->change_value_f );
 
-     free( Precious->Gold->change_value_ch );
+    free( Precious->Gold->change_value_ch );
     Precious->Gold->change_value_ch = Precious->Gold->DoubToStr( Precious->Gold->change_value_f );
 
     /* The change in total investment in each gold and silver as a percentage. */
@@ -254,8 +254,8 @@ void PerformCalculations ()
     }
 
     /* Equity Calculations. */
-    *MetaData->stock_port_value_f = 0;
-    *MetaData->stock_port_value_chg_f = 0;
+    *MetaData->stock_port_value_f = 0.0f;
+    *MetaData->stock_port_value_chg_f = 0.0f;
     unsigned short c = 0;
     while( c < Folder->size ) {
 
