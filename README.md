@@ -34,12 +34,12 @@ If the software returns all zero values this means the API maximum has been reac
 Bullion data is collected through Yahoo! Finance [the Finnhub free account does not offer bullion data].
 
 ----------------------------------------------------------
-Has been tested on FreeBSD 13.1, Fedora 35, 
+Has been tested on FreeBSD 13.1, Fedora 36, 
 Debian “bullseye”, and Ubuntu 22.04.
 
 ----------------------------------------------------------
 
-Some additional features could include cryptocurrency, bullion stats, api selection 
+Some additional features could include cryptocurrency, api selection 
 (inclusion of other data service providers), market indices, other metals, and RSI trendline calibration.
 
 ----------------------------------------------------------
