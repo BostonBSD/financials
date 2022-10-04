@@ -306,6 +306,9 @@ void SqliteProcessing (equity_folder* F, metal *M, meta *D){
 
     /* Sort the equity folder. */
     qsort(&F->Equity[0], (size_t)F->size, sizeof(stock*), AlphaAsc);
+
+    /* Generate the Equity Request URL. */
+    PopulateEquityURL ();
 }
 
 void SqliteAddEquity (char *symbol, char *shares, equity_folder *F){
@@ -340,6 +343,9 @@ void SqliteAddEquity (char *symbol, char *shares, equity_folder *F){
 
     /* Sort the equity folder. */
     qsort(&F->Equity[0], (size_t)F->size, sizeof(stock*), AlphaAsc);
+
+    /* Generate the Equity Request URL. */
+    PopulateEquityURL ();
 }
 
 void SqliteAddBullion (char *metal_name, char *ounces, char *premium, metal *M){
@@ -424,6 +430,9 @@ void SqliteAddAPIData (char *keyword, char *data, meta *D){
     sql_cmd = "SELECT * FROM apidata;";
     if ( sqlite3_exec(db, sql_cmd, api_callback, D, &err_msg) != SQLITE_OK ) ErrorMsg( db );
 
+    /* Generate the Equity Request URL. */
+    PopulateEquityURL ();
+
     /* Close the sqlite database file. */
     sqlite3_close( db );
 }
@@ -454,6 +463,9 @@ void SqliteRemoveEquity (char *symbol, equity_folder *F){
 
     /* Sort the equity folder. */
     qsort(&F->Equity[0], (size_t)F->size, sizeof(stock*), AlphaAsc);
+
+    /* Generate the Equity Request URL. */
+    PopulateEquityURL ();
 }
 
 void SqliteRemoveAllEquity (equity_folder *F){

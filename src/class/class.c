@@ -123,23 +123,49 @@ bullion* class_init_bullion ()
     new_class->port_value_f = (double*) malloc( sizeof(double) );
     new_class->ounce_f = (double*) malloc( sizeof(double) );
 
+    new_class->high_metal_f = (double*) malloc( sizeof(double) );
+    new_class->low_metal_f = (double*) malloc( sizeof(double) );
+    new_class->prev_closing_metal_f = (double*) malloc( sizeof(double) );
+    new_class->change_ounce_f = (double*) malloc( sizeof(double) );
+    new_class->change_value_f = (double*) malloc( sizeof(double) );
+    new_class->change_percent_f = (double*) malloc( sizeof(double) );
+
     new_class->spot_price_ch = (char*) malloc( strlen("$0.00")+1 );            
     new_class->premium_ch = (char*) malloc( strlen("$0.00")+1 ); 
     new_class->port_value_ch = (char*) malloc( strlen("$0.00")+1 );            
+    new_class->ounce_ch = (char*) malloc( strlen("0.000")+1 );  
 
-    new_class->ounce_ch = (char*) malloc( strlen("0.000")+1 );                              
+    new_class->high_metal_ch = (char*) malloc( strlen("$0.00")+1 );
+    new_class->low_metal_ch = (char*) malloc( strlen("$0.00")+1 );
+    new_class->prev_closing_metal_ch = (char*) malloc( strlen("$0.00")+1 );
+    new_class->change_ounce_ch = (char*) malloc( strlen("$0.00")+1 );
+    new_class->change_value_ch = (char*) malloc( strlen("$0.00")+1 );
+    new_class->change_percent_ch = (char*) malloc( strlen("000.000%%")+1 );                            
     
     /* Initialize Variables */
-    strcpy( new_class->spot_price_ch,"$0.00" );
-    strcpy( new_class->premium_ch,"$0.00" );
-    strcpy( new_class->port_value_ch,"$0.00" );
-
-    strcpy( new_class->ounce_ch,"0.000" );
-
     *new_class->ounce_f = 0.0;
     *new_class->spot_price_f = 0.0;
     *new_class->premium_f = 0.0;
     *new_class->port_value_f = 0.0;
+
+    *new_class->high_metal_f = 0.0;
+    *new_class->low_metal_f = 0.0;
+    *new_class->prev_closing_metal_f = 0.0;
+    *new_class->change_ounce_f = 0.0;
+    *new_class->change_value_f = 0.0;
+    *new_class->change_percent_f = 0.0;
+
+    strcpy( new_class->spot_price_ch,"$0.00" );
+    strcpy( new_class->premium_ch,"$0.00" );
+    strcpy( new_class->port_value_ch,"$0.00" );
+    strcpy( new_class->ounce_ch,"0.000" );
+
+    strcpy( new_class->high_metal_ch,"$0.00" );
+    strcpy( new_class->low_metal_ch,"$0.00" );
+    strcpy( new_class->prev_closing_metal_ch,"$0.00" );
+    strcpy( new_class->change_ounce_ch,"$0.00" );
+    strcpy( new_class->change_value_ch,"$0.00" );
+    strcpy( new_class->change_percent_ch,"000.000%%" );
 
     new_class->YAHOO_hnd = curl_easy_init ();
 
@@ -232,6 +258,8 @@ meta* class_init_meta_data ()
     /* Allocate Memory For Variables */
     new_class->cash_f = (double*) malloc( sizeof(double) );
     new_class->bullion_port_value_f = (double*) malloc( sizeof(double) );
+    new_class->bullion_port_value_chg_f = (double*) malloc( sizeof(double) );
+    new_class->bullion_port_value_p_chg_f = (double*) malloc( sizeof(double) );
     new_class->stock_port_value_f = (double*) malloc( sizeof(double) );
     new_class->stock_port_value_chg_f = (double*) malloc( sizeof(double) );
     new_class->stock_port_value_p_chg_f = (double*) malloc( sizeof(double) );
@@ -245,7 +273,9 @@ meta* class_init_meta_data ()
 	new_class->curl_key = (char*) malloc( strlen( FINNHUB_URL_TOKEN )+1 );                 
 
     new_class->cash_ch = (char*) malloc( strlen("$0.00")+1 );                  
-    new_class->bullion_port_value_ch = (char*) malloc( strlen("$0.00")+1 );    
+    new_class->bullion_port_value_ch = (char*) malloc( strlen("$0.00")+1 );
+    new_class->bullion_port_value_chg_ch = (char*) malloc( strlen("$0.00")+1 ); 
+    new_class->bullion_port_value_p_chg_ch = (char*) malloc( strlen("000.000%%")+1 );     
     new_class->stock_port_value_ch = (char*) malloc( strlen("$0.00")+1 );   
     new_class->stock_port_value_chg_ch = (char*) malloc( strlen("$0.00")+1 ); 
     new_class->stock_port_value_p_chg_ch = (char*) malloc( strlen("000.000%%")+1 );    
@@ -262,6 +292,8 @@ meta* class_init_meta_data ()
     strcpy( new_class->curl_key, FINNHUB_URL_TOKEN );
     strcpy( new_class->cash_ch,"$0.00" );
     strcpy( new_class->bullion_port_value_ch,"$0.00" );
+    strcpy( new_class->bullion_port_value_chg_ch,"$0.00" );
+    strcpy( new_class->bullion_port_value_p_chg_ch,"000.000%%" );
     strcpy( new_class->stock_port_value_ch,"$0.00" );
     strcpy( new_class->stock_port_value_chg_ch,"$0.00" );
     strcpy( new_class->stock_port_value_p_chg_ch,"000.000%%" );
@@ -271,6 +303,8 @@ meta* class_init_meta_data ()
 
     *new_class->cash_f = 0.0;
     *new_class->bullion_port_value_f = 0.0;
+    *new_class->bullion_port_value_chg_f = 0.0;
+    *new_class->bullion_port_value_p_chg_f = 0.0;
     *new_class->stock_port_value_f = 0.0;
     *new_class->stock_port_value_chg_f = 0.0;
     *new_class->stock_port_value_p_chg_f = 0.0;
@@ -359,11 +393,24 @@ void class_destruct_bullion (bullion* bullion_class)
     if ( bullion_class->port_value_f ) free( bullion_class->port_value_f );
     if ( bullion_class->ounce_f ) free( bullion_class->ounce_f );
 
+    if ( bullion_class->high_metal_f ) free( bullion_class->high_metal_f );
+    if ( bullion_class->low_metal_f ) free( bullion_class->low_metal_f );
+    if ( bullion_class->prev_closing_metal_f ) free( bullion_class->prev_closing_metal_f );
+    if ( bullion_class->change_ounce_f ) free( bullion_class->change_ounce_f );
+    if ( bullion_class->change_value_f ) free( bullion_class->change_value_f );
+    if ( bullion_class->change_percent_f ) free( bullion_class->change_percent_f );
+
     if ( bullion_class->spot_price_ch ) free( bullion_class->spot_price_ch );            
     if ( bullion_class->premium_ch ) free( bullion_class->premium_ch ); 
     if ( bullion_class->port_value_ch ) free( bullion_class->port_value_ch );            
+    if ( bullion_class->ounce_ch ) free( bullion_class->ounce_ch );
 
-    if ( bullion_class->ounce_ch ) free( bullion_class->ounce_ch );   
+    if ( bullion_class->high_metal_ch ) free( bullion_class->high_metal_ch );
+    if ( bullion_class->low_metal_ch ) free( bullion_class->low_metal_ch );
+    if ( bullion_class->prev_closing_metal_ch ) free( bullion_class->prev_closing_metal_ch );
+    if ( bullion_class->change_ounce_ch ) free( bullion_class->change_ounce_ch );
+    if ( bullion_class->change_value_ch ) free( bullion_class->change_value_ch );
+    if ( bullion_class->change_percent_ch ) free( bullion_class->change_percent_ch );  
 
     if ( bullion_class->YAHOO_hnd ) curl_easy_cleanup( bullion_class->YAHOO_hnd );              
 
@@ -484,6 +531,8 @@ void class_destruct_meta_data (meta* meta_class)
     /* Free Memory From Variables */
     if ( meta_class->cash_f ) free( meta_class->cash_f );
     if ( meta_class->bullion_port_value_f ) free( meta_class->bullion_port_value_f );
+    if ( meta_class->bullion_port_value_chg_f ) free( meta_class->bullion_port_value_chg_f );
+    if ( meta_class->bullion_port_value_p_chg_f ) free( meta_class->bullion_port_value_p_chg_f );
     if ( meta_class->stock_port_value_f ) free( meta_class->stock_port_value_f );
     if ( meta_class->stock_port_value_chg_f ) free( meta_class->stock_port_value_chg_f );
     if ( meta_class->stock_port_value_p_chg_f ) free( meta_class->stock_port_value_p_chg_f );
@@ -497,7 +546,9 @@ void class_destruct_meta_data (meta* meta_class)
 	if ( meta_class->curl_key ) free( meta_class->curl_key );                 
 
     if ( meta_class->cash_ch ) free( meta_class->cash_ch );                  
-    if ( meta_class->bullion_port_value_ch ) free( meta_class->bullion_port_value_ch );    
+    if ( meta_class->bullion_port_value_ch ) free( meta_class->bullion_port_value_ch );
+    if ( meta_class->bullion_port_value_chg_ch ) free( meta_class->bullion_port_value_chg_ch );
+    if ( meta_class->bullion_port_value_p_chg_ch ) free( meta_class->bullion_port_value_p_chg_ch );    
     if ( meta_class->stock_port_value_ch ) free( meta_class->stock_port_value_ch );      
     if ( meta_class->stock_port_value_chg_ch ) free( meta_class->stock_port_value_chg_ch );
     if ( meta_class->stock_port_value_p_chg_ch ) free( meta_class->stock_port_value_p_chg_ch );

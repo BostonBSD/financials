@@ -119,75 +119,181 @@ void ResetEquity(equity_folder *F) {
     }
 }
 
-void PerformCalculations () 
-/* calc portfolio values and populate character strings. */
-{
-    pthread_mutex_lock( &mutex_working [CLASS_MEMBER_MUTEX ] );
-
-    *Precious->Silver->port_value_f = Precious->Silver->Stake( Precious->Silver->ounce_f, Precious->Silver->premium_f, Precious->Silver->spot_price_f );
-    *Precious->Gold->port_value_f = Precious->Gold->Stake( Precious->Gold->ounce_f, Precious->Gold->premium_f, Precious->Gold->spot_price_f );
-
+void PerformCalculation_Strings () {
+    /* The total invested in each gold and silver */
     free( Precious->Silver->port_value_ch );
-    free( Precious->Gold->port_value_ch );
     Precious->Silver->port_value_ch = Precious->Silver->DoubToStr( Precious->Silver->port_value_f );
-    Precious->Gold->port_value_ch = Precious->Gold->DoubToStr( Precious->Gold->port_value_f );
-    
-    *MetaData->bullion_port_value_f = MetaData->BullionStake( Precious->Gold->port_value_f, Precious->Silver->port_value_f );
 
+    free( Precious->Gold->port_value_ch );
+    Precious->Gold->port_value_ch = Precious->Gold->DoubToStr( Precious->Gold->port_value_f );
+
+    /* The change in spot price per ounce. */
+    free( Precious->Silver->change_ounce_ch );
+    Precious->Silver->change_ounce_ch = Precious->Silver->DoubToStr( Precious->Silver->change_ounce_f );
+
+    free( Precious->Gold->change_ounce_ch );
+    Precious->Gold->change_ounce_ch = Precious->Gold->DoubToStr( Precious->Gold->change_ounce_f );
+
+    /* The change in total investment in each gold and silver. */
+    free( Precious->Silver->change_value_ch );
+    Precious->Silver->change_value_ch = Precious->Silver->DoubToStr( Precious->Silver->change_value_f );
+
+     free( Precious->Gold->change_value_ch );
+    Precious->Gold->change_value_ch = Precious->Gold->DoubToStr( Precious->Gold->change_value_f );
+
+    /* The change in total investment in each gold and silver as a percentage. */
+    free( Precious->Silver->change_percent_ch );
+    size_t len = strlen("###.###%%") + 1;
+    Precious->Silver->change_percent_ch = (char*) malloc ( len );
+    snprintf( Precious->Silver->change_percent_ch, len, "%.3lf%%", *Precious->Silver->change_percent_f );
+
+    free( Precious->Gold->change_percent_ch );
+    len = strlen("###.###%%") + 1;
+    Precious->Gold->change_percent_ch = (char*) malloc ( len );
+    snprintf( Precious->Gold->change_percent_ch, len, "%.3lf%%", *Precious->Gold->change_percent_f );
+
+    /* The total investment in bullion. */
     free( MetaData->bullion_port_value_ch );
     MetaData->bullion_port_value_ch = MetaData->DoubToStr( MetaData->bullion_port_value_f );
 
-    *MetaData->stock_port_value_f = 0;
-    *MetaData->stock_port_value_chg_f = 0;
+    /* The change in total investment in bullion. */
+    free( MetaData->bullion_port_value_chg_ch );
+    MetaData->bullion_port_value_chg_ch = MetaData->DoubToStr( MetaData->bullion_port_value_chg_f );
+
+    /* The change in total investment in bullion as a percentage. */
+    free( MetaData->bullion_port_value_p_chg_ch );
+    len = strlen("###.###%%") + 1;
+    MetaData->bullion_port_value_p_chg_ch = (char*) malloc ( len );
+    snprintf( MetaData->bullion_port_value_p_chg_ch, len, "%.3lf%%", *MetaData->bullion_port_value_p_chg_f );
+
+    /* Equity */
     unsigned short c = 0;
     while( c < Folder->size ) {
-        *Folder->Equity[ c ]->current_investment_stock_f = Folder->Equity[ c ]->Stake( Folder->Equity[ c ]->num_shares_stock_int, Folder->Equity[ c ]->current_price_stock_f );
-        *MetaData->stock_port_value_f += *Folder->Equity[ c ]->current_investment_stock_f;
-        *MetaData->stock_port_value_chg_f += *Folder->Equity[ c ]->change_value_f;
-
+        /* The total current investment in this equity. */
         free( Folder->Equity[ c ]->current_investment_stock_ch );
         Folder->Equity[ c ]->current_investment_stock_ch = Folder->Equity[ c ]->DoubToStr( Folder->Equity[ c ]->current_investment_stock_f );
         
         c++;
     }
+
+    /* The total equity portfolio value. */
     free( MetaData->stock_port_value_ch );
     MetaData->stock_port_value_ch = MetaData->DoubToStr( MetaData->stock_port_value_f );
+
+    /* The equity portfolio's change in value. */
     free( MetaData->stock_port_value_chg_ch );
     MetaData->stock_port_value_chg_ch = MetaData->DoubToStr( MetaData->stock_port_value_chg_f );
 
-    double prev_value = *MetaData->stock_port_value_f - *MetaData->stock_port_value_chg_f;
-    *MetaData->stock_port_value_p_chg_f = 100 * ( *MetaData->stock_port_value_chg_f / prev_value );
-    
+    /* The change in total investment in equity as a percentage. */
     free( MetaData->stock_port_value_p_chg_ch );
-    size_t len = strlen("###.###%%") + 1;
+    len = strlen("###.###%%") + 1;
     MetaData->stock_port_value_p_chg_ch = (char*) malloc ( len );
     snprintf( MetaData->stock_port_value_p_chg_ch, len, "%.3lf%%", *MetaData->stock_port_value_p_chg_f );
 
-    *MetaData->portfolio_port_value_f = MetaData->EntireStake( MetaData->bullion_port_value_f, MetaData->stock_port_value_f, MetaData->cash_f);
-    
+    /* The total portfolio value. */
     free( MetaData->portfolio_port_value_ch );
     MetaData->portfolio_port_value_ch = MetaData->DoubToStr( MetaData->portfolio_port_value_f );
 
-    /* Edit the next line as needed, if you want to 
-       add a change value besides equity to the portfolio. */
-    *MetaData->portfolio_port_value_chg_f = *MetaData->stock_port_value_chg_f;
-    prev_value = *MetaData->portfolio_port_value_f - *MetaData->portfolio_port_value_chg_f;
-    *MetaData->portfolio_port_value_p_chg_f = 100 * ( *MetaData->portfolio_port_value_chg_f / prev_value );
-    
-    free( MetaData->portfolio_port_value_ch );
-    MetaData->portfolio_port_value_ch = MetaData->DoubToStr( MetaData->portfolio_port_value_f );
+    /* The change in total portfolio value. */
     free( MetaData->portfolio_port_value_chg_ch );
     MetaData->portfolio_port_value_chg_ch = MetaData->DoubToStr( MetaData->portfolio_port_value_chg_f );
 
+    /* The change in total portfolio value as a percentage. */
     free( MetaData->portfolio_port_value_p_chg_ch );
     len = strlen("###.###%%") + 1;
     MetaData->portfolio_port_value_p_chg_ch = (char*) malloc ( len );
     snprintf( MetaData->portfolio_port_value_p_chg_ch, len, "%.3lf%%", *MetaData->portfolio_port_value_p_chg_f );
-
-    pthread_mutex_unlock( &mutex_working [CLASS_MEMBER_MUTEX ] );
 }
 
-int MultiCurlProcessing () {
+void PerformCalculations () 
+    /* calc portfolio values and populate character strings. */    
+{
+    pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
+
+    /* The total invested in each gold and silver */
+    *Precious->Silver->port_value_f = Precious->Silver->Stake( Precious->Silver->ounce_f, Precious->Silver->premium_f, Precious->Silver->spot_price_f );
+    *Precious->Gold->port_value_f = Precious->Gold->Stake( Precious->Gold->ounce_f, Precious->Gold->premium_f, Precious->Gold->spot_price_f );
+
+    /* The change in spot price per ounce. */
+    *Precious->Silver->change_ounce_f = *Precious->Silver->spot_price_f - *Precious->Silver->prev_closing_metal_f;
+    *Precious->Gold->change_ounce_f = *Precious->Gold->spot_price_f - *Precious->Gold->prev_closing_metal_f;
+
+    /* The change in total investment in each gold and silver. */
+    *Precious->Silver->change_value_f = *Precious->Silver->change_ounce_f * *Precious->Silver->ounce_f;
+    *Precious->Gold->change_value_f = *Precious->Gold->change_ounce_f * *Precious->Gold->ounce_f;
+
+    /* The change in total investment in each gold and silver as a percentage. */
+    double prev_total = *Precious->Silver->port_value_f - *Precious->Silver->change_value_f;
+    /* Bullion gain is calculated based off of the total bullion holdings, if there is no bullion,
+       the gain is calculated based off the the current and prev spot price. */
+    if ( prev_total == 0 ){
+        *Precious->Silver->change_percent_f = calc_gain ( *Precious->Silver->spot_price_f, *Precious->Silver->prev_closing_metal_f );
+    } else {
+        *Precious->Silver->change_percent_f = calc_gain ( *Precious->Silver->port_value_f, prev_total );
+    }
+
+    prev_total = *Precious->Gold->port_value_f - *Precious->Gold->change_value_f;
+    if ( prev_total == 0 ){
+        *Precious->Gold->change_percent_f = calc_gain ( *Precious->Gold->spot_price_f, *Precious->Gold->prev_closing_metal_f );
+    } else {
+        *Precious->Gold->change_percent_f = calc_gain ( *Precious->Gold->port_value_f, prev_total );
+    }
+
+    /* The total investment in bullion. */
+    *MetaData->bullion_port_value_f = MetaData->BullionStake( Precious->Gold->port_value_f, Precious->Silver->port_value_f );
+
+    /* The change in total investment in bullion. */
+    *MetaData->bullion_port_value_chg_f = *Precious->Gold->change_value_f + *Precious->Silver->change_value_f;
+
+    /* The change in total investment in bullion as a percentage. */
+    prev_total = *MetaData->bullion_port_value_f - *MetaData->bullion_port_value_chg_f;
+    if ( prev_total == 0 ){
+        *MetaData->bullion_port_value_p_chg_f = 0.0f;
+    } else {
+        *MetaData->bullion_port_value_p_chg_f = calc_gain ( *MetaData->bullion_port_value_f, prev_total );
+    }
+
+    /* Equity Calculations. */
+    *MetaData->stock_port_value_f = 0;
+    *MetaData->stock_port_value_chg_f = 0;
+    unsigned short c = 0;
+    while( c < Folder->size ) {
+
+        /* The total current investment in this equity. */
+        *Folder->Equity[ c ]->current_investment_stock_f = Folder->Equity[ c ]->Stake( Folder->Equity[ c ]->num_shares_stock_int, Folder->Equity[ c ]->current_price_stock_f );
+
+        /* Add the equity investment to the total equity value. */
+        *MetaData->stock_port_value_f += *Folder->Equity[ c ]->current_investment_stock_f;
+
+        /* Add the equity's change in value to the equity portfolio's change in value. */
+        *MetaData->stock_port_value_chg_f += *Folder->Equity[ c ]->change_value_f;
+
+        c++;
+    }
+
+    /* The change in total investment in equity as a percentage. */
+    prev_total = *MetaData->stock_port_value_f - *MetaData->stock_port_value_chg_f;
+    *MetaData->stock_port_value_p_chg_f = calc_gain ( *MetaData->stock_port_value_f, prev_total );
+
+    /* The total portfolio value. */
+    *MetaData->portfolio_port_value_f = MetaData->EntireStake( MetaData->bullion_port_value_f, MetaData->stock_port_value_f, MetaData->cash_f);
+
+    /* The change in total portfolio value. */
+    /* Edit the next line as needed, if you want to 
+       add a change value besides equity and bullion to the portfolio. */
+    *MetaData->portfolio_port_value_chg_f = *MetaData->stock_port_value_chg_f + *MetaData->bullion_port_value_chg_f;
+    
+    /* The change in total portfolio value as a percentage. */
+    prev_total = *MetaData->portfolio_port_value_f - *MetaData->portfolio_port_value_chg_f;
+    *MetaData->portfolio_port_value_p_chg_f = calc_gain ( *MetaData->portfolio_port_value_f, prev_total );
+
+    /* Convert to strings */
+    PerformCalculation_Strings ();
+
+    pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
+}
+
+void PopulateEquityURL (){
     size_t len;
  
     /* Cycle through the list of equities. */
@@ -198,7 +304,12 @@ int MultiCurlProcessing () {
         len = strlen(MetaData->stock_url) + strlen(Folder->Equity[ c ]->symbol_stock_ch) + strlen(MetaData->curl_key)+1;
         Folder->Equity[ c ]->curl_url_stock_ch = (char*) malloc( len );
         snprintf( Folder->Equity[ c ]->curl_url_stock_ch, len, "%s%s%s", MetaData->stock_url, Folder->Equity[ c ]->symbol_stock_ch, MetaData->curl_key );
-        
+    }
+}
+
+int MultiCurlProcessing () { 
+    /* Cycle through the list of equities. */
+    for( unsigned short c = 0; c < Folder->size; c++ ) {       
         /* Add a cURL easy handle to the multi-cURL handle 
         (passing JSON output struct by reference) */
         SetUpCurlHandle( Folder->Equity[ c ]->easy_hnd, Folder->multicurl_hnd, Folder->Equity[ c ]->curl_url_stock_ch, &Folder->Equity[ c ]->JSON );
@@ -210,33 +321,12 @@ int MultiCurlProcessing () {
 
 void GetBullionUrl_Yahoo ( char** SilverUrl, char** GoldUrl ){
     time_t end_time, start_time;
-    struct tm NY_tz = NYTimeComponents ();
     size_t len;
 
     time( &end_time );
-    /* if today is Sunday in NY */
-    if ( NY_tz.tm_wday == 0 ){
-        /* the start time needs to be Friday, so minus two days */
-        start_time = end_time - (86400 * 2);
-
-    /* if today is Saturday in NY */
-    } else  if ( NY_tz.tm_wday == 6 ){   
-        /* the start time needs to be Friday, so minus one day */
-        start_time = end_time - 86400;
-
-    /* if today is a Monday holiday in NY */
-    } else if (*MetaData->holiday_bool && NY_tz.tm_wday == 1){
-        /* the start time needs to be Friday, so minus three days */
-        start_time = end_time - (86400 * 3);
-
-    /* if today is a non-Monday holiday in NY */
-    } else if (*MetaData->holiday_bool && NY_tz.tm_wday != 1){
-        /* the start time needs to be yesterday, so minus one day */
-        start_time = end_time - 86400;
-
-    } else {
-        start_time = end_time;
-    }
+    /* The start time needs to be a week before the current time, so minus seven days 
+       This compensates for weekends and holidays and ensures enough data. */
+    start_time = end_time - ( 86400 * 7 );
 
     char *silver_symbol_ch = "SI=F";
     char *gold_symbol_ch = "GC=F";
@@ -263,15 +353,22 @@ void FetchBullionData_Yahoo ( MemType *SilverOutput, MemType *GoldOutput ){
     free ( GoldUrl );
 }
 
-void ParseBullionData_Yahoo (double *silver_f, double *gold_f){
+void ParseBullionData_Yahoo ( metal *M ){
     MemType SilverOutputStruct, GoldOutputStruct;
 
     FetchBullionData_Yahoo ( &SilverOutputStruct, &GoldOutputStruct );
     if ( *MetaData->multicurl_cancel_bool == true ){
         free( SilverOutputStruct.memory );
         free( GoldOutputStruct.memory );
-        *silver_f = 0.0f;
-        *gold_f = 0.0f;
+        *M->Silver->prev_closing_metal_f = 0.0f;
+        *M->Silver->high_metal_f = 0.0f;
+        *M->Silver->low_metal_f = 0.0f;
+        *M->Silver->spot_price_f = 0.0f;
+
+        *M->Gold->prev_closing_metal_f = 0.0f;
+        *M->Gold->high_metal_f = 0.0f;
+        *M->Gold->low_metal_f = 0.0f;
+        *M->Gold->spot_price_f = 0.0f;
         return;
     }
 
@@ -283,23 +380,48 @@ void ParseBullionData_Yahoo (double *silver_f, double *gold_f){
 
     /* Yahoo! sometimes updates bullion when the equities markets are closed. 
        The while loop iterates to the end of file to get the latest data. */
-    while (fgets( line, 1024, fp) != NULL);
+    double prev_closing = 0.0f, cur_price = 0.0f;
+    while (fgets( line, 1024, fp) != NULL){ 
+        prev_closing = cur_price;
+
+        chomp( line );
+        csv_array = parse_csv( line );
+        cur_price = strtod( csv_array[ 4 ] ? csv_array[ 4 ] : "0", NULL );
+        free_csv_line( csv_array );
+    };
     
     chomp( line );
     csv_array = parse_csv( line );
-    *silver_f = strtod( csv_array[ 4 ] ? csv_array[ 4 ] : "0", NULL );
+    *M->Silver->prev_closing_metal_f = prev_closing;
+    *M->Silver->high_metal_f = strtod( csv_array[ 2 ] ? csv_array[ 2 ] : "0", NULL );
+    *M->Silver->low_metal_f = strtod( csv_array[ 3 ] ? csv_array[ 3 ] : "0", NULL );
+    *M->Silver->spot_price_f = strtod( csv_array[ 4 ] ? csv_array[ 4 ] : "0", NULL );
+
     free_csv_line( csv_array );
     fclose( fp );
     free( SilverOutputStruct.memory ); 
 
     /* Convert a String to a File Pointer Stream for Reading */
     fp = fmemopen( (void*)GoldOutputStruct.memory, strlen( GoldOutputStruct.memory ) + 1, "r" );
-    
-    while (fgets( line, 1024, fp) != NULL);
+
+    prev_closing = 0.0f;
+    cur_price = 0.0f;
+    while (fgets( line, 1024, fp) != NULL){
+        prev_closing = cur_price;
+
+        chomp( line );
+        csv_array = parse_csv( line );
+        cur_price = strtod( csv_array[ 4 ] ? csv_array[ 4 ] : "0", NULL );
+        free_csv_line( csv_array );
+    }
     
     chomp( line );
     csv_array = parse_csv( line );
-    *gold_f = strtod( csv_array[ 4 ] ? csv_array[ 4 ] : "0", NULL );
+    *M->Gold->prev_closing_metal_f = prev_closing;
+    *M->Gold->high_metal_f = strtod( csv_array[ 2 ] ? csv_array[ 2 ] : "0", NULL );
+    *M->Gold->low_metal_f = strtod( csv_array[ 3 ] ? csv_array[ 3 ] : "0", NULL );
+    *M->Gold->spot_price_f = strtod( csv_array[ 4 ] ? csv_array[ 4 ] : "0", NULL );
+
     free_csv_line( csv_array );
     fclose( fp );
     free( GoldOutputStruct.memory ); 
@@ -308,12 +430,27 @@ void ParseBullionData_Yahoo (double *silver_f, double *gold_f){
 void PopulateBullionPrice_Yahoo (){
     pthread_mutex_lock( &mutex_working [CLASS_MEMBER_MUTEX ] );
 
-    ParseBullionData_Yahoo ( Precious->Silver->spot_price_f, Precious->Gold->spot_price_f );    
+    ParseBullionData_Yahoo ( Precious );    
 
     /* Convert the double values into string values. */
+    free( Precious->Gold->prev_closing_metal_ch );
+    free( Precious->Gold->high_metal_ch );
+    free( Precious->Gold->low_metal_ch );
     free( Precious->Gold->spot_price_ch );
+
+    free( Precious->Silver->prev_closing_metal_ch );
+    free( Precious->Silver->high_metal_ch );
+    free( Precious->Silver->low_metal_ch );
     free( Precious->Silver->spot_price_ch );
+
+    Precious->Gold->prev_closing_metal_ch = Precious->Gold->DoubToStr( Precious->Gold->prev_closing_metal_f );
+    Precious->Gold->high_metal_ch = Precious->Gold->DoubToStr( Precious->Gold->high_metal_f );
+    Precious->Gold->low_metal_ch = Precious->Gold->DoubToStr( Precious->Gold->low_metal_f );
     Precious->Gold->spot_price_ch = Precious->Gold->DoubToStr( Precious->Gold->spot_price_f );
+
+    Precious->Silver->prev_closing_metal_ch = Precious->Gold->DoubToStr( Precious->Silver->prev_closing_metal_f );
+    Precious->Silver->high_metal_ch = Precious->Silver->DoubToStr( Precious->Silver->high_metal_f );
+    Precious->Silver->low_metal_ch = Precious->Silver->DoubToStr( Precious->Silver->low_metal_f );
     Precious->Silver->spot_price_ch = Precious->Silver->DoubToStr( Precious->Silver->spot_price_f );
 
     pthread_mutex_unlock( &mutex_working [CLASS_MEMBER_MUTEX ] );
@@ -371,7 +508,7 @@ void JSONProcessing () {
         if( *Folder->Equity[ c ]->num_shares_stock_int > 0){
             *Folder->Equity[ c ]->change_value_f = *Folder->Equity[ c ]->change_share_f * (double)*Folder->Equity[ c ]->num_shares_stock_int;
         } else {
-            *Folder->Equity[ c ]->change_value_f = 0.0;
+            *Folder->Equity[ c ]->change_value_f = 0.0f;
         }
 
         free( Folder->Equity[ c ]->change_value_ch );

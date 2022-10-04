@@ -344,7 +344,7 @@ void *GUIThreadHandler(void *data){
                 sleep( ClockSleepSeconds () );
             }
             break;
-        case DISPLAY_TIME_OPEN_INDICATOR:
+        case DISPLAY_TIME_TO_CLOSE_INDICATOR:
             NY_Time = NYTimeComponents ();
             *MetaData->holiday_bool = IsHoliday ( NY_Time );
             seconds_to_open = SecondsToOpen ();

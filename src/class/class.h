@@ -63,10 +63,24 @@ typedef struct {
     double* port_value_f;
     double* ounce_f;
 
+    double* high_metal_f; 
+	double* low_metal_f;
+    double* prev_closing_metal_f;
+    double* change_ounce_f;
+    double* change_value_f;
+    double* change_percent_f;
+
     char* spot_price_ch;            
     char* premium_ch; 
     char* port_value_ch;                    /* Total current investment in this metal. */
     char* ounce_ch;                         /* Number of ounces. */
+
+    char* high_metal_ch; 
+	char* low_metal_ch;
+    char* prev_closing_metal_ch;
+    char* change_ounce_ch;
+    char* change_value_ch;
+    char* change_percent_ch;
 
     CURL *YAHOO_hnd;                        /* Bullion cURL Easy Handle. */
 
@@ -127,6 +141,8 @@ typedef struct {
     /* Data Variables */
     double* cash_f;
     double* bullion_port_value_f;
+    double* bullion_port_value_chg_f;
+    double* bullion_port_value_p_chg_f;
     double* stock_port_value_f;
     double* stock_port_value_chg_f;
     double* stock_port_value_p_chg_f;
@@ -142,6 +158,8 @@ typedef struct {
   
     char* cash_ch;                          /* The total value of cash */
     char* bullion_port_value_ch;            /* Total value of bullion holdings */
+    char* bullion_port_value_chg_ch;        /* Total value of bullion holdings change */
+    char* bullion_port_value_p_chg_ch;      /* Total value of bullion holdings percent change */
     char* stock_port_value_ch;              /* Total value of equity holdings */
     char* stock_port_value_chg_ch;          /* Total value of equity holdings change */
     char* stock_port_value_p_chg_ch;        /* Total value of equity holdings percent change */

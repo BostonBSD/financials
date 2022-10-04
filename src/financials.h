@@ -122,6 +122,7 @@ void ResetEquity(equity_folder*);
 void *JsonExtractEquity(char*,double*,double*,double*,double*,double*,double*,double*);
 
 void PerformCalculations();
+void PopulateEquityURL ();
 int MultiCurlProcessing();
 void PopulateBullionPrice_Yahoo ();
 void JSONProcessing();

@@ -134,17 +134,10 @@ void UpperCaseStr(char *s){
 }
 
 void chomp(char *s)
-/* Remove first newline character '\n' from a string, replace with NULL */
+/* Locate first newline character '\n' in a string, replace with NULL */
 {
-    /* Read character by character until the null character is reached. */
-    for(int i = 0; s[i] != '\0'; i++){
-        /* If we find a '\n' character */
-        if(s[i]=='\n'){
-            /* replace it with a NULL character */
-            s[i]=0;
-            i--;
-        }
-    }
+	char *ch = strchr( s, (int)'\n' );
+    if ( ch != NULL ) *ch = 0;
 }
 
 bool check_symbol( const char *s )
@@ -153,13 +146,11 @@ bool check_symbol( const char *s )
    The last line of the file includes the "File Creation Time" string, which we don't want.
 */
 { 
-    short n = 0;
-    while( s[n] ){
-        if( s[n] == '$' ) return false;
-        n++;
-    }
+    /* The string cannot contain a '$' character */
+	if ( strpbrk( s, "$" ) ) return false;
 
-    if ( strstr( s, "Symbol" ) != NULL ) return false;
-    if ( strstr( s, "File Creation Time" ) != NULL ) return false;
+    if ( strstr( s, "Symbol" ) ) return false;
+    if ( strstr( s, "File Creation Time" ) ) return false;
+
     return true;
 }

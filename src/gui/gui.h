@@ -167,7 +167,7 @@ typedef enum {
     VIEW_RSI_COMPLETION,
     SHORTCUT_KEYS_BTN,
     DISPLAY_TIME,
-    DISPLAY_TIME_OPEN_INDICATOR,
+    DISPLAY_TIME_TO_CLOSE_INDICATOR,
     EXIT_APPLICATION, 
     SIGNAL_NUM
 } cb_signal;
@@ -177,7 +177,7 @@ extern GtkBuilder *builder;                                 /* The Gtk builder o
 extern window_data WindowStruct;                        /* A struct that hold the size and position of 
                                                                the main window. */
 
-/* Working Functions */
+/* GUI Working Functions */
 void SetUpGUI ();
 int MakeGUIOne ();
 int ShowHideAddRemoveSecurityWindow ();

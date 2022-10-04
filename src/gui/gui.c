@@ -214,7 +214,7 @@ int CursorMoveCashEntryBoxGUI ()
 
     char* value = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
 
-    if ( check_if_string_double_number( value ) && check_valid_string( value ) ){
+    if ( check_if_string_double_positive_number( value ) && check_valid_string( value ) ){
         gtk_widget_set_sensitive ( Button, true );
     } else {
         gtk_widget_set_sensitive ( Button, false );
@@ -324,8 +324,8 @@ int CursorMoveBullionEntryBoxGUI ()
     EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionSilverPremiumEntryBox") );
     char* Silver_Premium = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
 
-    bool valid_num = check_if_string_double_positive_number( Gold_Ounces ) & check_if_string_double_number( Gold_Premium );
-    valid_num = valid_num & check_if_string_double_positive_number( Silver_Ounces ) & check_if_string_double_number( Silver_Premium );
+    bool valid_num = check_if_string_double_positive_number( Gold_Ounces ) & check_if_string_double_positive_number( Gold_Premium );
+    valid_num = valid_num & check_if_string_double_positive_number( Silver_Ounces ) & check_if_string_double_positive_number( Silver_Premium );
     
     bool valid_string = check_valid_string( Gold_Ounces ) & check_valid_string( Gold_Premium );
     valid_string = valid_string & check_valid_string( Silver_Ounces ) & check_valid_string( Silver_Premium );
@@ -732,12 +732,12 @@ int RSISetColumns ()
     gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
     renderer = gtk_cell_renderer_text_new ();
-    column = gtk_tree_view_column_new_with_attributes("Change ($)", renderer, "text", RSI_CHANGE, "foreground", RSI_FOREGROUND_COLOR, NULL);
+    column = gtk_tree_view_column_new_with_attributes("Chg ($)", renderer, "text", RSI_CHANGE, "foreground", RSI_FOREGROUND_COLOR, NULL);
     gtk_tree_view_column_set_resizable (column, true);
     gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
     renderer = gtk_cell_renderer_text_new ();
-    column = gtk_tree_view_column_new_with_attributes("Change (%)", renderer, "text", RSI_CHANGE_PERCENT, "foreground", RSI_FOREGROUND_COLOR, NULL);
+    column = gtk_tree_view_column_new_with_attributes("Gain (%)", renderer, "text", RSI_CHANGE_PERCENT, "foreground", RSI_FOREGROUND_COLOR, NULL);
     gtk_tree_view_column_set_resizable (column, true);
     gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
@@ -1064,11 +1064,24 @@ GtkListStore * MakeGUIOneStore (){
     gtk_list_store_append ( store, &iter );
     gtk_list_store_set ( store, &iter, GUI_SYMBOL, "_______", -1 );
     gtk_list_store_append ( store, &iter );
-    gtk_list_store_set ( store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "Metal", GUI_SHARES_OUNCES, "Ounces", GUI_PREMIUM, "Premium", GUI_PRICE, "Spot Price", GUI_TOTAL, "Total", -1 );
+    gtk_list_store_set ( store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "Metal", GUI_SHARES_OUNCES, "Ounces", GUI_PREMIUM, "Premium", GUI_PRICE, "Spot Price", GUI_TOTAL, "High", GUI_EXTRA_ONE, "Low", GUI_EXTRA_TWO, "Prev Closing", GUI_EXTRA_THREE, "Ch/Ounce", GUI_EXTRA_FOUR, "Gain ($)", GUI_EXTRA_FIVE, "Total", GUI_EXTRA_SIX, "Gain (%)", -1 );
     gtk_list_store_append ( store, &iter );
-    gtk_list_store_set ( store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "Gold", GUI_SHARES_OUNCES, Precious->Gold->ounce_ch, GUI_PREMIUM, Precious->Gold->premium_ch, GUI_PRICE, Precious->Gold->spot_price_ch, GUI_TOTAL, Precious->Gold->port_value_ch, -1 );
+    if( *Precious->Gold->change_value_f == 0 ) {
+        gtk_list_store_set ( store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "Gold", GUI_SHARES_OUNCES, Precious->Gold->ounce_ch, GUI_PREMIUM, Precious->Gold->premium_ch, GUI_PRICE, Precious->Gold->spot_price_ch, GUI_TOTAL, Precious->Gold->high_metal_ch, GUI_EXTRA_ONE, Precious->Gold->low_metal_ch, GUI_EXTRA_TWO, Precious->Gold->prev_closing_metal_ch, GUI_EXTRA_THREE, Precious->Gold->change_ounce_ch, GUI_EXTRA_FOUR, Precious->Gold->change_value_ch, GUI_EXTRA_FIVE, Precious->Gold->port_value_ch, GUI_EXTRA_SIX, Precious->Gold->change_percent_ch, -1 );
+    } else if ( *Precious->Gold->change_value_f > 0 ) {
+        gtk_list_store_set ( store, &iter, GUI_FOREGROUND_COLOR, "Green", GUI_TYPE, "bullion", GUI_SYMBOL, "Gold", GUI_SHARES_OUNCES, Precious->Gold->ounce_ch, GUI_PREMIUM, Precious->Gold->premium_ch, GUI_PRICE, Precious->Gold->spot_price_ch, GUI_TOTAL, Precious->Gold->high_metal_ch, GUI_EXTRA_ONE, Precious->Gold->low_metal_ch, GUI_EXTRA_TWO, Precious->Gold->prev_closing_metal_ch, GUI_EXTRA_THREE, Precious->Gold->change_ounce_ch, GUI_EXTRA_FOUR, Precious->Gold->change_value_ch, GUI_EXTRA_FIVE, Precious->Gold->port_value_ch, GUI_EXTRA_SIX, Precious->Gold->change_percent_ch, -1 );
+    } else {
+        gtk_list_store_set ( store, &iter, GUI_FOREGROUND_COLOR, "DarkRed", GUI_TYPE, "bullion", GUI_SYMBOL, "Gold", GUI_SHARES_OUNCES, Precious->Gold->ounce_ch, GUI_PREMIUM, Precious->Gold->premium_ch, GUI_PRICE, Precious->Gold->spot_price_ch, GUI_TOTAL, Precious->Gold->high_metal_ch, GUI_EXTRA_ONE, Precious->Gold->low_metal_ch, GUI_EXTRA_TWO, Precious->Gold->prev_closing_metal_ch, GUI_EXTRA_THREE, Precious->Gold->change_ounce_ch, GUI_EXTRA_FOUR, Precious->Gold->change_value_ch, GUI_EXTRA_FIVE, Precious->Gold->port_value_ch, GUI_EXTRA_SIX, Precious->Gold->change_percent_ch, -1 );
+    }
     gtk_list_store_append ( store, &iter );
-    gtk_list_store_set ( store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "Silver", GUI_SHARES_OUNCES, Precious->Silver->ounce_ch, GUI_PREMIUM, Precious->Silver->premium_ch, GUI_PRICE, Precious->Silver->spot_price_ch, GUI_TOTAL, Precious->Silver->port_value_ch, -1 );
+    if( *Precious->Silver->change_value_f == 0 ) {
+        gtk_list_store_set ( store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "Silver", GUI_SHARES_OUNCES, Precious->Silver->ounce_ch, GUI_PREMIUM, Precious->Silver->premium_ch, GUI_PRICE, Precious->Silver->spot_price_ch, GUI_TOTAL, Precious->Silver->high_metal_ch, GUI_EXTRA_ONE, Precious->Silver->low_metal_ch, GUI_EXTRA_TWO, Precious->Silver->prev_closing_metal_ch, GUI_EXTRA_THREE, Precious->Silver->change_ounce_ch, GUI_EXTRA_FOUR, Precious->Silver->change_value_ch, GUI_EXTRA_FIVE, Precious->Silver->port_value_ch, GUI_EXTRA_SIX, Precious->Silver->change_percent_ch, -1 );
+    } else if ( *Precious->Silver->change_value_f > 0 ) {
+        gtk_list_store_set ( store, &iter, GUI_FOREGROUND_COLOR, "Green", GUI_TYPE, "bullion", GUI_SYMBOL, "Silver", GUI_SHARES_OUNCES, Precious->Silver->ounce_ch, GUI_PREMIUM, Precious->Silver->premium_ch, GUI_PRICE, Precious->Silver->spot_price_ch, GUI_TOTAL, Precious->Silver->high_metal_ch, GUI_EXTRA_ONE, Precious->Silver->low_metal_ch, GUI_EXTRA_TWO, Precious->Silver->prev_closing_metal_ch, GUI_EXTRA_THREE, Precious->Silver->change_ounce_ch, GUI_EXTRA_FOUR, Precious->Silver->change_value_ch, GUI_EXTRA_FIVE, Precious->Silver->port_value_ch, GUI_EXTRA_SIX, Precious->Silver->change_percent_ch, -1 );
+    } else {
+        gtk_list_store_set ( store, &iter, GUI_FOREGROUND_COLOR, "DarkRed", GUI_TYPE, "bullion", GUI_SYMBOL, "Silver", GUI_SHARES_OUNCES, Precious->Silver->ounce_ch, GUI_PREMIUM, Precious->Silver->premium_ch, GUI_PRICE, Precious->Silver->spot_price_ch, GUI_TOTAL, Precious->Silver->high_metal_ch, GUI_EXTRA_ONE, Precious->Silver->low_metal_ch, GUI_EXTRA_TWO, Precious->Silver->prev_closing_metal_ch, GUI_EXTRA_THREE, Precious->Silver->change_ounce_ch, GUI_EXTRA_FOUR, Precious->Silver->change_value_ch, GUI_EXTRA_FIVE, Precious->Silver->port_value_ch, GUI_EXTRA_SIX, Precious->Silver->change_percent_ch, -1 );
+    }
+
     gtk_list_store_append ( store, &iter );
     gtk_list_store_set ( store, &iter, GUI_SYMBOL, "_______", -1 );
     gtk_list_store_append ( store, &iter );
@@ -1099,9 +1112,16 @@ GtkListStore * MakeGUIOneStore (){
     gtk_list_store_append ( store, &iter );
     gtk_list_store_set ( store, &iter, GUI_SYMBOL, "Asset", GUI_SHARES_OUNCES, "Value", GUI_PREMIUM, "Gain ($)", GUI_PRICE, "Gain (%)",-1 );
     gtk_list_store_append ( store, &iter );
-    gtk_list_store_set ( store, &iter, GUI_TYPE, "cash", GUI_SYMBOL, "Cash", GUI_SHARES_OUNCES, MetaData->cash_ch, -1 );
+    gtk_list_store_set ( store, &iter, GUI_TYPE, "cash", GUI_SYMBOL, "Cash", GUI_SHARES_OUNCES, MetaData->cash_ch,-1 );
+    
     gtk_list_store_append ( store, &iter );
-    gtk_list_store_set ( store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "Bullion", GUI_SHARES_OUNCES, MetaData->bullion_port_value_ch, -1 );
+    if ( *MetaData->bullion_port_value_chg_f == 0 ){
+        gtk_list_store_set ( store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "Bullion", GUI_SHARES_OUNCES, MetaData->bullion_port_value_ch, GUI_PREMIUM, MetaData->bullion_port_value_chg_ch, GUI_PRICE, MetaData->bullion_port_value_p_chg_ch, -1 );
+    } else if ( *MetaData->bullion_port_value_chg_f > 0 ) {
+        gtk_list_store_set ( store, &iter, GUI_FOREGROUND_COLOR, "Green", GUI_TYPE, "bullion", GUI_SYMBOL, "Bullion", GUI_SHARES_OUNCES, MetaData->bullion_port_value_ch, GUI_PREMIUM, MetaData->bullion_port_value_chg_ch, GUI_PRICE, MetaData->bullion_port_value_p_chg_ch, -1 );
+    } else {
+        gtk_list_store_set ( store, &iter, GUI_FOREGROUND_COLOR, "DarkRed", GUI_TYPE, "bullion", GUI_SYMBOL, "Bullion", GUI_SHARES_OUNCES, MetaData->bullion_port_value_ch, GUI_PREMIUM, MetaData->bullion_port_value_chg_ch, GUI_PRICE, MetaData->bullion_port_value_p_chg_ch, -1 );
+    }
 
     gtk_list_store_append ( store, &iter );
     if ( *MetaData->stock_port_value_chg_f == 0 ){
@@ -1744,7 +1764,7 @@ void GUISignalConnect ()
        When the gtk_main loop starts the event will be processed. */
     pthread_t thread_id;
     pthread_create( &thread_id, NULL, GUIThreadHandler, (void *)DISPLAY_TIME );
-    pthread_create( &thread_id, NULL, GUIThreadHandler, (void *)DISPLAY_TIME_OPEN_INDICATOR );
+    pthread_create( &thread_id, NULL, GUIThreadHandler, (void *)DISPLAY_TIME_TO_CLOSE_INDICATOR );
 
     /* Set up the RSIView Window's EntryBox Completion Widget 
        This will download the NYSE and NASDAQ symbol list when the application loads.

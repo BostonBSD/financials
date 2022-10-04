@@ -495,8 +495,8 @@
             <property name="valign">center</property>
             <property name="margin-top">5</property>
             <property name="margin-bottom">20</property>
-            <accelerator key="c" signal="activate" modifiers="GDK_CONTROL_MASK"/>
             <accelerator key="c" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+            <accelerator key="c" signal="activate" modifiers="GDK_CONTROL_MASK"/>
           </object>
           <packing>
             <property name="left-attach">0</property>
@@ -586,8 +586,8 @@
             <property name="valign">end</property>
             <property name="margin-top">5</property>
             <property name="margin-bottom">20</property>
-            <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
             <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+            <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
           </object>
           <packing>
             <property name="left-attach">2</property>
@@ -911,7 +911,7 @@
                         <property name="label" translatable="yes">00:00:00</property>
                         <attributes>
                           <attribute name="font-desc" value="Roboto 10"/>
-                          <attribute name="foreground" value="#2093777702c9"/>
+                          <attribute name="foreground" value="#09023610962f"/>
                           <attribute name="size" value="12288"/>
                         </attributes>
                       </object>
