@@ -80,7 +80,9 @@ If the ratio is near 50 gold is relatively inexpensive.
 
 If you have already decided to invest in bullion, the ratio can be used to determine which metal to go long or short on.
 
-[Bullion rises with inflation, the spot price is based on futures trading, high/low current inflation does not mean high/low future inflation]
+Bullion rises with inflation, the spot price is based on futures trading, high/low current inflation does not mean high/low future inflation.
+
+Central bank rates are an indication of future inflation [rising rates indicate lower future inflation, falling rates indicate higher future inflation].
 
 ----------------------------------------------------------
 
