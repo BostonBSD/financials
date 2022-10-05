@@ -67,6 +67,22 @@ You want to sell when the stock is overbought.
 
 ----------------------------------------------------------
 
+Note on bullion:
+
+The gold / silver ratio determines which metal is over or undervalued relative to the other.
+The ratio is not fixed and has no upper bound.
+
+Typically 100 is a historic high and 50 is a historic low.
+
+If the ratio is near 100 silver is relatively inexpensive.
+If the ratio is near 50 gold is relatively inexpensive.
+
+If you have already decided to invest in bullion, the ratio can be used to determine which metal to go long or short on.
+
+[Bullion rises with inflation, the spot price is based on futures trading, high/low current inflation does not mean high/low future inflation]
+
+----------------------------------------------------------
+
 <p float="center">
   <img src="/src/resources/Stocks-icon.png" height="15%" width="15%" > 
 </p>
