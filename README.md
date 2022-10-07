@@ -86,7 +86,8 @@ Central bank rates are an indication of future inflation [rising rates indicate 
 
 The markets are very efficient; the decision to go long or short needs to be made before the central bank makes their decision.
 
-All other commodities are valued similarly, bullion is more inelastic. Crypto is probably similar also, although still developing a futures infrastructure.
+All other commodities are valued similarly, bullion is more inelastic. 
+Crypto will probably be similar also, although it is still developing a futures infrastructure, right now it is mostly supply and demand [not so very inelastic].
 
 ----------------------------------------------------------
 
