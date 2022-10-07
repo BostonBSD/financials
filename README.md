@@ -85,6 +85,7 @@ Bullion rises with inflation, the spot price is based on futures trading, high/l
 Central bank rates are an indication of future inflation [rising rates indicate lower future inflation, falling rates indicate higher future inflation].
 
 The markets are very efficient; the decision to go long or short needs to be made before the central bank makes their decision.
+
 [All other commodities are valued similarly, bullion is more inelastic. Crypto is probably similar, although still developing.]
 
 ----------------------------------------------------------
