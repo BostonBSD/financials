@@ -32,7 +32,6 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include <stdlib.h>
 #include <string.h>
-#include <sys/select.h>
 
 #include "../include/multicurl_types.h"
 #include "../include/gui.h"         /* MainProgBar func */
@@ -118,7 +117,10 @@ void *SetUpCurlHandle (CURL *hnd, CURLM *mh, char *url, MemType *output)
 
 int PerformMultiCurl (CURLM * mh, double size)
 /* Take in a multi handle pointer, request data from remote server asynchronously. 
-   Update the main window progress bar during transfer. */
+   Update the main window progress bar during transfer. 
+
+   Returns 0 on success, otherwise the number of failed transfers.
+*/
 {
     curl_global_init(CURL_GLOBAL_ALL);
     if(!mh){
@@ -191,7 +193,10 @@ int PerformMultiCurl (CURLM * mh, double size)
 
 int PerformMultiCurl_no_prog (CURLM * mh)
 /* Take in a multi handle pointer, request data from remote server asynchronously. 
-   Doesn't update any gui widgets during transfer.*/
+   Doesn't update any gui widgets during transfer.
+
+   Returns 0 on success, otherwise the number of failed transfers.
+*/
 {
     curl_global_init(CURL_GLOBAL_ALL);
     if(!mh){

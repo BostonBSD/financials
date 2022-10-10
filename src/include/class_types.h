@@ -182,7 +182,7 @@ typedef struct {
 } meta;
 
 typedef struct {
-    /* Metal Handles */
+    /* Bullion Handles */
 	bullion* Gold;
     bullion* Silver;
 
@@ -208,9 +208,8 @@ typedef struct {
 } metal;
 
 typedef struct {
-	stock** Equity;                          /* Equity Double Pointer Array */
-    unsigned short size;                     /* The number of stocks */
-    CURLM *multicurl_hnd;                    /* Multicurl Handle. */
+    /* Handle to stock array */
+	stock** Equity;                          /* Stock Double Pointer Array */
 
     /* Data Variables */
     double* stock_port_value_f;
@@ -220,6 +219,9 @@ typedef struct {
     char* stock_port_value_ch;              /* Total value of equity holdings */
     char* stock_port_value_chg_ch;          /* Total value of equity holdings change */
     char* stock_port_value_p_chg_ch;        /* Total value of equity holdings percent change */
+
+    unsigned short size;                     /* The number of stocks */
+    CURLM *multicurl_hnd;                    /* Multicurl Handle. */
 
     /* Methods or Functions */
     sub_func_e_t* DoubToStr;
