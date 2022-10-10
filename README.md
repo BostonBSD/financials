@@ -90,6 +90,9 @@ All other commodities are valued similarly, bullion is more inelastic.
 
 Crypto will probably be similar also, although it is still developing a futures infrastructure, right now it is mostly supply and demand [not so very inelastic].
 
+If you think the central bank will raise rates look into bonds.
+If you think the central bank will lower rates look into commodities.
+
 ----------------------------------------------------------
 
 <p float="center">
