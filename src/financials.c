@@ -188,7 +188,7 @@ int main (int argc, char *argv[])
     /* Set up GUI widgets and display the GUI */
     GuiStart ( &packet );
 
-    /* Free Remaining Memory. */
+    /* Free Class Instances. */
     class_instance_destruct ();
 
     /* Free Mutex Resources */
