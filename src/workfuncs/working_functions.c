@@ -125,7 +125,7 @@ static char *rsi_get_url ( const char *symbol ){
 }
 
 MemType *FetchRSIData (const char *symbol, meta *Met){
-    char *MyUrl=NULL;
+    char *MyUrl = NULL;
     MyUrl = rsi_get_url ( symbol );
 
     MemType *MyOutputStruct = (MemType*)malloc( sizeof(*MyOutputStruct) );

@@ -423,8 +423,8 @@ static void rsi_set_store (GtkListStore *store, void *data){
         }
 
         gtk_list_store_reorder (store, new_order);
-        free( new_order );
     }
+    free( new_order );
 }
 
 static GtkListStore* rsi_make_store (void *data)

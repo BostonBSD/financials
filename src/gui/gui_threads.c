@@ -32,17 +32,17 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <glib-object.h>
 #include <gtk/gtk.h>
 
-#include "../include/gui_types.h"              /* symbol_name_map, cb_signal, etc */
-#include "../include/gui_globals.h"            /* sem_t semaphore[ SIGNAL_NUM ], window_data WindowStruct */
+#include "../include/gui_types.h"     /* symbol_name_map, cb_signal, etc */
+#include "../include/gui_globals.h"   /* sem_t semaphore[ SIGNAL_NUM ], window_data WindowStruct */
 #include "../include/gui.h"
 
 #include "../include/class_types.h"   /* portfolio_packet, equity_folder, metal, meta */
 #include "../include/sqlite.h"
 #include "../include/workfuncs.h"
 
-#include "../include/globals.h"     /* portfolio_packet packet, equity_folder *Folder, 
-                                       metal *Precious, meta *MetaData */
-#include "../include/mutex.h"       /* pthread_mutex_t mutex_working[ MUTEX_NUMBER ] */
+#include "../include/globals.h"       /* portfolio_packet packet, equity_folder *Folder, 
+                                         metal *Precious, meta *MetaData */
+#include "../include/mutex.h"         /* pthread_mutex_t mutex_working[ MUTEX_NUMBER ] */
 
 static symbol_name_map *sym_map = NULL;    /* A symbol to name map handle, only global to this file. */
 
