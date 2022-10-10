@@ -188,14 +188,14 @@ int main (int argc, char *argv[])
     /* Set up GUI widgets and display the GUI */
     GuiStart ( &packet );
 
+    /* Free Remaining Memory. */
+    class_instance_destruct ();
+
     /* Free Mutex Resources */
     mutex_destruct ();
 
     /* Free Semaphore Resources */
     semaphore_destruct ();
-    
-    /* Free Remaining Memory. */
-    class_instance_destruct ();
 
     return 0;
 }
