@@ -100,3 +100,5 @@ Crypto will probably be similar also, although it is still developing a futures 
 
 <a href="https://media.flaticon.com/license/license.pdf" title="Trends Icon License" target="_blank" rel="noopener noreferrer">Trends Icon License</a>
 
+----------------------------------------------------------
+[...it's amazing how easy it is to create high performing portable applications using only the C language and class emulation.]
