@@ -90,6 +90,9 @@ All other commodities and bond futures are valued similarly, bullion is more ine
 
 Crypto will probably be similar also, although it is still developing a futures infrastructure, right now it is mostly supply and demand [not so very inelastic].
 
+You want to hedge inflation [commodities, bonds, etc] before the central bank lowers rates.
+Yyou want to invest in cash [savings accounts, CDs, etc] before the central bank raises rates.
+
 ----------------------------------------------------------
 
 <p float="center">
