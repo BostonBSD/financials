@@ -83,6 +83,23 @@ function, which takes two parameters. */
     pthread_create( &thread_id, NULL, GUIThreadHandler, data );
 }
 
+gboolean GUICallbackHandler_expander_bar (GtkWidget *expander, void *data)
+{
+    meta *D = packet->portfolio_meta_info;
+    *D->index_bar_expanded_bool = gtk_expander_get_expanded ( GTK_EXPANDER ( expander ) );
+    /* The expansion appears to be the state prior to the signal, so we invert the state */
+    if ( gtk_expander_get_expanded ( GTK_EXPANDER ( expander ) ) ){
+        *D->index_bar_expanded_bool = false;
+    } else {
+        *D->index_bar_expanded_bool = true;
+    }
+
+    /* TRUE to stop other handlers from being invoked for the event. 
+       FALSE to propagate the event further. 
+    */
+    return false;
+}
+
 gboolean GUICallbackHandler_window_data (GtkWidget *window, GdkEvent *event, void *data)
 {
     /*
@@ -124,7 +141,14 @@ gboolean GUICallbackHandler_select_comp (GtkEntryCompletion *completion, GtkTree
 /* activated when an item is selected from the completion list */
 {
     if( !( completion ) ) return true;
-    GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ViewRSISymbolEntryBox") );
+    GtkWidget* EntryBoxRSI = GTK_WIDGET ( gtk_builder_get_object (builder, "ViewRSISymbolEntryBox") );
+    GtkWidget* EntryBoxAddRem = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecuritySymbolEntryBox") );
+    GtkWidget* EntryBox = NULL;
+    if ( gtk_widget_has_focus ( EntryBoxRSI ) ){
+        EntryBox = EntryBoxRSI;
+    } else {
+        EntryBox = EntryBoxAddRem;
+    }
     gchar *item;
     /* when a match is selected insert column zero instead of column 2 */
     gtk_tree_model_get ( model, iter, 0, &item, -1 );
@@ -144,7 +168,14 @@ gboolean GUICallbackHandler_cursor_comp (GtkEntryCompletion *completion, GtkTree
 /* activated when an item is highlighted from the completion list */
 {
     if( !( completion ) ) return true;
-    GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ViewRSISymbolEntryBox") );
+    GtkWidget* EntryBoxRSI = GTK_WIDGET ( gtk_builder_get_object (builder, "ViewRSISymbolEntryBox") );
+    GtkWidget* EntryBoxAddRem = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecuritySymbolEntryBox") );
+    GtkWidget* EntryBox = NULL;
+    if ( gtk_widget_has_focus ( EntryBoxRSI ) ){
+        EntryBox = EntryBoxRSI;
+    } else {
+        EntryBox = EntryBoxAddRem;
+    }
     gchar *item;
     /* when a match is highlighted insert column zero instead of column 2 */
     gtk_tree_model_get ( model, iter, 0, &item, -1 );

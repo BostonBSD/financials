@@ -53,6 +53,7 @@ int AddRemSwitchChange ();
 int AddRemOk (void*);
 int AddRemComBoxChange ();
 int AddRemCursorMove ();
+int AddRemCompletionSet (void*);
 
 /* gui_other_wins */
 int APIShowHide (void*);
@@ -79,6 +80,7 @@ int RSIGetSymbol (char**);
 /* GUI Callback Functions */
 void GUICallbackHandler_add_rem_switch (GtkSwitch*,bool,void*);
 void GUICallbackHandler (GtkWidget*,void*);
+gboolean GUICallbackHandler_expander_bar (GtkWidget*,void*);
 gboolean GUICallbackHandler_window_data (GtkWidget*,GdkEvent*,void*);
 gboolean GUICallbackHandler_select_comp (GtkEntryCompletion*,GtkTreeModel*,GtkTreeIter*);
 gboolean GUICallbackHandler_cursor_comp (GtkEntryCompletion*,GtkTreeModel*,GtkTreeIter*);

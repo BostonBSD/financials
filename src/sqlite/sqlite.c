@@ -56,7 +56,7 @@ static int equity_callback (void *data, int argc, char **argv, char **ColName) {
 }
 
 static int cash_callback (void *data, int argc, char **argv, char **ColName) {
-    pthread_mutex_lock( &mutex_working [CLASS_MEMBER_MUTEX ] );
+    pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
 
     /* argv[0] is id, argv[1] is value */
     if ( argc != 2 ) return 1;
@@ -71,7 +71,7 @@ static int cash_callback (void *data, int argc, char **argv, char **ColName) {
     /* To make sure it's formatted correctly. */
     mdata->cash_ch = mdata->DoubToStr( mdata->cash_f );
 
-    pthread_mutex_unlock( &mutex_working [CLASS_MEMBER_MUTEX ] );
+    pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
     return 0;
 }
 
@@ -206,6 +206,26 @@ static int rsi_wndwpos_callback (void *data, int argc, char **argv, char **ColNa
     return 0;
 }
 
+static int index_bar_expanded_callback (void *data, int argc, char **argv, char **ColName) {
+    pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
+
+    /* argv[0] is Id, argv[1] is Expanded */
+    if ( argc != 2 ) return 1;
+    if ( strcmp( ColName[0], "Id") != 0 ) return 1;
+    if ( strcmp( ColName[1], "Expanded") != 0 ) return 1;
+
+    meta *mdata = (meta*)data;
+
+    if ( strcasecmp( "true", argv[1] ? argv[1] : "true" ) == 0 ){
+        *mdata->index_bar_expanded_bool = true;
+    } else {
+        *mdata->index_bar_expanded_bool = false;
+    }
+
+    pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
+    return 0;
+}
+
 static void error_msg ( sqlite3 *db ){
     fprintf( stderr, "Cannot open sqlite3 database: %s\n", sqlite3_errmsg( db ) );
     sqlite3_close(db);
@@ -251,6 +271,10 @@ void SqliteProcessing (equity_folder* F, metal *M, meta *D, window_data *W){
     sql_cmd = "CREATE TABLE IF NOT EXISTS rsiwindowpos(Id INTEGER PRIMARY KEY, X TEXT NOT NULL, Y TEXT NOT NULL);";
     if ( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK ) error_msg( db );
 
+    /* Create the indexbarexpander table if it doesn't already exist. */
+    sql_cmd = "CREATE TABLE IF NOT EXISTS indexbarexpander(Id INTEGER PRIMARY KEY, Expanded TEXT NOT NULL);";
+    if ( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK ) error_msg( db );
+
     /* Reset Equity Folder */
     F->Reset ();
 
@@ -278,6 +302,9 @@ void SqliteProcessing (equity_folder* F, metal *M, meta *D, window_data *W){
 
     sql_cmd = "SELECT * FROM rsiwindowpos;";
     if ( sqlite3_exec(db, sql_cmd, rsi_wndwpos_callback, W, &err_msg) != SQLITE_OK ) error_msg( db );
+
+    sql_cmd = "SELECT * FROM indexbarexpander;";
+    if ( sqlite3_exec(db, sql_cmd, index_bar_expanded_callback, D, &err_msg) != SQLITE_OK ) error_msg( db );
 
     if( W->main_width == 0 || W->main_height == 0 ){
         /* The Original Production Size, if never run before */
@@ -536,6 +563,33 @@ void SqliteAddRSIWindowPos (int x, int y, meta *D){
     len = strlen("INSERT INTO rsiwindowpos VALUES(1, '', '');") + 64;
     char *sql_cmd = (char*) malloc( len );
     snprintf( sql_cmd, len, "INSERT INTO rsiwindowpos VALUES(1, '%d', '%d');", x, y );
+    if ( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK ) error_msg( db );
+    free( sql_cmd );
+
+    /* Close the sqlite database file. */
+    sqlite3_close( db );
+}
+
+void SqliteAddExpanderBarExpanded (bool val, meta *D){
+    size_t  len;
+    char    *err_msg = 0, *value;
+    sqlite3 *db;
+
+    if( val == true ){
+        value = "true";
+    } else {
+        value = "false";
+    }
+
+    /* Open the sqlite database file. */
+    if ( sqlite3_open( D->sqlite_db_path_ch, &db) != SQLITE_OK ) error_msg( db );
+
+    /* Delete entry if already exists, then insert entry. */
+    if ( sqlite3_exec(db, "DELETE FROM indexbarexpander WHERE Id = 1;", 0, 0, &err_msg) != SQLITE_OK ) error_msg( db );
+
+    len = strlen("INSERT INTO indexbarexpander VALUES(1, '');") + strlen( value ) + 1;
+    char *sql_cmd = (char*) malloc( len );
+    snprintf( sql_cmd, len, "INSERT INTO indexbarexpander VALUES(1, '%s');", value );
     if ( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK ) error_msg( db );
     free( sql_cmd );
 

@@ -35,6 +35,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "../include/gui.h"
 #include "../include/gui_types.h"
+#include "../include/class_types.h"
 #include "../include/ui.h"
 
 GtkBuilder *builder;
@@ -155,6 +156,9 @@ static void gui_signal_connect ()
     g_signal_connect ( window, "configure-event", G_CALLBACK ( GUICallbackHandler_window_data ), (void *)GUI_MAIN_WINDOW );
     gtk_window_resize ( GTK_WINDOW ( window ), WindowStruct.main_width, WindowStruct.main_height );
     gtk_window_move ( GTK_WINDOW ( window ), WindowStruct.main_x_pos, WindowStruct.main_y_pos );
+
+    button = gtk_builder_get_object (builder, "IndicesExpander");
+    g_signal_connect ( button, "activate", G_CALLBACK ( GUICallbackHandler_expander_bar ), NULL );
 
     button = gtk_builder_get_object (builder, "FetchDataBTN");
     g_signal_connect ( button, "clicked", G_CALLBACK ( GUICallbackHandler ), (void *)MAIN_FETCH_BTN );
@@ -295,6 +299,7 @@ static void gui_signal_connect ()
     button = gtk_builder_get_object (builder, "ViewRSISymbolEntryBox");
     g_signal_connect ( button, "changed", G_CALLBACK ( GUICallbackHandler ), (void *)RSI_CURSOR_MOVE );
 
+
     /* This is the main window's TreeView ( There was only one treeview when I started ). */
     button = gtk_builder_get_object (builder, "TreeView");
     g_signal_connect ( button, "button-press-event", G_CALLBACK( view_onButtonPressed ), NULL );
@@ -309,13 +314,13 @@ static void start_threads ()
     pthread_create( &thread_id, NULL, GUIThreadHandler, (void *)MAIN_CLOCK );
     pthread_create( &thread_id, NULL, GUIThreadHandler, (void *)MAIN_TIME_CLOSE_INDICATOR );
 
-    /* Set up the RSIView Window's EntryBox Completion Widget 
+    /* Set up the RSIView and AddRemSecurity Window's EntryBox Completion Widgets
        This will download the NYSE and NASDAQ symbol list when the application loads.
        If there is no internet connection or the server is unavailable cURL will return an
        error, but otherwise the application should run as normal.
 
        Comment out the next line to avoid the symbol list download. */
-    pthread_create( &thread_id, NULL, GUIThreadHandler, (void *)RSI_COMPLETION );
+    pthread_create( &thread_id, NULL, GUIThreadHandler, (void *)COMPLETION );
 }
 
 /* Engineering Note */

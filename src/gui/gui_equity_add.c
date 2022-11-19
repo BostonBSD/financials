@@ -33,6 +33,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 #include <glib-object.h>
 #include <gtk/gtk.h>
@@ -46,6 +47,91 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/sqlite.h"
 #include "../include/workfuncs.h"
 #include "../include/mutex.h"
+
+static GtkListStore * addrem_completion_set_store (void *data){
+    symbol_name_map *sn_map = ( symbol_name_map* ) data;
+    GtkListStore *store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+    GtkTreeIter iter;
+
+    char item[35];
+    /* Populate the GtkListStore with the string of stock symbols in column 0, stock names in column 1, 
+       and symbols & names in column 2. */
+    for ( int i=0; i < sn_map->size; i++ ){
+        snprintf(item, 35, "%s - %s", sn_map->sn_container_arr[ i ]->symbol, sn_map->sn_container_arr[ i ]->security_name );
+
+        gtk_list_store_append( store, &iter );
+        /* Completion is going to match off of columns 0 and 1, but display column 2 */
+        /* Completion matches based off of the symbol or the company name, inserts the symbol, displays both */
+        gtk_list_store_set( store, &iter, 0, sn_map->sn_container_arr[ i ]->symbol, 1, sn_map->sn_container_arr[ i ]->security_name, 2, item, -1 );
+    }
+    return store;
+}
+
+static gboolean addrem_completion_match (GtkEntryCompletion *completion, const gchar *key, GtkTreeIter *iter, void *data) {
+    /* We aren't using the data parameter, but the next statement
+       silences a warning/error. */
+    if( data != NULL) data = NULL;
+    
+    GtkTreeModel *model = gtk_entry_completion_get_model ( completion );
+    gchar *item_symb, *item_name;
+    /* We are finding matches based off of column 0 and 1, however, 
+       we display column 2 in our 3 column model */
+    gtk_tree_model_get ( model, iter, 0, &item_symb, -1 );
+    gtk_tree_model_get ( model, iter, 1, &item_name, -1 );
+    gboolean ans = false, symbol_match = true, name_match = true;
+
+    int N = 0;
+    while( key[ N ] ){
+        /* Only compare new key char if prev char was a match. */
+        if(symbol_match) symbol_match = ( tolower( key [ N ] ) == tolower( item_symb [ N ] ) );
+        if(name_match) name_match = ( tolower( key [ N ] ) == tolower( item_name [ N ] ) );
+        /* Break the loop if both the symbol and the name are not a match. */
+        if( (symbol_match == false) && (name_match == false) ) break;
+        N++;
+    }
+
+    /* if either the symbol or the name match the key value, return true. */
+    ans = symbol_match || name_match;
+    g_free( item_symb );
+    g_free( item_name );
+
+    return ans;
+}
+
+int AddRemCompletionSet (void *data){
+    pthread_mutex_lock( &mutex_working[ COMPLETION_FETCH_MUTEX ] );
+    if( data == NULL ) return 0;
+
+    GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecuritySymbolEntryBox") );
+    GtkEntryCompletion *completion = gtk_entry_completion_new();
+    GtkListStore *store = addrem_completion_set_store ( data );
+
+    gtk_entry_completion_set_model(completion, GTK_TREE_MODEL( store ));
+    g_object_unref( G_OBJECT( store ) );
+    gtk_entry_completion_set_match_func(completion, (GtkEntryCompletionMatchFunc)addrem_completion_match, NULL, NULL);
+    /* Set AddRemoveSecuritySymbol entrybox completion widget. */
+    gtk_entry_set_completion( GTK_ENTRY( EntryBox ), completion );
+
+    /* The text column to display is column 2 */
+    gtk_entry_completion_set_text_column( completion, 2 );
+    gtk_entry_completion_set_inline_completion ( completion, FALSE );
+    gtk_entry_completion_set_inline_selection ( completion, TRUE );
+    gtk_entry_completion_set_popup_completion ( completion, TRUE );
+    /* Must type at least two characters for completion to make suggestions,
+       reduces the number of results for single character keys. */
+    gtk_entry_completion_set_minimum_key_length ( completion, 2 );
+    /* The text column to insert is column 0
+       We use a callback on the match-selected signal and insert the text from column 0 instead of column 2
+       We use a callback on the cursor-on-match signal and insert the text from column 0 instead of column 2
+    */
+    g_signal_connect ( G_OBJECT( completion ), "match-selected", G_CALLBACK ( GUICallbackHandler_select_comp ), NULL );
+    g_signal_connect ( G_OBJECT( completion ), "cursor-on-match", G_CALLBACK ( GUICallbackHandler_cursor_comp ), NULL );
+
+    g_object_unref( G_OBJECT( completion ) );
+
+    pthread_mutex_unlock( &mutex_working[ COMPLETION_FETCH_MUTEX ] );
+    return 0;
+}
 
 int AddRemCursorMove ()
 {

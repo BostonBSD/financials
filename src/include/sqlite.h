@@ -51,4 +51,6 @@ void SqliteAddMainWindowPos (int,int,meta*);
 void SqliteAddRSIWindowSize (int,int,meta*);
 void SqliteAddRSIWindowPos (int,int,meta*);
 
+void SqliteAddExpanderBarExpanded(bool,meta*);
+
 #endif /* SQLITE_HEADER_H */

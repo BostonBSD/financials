@@ -101,7 +101,7 @@ static gboolean rsi_completion_match (GtkEntryCompletion *completion, const gcha
 }
 
 int RSICompletionSet (void *data){
-    pthread_mutex_lock( &mutex_working[ RSI_COMPLETION_FETCH_MUTEX ] );
+    pthread_mutex_lock( &mutex_working[ COMPLETION_FETCH_MUTEX ] );
     if( data == NULL ) return 0;
 
     GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ViewRSISymbolEntryBox") );
@@ -111,7 +111,12 @@ int RSICompletionSet (void *data){
     gtk_entry_completion_set_model(completion, GTK_TREE_MODEL( store ));
     g_object_unref( G_OBJECT( store ) );
     gtk_entry_completion_set_match_func(completion, (GtkEntryCompletionMatchFunc)rsi_completion_match, NULL, NULL);
+    /* Set RSIView entrybox completion widget. */
     gtk_entry_set_completion( GTK_ENTRY( EntryBox ), completion );
+    /* Set AddRemoveSecuritySymbol entrybox completion widget. */
+    //EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecuritySymbolEntryBox") );
+    //gtk_entry_set_completion( GTK_ENTRY( EntryBox ), completion );
+
     /* The text column to display is column 2 */
     gtk_entry_completion_set_text_column( completion, 2 );
     gtk_entry_completion_set_inline_completion ( completion, FALSE );
@@ -129,7 +134,7 @@ int RSICompletionSet (void *data){
 
     g_object_unref( G_OBJECT( completion ) );
 
-    pthread_mutex_unlock( &mutex_working[ RSI_COMPLETION_FETCH_MUTEX ] );
+    pthread_mutex_unlock( &mutex_working[ COMPLETION_FETCH_MUTEX ] );
     return 0;
 }
 

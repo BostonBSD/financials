@@ -333,7 +333,7 @@ void *GUIThreadHandler (void *data){
         case RSI_CURSOR_MOVE:
             gdk_threads_add_idle ( RSICursorMove, NULL );
             break;
-        case RSI_COMPLETION:
+        case COMPLETION:
             /* Fetch the stock symbols and names outside the Gtk
                main loop, then create a GtkListStore and set it into
                a GtkEntryCompletion widget. */
@@ -344,21 +344,22 @@ void *GUIThreadHandler (void *data){
                This signal is only run once at application start.
             */
 
-            pthread_mutex_lock( &mutex_working[ RSI_COMPLETION_FETCH_MUTEX ] );
+            pthread_mutex_lock( &mutex_working[ COMPLETION_FETCH_MUTEX ] );
 
             sym_map = SymNameFetch ( packet );
 
             if ( packet->IsCurlCanceled () ) {
-                pthread_mutex_unlock( &mutex_working[ RSI_COMPLETION_FETCH_MUTEX ] );
+                pthread_mutex_unlock( &mutex_working[ COMPLETION_FETCH_MUTEX ] );
                 break;
             }
 
             /* gdk_threads_add_idle is non-blocking, we need the mutex
-               in the RSICompletionSet function. */
+               in the RSICompletionSet and AddRemCompletionSet functions. */
             if( sym_map ) {
                 gdk_threads_add_idle( RSICompletionSet, sym_map );
+                gdk_threads_add_idle( AddRemCompletionSet, sym_map );
             }
-            pthread_mutex_unlock( &mutex_working[ RSI_COMPLETION_FETCH_MUTEX ] );
+            pthread_mutex_unlock( &mutex_working[ COMPLETION_FETCH_MUTEX ] );
             
             break;
         case SHORTCUT_TOGGLE_BTN:
@@ -416,12 +417,12 @@ void *GUIThreadHandler (void *data){
                MAIN_FETCH_BTN signal is run in parallel with this thread. */
             pthread_mutex_lock( &mutex_working[ FETCH_DATA_MUTEX ] );
 
-            /* Save the Window Size and Location. */
+            /* Save the Window Size, Location, and Expander Bar setting. */
             packet->SetWindowDataSql ();
 
             /* This mutex prevents the program from crashing if a
                RSI_COMPLETION signal is run in parallel with this thread. */
-            pthread_mutex_lock( &mutex_working[ RSI_COMPLETION_FETCH_MUTEX ] );
+            pthread_mutex_lock( &mutex_working[ COMPLETION_FETCH_MUTEX ] );
 
             /* Exit the GTK main loop. */
             gtk_main_quit ();
@@ -430,7 +431,7 @@ void *GUIThreadHandler (void *data){
             SNMapDestruct ( sym_map );
             if ( sym_map ) free( sym_map );
 
-            pthread_mutex_unlock( &mutex_working[ RSI_COMPLETION_FETCH_MUTEX ] );
+            pthread_mutex_unlock( &mutex_working[ COMPLETION_FETCH_MUTEX ] );
             pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
             break;
 

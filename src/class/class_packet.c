@@ -284,6 +284,9 @@ static void SetWindowDataSql () {
     SqliteAddMainWindowPos ( WindowStruct.main_x_pos, WindowStruct.main_y_pos, D );
     SqliteAddRSIWindowSize ( WindowStruct.rsi_width, WindowStruct.rsi_height, D );
     SqliteAddRSIWindowPos ( WindowStruct.rsi_x_pos, WindowStruct.rsi_y_pos, D );
+
+    /* Save the Expander Bar Position. */
+    SqliteAddExpanderBarExpanded ( *D->index_bar_expanded_bool, D );
 }
 
 static void *GetWindowData () {

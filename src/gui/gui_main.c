@@ -352,36 +352,17 @@ static GtkListStore * main_default_store (void *data){
     return store;
 }
 
-static void show_indices_labels (){
-    GtkWidget* label = GTK_WIDGET ( gtk_builder_get_object (builder, "DowLabel") );
-    gtk_widget_set_visible ( label, true );
-    label = GTK_WIDGET ( gtk_builder_get_object (builder, "NasdaqLabel") );
-    gtk_widget_set_visible ( label, true );
-    label = GTK_WIDGET ( gtk_builder_get_object (builder, "SPLabel") );
-    gtk_widget_set_visible ( label, true );
-    label = GTK_WIDGET ( gtk_builder_get_object (builder, "BitcoinLabel") );
-    gtk_widget_set_visible ( label, true );
-    label = GTK_WIDGET ( gtk_builder_get_object (builder, "GoldLabel") );
-    gtk_widget_set_visible ( label, true );
-    label = GTK_WIDGET ( gtk_builder_get_object (builder, "SilverLabel") );
-    gtk_widget_set_visible ( label, true );
-    label = GTK_WIDGET ( gtk_builder_get_object (builder, "GSLabel") );
-    gtk_widget_set_visible ( label, true );
+static void show_indices_labels (void *data){
+    /* Unpack the class package */
+    portfolio_packet *package = (portfolio_packet*)data;
+    meta *D = package->portfolio_meta_info;
 
-    label = GTK_WIDGET ( gtk_builder_get_object (builder, "DowIndexValue") );
-    gtk_widget_set_visible ( label, true );
-    label = GTK_WIDGET ( gtk_builder_get_object (builder, "NasdaqIndexValue") );
-    gtk_widget_set_visible ( label, true );
-    label = GTK_WIDGET ( gtk_builder_get_object (builder, "SPIndexValue") );
-    gtk_widget_set_visible ( label, true );
-    label = GTK_WIDGET ( gtk_builder_get_object (builder, "BitcoinValue") );
-    gtk_widget_set_visible ( label, true );
-    label = GTK_WIDGET ( gtk_builder_get_object (builder, "GoldValue") );
-    gtk_widget_set_visible ( label, true );
-    label = GTK_WIDGET ( gtk_builder_get_object (builder, "SilverValue") );
-    gtk_widget_set_visible ( label, true );
-    label = GTK_WIDGET ( gtk_builder_get_object (builder, "GSValue") );
-    gtk_widget_set_visible ( label, true );
+    GtkWidget* indexframe = GTK_WIDGET ( gtk_builder_get_object (builder, "IndexFrame") );
+    gtk_widget_set_visible ( indexframe, true );
+
+    /* Set Expander Bar */
+    GtkWidget* expanderbar = GTK_WIDGET ( gtk_builder_get_object (builder, "IndicesExpander") );
+    gtk_expander_set_expanded ( GTK_EXPANDER ( expanderbar ), *D->index_bar_expanded_bool );
 }
 
 static void set_indices_labels (void *data){
@@ -473,7 +454,7 @@ int MainPrimaryTreeview (void *data)
     gtk_progress_bar_set_fraction ( GTK_PROGRESS_BAR( ProgressBar ), 0.0f );
 
     /* Show the Indices Labels */ 
-    show_indices_labels ();
+    show_indices_labels ( data );
 
     /* Set The Indices Labels */
     set_indices_labels ( data );
@@ -504,35 +485,8 @@ int MainPrimaryTreeview (void *data)
 }
 
 static void hide_indices_labels (){
-    GtkWidget* label = GTK_WIDGET ( gtk_builder_get_object (builder, "DowLabel") );
-    gtk_widget_set_visible ( label, false );
-    label = GTK_WIDGET ( gtk_builder_get_object (builder, "NasdaqLabel") );
-    gtk_widget_set_visible ( label, false );
-    label = GTK_WIDGET ( gtk_builder_get_object (builder, "SPLabel") );
-    gtk_widget_set_visible ( label, false );
-    label = GTK_WIDGET ( gtk_builder_get_object (builder, "BitcoinLabel") );
-    gtk_widget_set_visible ( label, false );
-    label = GTK_WIDGET ( gtk_builder_get_object (builder, "GoldLabel") );
-    gtk_widget_set_visible ( label, false );
-    label = GTK_WIDGET ( gtk_builder_get_object (builder, "SilverLabel") );
-    gtk_widget_set_visible ( label, false );
-    label = GTK_WIDGET ( gtk_builder_get_object (builder, "GSLabel") );
-    gtk_widget_set_visible ( label, false );
-
-    label = GTK_WIDGET ( gtk_builder_get_object (builder, "DowIndexValue") );
-    gtk_widget_set_visible ( label, false );
-    label = GTK_WIDGET ( gtk_builder_get_object (builder, "NasdaqIndexValue") );
-    gtk_widget_set_visible ( label, false );
-    label = GTK_WIDGET ( gtk_builder_get_object (builder, "SPIndexValue") );
-    gtk_widget_set_visible ( label, false );
-    label = GTK_WIDGET ( gtk_builder_get_object (builder, "BitcoinValue") );
-    gtk_widget_set_visible ( label, false );
-    label = GTK_WIDGET ( gtk_builder_get_object (builder, "GoldValue") );
-    gtk_widget_set_visible ( label, false );
-    label = GTK_WIDGET ( gtk_builder_get_object (builder, "SilverValue") );
-    gtk_widget_set_visible ( label, false );
-    label = GTK_WIDGET ( gtk_builder_get_object (builder, "GSValue") );
-    gtk_widget_set_visible ( label, false );
+    GtkWidget* indexframe = GTK_WIDGET ( gtk_builder_get_object (builder, "IndexFrame") );
+    gtk_widget_set_visible ( indexframe, false );
 }
 
 int MainDefaultTreeview (void *data) {

@@ -200,6 +200,7 @@ typedef struct {
     bool* fetching_data_bool;               /* Indicates a fetch operation in progress. */
     bool* holiday_bool;                     /* Indicates if today is a holiday. */
     bool* multicurl_cancel_bool;            /* Indicates if we should cancel the multicurl request. */
+    bool* index_bar_expanded_bool;          /* Indicates if the indices bar is expanded or not. */
 
     CURL* rsi_hnd;                          /* RSI Data cURL Easy Handle. */
     CURL* NASDAQ_completion_hnd;            /* RSI NASDAQ Symbol list cURL Easy Handle. */

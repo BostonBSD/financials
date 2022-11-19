@@ -133,9 +133,9 @@ typedef enum {
     RSI_TOGGLE_BTN,
     RSI_FETCH_BTN,
     RSI_CURSOR_MOVE,
-    RSI_COMPLETION,
+    COMPLETION,
     ABOUT_TOGGLE_BTN,
-    SHORTCUT_TOGGLE_BTN,     
+    SHORTCUT_TOGGLE_BTN,   
     SIGNAL_NUM
 } cb_signal;
 

@@ -386,6 +386,7 @@ meta *class_init_meta_data ()
     new_class->fetching_data_bool = (bool*) malloc( sizeof(bool) );
     new_class->holiday_bool = (bool*) malloc( sizeof(bool) );
     new_class->multicurl_cancel_bool = (bool*) malloc( sizeof(bool) );
+    new_class->index_bar_expanded_bool = (bool*) malloc( sizeof(bool) );
 
     /* Initialize Variables */
     new_class->stock_url = strdup( FINNHUB_URL );
@@ -422,6 +423,7 @@ meta *class_init_meta_data ()
     *new_class->fetching_data_bool = false;
     *new_class->holiday_bool = false;
     *new_class->multicurl_cancel_bool = false;
+    *new_class->index_bar_expanded_bool = true;
 
     new_class->rsi_hnd = curl_easy_init ();
     new_class->NASDAQ_completion_hnd = curl_easy_init ();
@@ -534,6 +536,7 @@ void class_destruct_meta_data (meta *meta_class)
     if ( meta_class->fetching_data_bool ) free( meta_class->fetching_data_bool );
     if ( meta_class->holiday_bool ) free( meta_class->holiday_bool );
     if ( meta_class->multicurl_cancel_bool ) free( meta_class->multicurl_cancel_bool );
+    if ( meta_class->index_bar_expanded_bool ) free( meta_class->index_bar_expanded_bool );
 
     if ( meta_class->NASDAQ_completion_hnd ) curl_easy_cleanup( meta_class->NASDAQ_completion_hnd );
     if ( meta_class->NYSE_completion_hnd ) curl_easy_cleanup( meta_class->NYSE_completion_hnd );
