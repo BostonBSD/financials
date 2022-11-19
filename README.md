@@ -40,7 +40,7 @@ Debian “bullseye”, and Ubuntu 22.04.
 ----------------------------------------------------------
 
 Some additional features could include cryptocurrency, api selection 
-(inclusion of other data service providers), market indices, other metals, and RSI trendline calibration.
+(inclusion of other data service providers), other metals, and RSI trendline calibration.
 
 ----------------------------------------------------------
 
@@ -103,6 +103,3 @@ You want to invest in cash [savings accounts, CDs, etc] before the central bank 
 <a href="https://www.flaticon.com/free-icons/trends" title="Trends icons">Trends icon created by Freepik - Flaticon</a>
 
 <a href="https://media.flaticon.com/license/license.pdf" title="Trends Icon License" target="_blank" rel="noopener noreferrer">Trends Icon License</a>
-
-----------------------------------------------------------
-[...it's amazing how easy it is to create high performing portable applications using only the C language and class emulation.]
