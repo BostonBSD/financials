@@ -33,17 +33,16 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef GLOBALS_HEADER_H
 #define GLOBALS_HEADER_H
 
-#include "class_types.h"   /* portfolio_packet, equity_folder, metal, meta */
+#include "class_types.h"   /* portfolio_packet */
 
 /* Globals */
-/* These globals are only accessible from financials.c, 
-   gui_callbacks.c, and gui_threads.c */
+
+/* The packet global class is only accessible from financials.c, 
+   class_packet.c, gui_callbacks.c, and gui_threads.c */
 /* All other functions access the class data through pass by reference */
-extern portfolio_packet packet;
-extern equity_folder *Folder;   /* A class handle to an array of stock class objects, */
-                                /* can change dynamically. [An array of nested classes 
-                                   within the Folder class] */
-extern metal *Precious;         /* A class handle to the bullion class object pointers. */
-extern meta *MetaData;          /* A class object pointer called MetaData. */
+
+extern portfolio_packet* packet;        /* The gui worker functions need access to the classes, 
+                                           so we package them and send a packet through 
+                                           gdk_threads_add_idle */
 
 #endif /* GLOBALS_HEADER_H */

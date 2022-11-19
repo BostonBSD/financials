@@ -86,7 +86,6 @@ void *SetUpCurlHandle (CURL *hnd, CURLM *mh, char *url, MemType *output)
         curl_easy_setopt(hnd, CURLOPT_FOLLOWLOCATION, 1L);
         curl_easy_setopt(hnd, CURLOPT_MAXREDIRS, 5L);
         curl_easy_setopt(hnd, CURLOPT_HTTP_VERSION, (long)CURL_HTTP_VERSION_2TLS);
-        curl_easy_setopt(hnd, CURLOPT_FTP_SKIP_PASV_IP, 1L);
         curl_easy_setopt(hnd, CURLOPT_TCP_KEEPALIVE, 0L);
         /* cURL advises to use this option in a multithreaded environment. */
         /* It prevents unix signals during socket operations. */
@@ -115,9 +114,10 @@ void *SetUpCurlHandle (CURL *hnd, CURLM *mh, char *url, MemType *output)
     return NULL;
 }
 
-int PerformMultiCurl (CURLM * mh, double size)
-/* Take in a multi handle pointer, request data from remote server asynchronously. 
-   Update the main window progress bar during transfer. 
+int PerformMultiCurl (CURLM *mh, double size)
+/* Take in a multi handle pointer and the number of easy handles,
+   request data from remote server asynchronously. Update the main 
+   window progress bar during transfer. 
 
    Returns 0 on success, otherwise the number of failed transfers.
 */
@@ -191,7 +191,7 @@ int PerformMultiCurl (CURLM * mh, double size)
     return return_value;
 }
 
-int PerformMultiCurl_no_prog (CURLM * mh)
+int PerformMultiCurl_no_prog (CURLM *mh)
 /* Take in a multi handle pointer, request data from remote server asynchronously. 
    Doesn't update any gui widgets during transfer.
 

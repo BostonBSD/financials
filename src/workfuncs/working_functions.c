@@ -40,24 +40,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/macros.h"
 #include "../include/mutex.h"
 
-void PerformCalculations (equity_folder *F, metal *M, meta *Met) 
-    /* calc portfolio values and populate character strings. */    
-{
-    pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
-
-    /* Perform Calculations. */
-    M->Calculate ( M );
-    F->Calculate ( F );
-    Met->PortfolioCalculate ( Met, M, F );
-
-    /* Convert to strings */
-    M->ToStrings( M );
-    F->ToStrings( F );
-    Met->PortfolioToStrings( Met );
-
-    pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
-}
-
 double CalcGain ( double cur_price, double prev_price ){
 	return ( 100 * ( ( cur_price - prev_price ) / prev_price ) );
 }
@@ -91,11 +73,11 @@ char *RsiIndicator ( double rsi )
     if ( rsi >= 70 ) {
         return "Overbought";
 	} else if ( rsi >= 60 && rsi < 70 ) {
-        return "Overbought Watch";
+        return "Overbought Warning";
 	} else if ( rsi > 40 && rsi < 60 ) {
         return "Neutral";
 	} else if ( rsi > 30 && rsi <= 40 ) {
-        return "Oversold Watch";
+        return "Oversold Warning";
 	} else {
         return "Oversold";
 	}
@@ -112,7 +94,7 @@ static void rsi_url_period (time_t *currenttime, time_t *starttime){
 }
 
 static char *rsi_get_url ( const char *symbol ){
-    time_t start, end;
+    time_t end, start;
     size_t len;
     
     rsi_url_period( &end, &start );
@@ -124,7 +106,8 @@ static char *rsi_get_url ( const char *symbol ){
     return url;
 }
 
-MemType *FetchRSIData (const char *symbol, meta *Met){
+MemType *FetchRSIData (const char *symbol, portfolio_packet *pkg){
+    meta *Met = pkg->portfolio_meta_info;
     char *MyUrl = NULL;
     MyUrl = rsi_get_url ( symbol );
 
@@ -141,19 +124,4 @@ MemType *FetchRSIData (const char *symbol, meta *Met){
     free ( MyUrl );
 
     return MyOutputStruct;
-}
-
-void StopMultiCurl (equity_folder *F, metal *M, meta *Met)
-{
-    /* Symbol Name Fetch Multicurl Operation */
-    Met->StopSNMapCurl ( Met ); 
-
-    /* RSI Data Multicurl Operation */
-    Met->StopRSICurl ( Met ); 
-
-    /* Bullion Multicurl Operation */
-    M->StopCurl ( M );
-
-    /* Equity Multicurl Operation */
-    F->StopCurl ( F );  
 }

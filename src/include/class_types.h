@@ -33,23 +33,29 @@ POSSIBILITY OF SUCH DAMAGE.
 #define CLASS_TYPES_HEADER_H
 
 #include <stdbool.h>
+#include <time.h>                         /* struct tm  */
 
 /* We need the MemType, CURL, and CURLM types from this header file. */
 #include "multicurl_types.h"
 
 /* Method prototypes used by these classes
    Define the function pointer type here. */
-typedef double sub_func_b_t (const unsigned int*,const double*);
-typedef double sub_func_c_t (const double*,const double*,const double*);
-typedef double sub_func_d_t (const double*,const double*);
-typedef char* sub_func_e_t (const double*);
-typedef double sub_func_f_t (const char*);
-/* These mostly take in class types, but the class type isn't defined yet,
-   so we cast them to their appropriate type within the member function. */
-typedef void sub_func_g_t (void*);
-typedef void sub_func_h_t (void*,void*,void*);
-typedef void sub_func_i_t (void*,void*);
-typedef int sub_func_j_t (void*);
+typedef double sub_func_a_t (const unsigned int*,const double*);
+typedef double sub_func_b_t (const double*,const double*,const double*);
+typedef double sub_func_c_t (const double*,const double*);
+typedef char* sub_func_d_t (const double*);
+typedef double sub_func_e_t (const char*);
+typedef void* sub_func_f_t ();
+typedef void sub_func_g_t ();
+typedef int sub_func_h_t ();
+typedef bool sub_func_i_t ();
+typedef void sub_func_j_t (bool);
+typedef double sub_func_k_t ();
+typedef struct tm sub_func_l_t ();
+typedef unsigned int sub_func_m_t ();
+typedef int sub_func_n_t (void*);
+typedef void sub_func_o_t (void*);
+typedef void sub_func_p_t (char*,char*);
 
 /* class type definitions (emulated class definitions; C doesn't really have class types) */
 typedef struct {
@@ -67,6 +73,7 @@ typedef struct {
     double* change_ounce_f;
     double* change_value_f;
     double* change_percent_f;
+    double* change_percent_raw_f;          
 
     char* spot_price_ch;            
     char* premium_ch; 
@@ -79,17 +86,18 @@ typedef struct {
     char* change_ounce_ch;
     char* change_value_ch;
     char* change_percent_ch;
+    char* change_percent_raw_ch;           /* The gain not including premium values. */
 
-    CURL *YAHOO_hnd;                        /* Bullion cURL Easy Handle. */
+    CURL* YAHOO_hnd;                        /* Bullion cURL Easy Handle. */
     MemType CURLDATA;
 
     /* 
        Methods or Functions
        Create a function pointer from the type here.
     */
-    sub_func_c_t* Stake;
-    sub_func_e_t* DoubToStr;
-    sub_func_f_t* StrToDoub;
+    sub_func_b_t* Stake;
+    sub_func_d_t* DoubToStr;
+    sub_func_e_t* StrToDoub;
     
 } bullion;
 
@@ -122,16 +130,16 @@ typedef struct {
 	char* symbol_stock_ch;                  /* The stock symbol in all caps, it's used to create the stock request URL */
 	char* curl_url_stock_ch;                /* The assembled request URL, Each stock has it's own URL request */
 
-    CURL *easy_hnd;                         /* cURL Easy Handle. */
+    CURL* easy_hnd;                         /* cURL Easy Handle. */
     MemType JSON;
 
     /* 
        Methods or Functions
        Create a function pointer from the type here.
     */
-    sub_func_b_t* Stake;
-    sub_func_e_t* DoubToStr;
-    sub_func_f_t* StrToDoub;
+    sub_func_a_t* Stake;
+    sub_func_d_t* DoubToStr;
+    sub_func_e_t* StrToDoub;
 
 } stock;
 
@@ -142,6 +150,22 @@ typedef struct {
     double* portfolio_port_value_f;
     double* portfolio_port_value_chg_f;
     double* portfolio_port_value_p_chg_f;
+
+    double* index_dow_value_f;
+    double* index_dow_value_chg_f;
+    double* index_dow_value_p_chg_f;
+
+    double* index_nasdaq_value_f;
+    double* index_nasdaq_value_chg_f;
+    double* index_nasdaq_value_p_chg_f;
+
+    double* index_sp_value_f;
+    double* index_sp_value_chg_f;
+    double* index_sp_value_p_chg_f;
+
+    double* crypto_bitcoin_value_f;
+    double* crypto_bitcoin_value_chg_f;
+    double* crypto_bitcoin_value_p_chg_f;
     
     double* updates_per_min_f;
     double* updates_hours_f;
@@ -154,6 +178,22 @@ typedef struct {
     char* portfolio_port_value_chg_ch;      /* Total value of the entire portfolio change */
     char* portfolio_port_value_p_chg_ch;    /* Total value of the entire portfolio percent change */
 
+    char* index_dow_value_ch;
+    char* index_dow_value_chg_ch;
+    char* index_dow_value_p_chg_ch;
+
+    char* index_nasdaq_value_ch;
+    char* index_nasdaq_value_chg_ch;
+    char* index_nasdaq_value_p_chg_ch;
+
+    char* index_sp_value_ch;
+    char* index_sp_value_chg_ch;
+    char* index_sp_value_p_chg_ch;
+
+    char* crypto_bitcoin_value_ch;
+    char* crypto_bitcoin_value_chg_ch;
+    char* crypto_bitcoin_value_p_chg_ch;
+
     char* home_dir_ch;                      /* Path to the user's home directory */
     char* sqlite_db_path_ch;                /* Path to the sqlite db file */
 
@@ -161,24 +201,37 @@ typedef struct {
     bool* holiday_bool;                     /* Indicates if today is a holiday. */
     bool* multicurl_cancel_bool;            /* Indicates if we should cancel the multicurl request. */
 
-    CURL *rsi_hnd;                          /* RSI Data cURL Easy Handle. */
-    CURL *NASDAQ_completion_hnd;            /* RSI NASDAQ Symbol list cURL Easy Handle. */
-    CURL *NYSE_completion_hnd;              /* RSI NYSE Symbol list cURL Easy Handle. */
-    CURLM *multicurl_cmpltn_hnd;            /* Multicurl Handle for the No Prog Multicurl function. */
-    CURLM *multicurl_rsi_hnd;               /* Multicurl Handle for the No Prog Multicurl function. */
+    CURL* rsi_hnd;                          /* RSI Data cURL Easy Handle. */
+    CURL* NASDAQ_completion_hnd;            /* RSI NASDAQ Symbol list cURL Easy Handle. */
+    CURL* NYSE_completion_hnd;              /* RSI NYSE Symbol list cURL Easy Handle. */
+
+    CURL* index_dow_hnd;                    /* DJIA Index cURL Easy Handle. */
+    CURL* index_nasdaq_hnd;                 /* Nasdaq Index cURL Easy Handle. */
+    CURL* index_sp_hnd;                     /* S&P Index cURL Easy Handle. */
+    CURL* crypto_bitcoin_hnd;               /* Bitcoin cURL Easy Handle. */
+
+    CURLM* multicurl_cmpltn_hnd;            /* Multicurl Handle for the No Prog Multicurl function. */
+    CURLM* multicurl_rsi_hnd;               /* Multicurl Handle for the No Prog Multicurl function. */
+
+    MemType INDEX_DOW_CURLDATA;
+    MemType INDEX_NASDAQ_CURLDATA;
+    MemType INDEX_SP_CURLDATA;
+    MemType CRYPTO_BITCOIN_CURLDATA;
 
     /* 
        Methods or Functions
        Create a function pointer from the type here.
     */
-    sub_func_c_t* EntireStake;
-    sub_func_e_t* DoubToStr;
-    sub_func_f_t* StrToDoub;
-    sub_func_g_t* PortfolioToStrings;
-    sub_func_h_t* PortfolioCalculate;
+    sub_func_b_t* EntireStake;
+    sub_func_d_t* DoubToStr;
+    sub_func_e_t* StrToDoub;
+    sub_func_g_t* ToStringsPortfolio;
+    sub_func_g_t* CalculatePortfolio;
     sub_func_g_t* StopRSICurl;
     sub_func_g_t* StopSNMapCurl;
-
+    sub_func_n_t* SetUpCurlIndicesData;
+    sub_func_g_t* ExtractIndicesData;
+    sub_func_g_t* ToStringsIndices;
 } meta;
 
 typedef struct {
@@ -190,21 +243,20 @@ typedef struct {
     double* bullion_port_value_f;
     double* bullion_port_value_chg_f;
     double* bullion_port_value_p_chg_f;
+    double* gold_silver_ratio_f;
 
     char* bullion_port_value_ch;            /* Total value of bullion holdings */
     char* bullion_port_value_chg_ch;        /* Total value of bullion holdings change */
     char* bullion_port_value_p_chg_ch;      /* Total value of bullion holdings percent change */
-
-    CURLM *multicurl_hnd;                    /* Multicurl Handle. */
+    char* gold_silver_ratio_ch;
 
     /* Methods or Functions */
-    sub_func_d_t* BullionStake;
-    sub_func_e_t* DoubToStr;
+    sub_func_c_t* BullionStake;
+    sub_func_d_t* DoubToStr;
     sub_func_g_t* ToStrings;
     sub_func_g_t* Calculate;
-    sub_func_j_t* GetData;
+    sub_func_n_t* SetUpCurl;
     sub_func_g_t* ExtractData;
-    sub_func_g_t* StopCurl;
 } metal;
 
 typedef struct {
@@ -221,26 +273,48 @@ typedef struct {
     char* stock_port_value_p_chg_ch;        /* Total value of equity holdings percent change */
 
     unsigned short size;                     /* The number of stocks */
-    CURLM *multicurl_hnd;                    /* Multicurl Handle. */
 
     /* Methods or Functions */
-    sub_func_e_t* DoubToStr;
+    sub_func_d_t* DoubToStr;
     sub_func_g_t* ToStrings;
     sub_func_g_t* Calculate;
-    sub_func_i_t* GenerateURL;
-    sub_func_j_t* GetData;
+    sub_func_g_t* GenerateURL;
+    sub_func_n_t* SetUpCurl;
     sub_func_g_t* ExtractData;
-    sub_func_g_t* AddStock;
+    sub_func_p_t* AddStock;
     sub_func_g_t* Sort;
     sub_func_g_t* Reset;
-    sub_func_g_t* StopCurl;
+    sub_func_o_t* RemoveStock;
 } equity_folder;
 
 /* A handle to our three primary classes for passing through threads */
 typedef struct {
-  metal *metal_chest;
-  equity_folder *securities_folder;
-  meta *portfolio_meta_info;
+  /* handles to each of our three classes */
+  metal* metal_chest;
+  equity_folder* securities_folder;
+  meta* portfolio_meta_info;
+
+  /* Main Multicurl Handle for use with data fetch operation */
+  CURLM* multicurl_main_hnd;
+
+  /* Methods or Functions */
+  sub_func_g_t* Calculate;
+  sub_func_g_t* ToStrings;
+  sub_func_h_t* GetData;
+  sub_func_g_t* ExtractData;
+  sub_func_i_t* IsFetchingData;
+  sub_func_j_t* SetFetchingData;
+  sub_func_g_t* StopMultiCurl;
+  sub_func_i_t* IsCurlCanceled;
+  sub_func_j_t* SetCurlCanceled;
+  sub_func_k_t* GetHoursOfUpdates;
+  sub_func_k_t* GetUpdatesPerMinute;
+  sub_func_i_t* IsHoliday;
+  sub_func_l_t* SetHoliday;
+  sub_func_g_t* SetWindowDataSql;
+  sub_func_f_t* GetWindowData;
+  sub_func_m_t* SecondsToOpen;
+
 } portfolio_packet;
 
 #endif /* CLASS_TYPES_HEADER_H */

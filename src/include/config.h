@@ -33,9 +33,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef CONFIG_HEADER_H
 #define CONFIG_HEADER_H
 
-#include "gui_types.h"       /* window_data */
-#include "class_types.h"     /* equity_folder, metal, meta */
+#include "class_types.h"     /* portfolio_packet */
 
-void ReadConfig(metal*,meta*,equity_folder*,window_data*);
+void ReadConfig(portfolio_packet*);
 
 #endif /* CONFIG_HEADER_H */

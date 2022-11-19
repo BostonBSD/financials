@@ -32,14 +32,15 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef CLASS_HEADER_H
 #define CLASS_HEADER_H
 
-#include "class_types.h"    /* equity_folder, stock, metal, bullion, meta */
+#include "class_types.h"    /* equity_folder, stock, metal, bullion, meta, portfolio_packet */
 
 /* Class init prototypes */
 equity_folder* class_init_equity_folder ();
-stock *class_init_equity ();
+stock* class_init_equity ();
 metal* class_init_metal ();
 bullion* class_init_bullion ();
 meta* class_init_meta_data ();
+portfolio_packet* class_init_portfolio_packet ();
 
 /* Class destruct prototypes. */
 void class_destruct_equity_folder (equity_folder*);
@@ -47,5 +48,6 @@ void class_destruct_equity (stock*);
 void class_destruct_metal (metal*);
 void class_destruct_bullion (bullion*);
 void class_destruct_meta_data (meta*);
+void class_destruct_portfolio_packet (portfolio_packet*);
 
 #endif /* CLASS_HEADER_H */

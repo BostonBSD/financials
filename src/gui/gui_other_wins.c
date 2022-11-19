@@ -89,7 +89,7 @@ int APIOk (void *data)
     char* cur = strdup( D->stock_url );
 
     if( ( strcmp( cur, new ) != 0) ){
-        SqliteAddAPIData("Stock_URL", new, F, D);
+        SqliteAddAPIData("Stock_URL", new, D);
     }
     free( new );
     free( cur );
@@ -99,7 +99,7 @@ int APIOk (void *data)
     cur = strdup( D->curl_key );
 
     if( ( strcmp( cur, new ) != 0) ){
-        SqliteAddAPIData("URL_KEY", new, F, D);
+        SqliteAddAPIData("URL_KEY", new, D);
     }
     free( new );
     free( cur );
@@ -110,7 +110,7 @@ int APIOk (void *data)
     float cur_f = *D->updates_per_min_f;
 
     if( new_f != cur_f ){
-        SqliteAddAPIData("Updates_Per_Min", new, F, D);
+        SqliteAddAPIData("Updates_Per_Min", new, D);
     }
     free( new );
 
@@ -122,10 +122,12 @@ int APIOk (void *data)
     if( new_f != cur_f ){
         new = (char*)malloc( 10 );
         snprintf(new, 10, "%f", new_f);
-        SqliteAddAPIData("Updates_Hours", new, F, D);
+        SqliteAddAPIData("Updates_Hours", new, D);
         free( new );
     }
 
+    /* Generate the Equity Request URLs. */
+    F->GenerateURL ();
     return 0;
 }
 

@@ -37,13 +37,13 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "gui_types.h"  /* window_data, SIGNAL_NUM */
 
-/* These globals are only accessible from the gui directory 
-   source files and financials.c */
+/* These globals are only accessible from the gui 
+   source files, class_packet.c, and financials.c */
 
 
 /* Global Variables */
 extern sem_t semaphore[ SIGNAL_NUM ];                   /* A Posix Semaphore Array */
-extern GtkBuilder *builder;                             /* The Gtk builder object */
+extern GtkBuilder* builder;                             /* The Gtk builder object */
 extern window_data WindowStruct;                        /* A struct that hold the size and position of 
                                                            the main window. */
 

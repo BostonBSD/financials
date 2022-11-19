@@ -38,8 +38,11 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <gtk/gtk.h>
 
 #include "../include/gui_globals.h"
+#include "../include/gui.h"
 
 #include "../include/class_types.h"         /* portfolio_packet, equity_folder, metal, meta */
+#include "../include/multicurl.h"
+#include "../include/json.h"
 #include "../include/sqlite.h"
 #include "../include/workfuncs.h"
 #include "../include/mutex.h"
@@ -120,11 +123,37 @@ int AddRemSwitchChange ()
     return 0;
 }
 
-static int add_security_ok (void *data)
+static void add_equity_to_folder ( char *symbol, char *shares, portfolio_packet *pkg ){
+    equity_folder *F = pkg->securities_folder;
+
+    /* Remove the stock if it already exists. */
+    F->RemoveStock ( symbol );
+
+    /* Add a new stock object to the end of the folder's Equity array. */
+    F->AddStock ( symbol, shares );
+
+    /* Generate the Equity Request URLs. */
+    F->GenerateURL ();
+
+    if( pkg->IsFetchingData () ){
+        SetUpCurlHandle ( F->Equity[ F->size - 1 ]->easy_hnd, pkg->multicurl_main_hnd, F->Equity[ F->size - 1 ]->curl_url_stock_ch, &F->Equity[ F->size - 1 ]->JSON );
+        PerformMultiCurl ( pkg->multicurl_main_hnd, 1.0f );
+        /* Extract double values from JSON data using JSON-glib */
+        JsonExtractEquity( F->Equity[ F->size - 1 ]->JSON.memory, F->Equity[ F->size - 1 ]->current_price_stock_f, F->Equity[ F->size - 1 ]->high_stock_f, F->Equity[ F->size - 1 ]->low_stock_f, F->Equity[ F->size - 1 ]->opening_stock_f, F->Equity[ F->size - 1 ]->prev_closing_stock_f, F->Equity[ F->size - 1 ]->change_share_f, F->Equity[ F->size - 1 ]->change_percent_f);
+
+        /* Free memory. */
+        free( F->Equity[ F->size - 1 ]->JSON.memory );
+        F->Equity[ F->size - 1 ]->JSON.memory = NULL; 
+    } 
+
+    /* Sort the equity folder. */
+    F->Sort ();   
+}
+
+static int add_security_ok ( void *data )
 {
     /* Unpack the package */
     portfolio_packet *package = (portfolio_packet*)data;
-    equity_folder *F = package->securities_folder;
     meta *D = package->portfolio_meta_info;
 
     GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecuritySymbolEntryBox") );
@@ -136,7 +165,8 @@ static int add_security_ok (void *data)
     UpperCaseStr( symbol );
     FormatStr( shares );
         
-    SqliteAddEquity( symbol, shares, F, D );
+    SqliteAddEquity( symbol, shares, D );
+    add_equity_to_folder ( symbol, shares, package );
 
     free( symbol );
     free( shares );
@@ -144,7 +174,7 @@ static int add_security_ok (void *data)
     return 0;
 }
 
-static int remove_security_ok (void *data)
+static int remove_security_ok ( void *data )
 {
     /* Unpack the package */
     portfolio_packet *package = (portfolio_packet*)data;
@@ -155,17 +185,23 @@ static int remove_security_ok (void *data)
     int index = gtk_combo_box_get_active ( GTK_COMBO_BOX ( ComboBox ) );
     if( index == 0 ) return 0;
     if( index == 1) {     
-        SqliteRemoveAllEquity( F, D );
+        SqliteRemoveAllEquity( D );
+        /* Reset Equity Folder */
+        F->Reset ();
     } else {
         char* symbol = gtk_combo_box_text_get_active_text ( GTK_COMBO_BOX_TEXT ( ComboBox ) );
-        SqliteRemoveEquity( symbol, F, D );
+        SqliteRemoveEquity( symbol, D );
+        F->RemoveStock ( symbol );
         free( symbol );
     }
     return 0;
 }
 
-int AddRemOk (void *data)
+int AddRemOk ( void *data )
 {
+    /* Unpack the package */
+    portfolio_packet *package = (portfolio_packet*)data;
+
     /* This mutex prevents the program from crashing if a
         FETCH_DATA_BTN signal is run in parallel with this thread. */
     pthread_mutex_lock( &mutex_working[ FETCH_DATA_MUTEX ] );
@@ -179,12 +215,21 @@ int AddRemOk (void *data)
         remove_security_ok ( data );
     }
 
+    if( package->IsFetchingData () == false ) {
+        MainDefaultTreeview ( data );
+    } else {
+        package->Calculate ();
+        package->ToStrings ();
+        /* Set Gtk treeview. */
+        MainPrimaryTreeview ( data );
+    } 
+
     pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
 
     return 0;
 }
 
-int AddRemShowHide (void *data)
+int AddRemShowHide ( void *data )
 {
     /* Unpack the package */
     portfolio_packet *package = (portfolio_packet*)data;

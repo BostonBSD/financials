@@ -453,13 +453,14 @@ int RSIMakeTreeview (void *data)
     store = rsi_make_store ( data );   
     
     /* Add the store of data to the list. */
-    gtk_tree_view_set_model(GTK_TREE_VIEW(list), GTK_TREE_MODEL(store));
-    g_object_unref( store );
+    gtk_tree_view_set_model ( GTK_TREE_VIEW ( list ), GTK_TREE_MODEL ( store ) );
+    g_object_unref ( store );
    
     /* Set the list header as visible. */
-    gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(list), TRUE);
+    gtk_tree_view_set_headers_visible ( GTK_TREE_VIEW ( list ), TRUE );
 
     /* Remove Grid Lines. */
     gtk_tree_view_set_grid_lines ( GTK_TREE_VIEW ( list ), GTK_TREE_VIEW_GRID_LINES_NONE );
+
     return 0;
 }

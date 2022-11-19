@@ -39,7 +39,7 @@ typedef struct {                    /* A mapping between sec symbols and sec nam
 } symbol_to_security_name_container;
 
 typedef struct {                    /* A handle to the symbol-name mapping array. */
-  symbol_to_security_name_container **sn_container_arr; 
+  symbol_to_security_name_container** sn_container_arr; 
   int size;
 } symbol_name_map;
 

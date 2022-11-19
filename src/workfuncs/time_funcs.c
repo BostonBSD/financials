@@ -188,13 +188,13 @@ char* WhichHoliday (struct tm NY_tz){
     if(NY_tz.tm_mon == 11 && NY_tz.tm_wday == 1 && NY_tz.tm_mday >= 25 && NY_tz.tm_mday <= 27) return "Market Closed - Christmas Holiday";
     /* Good Friday */
     int month, day;
-    easter( (int)NY_tz.tm_year, &month, &day ); /* Finds the date of easter for a given year. */
+    easter( (int)NY_tz.tm_year + 1900, &month, &day ); /* Finds the date of easter for a given year. */
     if( ( (int)NY_tz.tm_mon + 1 ) == month && (int)NY_tz.tm_mday == ( day - 2 ) ) return "Market Closed - Good Friday";
 
     return "Not A Holiday - Error";
 }
 
-bool IsHoliday (struct tm NY_tz){
+bool CheckHoliday (struct tm NY_tz){
     /* New Years Day */
     if(NY_tz.tm_mon == 0 && NY_tz.tm_mday == 1 ) return true;
     /* Presidents Day */
@@ -220,7 +220,7 @@ bool IsHoliday (struct tm NY_tz){
     if(NY_tz.tm_mon == 11 && NY_tz.tm_wday == 1 && NY_tz.tm_mday >= 25 && NY_tz.tm_mday <= 27) return true;
     /* Good Friday */
     int month, day;
-    easter( (int)NY_tz.tm_year, &month, &day ); /* Finds the date of easter for a given year. */
+    easter( (int)NY_tz.tm_year + 1900, &month, &day ); /* Finds the date of easter for a given year. */
     if( ( (int)NY_tz.tm_mon + 1 ) == month && (int)NY_tz.tm_mday == ( day - 2 ) ) return true;
 
     return false;

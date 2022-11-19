@@ -82,9 +82,9 @@ void GUICallbackHandler (GtkWidget*,void*);
 gboolean GUICallbackHandler_window_data (GtkWidget*,GdkEvent*,void*);
 gboolean GUICallbackHandler_select_comp (GtkEntryCompletion*,GtkTreeModel*,GtkTreeIter*);
 gboolean GUICallbackHandler_cursor_comp (GtkEntryCompletion*,GtkTreeModel*,GtkTreeIter*);
-gboolean view_onButtonPressed (GtkWidget*, GdkEventButton*);
+gboolean view_onButtonPressed (GtkWidget*,GdkEventButton*);
 
 /* GUI Thread Handler Function */
-void *GUIThreadHandler(void*);
+void* GUIThreadHandler(void*);
 
 #endif  /* GUI_HEADER_H */

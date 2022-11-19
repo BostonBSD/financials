@@ -37,13 +37,20 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <monetary.h>
 #include <locale.h>
 
-#include "../include/class_types.h"
+#include "../include/class.h"
+#include "../include/class_globals.h"
 
 #include "../include/workfuncs.h"
 #include "../include/multicurl.h"
 #include "../include/csv.h"
 #include "../include/macros.h"
 #include "../include/mutex.h"
+
+/* The global variable 'Precious' from class_globals.h is always accessed via these functions. */
+/* This is an ad-hoc way of self referencing a class. 
+   It prevents multiple instances of the metal class. */
+
+metal *Precious;        /* A class handle to the bullion class object pointers. */
 
 /* Class Method (also called Function) Definitions */
 static double Stake (const double *ounces, const double *prem, const double *price) {
@@ -54,14 +61,14 @@ static double BullionStake (const double *gold_stake, const double *silver_stake
     return ( (*gold_stake) + (*silver_stake) );
 }
 
-static char* DoubToStr (const double *num) 
+static char *DoubToStr (const double *num) 
 /* Take in a double pointer [the datatype is double] and convert to a monetary format string. */
 {    
     /* Char variables are 1 byte long, no need to scale strlen() by sizeof(char). */
     char* str = (char*) malloc( strlen("############.##")+1 ); 
 
-    /* "" is the default system locale, the C.UTF-8 locale does not have a monetary 
-       format and is the default on FreeBSD unless changed by the admin. 
+    /* The C.UTF-8 locale does not have a monetary 
+       format and is the default in C. 
     */
     setlocale(LC_ALL, LOCALE);  
     strfmon(str, strlen("############.##"), "%(.3n", *num);
@@ -112,10 +119,16 @@ static void convert_bullion_to_strings (bullion *B){
     size_t len = strlen("###.###%%") + 1;
     B->change_percent_ch = (char*) malloc ( len );
     snprintf( B->change_percent_ch, len, "%.3lf%%", *B->change_percent_f );
+
+    /* The raw change in bullion as a percentage. */
+    free( B->change_percent_raw_ch );
+    len = strlen("###.###%%") + 1;
+    B->change_percent_raw_ch = (char*) malloc ( len );
+    snprintf( B->change_percent_raw_ch, len, "%.2lf%%", *B->change_percent_raw_f );
 }
 
-static void ToStrings (void *data) {
-    metal *M = (metal*)data;
+static void ToStrings () {
+    metal *M = Precious;
     convert_bullion_to_strings ( M->Gold );
     convert_bullion_to_strings ( M->Silver );
 
@@ -132,6 +145,12 @@ static void ToStrings (void *data) {
     size_t len = strlen("###.###%%") + 1;
     M->bullion_port_value_p_chg_ch = (char*) malloc ( len );
     snprintf( M->bullion_port_value_p_chg_ch, len, "%.3lf%%", *M->bullion_port_value_p_chg_f );
+
+    /* The Gold to Silver Ratio */
+    free( M->gold_silver_ratio_ch );
+    len = 8;
+    M->gold_silver_ratio_ch = (char*) malloc ( len );
+    snprintf( M->gold_silver_ratio_ch, len, "%.2lf", *M->gold_silver_ratio_f );
 }
 
 static void bullion_calculations (bullion *B){
@@ -154,10 +173,13 @@ static void bullion_calculations (bullion *B){
     } else {
         *B->change_percent_f = CalcGain ( *B->port_value_f, prev_total );
     }
+
+    /* The raw change in bullion as a percentage. */
+    *B->change_percent_raw_f = CalcGain ( *B->spot_price_f, *B->prev_closing_metal_f );
 }
 
-static void Calculate (void *data){
-    metal* M = (metal*)data;
+static void Calculate (){
+    metal* M = Precious;
 
     bullion_calculations ( M->Gold );
     bullion_calculations ( M->Silver );
@@ -175,6 +197,9 @@ static void Calculate (void *data){
     } else {
         *M->bullion_port_value_p_chg_f = CalcGain ( *M->bullion_port_value_f, prev_total );
     }
+
+    /* The Gold to Silver Ratio */
+    if(*M->Silver->spot_price_f > 0) *M->gold_silver_ratio_f = *M->Gold->spot_price_f / *M->Silver->spot_price_f;
 }
 
 static void create_bullion_url ( bullion *B, const char *symbol_ch ){
@@ -192,25 +217,17 @@ static void create_bullion_url ( bullion *B, const char *symbol_ch ){
     snprintf( B->url_ch, len, YAHOO_URL_START"%s"YAHOO_URL_MIDDLE_ONE"%d"YAHOO_URL_MIDDLE_TWO"%d"YAHOO_URL_END, symbol_ch, (int)start_time, (int)end_time );
 }
 
-static int GetData (void *data){
-    metal *M = (metal*)data;
+static int SetUpCurl ( void *data ){
+    portfolio_packet *pkg = (portfolio_packet*)data;
+    metal *M = Precious;
 
     create_bullion_url ( M->Gold, "GC=F" );
     create_bullion_url ( M->Silver, "SI=F" );
 
-    SetUpCurlHandle( M->Silver->YAHOO_hnd, M->multicurl_hnd, M->Silver->url_ch, &M->Silver->CURLDATA );
-    SetUpCurlHandle( M->Gold->YAHOO_hnd, M->multicurl_hnd, M->Gold->url_ch, &M->Gold->CURLDATA );
+    SetUpCurlHandle( M->Silver->YAHOO_hnd, pkg->multicurl_main_hnd, M->Silver->url_ch, &M->Silver->CURLDATA );
+    SetUpCurlHandle( M->Gold->YAHOO_hnd, pkg->multicurl_main_hnd, M->Gold->url_ch, &M->Gold->CURLDATA );
 
-    /* Perform the cURL requests simultaneously using multi-cURL. */
-    int return_code = PerformMultiCurl_no_prog( M->multicurl_hnd );
-    if( return_code ){
-        free ( M->Gold->CURLDATA.memory );
-        free ( M->Silver->CURLDATA.memory );
-        M->Gold->CURLDATA.memory = NULL;
-        M->Silver->CURLDATA.memory = NULL;
-    }
-
-    return return_code;
+    return 0;
 }
 
 static void extract_bullion_data (bullion *B) {
@@ -244,7 +261,10 @@ static void extract_bullion_data (bullion *B) {
     double prev_closing = 0.0f, cur_price = 0.0f;
     while (fgets( line, 1024, fp) != NULL){ 
         prev_closing = cur_price;
-
+        /* Sometimes the API gives us a null value for certain days.
+           using the closing price from the day prior gives us a more accurate
+           gain value. */
+        if ( strstr( line, "null" ) ) continue;
         Chomp( line );
         csv_array = parse_csv( line );
         cur_price = strtod( csv_array[ 4 ] ? csv_array[ 4 ] : "0", NULL );
@@ -256,7 +276,7 @@ static void extract_bullion_data (bullion *B) {
     *B->prev_closing_metal_f = prev_closing;
     *B->high_metal_f = strtod( csv_array[ 2 ] ? csv_array[ 2 ] : "0", NULL );
     *B->low_metal_f = strtod( csv_array[ 3 ] ? csv_array[ 3 ] : "0", NULL );
-    *B->spot_price_f = strtod( csv_array[ 4 ] ? csv_array[ 4 ] : "0", NULL );
+    *B->spot_price_f = cur_price;
 
     free_csv_line( csv_array );
     fclose( fp );
@@ -264,27 +284,15 @@ static void extract_bullion_data (bullion *B) {
     B->CURLDATA.memory = NULL; 
 }
 
-static void ExtractData (void *data) {
-    metal *M = (metal*)data;
+static void ExtractData () {
+    metal *M = Precious;
 
     extract_bullion_data ( M->Gold );
     extract_bullion_data ( M->Silver );
 }
 
-static void StopCurl (void *data) {
-    metal *M = (metal*)data;
-
-    curl_multi_wakeup( M->multicurl_hnd );
-    pthread_mutex_lock( &mutex_working[ MULTICURL_NO_PROG_MUTEX ] );
-
-    curl_multi_remove_handle( M->multicurl_hnd, M->Gold->YAHOO_hnd );
-    curl_multi_remove_handle( M->multicurl_hnd, M->Silver->YAHOO_hnd );
-
-    pthread_mutex_unlock( &mutex_working[ MULTICURL_NO_PROG_MUTEX ] );
-}
-
 /* Class Init Functions */
-bullion* class_init_bullion ()
+bullion *class_init_bullion ()
 { 
     /* Allocate Memory For A New Class Object */
     bullion* new_class = (bullion*) malloc( sizeof(*new_class) ); 
@@ -301,45 +309,37 @@ bullion* class_init_bullion ()
     new_class->change_ounce_f = (double*) malloc( sizeof(double) );
     new_class->change_value_f = (double*) malloc( sizeof(double) );
     new_class->change_percent_f = (double*) malloc( sizeof(double) );
-
-    new_class->spot_price_ch = (char*) malloc( strlen("$0.00")+1 );            
-    new_class->premium_ch = (char*) malloc( strlen("$0.00")+1 ); 
-    new_class->port_value_ch = (char*) malloc( strlen("$0.00")+1 );            
-    new_class->ounce_ch = (char*) malloc( strlen("0.000")+1 );  
-
-    new_class->high_metal_ch = (char*) malloc( strlen("$0.00")+1 );
-    new_class->low_metal_ch = (char*) malloc( strlen("$0.00")+1 );
-    new_class->prev_closing_metal_ch = (char*) malloc( strlen("$0.00")+1 );
-    new_class->change_ounce_ch = (char*) malloc( strlen("$0.00")+1 );
-    new_class->change_value_ch = (char*) malloc( strlen("$0.00")+1 );
-    new_class->change_percent_ch = (char*) malloc( strlen("000.000%%")+1 );                            
+    new_class->change_percent_raw_f = (double*) malloc( sizeof(double) );
     
+  
     /* Initialize Variables */
-    *new_class->ounce_f = 0.0;
-    *new_class->spot_price_f = 0.0;
-    *new_class->premium_f = 0.0;
-    *new_class->port_value_f = 0.0;
+    *new_class->ounce_f = 0.0f;
+    *new_class->spot_price_f = 0.0f;
+    *new_class->premium_f = 0.0f;
+    *new_class->port_value_f = 0.0f;
 
-    *new_class->high_metal_f = 0.0;
-    *new_class->low_metal_f = 0.0;
-    *new_class->prev_closing_metal_f = 0.0;
-    *new_class->change_ounce_f = 0.0;
-    *new_class->change_value_f = 0.0;
-    *new_class->change_percent_f = 0.0;
+    *new_class->high_metal_f = 0.0f;
+    *new_class->low_metal_f = 0.0f;
+    *new_class->prev_closing_metal_f = 0.0f;
+    *new_class->change_ounce_f = 0.0f;
+    *new_class->change_value_f = 0.0f;
+    *new_class->change_percent_f = 0.0f;
+    *new_class->change_percent_raw_f = 0.0f;
 
     new_class->url_ch = NULL;
 
-    strcpy( new_class->spot_price_ch,"$0.00" );
-    strcpy( new_class->premium_ch,"$0.00" );
-    strcpy( new_class->port_value_ch,"$0.00" );
-    strcpy( new_class->ounce_ch,"0.000" );
+    new_class->spot_price_ch = strdup( "$0.00" );            
+    new_class->premium_ch = strdup( "$0.00" ); 
+    new_class->port_value_ch = strdup( "$0.00" );            
+    new_class->ounce_ch = strdup( "0.000" );  
 
-    strcpy( new_class->high_metal_ch,"$0.00" );
-    strcpy( new_class->low_metal_ch,"$0.00" );
-    strcpy( new_class->prev_closing_metal_ch,"$0.00" );
-    strcpy( new_class->change_ounce_ch,"$0.00" );
-    strcpy( new_class->change_value_ch,"$0.00" );
-    strcpy( new_class->change_percent_ch,"000.000%%" );
+    new_class->high_metal_ch = strdup( "$0.00" );
+    new_class->low_metal_ch = strdup( "$0.00" );
+    new_class->prev_closing_metal_ch = strdup( "$0.00" );
+    new_class->change_ounce_ch = strdup( "$0.00" );
+    new_class->change_value_ch = strdup( "$0.00" );
+    new_class->change_percent_ch = strdup( "000.000%" );
+    new_class->change_percent_raw_ch = strdup( "000.000%" );
 
     new_class->YAHOO_hnd = curl_easy_init ();
     new_class->CURLDATA.memory = NULL;
@@ -353,7 +353,7 @@ bullion* class_init_bullion ()
     return new_class; 
 }
 
-metal* class_init_metal ()
+metal *class_init_metal ()
 {
     /* Allocate Memory For A New Class */
     metal* new_class = (metal*) malloc( sizeof(*new_class) );
@@ -366,38 +366,33 @@ metal* class_init_metal ()
     new_class->bullion_port_value_f = (double*) malloc( sizeof(double) );
     new_class->bullion_port_value_chg_f = (double*) malloc( sizeof(double) );
     new_class->bullion_port_value_p_chg_f = (double*) malloc( sizeof(double) );
-
-    new_class->bullion_port_value_ch = (char*) malloc( strlen("$0.00")+1 );
-    new_class->bullion_port_value_chg_ch = (char*) malloc( strlen("$0.00")+1 ); 
-    new_class->bullion_port_value_p_chg_ch = (char*) malloc( strlen("000.000%%")+1 );
+    new_class->gold_silver_ratio_f = (double*) malloc( sizeof(double) );
 
     /* Initialize Variables */
-    *new_class->bullion_port_value_f = 0.0;
-    *new_class->bullion_port_value_chg_f = 0.0;
-    *new_class->bullion_port_value_p_chg_f = 0.0;
+    *new_class->bullion_port_value_f = 0.0f;
+    *new_class->bullion_port_value_chg_f = 0.0f;
+    *new_class->bullion_port_value_p_chg_f = 0.0f;
+    *new_class->gold_silver_ratio_f = 0.0f;
 
-    strcpy( new_class->bullion_port_value_ch,"$0.00" );
-    strcpy( new_class->bullion_port_value_chg_ch,"$0.00" );
-    strcpy( new_class->bullion_port_value_p_chg_ch,"000.000%%" );
-
-    /* Create a MultiCurl Handle */
-    new_class->multicurl_hnd = curl_multi_init();
+    new_class->bullion_port_value_ch = strdup( "$0.00" );
+    new_class->bullion_port_value_chg_ch = strdup( "$0.00" ); 
+    new_class->bullion_port_value_p_chg_ch = strdup( "000.000%" );
+    new_class->gold_silver_ratio_ch = strdup( "0.00" );
 
     /* Connect Function Pointers To Function Definitions */
     new_class->BullionStake = BullionStake;
     new_class->DoubToStr = DoubToStr;
     new_class->ToStrings = ToStrings;
     new_class->Calculate = Calculate;
-    new_class->GetData = GetData;
+    new_class->SetUpCurl = SetUpCurl;
     new_class->ExtractData = ExtractData;
-    new_class->StopCurl = StopCurl;
 
     /* Return Our Initialized Class */
     return new_class; 
 }
 
 /* Class Destruct Functions */
-void class_destruct_bullion (bullion* bullion_class)
+void class_destruct_bullion (bullion *bullion_class)
 { 
     /* Free Memory From Variables */
     if ( bullion_class->spot_price_f ) free( bullion_class->spot_price_f );
@@ -411,6 +406,7 @@ void class_destruct_bullion (bullion* bullion_class)
     if ( bullion_class->change_ounce_f ) free( bullion_class->change_ounce_f );
     if ( bullion_class->change_value_f ) free( bullion_class->change_value_f );
     if ( bullion_class->change_percent_f ) free( bullion_class->change_percent_f );
+    if ( bullion_class->change_percent_raw_f ) free( bullion_class->change_percent_raw_f );
 
     if ( bullion_class->url_ch ) free( bullion_class->url_ch );
     if ( bullion_class->spot_price_ch ) free( bullion_class->spot_price_ch );            
@@ -423,7 +419,8 @@ void class_destruct_bullion (bullion* bullion_class)
     if ( bullion_class->prev_closing_metal_ch ) free( bullion_class->prev_closing_metal_ch );
     if ( bullion_class->change_ounce_ch ) free( bullion_class->change_ounce_ch );
     if ( bullion_class->change_value_ch ) free( bullion_class->change_value_ch );
-    if ( bullion_class->change_percent_ch ) free( bullion_class->change_percent_ch );  
+    if ( bullion_class->change_percent_ch ) free( bullion_class->change_percent_ch );
+    if ( bullion_class->change_percent_raw_ch ) free( bullion_class->change_percent_raw_ch );
 
     if ( bullion_class->YAHOO_hnd ) curl_easy_cleanup( bullion_class->YAHOO_hnd );
     if ( bullion_class->CURLDATA.memory ) {
@@ -438,7 +435,7 @@ void class_destruct_bullion (bullion* bullion_class)
     }
 }
 
-void class_destruct_metal (metal* metal_handle)
+void class_destruct_metal (metal *metal_handle)
 {
     /* Free Memory From Class Objects */
     if ( metal_handle->Gold ) class_destruct_bullion ( metal_handle->Gold );
@@ -448,12 +445,12 @@ void class_destruct_metal (metal* metal_handle)
     if ( metal_handle->bullion_port_value_f ) free( metal_handle->bullion_port_value_f );
     if ( metal_handle->bullion_port_value_chg_f ) free( metal_handle->bullion_port_value_chg_f );
     if ( metal_handle->bullion_port_value_p_chg_f ) free( metal_handle->bullion_port_value_p_chg_f );
+    if ( metal_handle->gold_silver_ratio_f ) free( metal_handle->gold_silver_ratio_f );
 
     if ( metal_handle->bullion_port_value_ch ) free( metal_handle->bullion_port_value_ch );
     if ( metal_handle->bullion_port_value_chg_ch ) free( metal_handle->bullion_port_value_chg_ch );
     if ( metal_handle->bullion_port_value_p_chg_ch ) free( metal_handle->bullion_port_value_p_chg_ch );
-
-    if ( metal_handle->multicurl_hnd ) curl_multi_cleanup ( metal_handle->multicurl_hnd );
+    if ( metal_handle->gold_silver_ratio_ch ) free( metal_handle->gold_silver_ratio_ch );
 
     if ( metal_handle ) free( metal_handle );
 }

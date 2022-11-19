@@ -830,115 +830,6 @@
                   </packing>
                 </child>
                 <child>
-                  <!-- n-columns=3 n-rows=3 -->
-                  <object class="GtkGrid">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="margin-top">20</property>
-                    <property name="margin-bottom">5</property>
-                    <property name="column-homogeneous">True</property>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="halign">start</property>
-                        <property name="margin-start">10</property>
-                        <property name="label" translatable="yes">New York Time</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">0</property>
-                        <property name="top-attach">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="NYDateLabel">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="halign">start</property>
-                        <property name="margin-start">10</property>
-                        <property name="label" translatable="yes">Saturday, September 10, 2022</property>
-                        <property name="justify">center</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Sans 8"/>
-                          <attribute name="foreground" value="#636345452c2c"/>
-                          <attribute name="size" value="10240"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="left-attach">0</property>
-                        <property name="top-attach">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="NYTimeLabel">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="halign">start</property>
-                        <property name="margin-start">10</property>
-                        <property name="margin-bottom">5</property>
-                        <property name="label" translatable="yes">00:00</property>
-                        <property name="justify">center</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Sans 8"/>
-                          <attribute name="foreground" value="#09023610962f"/>
-                          <attribute name="size" value="10240"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="left-attach">0</property>
-                        <property name="top-attach">2</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="MarketCloseLabel">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="halign">end</property>
-                        <property name="margin-end">10</property>
-                        <property name="label" translatable="yes">Market Closes In</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">2</property>
-                        <property name="top-attach">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="TimeLeftLabel">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="halign">end</property>
-                        <property name="margin-end">10</property>
-                        <property name="label" translatable="yes">00:00:00</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Roboto 10"/>
-                          <attribute name="foreground" value="#09023610962f"/>
-                          <attribute name="size" value="12288"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="left-attach">2</property>
-                        <property name="top-attach">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="left-attach">0</property>
-                    <property name="top-attach">1</property>
-                  </packing>
-                </child>
-                <child>
                   <object class="GtkScrolledWindow">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
@@ -1035,6 +926,443 @@
                   <packing>
                     <property name="left-attach">0</property>
                     <property name="top-attach">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="margin-top">20</property>
+                    <property name="margin-bottom">5</property>
+                    <property name="orientation">vertical</property>
+                    <child>
+                      <!-- n-columns=3 n-rows=3 -->
+                      <object class="GtkGrid">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="hexpand">True</property>
+                        <property name="column-homogeneous">True</property>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="margin-start">10</property>
+                            <property name="label" translatable="yes">New York Time</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">0</property>
+                            <property name="top-attach">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="NYDateLabel">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="margin-start">10</property>
+                            <property name="label" translatable="yes">Saturday, September 10, 2022</property>
+                            <property name="justify">center</property>
+                            <attributes>
+                              <attribute name="font-desc" value="Sans 8"/>
+                              <attribute name="foreground" value="#636345452c2c"/>
+                              <attribute name="size" value="10240"/>
+                            </attributes>
+                          </object>
+                          <packing>
+                            <property name="left-attach">0</property>
+                            <property name="top-attach">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="NYTimeLabel">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="margin-start">10</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="label" translatable="yes">00:00</property>
+                            <property name="justify">center</property>
+                            <attributes>
+                              <attribute name="font-desc" value="Sans 8"/>
+                              <attribute name="foreground" value="#09023610962f"/>
+                              <attribute name="size" value="10240"/>
+                            </attributes>
+                          </object>
+                          <packing>
+                            <property name="left-attach">0</property>
+                            <property name="top-attach">2</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="MarketCloseLabel">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">end</property>
+                            <property name="margin-end">10</property>
+                            <property name="label" translatable="yes">Market Closes In</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">2</property>
+                            <property name="top-attach">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="TimeLeftLabel">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">end</property>
+                            <property name="margin-end">10</property>
+                            <property name="label" translatable="yes">00:00:00</property>
+                            <attributes>
+                              <attribute name="font-desc" value="Roboto 10"/>
+                              <attribute name="foreground" value="#09023610962f"/>
+                              <attribute name="size" value="12288"/>
+                            </attributes>
+                          </object>
+                          <packing>
+                            <property name="left-attach">2</property>
+                            <property name="top-attach">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSeparator">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="margin-start">10</property>
+                        <property name="margin-end">10</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkFrame" id="IndexFrame">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="margin-start">10</property>
+                        <property name="margin-end">10</property>
+                        <property name="label-xalign">0</property>
+                        <child>
+                          <object class="GtkBox">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="orientation">vertical</property>
+                            <child>
+                              <!-- n-columns=7 n-rows=1 -->
+                              <object class="GtkGrid">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="column-homogeneous">True</property>
+                                <child>
+                                  <object class="GtkLabel" id="DowLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">10</property>
+                                    <property name="margin-start">10</property>
+                                    <property name="label" translatable="yes">Dow</property>
+                                    <attributes>
+                                      <attribute name="style" value="italic"/>
+                                      <attribute name="underline" value="True"/>
+                                      <attribute name="foreground" value="#34ab2cca4a3d"/>
+                                    </attributes>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">0</property>
+                                    <property name="top-attach">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel" id="NasdaqLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">5</property>
+                                    <property name="margin-start">5</property>
+                                    <property name="label" translatable="yes">Nasdaq</property>
+                                    <attributes>
+                                      <attribute name="style" value="italic"/>
+                                      <attribute name="underline" value="True"/>
+                                      <attribute name="foreground" value="#34ab2cca4a3d"/>
+                                    </attributes>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">1</property>
+                                    <property name="top-attach">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel" id="SPLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">5</property>
+                                    <property name="margin-start">5</property>
+                                    <property name="label" translatable="yes">S&amp;P 500</property>
+                                    <attributes>
+                                      <attribute name="style" value="italic"/>
+                                      <attribute name="underline" value="True"/>
+                                      <attribute name="foreground" value="#34ab2cca4a3d"/>
+                                    </attributes>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">2</property>
+                                    <property name="top-attach">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel" id="BitcoinLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">5</property>
+                                    <property name="margin-start">5</property>
+                                    <property name="label" translatable="yes">Bitcoin</property>
+                                    <attributes>
+                                      <attribute name="style" value="italic"/>
+                                      <attribute name="underline" value="True"/>
+                                      <attribute name="foreground" value="#34ab2cca4a3d"/>
+                                    </attributes>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">3</property>
+                                    <property name="top-attach">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel" id="GSLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">5</property>
+                                    <property name="margin-start">5</property>
+                                    <property name="label" translatable="yes">Gold/Silver</property>
+                                    <attributes>
+                                      <attribute name="style" value="italic"/>
+                                      <attribute name="underline" value="True"/>
+                                      <attribute name="foreground" value="#34ab2cca4a3d"/>
+                                    </attributes>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">6</property>
+                                    <property name="top-attach">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel" id="GoldLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">5</property>
+                                    <property name="margin-start">5</property>
+                                    <property name="label" translatable="yes">Gold</property>
+                                    <attributes>
+                                      <attribute name="style" value="italic"/>
+                                      <attribute name="underline" value="True"/>
+                                      <attribute name="foreground" value="#34ab2cca4a3d"/>
+                                    </attributes>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">4</property>
+                                    <property name="top-attach">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel" id="SilverLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">5</property>
+                                    <property name="margin-start">5</property>
+                                    <property name="label" translatable="yes">Silver</property>
+                                    <attributes>
+                                      <attribute name="style" value="italic"/>
+                                      <attribute name="underline" value="True"/>
+                                      <attribute name="foreground" value="#34ab2cca4a3d"/>
+                                    </attributes>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">5</property>
+                                    <property name="top-attach">0</property>
+                                  </packing>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <!-- n-columns=7 n-rows=1 -->
+                              <object class="GtkGrid">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="column-homogeneous">True</property>
+                                <child>
+                                  <object class="GtkLabel" id="DowIndexValue">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">10</property>
+                                    <property name="margin-start">10</property>
+                                    <property name="label" translatable="yes">33,536.70</property>
+                                    <attributes>
+                                      <attribute name="font-desc" value="Sans 9"/>
+                                    </attributes>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">0</property>
+                                    <property name="top-attach">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel" id="NasdaqIndexValue">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">5</property>
+                                    <property name="margin-start">5</property>
+                                    <property name="label" translatable="yes">11,196.22</property>
+                                    <attributes>
+                                      <attribute name="font-desc" value="Sans 9"/>
+                                    </attributes>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">1</property>
+                                    <property name="top-attach">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel" id="SPIndexValue">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">5</property>
+                                    <property name="margin-start">5</property>
+                                    <property name="label" translatable="yes">3,957.25</property>
+                                    <attributes>
+                                      <attribute name="font-desc" value="Sans 9"/>
+                                    </attributes>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">2</property>
+                                    <property name="top-attach">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel" id="BitcoinValue">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">5</property>
+                                    <property name="margin-start">5</property>
+                                    <property name="label" translatable="yes">80</property>
+                                    <attributes>
+                                      <attribute name="font-desc" value="Sans 9"/>
+                                    </attributes>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">3</property>
+                                    <property name="top-attach">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel" id="GSValue">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">5</property>
+                                    <property name="margin-start">5</property>
+                                    <property name="label" translatable="yes">80</property>
+                                    <attributes>
+                                      <attribute name="font-desc" value="Sans 9"/>
+                                    </attributes>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">6</property>
+                                    <property name="top-attach">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel" id="GoldValue">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">5</property>
+                                    <property name="margin-start">5</property>
+                                    <property name="label" translatable="yes">80</property>
+                                    <attributes>
+                                      <attribute name="font-desc" value="Sans 9"/>
+                                    </attributes>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">4</property>
+                                    <property name="top-attach">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel" id="SilverValue">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-left">5</property>
+                                    <property name="margin-start">5</property>
+                                    <property name="label" translatable="yes">80</property>
+                                    <attributes>
+                                      <attribute name="font-desc" value="Sans 9"/>
+                                    </attributes>
+                                  </object>
+                                  <packing>
+                                    <property name="left-attach">5</property>
+                                    <property name="top-attach">0</property>
+                                  </packing>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                          </object>
+                        </child>
+                        <child type="label_item">
+                          <placeholder/>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">1</property>
                   </packing>
                 </child>
               </object>

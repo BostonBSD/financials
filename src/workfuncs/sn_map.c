@@ -40,7 +40,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/class_types.h"
 #include "../include/macros.h"
 
-static int sym_search_func (const void * a, const void * b){
+static int sym_search_func (const void *a, const void *b){
     /* Cast the void pointer to a char pointer. */
    char* aa = (char *)a;
    /* Cast the void pointer to a double struct pointer. */
@@ -49,7 +49,7 @@ static int sym_search_func (const void * a, const void * b){
    return strcasecmp( aa, bb[0]->symbol ); 
 }
 
-char *GetSecurityName (const char *s, symbol_name_map* sn_map)
+char *GetSecurityName (const char *s, symbol_name_map *sn_map)
 /* Look for a Security Name using the Symbol as a key value.
    Must free return value. */
 {
@@ -100,9 +100,11 @@ static bool check_symbol ( const char *s )
     return true;
 }
 
-symbol_name_map *SymNameFetch (meta *Met)
+symbol_name_map *SymNameFetch (portfolio_packet *pkg)
 /* This function is only meant to be run once, at application startup. */
 {
+    meta *Met = pkg->portfolio_meta_info;
+
     char *line = malloc ( 1024 ), *line_start;
 	char *token;
 	line_start = line;
@@ -120,7 +122,7 @@ symbol_name_map *SymNameFetch (meta *Met)
     
     SetUpCurlHandle( Met->NASDAQ_completion_hnd, Met->multicurl_cmpltn_hnd, Nasdaq_Url, &Nasdaq_Struct );
     SetUpCurlHandle( Met->NYSE_completion_hnd, Met->multicurl_cmpltn_hnd, NYSE_Url, &NYSE_Struct );
-    if ( PerformMultiCurl_no_prog( Met->multicurl_cmpltn_hnd ) != 0 || *Met->multicurl_cancel_bool == true) { 
+    if ( PerformMultiCurl_no_prog( Met->multicurl_cmpltn_hnd ) != 0 || pkg->IsCurlCanceled () ) { 
         if ( Nasdaq_Struct.memory ) free( Nasdaq_Struct.memory );
         if ( NYSE_Struct.memory ) free( NYSE_Struct.memory ); 
         if ( sn_map->sn_container_arr ) free( sn_map->sn_container_arr );
@@ -162,7 +164,7 @@ symbol_name_map *SymNameFetch (meta *Met)
             line = line_start;
 
             /* If we are exiting the application, return immediately. */
-            if ( *Met->multicurl_cancel_bool == true ) {
+            if ( pkg->IsCurlCanceled () ) {
                 if ( fp[0] ) fclose( fp[0] ); 
                 if ( fp[1] ) fclose( fp[1] );  
                 if ( Nasdaq_Struct.memory ) free( Nasdaq_Struct.memory );
@@ -186,7 +188,7 @@ symbol_name_map *SymNameFetch (meta *Met)
     return sn_map;
 }
 
-void SNMapDestruct ( symbol_name_map* sn_map ) {
+void SNMapDestruct ( symbol_name_map *sn_map ) {
     if ( sn_map == NULL ) return;
     
     if ( sn_map->sn_container_arr ){

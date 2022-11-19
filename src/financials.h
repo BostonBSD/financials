@@ -43,10 +43,13 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "include/mutex.h"          /* mutex_working[ MUTEX_NUMBER ] */
 #include "include/macros.h"
 
-#include "include/class.h"
+#include "include/class.h"          /* class_destruct_portfolio_packet () and 
+                                       class_init_portfolio_packet () functions */
 #include "include/config.h"
 
 #include "include/gui_globals.h"    /* sem_t semaphore[ SIGNAL_NUM ], window_data WindowStruct */
 #include "include/gui.h"
+
+#include "include/globals.h"        /* portfolio_packet *packet */
 
 #endif /* FINANCIALS_HEADER_H */

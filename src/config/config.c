@@ -113,9 +113,11 @@ static void config_dir_processing ( const char *home_dir )
     free ( path );
 }
 
-void ReadConfig (metal* M, meta* D, equity_folder* F, window_data* Win){
-    /* We aren't using a config text file any longer, but the sqlite db file
-       serves as a config file for all intents and purposes. */
+void ReadConfig (portfolio_packet *pkg){
+    metal *M = pkg->metal_chest;
+    meta *D = pkg->portfolio_meta_info;
+    equity_folder *F = pkg->securities_folder;
+    window_data *Win = pkg->GetWindowData ();
        
     /* Make sure the config directory exists. */
     config_dir_processing ( D->home_dir_ch );

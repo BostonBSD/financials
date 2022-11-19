@@ -41,7 +41,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "../include/macros.h"
 
-bool CheckValidString (const char* string)
+bool CheckValidString (const char *string)
 {
 	size_t len = strlen( string );
 	
@@ -60,7 +60,7 @@ bool CheckValidString (const char* string)
 	return true;
 }
 
-bool CheckIfStringDoubleNumber (const char* string)
+bool CheckIfStringDoubleNumber (const char *string)
 {
 	char *end_ptr;
     strtod( string, &end_ptr );
@@ -73,7 +73,7 @@ bool CheckIfStringDoubleNumber (const char* string)
 	return true;
 }
 
-bool CheckIfStringDoublePositiveNumber (const char* string)
+bool CheckIfStringDoublePositiveNumber (const char *string)
 {
 	char *end_ptr;
     double num = strtod( string, &end_ptr );
@@ -86,7 +86,7 @@ bool CheckIfStringDoublePositiveNumber (const char* string)
 	return true;
 }
 
-bool CheckIfStringLongPositiveNumber (const char* string)
+bool CheckIfStringLongPositiveNumber (const char *string)
 {
 	char *end_ptr;
     long num = strtol( string, &end_ptr, 10 );
@@ -140,8 +140,8 @@ char* DoubleToMonetary (const double num)
     /* Char variables are 1 byte long, no need to scale strlen() by sizeof(char). */
     char* str = (char*) malloc( strlen("############.##")+1 ); 
 
-    /* "" is the default system locale, the C.UTF-8 locale does not have a monetary 
-       format and is the default on FreeBSD unless changed by the admin. 
+    /* The C.UTF-8 locale does not have a monetary 
+       format and is the default in C. 
     */
     setlocale(LC_ALL, LOCALE);  
     strfmon(str, strlen("############.##"), "%(.3n", num);

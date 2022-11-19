@@ -37,6 +37,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <locale.h>
 
 #include "../include/class.h" /* The class init and destruct funcs are required in the class methods */
+#include "../include/class_globals.h"
 
 #include "../include/multicurl.h"
 #include "../include/workfuncs.h"
@@ -44,19 +45,25 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/macros.h"
 #include "../include/mutex.h"
 
+/* The global variable 'Folder' from class_globals.h is always accessed via these functions. */
+/* This is an ad-hoc way of self referencing a class. 
+   It prevents multiple instances of the equity_folder class. */
+   
+equity_folder *Folder;  /* A class handle to an array of stock class objects, can change dynamically. */    
+
 /* Class Method (also called Function) Definitions */
 static double Stake (const unsigned int *shares, const double *price) {
     return ( (double)(*shares) * (*price) );
 }
 
-static char* DoubToStr (const double *num) 
+static char *DoubToStr (const double *num) 
 /* Take in a double pointer [the datatype is double] and convert to a monetary format string. */
 {    
     /* Char variables are 1 byte long, no need to scale strlen() by sizeof(char). */
     char* str = (char*) malloc( strlen("############.##")+1 ); 
 
-    /* "" is the default system locale, the C.UTF-8 locale does not have a monetary 
-       format and is the default on FreeBSD unless changed by the admin. 
+    /* The C.UTF-8 locale does not have a monetary 
+       format and is the default in C. 
     */
     setlocale(LC_ALL, LOCALE);  
     strfmon(str, strlen("############.##"), "%(.3n", *num);
@@ -109,8 +116,8 @@ static void convert_equity_to_strings (stock *S){
     S->current_investment_stock_ch = S->DoubToStr( S->current_investment_stock_f );
 }
 
-static void ToStrings (void *data){
-    equity_folder *F = (equity_folder*)data;
+static void ToStrings (){
+    equity_folder *F = Folder;
 
     for(unsigned short g = 0; g < F->size; g++){
         convert_equity_to_strings ( F->Equity[ g ] );
@@ -133,7 +140,7 @@ static void ToStrings (void *data){
 
 static void equity_calculations (stock *S){
     /* Calculate the stock holdings change. */ 
-    if( *S->num_shares_stock_int > 0){
+    if( *S->num_shares_stock_int > 0 ){
         *S->change_value_f = *S->change_share_f * (double)*S->num_shares_stock_int;
     } else {
         *S->change_value_f = 0.0f;
@@ -143,8 +150,8 @@ static void equity_calculations (stock *S){
     *S->current_investment_stock_f = S->Stake( S->num_shares_stock_int, S->current_price_stock_f );
 }
 
-static void Calculate (void *data){
-    equity_folder* F = (equity_folder*)data;
+static void Calculate (){
+    equity_folder* F = Folder;
 
     /* Equity Calculations. */
     *F->stock_port_value_f = 0.0f;
@@ -165,9 +172,9 @@ static void Calculate (void *data){
     *F->stock_port_value_p_chg_f = CalcGain ( *F->stock_port_value_f, prev_total );
 }
 
-static void GenerateURL (void *eq_folder_data, void *met_data){
-    equity_folder *F = (equity_folder*)eq_folder_data;
-    meta *Met = (meta*)met_data;
+static void GenerateURL (){
+    equity_folder *F = Folder;
+    meta *Met = MetaData;
 
     size_t len;
  
@@ -182,30 +189,22 @@ static void GenerateURL (void *eq_folder_data, void *met_data){
     }
 }
 
-static int GetData (void *data){
-    equity_folder *F = (equity_folder*)data;
+static int SetUpCurl ( void *data ){
+    portfolio_packet *pkg = (portfolio_packet*)data;
+    equity_folder *F = Folder;
 
     /* Cycle through the list of equities. */
     for( unsigned short c = 0; c < F->size; c++ ) {       
         /* Add a cURL easy handle to the multi-cURL handle 
         (passing JSON output struct by reference) */
-        SetUpCurlHandle( F->Equity[ c ]->easy_hnd, F->multicurl_hnd, F->Equity[ c ]->curl_url_stock_ch, &F->Equity[ c ]->JSON );
-    }
-
-    /* Perform the cURL requests simultaneously using multi-cURL. */
-    int return_code = PerformMultiCurl( F->multicurl_hnd, (double)F->size );
-    if( return_code ){
-        for( unsigned short c = 0; c < F->size; c++ ) {       
-            free( F->Equity[ c ]->JSON.memory );
-            F->Equity[ c ]->JSON.memory = NULL;
-        }
+        SetUpCurlHandle( F->Equity[ c ]->easy_hnd, pkg->multicurl_main_hnd, F->Equity[ c ]->curl_url_stock_ch, &F->Equity[ c ]->JSON );
     }
     
-    return return_code;
+    return 0;
 }
 
-static void Reset(void *data) {
-    equity_folder *F = (equity_folder*)data;
+static void Reset () {
+    equity_folder *F = Folder;
 
     if (F->size == 0){
         /*
@@ -218,7 +217,6 @@ static void Reset(void *data) {
         could be reset, some where the array exists, some where it does not 
         exist, so we need to keep freeing this to prevent a memory leak.
 
-        This function is only called from sqlite.c
         */
         if ( F->Equity ) free( F->Equity ); 
         stock** temp = (stock**) malloc( sizeof(stock*) );
@@ -247,11 +245,11 @@ static void Reset(void *data) {
     }
 }
 
-static void AddStock(void *data)
+static void AddStock ( char *symbol, char *shares )
 /* Adds a new stock object to our folder, 
-   does not increment size. */
+   increments size. */
 {
-    equity_folder *F = (equity_folder*)data;
+    equity_folder *F = Folder;
 
     /* realloc will free memory if assigned a smaller new value. */
     stock** tmp = (stock**) realloc( F->Equity, (F->size + 1) * sizeof(stock*) );              
@@ -264,11 +262,46 @@ static void AddStock(void *data)
     F->Equity = tmp;
 
     /* class_init_equity returns an object pointer. */
-    F->Equity[ F->size ] = class_init_equity (); 
+    F->Equity[ F->size ] = class_init_equity ();
+
+    /* Add The Stock Symbol To the Folder */
+    free( F->Equity[ F->size ]->symbol_stock_ch ); 
+    F->Equity[ F->size ]->symbol_stock_ch = strdup ( symbol ? symbol : "NULL" );
+
+    /* Add The Shares To the Folder */
+    *F->Equity[ F->size ]->num_shares_stock_int = (unsigned int)strtol( shares ? shares : "0", NULL, 10 );
+    F->size++;
 }
 
-static void ExtractData (void *data) {
-    equity_folder *F = (equity_folder*)data;
+static void RemoveStock ( void *data ) 
+/* Removes a stock object from our folder, 
+   decrements size. If the stock isn't found 
+   the size doesn't change. */
+{
+    char* s = (char*)data;
+    equity_folder *F = Folder;
+    stock** tmp;
+
+    unsigned short j, i = 0;
+    while ( i < F->size ){
+        if( strcasecmp ( s, F->Equity[i]->symbol_stock_ch ) == 0 ){
+            class_destruct_equity( F->Equity[i] );
+            j = i;
+            while ( j < F->size - 1 ) {
+                F->Equity[j] = F->Equity[j + 1];
+                j++;
+            }
+            tmp = realloc( F->Equity, (F->size - 1) * sizeof(stock*) );
+            if( tmp ) F->Equity = tmp;
+            F->size--;
+            break; /* Each symbol has only one unique stock object */
+        }
+        i++;
+    }
+}
+
+static void ExtractData () {
+    equity_folder *F = Folder;
 
     for( unsigned short c = 0; c < F->size; c++ ) 
     /* Extract current price from JSON data for each Symbol. */
@@ -306,32 +339,14 @@ static int alpha_asc (const void *a, const void *b)
     return strcasecmp( aa[0]->symbol_stock_ch, bb[0]->symbol_stock_ch );
 }
 
-static void Sort(void *data) {
+static void Sort () {
     /* Sort the equity folder in alphabetically ascending order. */
-    equity_folder *F = (equity_folder*)data;
+    equity_folder *F = Folder;
     qsort(&F->Equity[0], (size_t)F->size, sizeof(stock*), alpha_asc);
 }
 
-static void StopCurl (void *data)
-/* Removing the easy handle from the multihandle will stop the cURL data transfer
-   immediately. curl_multi_remove_handle does nothing if the easy handle is not
-   currently set in the multihandle. */
-{
-    equity_folder *F = (equity_folder*)data;
-
-    curl_multi_wakeup( F->multicurl_hnd );
-    pthread_mutex_lock( &mutex_working[ MULTICURL_PROG_MUTEX ] );
-
-    for(unsigned short i=0; i<F->size; i++){
-        curl_multi_remove_handle( F->multicurl_hnd, F->Equity[ i ]->easy_hnd );
-        
-    }
-
-    pthread_mutex_unlock( &mutex_working[ MULTICURL_PROG_MUTEX ] );
-}
-
 /* Class Init Functions */
-stock* class_init_equity ()
+stock *class_init_equity ()
 { 
     /* Allocate Memory For A New Class Object */
     stock* new_class = (stock*) malloc( sizeof(*new_class) );
@@ -350,47 +365,33 @@ stock* class_init_equity ()
 
 	new_class->current_investment_stock_f = (double*) malloc( sizeof(double) );
 
-	new_class->current_price_stock_ch = (char*) malloc( strlen("$0.00")+1 );
-    new_class->high_stock_ch = (char*) malloc( strlen("$0.00")+1 );
-    new_class->low_stock_ch = (char*) malloc( strlen("$0.00")+1 );
-    new_class->opening_stock_ch = (char*) malloc( strlen("$0.00")+1 );
-    new_class->prev_closing_stock_ch = (char*) malloc( strlen("$0.00")+1 );
-    new_class->change_share_ch = (char*) malloc( strlen("$0.00")+1 );
-    new_class->change_value_ch = (char*) malloc( strlen("$0.00")+1 );
-    new_class->change_percent_ch = (char*) malloc( strlen("000.000%%")+1 );
-
-	new_class->current_investment_stock_ch = (char*) malloc( strlen("$0.00")+1 ); 
-	
-	new_class->symbol_stock_ch = (char*) malloc( strlen("NO_SYMBOL")+1 );         
-	new_class->curl_url_stock_ch = (char*) malloc( strlen("http://")+1 ); 
-
     /* Initialize Variables */
     *new_class->num_shares_stock_int = 0;
     
-    *new_class->current_price_stock_f = 0.0;
-    *new_class->high_stock_f = 0.0;
-    *new_class->low_stock_f = 0.0;
-    *new_class->opening_stock_f = 0.0;
-    *new_class->prev_closing_stock_f = 0.0;
-    *new_class->change_share_f = 0.0;
-    *new_class->change_value_f = 0.0;
-    *new_class->change_percent_f = 0.0;
+    *new_class->current_price_stock_f = 0.0f;
+    *new_class->high_stock_f = 0.0f;
+    *new_class->low_stock_f = 0.0f;
+    *new_class->opening_stock_f = 0.0f;
+    *new_class->prev_closing_stock_f = 0.0f;
+    *new_class->change_share_f = 0.0f;
+    *new_class->change_value_f = 0.0f;
+    *new_class->change_percent_f = 0.0f;
 
-	*new_class->current_investment_stock_f = 0.0;  
+	*new_class->current_investment_stock_f = 0.0f;  
     
-    strcpy( new_class->current_price_stock_ch,"$0.00" );
-    strcpy( new_class->high_stock_ch,"$0.00" );
-    strcpy( new_class->low_stock_ch,"$0.00" );
-    strcpy( new_class->opening_stock_ch,"$0.00" );
-    strcpy( new_class->prev_closing_stock_ch,"$0.00" );
-    strcpy( new_class->change_share_ch,"$0.00" );
-    strcpy( new_class->change_value_ch,"$0.00" );
-    strcpy( new_class->change_percent_ch,"000.000%%" );
+    new_class->current_price_stock_ch = strdup( "$0.00" );
+    new_class->high_stock_ch = strdup( "$0.00" );
+    new_class->low_stock_ch = strdup( "$0.00" );
+    new_class->opening_stock_ch = strdup( "$0.00" );
+    new_class->prev_closing_stock_ch = strdup( "$0.00" );
+    new_class->change_share_ch = strdup( "$0.00" );
+    new_class->change_value_ch = strdup( "$0.00" );
+    new_class->change_percent_ch = strdup( "000.000%" );
 
-    strcpy( new_class->current_investment_stock_ch,"$0.00" );
-
-    strcpy( new_class->symbol_stock_ch,"NO_SYMBOL" );
-    strcpy( new_class->curl_url_stock_ch,"http://" );  
+	new_class->current_investment_stock_ch = strdup( "$0.00" ); 
+	
+	new_class->symbol_stock_ch = strdup( "NO_SYMBOL" );         
+	new_class->curl_url_stock_ch = strdup( "http://" ); 
 
     new_class->easy_hnd = curl_easy_init ();
     new_class->JSON.memory = NULL;
@@ -404,7 +405,7 @@ stock* class_init_equity ()
     return new_class; 
 }
 
-equity_folder* class_init_equity_folder ()
+equity_folder *class_init_equity_folder ()
 {
     /* Allocate Memory For A New Class */
     equity_folder* new_class = (equity_folder*) malloc( sizeof(*new_class) );
@@ -418,21 +419,14 @@ equity_folder* class_init_equity_folder ()
     new_class->stock_port_value_chg_f = (double*) malloc( sizeof(double) );
     new_class->stock_port_value_p_chg_f = (double*) malloc( sizeof(double) );
 
-    new_class->stock_port_value_ch = (char*) malloc( strlen("$0.00")+1 );   
-    new_class->stock_port_value_chg_ch = (char*) malloc( strlen("$0.00")+1 ); 
-    new_class->stock_port_value_p_chg_ch = (char*) malloc( strlen("000.000%%")+1 );
-
     /* Initialize Variables */
-    strcpy( new_class->stock_port_value_ch,"$0.00" );
-    strcpy( new_class->stock_port_value_chg_ch,"$0.00" );
-    strcpy( new_class->stock_port_value_p_chg_ch,"000.000%%" );
+    new_class->stock_port_value_ch = strdup( "$0.00" );   
+    new_class->stock_port_value_chg_ch = strdup( "$0.00" ); 
+    new_class->stock_port_value_p_chg_ch = strdup( "000.000%" );
 
-    *new_class->stock_port_value_f = 0.0;
-    *new_class->stock_port_value_chg_f = 0.0;
-    *new_class->stock_port_value_p_chg_f = 0.0;
-
-    /* Create a MultiCurl Handle */
-    new_class->multicurl_hnd = curl_multi_init();
+    *new_class->stock_port_value_f = 0.0f;
+    *new_class->stock_port_value_chg_f = 0.0f;
+    *new_class->stock_port_value_p_chg_f = 0.0f;
 
     /* Connect Function Pointers To Function Definitions */
     /* The functions do not need to have the same name as the pointer,
@@ -441,19 +435,19 @@ equity_folder* class_init_equity_folder ()
     new_class->ToStrings = ToStrings;
     new_class->Calculate = Calculate;
     new_class->GenerateURL = GenerateURL;
-    new_class->GetData = GetData;
+    new_class->SetUpCurl = SetUpCurl;
     new_class->ExtractData = ExtractData;
     new_class->AddStock = AddStock;
     new_class->Reset = Reset;
     new_class->Sort = Sort;
-    new_class->StopCurl = StopCurl;
+    new_class->RemoveStock = RemoveStock;
 
     /* Return Our Initialized Class */
     return new_class; 
 }
 
 /* Class Destruct Functions */
-void class_destruct_equity (stock* stock_class)
+void class_destruct_equity (stock *stock_class)
 { 
     /* Free Memory From Variables */
     if ( stock_class->num_shares_stock_int ) {
@@ -561,7 +555,7 @@ void class_destruct_equity (stock* stock_class)
     }
 }
 
-void class_destruct_equity_folder (equity_folder* F)
+void class_destruct_equity_folder (equity_folder *F)
 {
     /* Free Memory From Class Objects */
     for(short c = (F->size - 1); c >= 0; c--){
@@ -582,7 +576,6 @@ void class_destruct_equity_folder (equity_folder* F)
     if ( F->stock_port_value_chg_ch ) free( F->stock_port_value_chg_ch );
     if ( F->stock_port_value_p_chg_ch ) free( F->stock_port_value_p_chg_ch ); 
 
-    curl_multi_cleanup ( F->multicurl_hnd );
     if ( F ) free( F );
 
 }

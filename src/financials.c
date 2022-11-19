@@ -32,17 +32,6 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "financials.h"
 
-/* These four globals are only accessible from financials.c, 
-   gui_callbacks.c, and gui_threads.c */
-/* All other functions access the class data through pass by reference */
-equity_folder* Folder;  /* A class handle to an array of stock class objects, can change dynamically. */    
-metal* Precious;        /* A class handle to the bullion class object pointers. */
-meta* MetaData;         /* A class object pointer called MetaData. */
-portfolio_packet packet;                    /* The gui worker functions need access to the classes, 
-                                               so we package them and send a packet through 
-                                               gdk_threads_add_idle */
-
-
 pthread_mutex_t mutex_working[ MUTEX_NUMBER ];    /* A Posix Mutex Array */
 /*  Semaphores are the same as mutexes with the added capability to conduct
     interprocess communication, we use them here the same way as a mutex just 
@@ -96,45 +85,18 @@ static void semaphore_destruct ()
     }
 }
 
-static void window_data_init ()
-/* Initialize the Main and RSI Window size and position. */
-{
-    WindowStruct.main_height = 0;
-    WindowStruct.main_width = 0;
-    WindowStruct.main_x_pos = 0;
-    WindowStruct.main_y_pos = 0;
-    WindowStruct.rsi_height = 0;
-    WindowStruct.rsi_width = 0;
-    WindowStruct.rsi_x_pos = 0;
-    WindowStruct.rsi_y_pos = 0;
-}
-
-static void class_instance_init ()
-/* Initialize some of our class instances */
-{
-    Folder = class_init_equity_folder ();
-    Precious = class_init_metal ();
-    MetaData = class_init_meta_data ();
-}
-
 static void class_package_init ()
 /* Initialize the class package */
 {
-    /* Set the packet members to the class object pointers */
-    /* These pointers should not change for the duration of the runtime. */
-    packet.metal_chest = Precious;
-    packet.securities_folder = Folder;
-    packet.portfolio_meta_info = MetaData;
+    packet = class_init_portfolio_packet ();
 }
 
-static void class_instance_destruct ()
+static void class_package_destruct ()
 /* Free Memory */
 {
     pthread_mutex_lock( &mutex_working [CLASS_MEMBER_MUTEX ] );
 
-    if ( Precious ) class_destruct_metal ( Precious );
-    if ( Folder ) class_destruct_equity_folder ( Folder );
-    if ( MetaData ) class_destruct_meta_data ( MetaData );
+    class_destruct_portfolio_packet ( packet );
 
     pthread_mutex_unlock( &mutex_working [CLASS_MEMBER_MUTEX ] );
 
@@ -154,7 +116,7 @@ int main (int argc, char *argv[])
 
     /* Initialize some of our class instances */
     /* This needs to be initialized before ReadConfig */
-    class_instance_init ();
+    class_package_init ();
 
     /* Initialize Xlib support for concurrent threads */
     /* This needs to be initialized before gtk_init */
@@ -174,22 +136,14 @@ int main (int argc, char *argv[])
     /* Initialize Semaphores */
     semaphore_init ();
 
-    /* Initialize the Main and RSI Window size and position struct. */
-    /* This needs to be initialized before ReadConfig */
-    window_data_init ();
-
     /* Read config file and populate associated variables */
-	ReadConfig ( Precious, MetaData, Folder, &WindowStruct );
-
-    /* Initialize the package of class objects */
-    /* This needs to be initialized before GuiStart */
-    class_package_init ();
+	ReadConfig ( packet );
 
     /* Set up GUI widgets and display the GUI */
-    GuiStart ( &packet );
+    GuiStart ( packet );
 
     /* Free Class Instances. */
-    class_instance_destruct ();
+    class_package_destruct ();
 
     /* Free Mutex Resources */
     mutex_destruct ();

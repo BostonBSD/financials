@@ -39,14 +39,15 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/gui_types.h"           /* enums, etc */
 #include "../include/gui_globals.h"
 
-#include "../include/class_types.h"         /* portfolio_packet, equity_folder, metal, meta */
+#include "../include/class.h"               /* class_destruct_portfolio_packet(), portfolio_packet, 
+                                                equity_folder, metal, meta  */
 #include "../include/workfuncs.h"
 
-int MainFetchBTNLabel (void* data){
-    bool *fetching = (bool*)data;
+int MainFetchBTNLabel (void *data){
+    portfolio_packet *pkg = (portfolio_packet*)data;
     GtkWidget *Button = GTK_WIDGET ( gtk_builder_get_object (builder, "FetchDataBTN") );
     
-    if( *fetching == true ){
+    if( pkg->IsFetchingData () == true ){
         gtk_button_set_label ( GTK_BUTTON ( Button ), "Stop Fetching Data" );
     } else {
         gtk_button_set_label ( GTK_BUTTON ( Button ), "Fetch Data" );
@@ -182,93 +183,115 @@ static GtkListStore * main_primary_store (void *data){
     /* The column enum labels are generally true, but have been changed somewhat.
        They don't necessarily refer to the actual data in the column. */
     gtk_list_store_append ( store, &iter );
-    gtk_list_store_set ( store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "Bullion", -1 );
-    gtk_list_store_append ( store, &iter );
-    gtk_list_store_set ( store, &iter, GUI_SYMBOL, "_______", -1 );
-    gtk_list_store_append ( store, &iter );
-    gtk_list_store_set ( store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "Metal", GUI_SHARES_OUNCES, "Ounces", GUI_PREMIUM, "Spot Price", GUI_PRICE, "Premium", GUI_TOTAL, "High", GUI_EXTRA_ONE, "Low", GUI_EXTRA_TWO, "Prev Closing", GUI_EXTRA_THREE, "Ch/Ounce", GUI_EXTRA_FOUR, "Gain ($)", GUI_EXTRA_FIVE, "Total", GUI_EXTRA_SIX, "Gain (%)", -1 );
-    gtk_list_store_append ( store, &iter );
-    if( *M->Gold->change_value_f == 0 ) {
-        gtk_list_store_set ( store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "Gold", GUI_SHARES_OUNCES, M->Gold->ounce_ch, GUI_PREMIUM, M->Gold->spot_price_ch, GUI_PRICE, M->Gold->premium_ch, GUI_TOTAL, M->Gold->high_metal_ch, GUI_EXTRA_ONE, M->Gold->low_metal_ch, GUI_EXTRA_TWO, M->Gold->prev_closing_metal_ch, GUI_EXTRA_THREE, M->Gold->change_ounce_ch, GUI_EXTRA_FOUR, M->Gold->change_value_ch, GUI_EXTRA_FIVE, M->Gold->port_value_ch, GUI_EXTRA_SIX, M->Gold->change_percent_ch, -1 );
-    } else if ( *M->Gold->change_value_f > 0 ) {
-        gtk_list_store_set ( store, &iter, GUI_FOREGROUND_COLOR, "Green", GUI_TYPE, "bullion", GUI_SYMBOL, "Gold", GUI_SHARES_OUNCES, M->Gold->ounce_ch, GUI_PREMIUM, M->Gold->spot_price_ch, GUI_PRICE, M->Gold->premium_ch, GUI_TOTAL, M->Gold->high_metal_ch, GUI_EXTRA_ONE, M->Gold->low_metal_ch, GUI_EXTRA_TWO, M->Gold->prev_closing_metal_ch, GUI_EXTRA_THREE, M->Gold->change_ounce_ch, GUI_EXTRA_FOUR, M->Gold->change_value_ch, GUI_EXTRA_FIVE, M->Gold->port_value_ch, GUI_EXTRA_SIX, M->Gold->change_percent_ch, -1 );
-    } else {
-        gtk_list_store_set ( store, &iter, GUI_FOREGROUND_COLOR, "DarkRed", GUI_TYPE, "bullion", GUI_SYMBOL, "Gold", GUI_SHARES_OUNCES, M->Gold->ounce_ch, GUI_PREMIUM, M->Gold->spot_price_ch, GUI_PRICE, M->Gold->premium_ch, GUI_TOTAL, M->Gold->high_metal_ch, GUI_EXTRA_ONE, M->Gold->low_metal_ch, GUI_EXTRA_TWO, M->Gold->prev_closing_metal_ch, GUI_EXTRA_THREE, M->Gold->change_ounce_ch, GUI_EXTRA_FOUR, M->Gold->change_value_ch, GUI_EXTRA_FIVE, M->Gold->port_value_ch, GUI_EXTRA_SIX, M->Gold->change_percent_ch, -1 );
-    }
-    gtk_list_store_append ( store, &iter );
-    if( *M->Silver->change_value_f == 0 ) {
-        gtk_list_store_set ( store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "Silver", GUI_SHARES_OUNCES, M->Silver->ounce_ch, GUI_PREMIUM, M->Silver->spot_price_ch, GUI_PRICE, M->Silver->premium_ch, GUI_TOTAL, M->Silver->high_metal_ch, GUI_EXTRA_ONE, M->Silver->low_metal_ch, GUI_EXTRA_TWO, M->Silver->prev_closing_metal_ch, GUI_EXTRA_THREE, M->Silver->change_ounce_ch, GUI_EXTRA_FOUR, M->Silver->change_value_ch, GUI_EXTRA_FIVE, M->Silver->port_value_ch, GUI_EXTRA_SIX, M->Silver->change_percent_ch, -1 );
-    } else if ( *M->Silver->change_value_f > 0 ) {
-        gtk_list_store_set ( store, &iter, GUI_FOREGROUND_COLOR, "Green", GUI_TYPE, "bullion", GUI_SYMBOL, "Silver", GUI_SHARES_OUNCES, M->Silver->ounce_ch, GUI_PREMIUM, M->Silver->spot_price_ch, GUI_PRICE, M->Silver->premium_ch, GUI_TOTAL, M->Silver->high_metal_ch, GUI_EXTRA_ONE, M->Silver->low_metal_ch, GUI_EXTRA_TWO, M->Silver->prev_closing_metal_ch, GUI_EXTRA_THREE, M->Silver->change_ounce_ch, GUI_EXTRA_FOUR, M->Silver->change_value_ch, GUI_EXTRA_FIVE, M->Silver->port_value_ch, GUI_EXTRA_SIX, M->Silver->change_percent_ch, -1 );
-    } else {
-        gtk_list_store_set ( store, &iter, GUI_FOREGROUND_COLOR, "DarkRed", GUI_TYPE, "bullion", GUI_SYMBOL, "Silver", GUI_SHARES_OUNCES, M->Silver->ounce_ch, GUI_PREMIUM, M->Silver->spot_price_ch, GUI_PRICE, M->Silver->premium_ch, GUI_TOTAL, M->Silver->high_metal_ch, GUI_EXTRA_ONE, M->Silver->low_metal_ch, GUI_EXTRA_TWO, M->Silver->prev_closing_metal_ch, GUI_EXTRA_THREE, M->Silver->change_ounce_ch, GUI_EXTRA_FOUR, M->Silver->change_value_ch, GUI_EXTRA_FIVE, M->Silver->port_value_ch, GUI_EXTRA_SIX, M->Silver->change_percent_ch, -1 );
-    }
-
-    gtk_list_store_append ( store, &iter );
-    gtk_list_store_set ( store, &iter, GUI_SYMBOL, "_______", -1 );
-    gtk_list_store_append ( store, &iter );
-    gtk_list_store_set ( store, &iter, GUI_TYPE, "equity_total", GUI_SYMBOL, "Equity", -1 );
-    gtk_list_store_append ( store, &iter );
-    gtk_list_store_set ( store, &iter, GUI_SYMBOL, "_______", -1 );
-    gtk_list_store_append ( store, &iter );
-    gtk_list_store_set ( store, &iter, GUI_TYPE, "equity_total", GUI_SYMBOL, "Symbol", GUI_SHARES_OUNCES, "Shares", GUI_PREMIUM, "Price", GUI_PRICE, "High", GUI_TOTAL, "Low", GUI_EXTRA_ONE, "Opening", GUI_EXTRA_TWO, "Prev Closing", GUI_EXTRA_THREE, "Ch/Share", GUI_EXTRA_FOUR, "Gain ($)", GUI_EXTRA_FIVE, "Total", GUI_EXTRA_SIX, "Gain (%)", -1 );
-    
-    unsigned short c = 0;
-    while(c < F->size){
-        snprintf(shares, 13, "%d",*F->Equity[ c ]->num_shares_stock_int);
+    gtk_list_store_set ( store, &iter, GUI_TYPE, "blank_space", GUI_SYMBOL, "", -1 );
+    if( *M->bullion_port_value_f > 0 ){
         gtk_list_store_append ( store, &iter );
-
-        if( *F->Equity[ c ]->change_value_f == 0 ) {
-            gtk_list_store_set ( store, &iter, GUI_TYPE, "equity", GUI_SYMBOL, F->Equity[ c ]->symbol_stock_ch, GUI_SHARES_OUNCES, shares, GUI_PREMIUM, F->Equity[ c ]->current_price_stock_ch, GUI_PRICE, F->Equity[ c ]->high_stock_ch, GUI_TOTAL, F->Equity[ c ]->low_stock_ch, GUI_EXTRA_ONE, F->Equity[ c ]->opening_stock_ch, GUI_EXTRA_TWO, F->Equity[ c ]->prev_closing_stock_ch, GUI_EXTRA_THREE, F->Equity[ c ]->change_share_ch, GUI_EXTRA_FOUR, F->Equity[ c ]->change_value_ch, GUI_EXTRA_FIVE, F->Equity[ c ]->current_investment_stock_ch, GUI_EXTRA_SIX, F->Equity[ c ]->change_percent_ch, -1 );
-        } else if( *F->Equity[ c ]->change_value_f > 0 ) {
-            gtk_list_store_set ( store, &iter, GUI_FOREGROUND_COLOR, "Green", GUI_TYPE, "equity", GUI_SYMBOL, F->Equity[ c ]->symbol_stock_ch, GUI_SHARES_OUNCES, shares, GUI_PREMIUM, F->Equity[ c ]->current_price_stock_ch, GUI_PRICE, F->Equity[ c ]->high_stock_ch, GUI_TOTAL, F->Equity[ c ]->low_stock_ch, GUI_EXTRA_ONE, F->Equity[ c ]->opening_stock_ch, GUI_EXTRA_TWO, F->Equity[ c ]->prev_closing_stock_ch, GUI_EXTRA_THREE, F->Equity[ c ]->change_share_ch, GUI_EXTRA_FOUR, F->Equity[ c ]->change_value_ch, GUI_EXTRA_FIVE, F->Equity[ c ]->current_investment_stock_ch, GUI_EXTRA_SIX, F->Equity[ c ]->change_percent_ch, -1 );
-        } else {
-            gtk_list_store_set ( store, &iter, GUI_FOREGROUND_COLOR, "DarkRed", GUI_TYPE, "equity", GUI_SYMBOL, F->Equity[ c ]->symbol_stock_ch, GUI_SHARES_OUNCES, shares, GUI_PREMIUM, F->Equity[ c ]->current_price_stock_ch, GUI_PRICE, F->Equity[ c ]->high_stock_ch, GUI_TOTAL, F->Equity[ c ]->low_stock_ch, GUI_EXTRA_ONE, F->Equity[ c ]->opening_stock_ch, GUI_EXTRA_TWO, F->Equity[ c ]->prev_closing_stock_ch, GUI_EXTRA_THREE, F->Equity[ c ]->change_share_ch, GUI_EXTRA_FOUR, F->Equity[ c ]->change_value_ch, GUI_EXTRA_FIVE, F->Equity[ c ]->current_investment_stock_ch, GUI_EXTRA_SIX, F->Equity[ c ]->change_percent_ch, -1 );
+        gtk_list_store_set ( store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "Bullion", -1 );
+        gtk_list_store_append ( store, &iter );
+        gtk_list_store_set ( store, &iter, GUI_TYPE, "blank_space", GUI_SYMBOL, "_______", -1 );
+        gtk_list_store_append ( store, &iter );
+        gtk_list_store_set ( store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "Metal", GUI_SHARES_OUNCES, "Ounces", GUI_PREMIUM, "Spot Price", GUI_PRICE, "Premium", GUI_TOTAL, "High", GUI_EXTRA_ONE, "Low", GUI_EXTRA_TWO, "Prev Closing", GUI_EXTRA_THREE, "Ch/Ounce", GUI_EXTRA_FOUR, "Gain ($)", GUI_EXTRA_FIVE, "Total", GUI_EXTRA_SIX, "Gain (%)", -1 );
+        if( *M->Gold->port_value_f > 0 ){
+            gtk_list_store_append ( store, &iter );
+            if( *M->Gold->change_value_f == 0 ) {
+                gtk_list_store_set ( store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "Gold", GUI_SHARES_OUNCES, M->Gold->ounce_ch, GUI_PREMIUM, M->Gold->spot_price_ch, GUI_PRICE, M->Gold->premium_ch, GUI_TOTAL, M->Gold->high_metal_ch, GUI_EXTRA_ONE, M->Gold->low_metal_ch, GUI_EXTRA_TWO, M->Gold->prev_closing_metal_ch, GUI_EXTRA_THREE, M->Gold->change_ounce_ch, GUI_EXTRA_FOUR, M->Gold->change_value_ch, GUI_EXTRA_FIVE, M->Gold->port_value_ch, GUI_EXTRA_SIX, M->Gold->change_percent_ch, -1 );
+            } else if ( *M->Gold->change_value_f > 0 ) {
+                gtk_list_store_set ( store, &iter, GUI_FOREGROUND_COLOR, "DarkGreen", GUI_TYPE, "bullion", GUI_SYMBOL, "Gold", GUI_SHARES_OUNCES, M->Gold->ounce_ch, GUI_PREMIUM, M->Gold->spot_price_ch, GUI_PRICE, M->Gold->premium_ch, GUI_TOTAL, M->Gold->high_metal_ch, GUI_EXTRA_ONE, M->Gold->low_metal_ch, GUI_EXTRA_TWO, M->Gold->prev_closing_metal_ch, GUI_EXTRA_THREE, M->Gold->change_ounce_ch, GUI_EXTRA_FOUR, M->Gold->change_value_ch, GUI_EXTRA_FIVE, M->Gold->port_value_ch, GUI_EXTRA_SIX, M->Gold->change_percent_ch, -1 );
+            } else {
+                gtk_list_store_set ( store, &iter, GUI_FOREGROUND_COLOR, "DarkRed", GUI_TYPE, "bullion", GUI_SYMBOL, "Gold", GUI_SHARES_OUNCES, M->Gold->ounce_ch, GUI_PREMIUM, M->Gold->spot_price_ch, GUI_PRICE, M->Gold->premium_ch, GUI_TOTAL, M->Gold->high_metal_ch, GUI_EXTRA_ONE, M->Gold->low_metal_ch, GUI_EXTRA_TWO, M->Gold->prev_closing_metal_ch, GUI_EXTRA_THREE, M->Gold->change_ounce_ch, GUI_EXTRA_FOUR, M->Gold->change_value_ch, GUI_EXTRA_FIVE, M->Gold->port_value_ch, GUI_EXTRA_SIX, M->Gold->change_percent_ch, -1 );
+            }
         }
-
-        c++;
+        if( *M->Silver->port_value_f > 0 ){
+            gtk_list_store_append ( store, &iter );
+            if( *M->Silver->change_value_f == 0 ) {
+                gtk_list_store_set ( store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "Silver", GUI_SHARES_OUNCES, M->Silver->ounce_ch, GUI_PREMIUM, M->Silver->spot_price_ch, GUI_PRICE, M->Silver->premium_ch, GUI_TOTAL, M->Silver->high_metal_ch, GUI_EXTRA_ONE, M->Silver->low_metal_ch, GUI_EXTRA_TWO, M->Silver->prev_closing_metal_ch, GUI_EXTRA_THREE, M->Silver->change_ounce_ch, GUI_EXTRA_FOUR, M->Silver->change_value_ch, GUI_EXTRA_FIVE, M->Silver->port_value_ch, GUI_EXTRA_SIX, M->Silver->change_percent_ch, -1 );
+            } else if ( *M->Silver->change_value_f > 0 ) {
+                gtk_list_store_set ( store, &iter, GUI_FOREGROUND_COLOR, "DarkGreen", GUI_TYPE, "bullion", GUI_SYMBOL, "Silver", GUI_SHARES_OUNCES, M->Silver->ounce_ch, GUI_PREMIUM, M->Silver->spot_price_ch, GUI_PRICE, M->Silver->premium_ch, GUI_TOTAL, M->Silver->high_metal_ch, GUI_EXTRA_ONE, M->Silver->low_metal_ch, GUI_EXTRA_TWO, M->Silver->prev_closing_metal_ch, GUI_EXTRA_THREE, M->Silver->change_ounce_ch, GUI_EXTRA_FOUR, M->Silver->change_value_ch, GUI_EXTRA_FIVE, M->Silver->port_value_ch, GUI_EXTRA_SIX, M->Silver->change_percent_ch, -1 );
+            } else {
+                gtk_list_store_set ( store, &iter, GUI_FOREGROUND_COLOR, "DarkRed", GUI_TYPE, "bullion", GUI_SYMBOL, "Silver", GUI_SHARES_OUNCES, M->Silver->ounce_ch, GUI_PREMIUM, M->Silver->spot_price_ch, GUI_PRICE, M->Silver->premium_ch, GUI_TOTAL, M->Silver->high_metal_ch, GUI_EXTRA_ONE, M->Silver->low_metal_ch, GUI_EXTRA_TWO, M->Silver->prev_closing_metal_ch, GUI_EXTRA_THREE, M->Silver->change_ounce_ch, GUI_EXTRA_FOUR, M->Silver->change_value_ch, GUI_EXTRA_FIVE, M->Silver->port_value_ch, GUI_EXTRA_SIX, M->Silver->change_percent_ch, -1 );
+            }
+        }
+        gtk_list_store_append ( store, &iter );
+        gtk_list_store_set ( store, &iter, GUI_TYPE, "blank_space", GUI_SYMBOL, "_______", -1 );
     }
 
-    gtk_list_store_append ( store, &iter );
-    gtk_list_store_set ( store, &iter, GUI_SYMBOL, "_______", -1 );
-    gtk_list_store_append ( store, &iter );
-    gtk_list_store_set ( store, &iter, GUI_SYMBOL, "Asset", GUI_SHARES_OUNCES, "Value", GUI_PREMIUM, "Gain ($)", GUI_PRICE, "Gain (%)",-1 );
-    gtk_list_store_append ( store, &iter );
-    gtk_list_store_set ( store, &iter, GUI_TYPE, "cash", GUI_SYMBOL, "Cash", GUI_SHARES_OUNCES, D->cash_ch,-1 );
-    
-    gtk_list_store_append ( store, &iter );
-    if ( *M->bullion_port_value_chg_f == 0 ){
-        gtk_list_store_set ( store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "Bullion", GUI_SHARES_OUNCES, M->bullion_port_value_ch, GUI_PREMIUM, M->bullion_port_value_chg_ch, GUI_PRICE, M->bullion_port_value_p_chg_ch, -1 );
-    } else if ( *M->bullion_port_value_chg_f > 0 ) {
-        gtk_list_store_set ( store, &iter, GUI_FOREGROUND_COLOR, "Green", GUI_TYPE, "bullion", GUI_SYMBOL, "Bullion", GUI_SHARES_OUNCES, M->bullion_port_value_ch, GUI_PREMIUM, M->bullion_port_value_chg_ch, GUI_PRICE, M->bullion_port_value_p_chg_ch, -1 );
-    } else {
-        gtk_list_store_set ( store, &iter, GUI_FOREGROUND_COLOR, "DarkRed", GUI_TYPE, "bullion", GUI_SYMBOL, "Bullion", GUI_SHARES_OUNCES, M->bullion_port_value_ch, GUI_PREMIUM, M->bullion_port_value_chg_ch, GUI_PRICE, M->bullion_port_value_p_chg_ch, -1 );
+    if( F->size > 0 ){
+        gtk_list_store_append ( store, &iter );
+        gtk_list_store_set ( store, &iter, GUI_TYPE, "equity_total", GUI_SYMBOL, "Equity", -1 );
+        gtk_list_store_append ( store, &iter );
+        gtk_list_store_set ( store, &iter, GUI_TYPE, "blank_space", GUI_SYMBOL, "_______", -1 );
+        gtk_list_store_append ( store, &iter );
+        gtk_list_store_set ( store, &iter, GUI_TYPE, "equity_total", GUI_SYMBOL, "Symbol", GUI_SHARES_OUNCES, "Shares", GUI_PREMIUM, "Price", GUI_PRICE, "High", GUI_TOTAL, "Low", GUI_EXTRA_ONE, "Opening", GUI_EXTRA_TWO, "Prev Closing", GUI_EXTRA_THREE, "Ch/Share", GUI_EXTRA_FOUR, "Gain ($)", GUI_EXTRA_FIVE, "Total", GUI_EXTRA_SIX, "Gain (%)", -1 );
+
+        unsigned short c = 0;
+        while( c < F->size ){
+            snprintf(shares, 13, "%d",*F->Equity[ c ]->num_shares_stock_int);
+            gtk_list_store_append ( store, &iter );
+            if( *F->Equity[ c ]->change_value_f == 0 ) {
+                gtk_list_store_set ( store, &iter, GUI_TYPE, "equity", GUI_SYMBOL, F->Equity[ c ]->symbol_stock_ch, GUI_SHARES_OUNCES, shares, GUI_PREMIUM, F->Equity[ c ]->current_price_stock_ch, GUI_PRICE, F->Equity[ c ]->high_stock_ch, GUI_TOTAL, F->Equity[ c ]->low_stock_ch, GUI_EXTRA_ONE, F->Equity[ c ]->opening_stock_ch, GUI_EXTRA_TWO, F->Equity[ c ]->prev_closing_stock_ch, GUI_EXTRA_THREE, F->Equity[ c ]->change_share_ch, GUI_EXTRA_FOUR, F->Equity[ c ]->change_value_ch, GUI_EXTRA_FIVE, F->Equity[ c ]->current_investment_stock_ch, GUI_EXTRA_SIX, F->Equity[ c ]->change_percent_ch, -1 );
+            } else if( *F->Equity[ c ]->change_value_f > 0 ) {
+                gtk_list_store_set ( store, &iter, GUI_FOREGROUND_COLOR, "DarkGreen", GUI_TYPE, "equity", GUI_SYMBOL, F->Equity[ c ]->symbol_stock_ch, GUI_SHARES_OUNCES, shares, GUI_PREMIUM, F->Equity[ c ]->current_price_stock_ch, GUI_PRICE, F->Equity[ c ]->high_stock_ch, GUI_TOTAL, F->Equity[ c ]->low_stock_ch, GUI_EXTRA_ONE, F->Equity[ c ]->opening_stock_ch, GUI_EXTRA_TWO, F->Equity[ c ]->prev_closing_stock_ch, GUI_EXTRA_THREE, F->Equity[ c ]->change_share_ch, GUI_EXTRA_FOUR, F->Equity[ c ]->change_value_ch, GUI_EXTRA_FIVE, F->Equity[ c ]->current_investment_stock_ch, GUI_EXTRA_SIX, F->Equity[ c ]->change_percent_ch, -1 );
+            } else {
+                gtk_list_store_set ( store, &iter, GUI_FOREGROUND_COLOR, "DarkRed", GUI_TYPE, "equity", GUI_SYMBOL, F->Equity[ c ]->symbol_stock_ch, GUI_SHARES_OUNCES, shares, GUI_PREMIUM, F->Equity[ c ]->current_price_stock_ch, GUI_PRICE, F->Equity[ c ]->high_stock_ch, GUI_TOTAL, F->Equity[ c ]->low_stock_ch, GUI_EXTRA_ONE, F->Equity[ c ]->opening_stock_ch, GUI_EXTRA_TWO, F->Equity[ c ]->prev_closing_stock_ch, GUI_EXTRA_THREE, F->Equity[ c ]->change_share_ch, GUI_EXTRA_FOUR, F->Equity[ c ]->change_value_ch, GUI_EXTRA_FIVE, F->Equity[ c ]->current_investment_stock_ch, GUI_EXTRA_SIX, F->Equity[ c ]->change_percent_ch, -1 );
+            }
+            c++;
+        }
+        gtk_list_store_append ( store, &iter );
+        gtk_list_store_set ( store, &iter, GUI_TYPE, "blank_space", GUI_SYMBOL, "_______", -1 );
     }
 
-    gtk_list_store_append ( store, &iter );
-    if ( *F->stock_port_value_chg_f == 0 ){
-        gtk_list_store_set ( store, &iter, GUI_TYPE, "equity_total", GUI_SYMBOL, "Equity", GUI_SHARES_OUNCES, F->stock_port_value_ch, GUI_PREMIUM, F->stock_port_value_chg_ch, GUI_PRICE, F->stock_port_value_p_chg_ch,-1 );
-    } else if ( *F->stock_port_value_chg_f > 0 ){
-        gtk_list_store_set ( store, &iter, GUI_FOREGROUND_COLOR, "Green", GUI_TYPE, "equity_total", GUI_SYMBOL, "Equity", GUI_SHARES_OUNCES, F->stock_port_value_ch, GUI_PREMIUM, F->stock_port_value_chg_ch, GUI_PRICE, F->stock_port_value_p_chg_ch,-1 );
-    } else {
-        gtk_list_store_set ( store, &iter, GUI_FOREGROUND_COLOR, "DarkRed", GUI_TYPE, "equity_total", GUI_SYMBOL, "Equity", GUI_SHARES_OUNCES, F->stock_port_value_ch, GUI_PREMIUM, F->stock_port_value_chg_ch, GUI_PRICE, F->stock_port_value_p_chg_ch,-1 );
+    if( *D->cash_f > 0 || *M->bullion_port_value_f > 0 || *F->stock_port_value_f > 0 ){
+        gtk_list_store_append ( store, &iter );
+        gtk_list_store_set ( store, &iter, GUI_TYPE, "blank_space", GUI_SYMBOL, "Asset", GUI_SHARES_OUNCES, "Value", GUI_PREMIUM, "Gain ($)", GUI_PRICE, "Gain (%)",-1 );
+    }
+
+    if( *D->cash_f > 0 ){
+        gtk_list_store_append ( store, &iter );
+        gtk_list_store_set ( store, &iter, GUI_TYPE, "cash", GUI_SYMBOL, "Cash", GUI_SHARES_OUNCES, D->cash_ch,-1 );
+    }
+
+    if( *M->bullion_port_value_f > 0 ){
+        gtk_list_store_append ( store, &iter );
+        if ( *M->bullion_port_value_chg_f == 0 ){
+            gtk_list_store_set ( store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "Bullion", GUI_SHARES_OUNCES, M->bullion_port_value_ch, GUI_PREMIUM, M->bullion_port_value_chg_ch, GUI_PRICE, M->bullion_port_value_p_chg_ch, -1 );
+        } else if ( *M->bullion_port_value_chg_f > 0 ) {
+            gtk_list_store_set ( store, &iter, GUI_FOREGROUND_COLOR, "DarkGreen", GUI_TYPE, "bullion", GUI_SYMBOL, "Bullion", GUI_SHARES_OUNCES, M->bullion_port_value_ch, GUI_PREMIUM, M->bullion_port_value_chg_ch, GUI_PRICE, M->bullion_port_value_p_chg_ch, -1 );
+        } else {
+            gtk_list_store_set ( store, &iter, GUI_FOREGROUND_COLOR, "DarkRed", GUI_TYPE, "bullion", GUI_SYMBOL, "Bullion", GUI_SHARES_OUNCES, M->bullion_port_value_ch, GUI_PREMIUM, M->bullion_port_value_chg_ch, GUI_PRICE, M->bullion_port_value_p_chg_ch, -1 );
+        }
+    }
+
+    if( *F->stock_port_value_f > 0 ){
+        gtk_list_store_append ( store, &iter );
+        if ( *F->stock_port_value_chg_f == 0 ){
+            gtk_list_store_set ( store, &iter, GUI_TYPE, "equity_total", GUI_SYMBOL, "Equity", GUI_SHARES_OUNCES, F->stock_port_value_ch, GUI_PREMIUM, F->stock_port_value_chg_ch, GUI_PRICE, F->stock_port_value_p_chg_ch,-1 );
+        } else if ( *F->stock_port_value_chg_f > 0 ){
+            gtk_list_store_set ( store, &iter, GUI_FOREGROUND_COLOR, "DarkGreen", GUI_TYPE, "equity_total", GUI_SYMBOL, "Equity", GUI_SHARES_OUNCES, F->stock_port_value_ch, GUI_PREMIUM, F->stock_port_value_chg_ch, GUI_PRICE, F->stock_port_value_p_chg_ch,-1 );
+        } else {
+            gtk_list_store_set ( store, &iter, GUI_FOREGROUND_COLOR, "DarkRed", GUI_TYPE, "equity_total", GUI_SYMBOL, "Equity", GUI_SHARES_OUNCES, F->stock_port_value_ch, GUI_PREMIUM, F->stock_port_value_chg_ch, GUI_PRICE, F->stock_port_value_p_chg_ch,-1 );
+        }
     }
     
     gtk_list_store_append ( store, &iter );
-    gtk_list_store_set ( store, &iter, GUI_SYMBOL, "_______", -1 );
+    gtk_list_store_set ( store, &iter, GUI_TYPE, "blank_space", GUI_SYMBOL, "_______", -1 );
     
-    gtk_list_store_append ( store, &iter );
-    if ( *D->portfolio_port_value_chg_f == 0 ){
-        gtk_list_store_set ( store, &iter, GUI_SYMBOL, "Portfolio", GUI_SHARES_OUNCES, D->portfolio_port_value_ch, GUI_PREMIUM, D->portfolio_port_value_chg_ch, GUI_PRICE, D->portfolio_port_value_p_chg_ch, -1 );
-    } else if ( *D->portfolio_port_value_chg_f > 0 ){
-        gtk_list_store_set ( store, &iter, GUI_FOREGROUND_COLOR, "Green", GUI_SYMBOL, "Portfolio", GUI_SHARES_OUNCES, D->portfolio_port_value_ch, GUI_PREMIUM, D->portfolio_port_value_chg_ch, GUI_PRICE, D->portfolio_port_value_p_chg_ch, -1 );
+    if( *D->portfolio_port_value_f > 0 ){
+        gtk_list_store_append ( store, &iter );
+        if ( *D->portfolio_port_value_chg_f == 0 ){
+            gtk_list_store_set ( store, &iter, GUI_TYPE, "blank_space", GUI_SYMBOL, "Portfolio", GUI_SHARES_OUNCES, D->portfolio_port_value_ch, GUI_PREMIUM, D->portfolio_port_value_chg_ch, GUI_PRICE, D->portfolio_port_value_p_chg_ch, -1 );
+        } else if ( *D->portfolio_port_value_chg_f > 0 ){
+            gtk_list_store_set ( store, &iter, GUI_FOREGROUND_COLOR, "DarkGreen", GUI_TYPE, "blank_space", GUI_SYMBOL, "Portfolio", GUI_SHARES_OUNCES, D->portfolio_port_value_ch, GUI_PREMIUM, D->portfolio_port_value_chg_ch, GUI_PRICE, D->portfolio_port_value_p_chg_ch, -1 );
+        } else {
+            gtk_list_store_set ( store, &iter, GUI_FOREGROUND_COLOR, "DarkRed", GUI_TYPE, "blank_space", GUI_SYMBOL, "Portfolio", GUI_SHARES_OUNCES, D->portfolio_port_value_ch, GUI_PREMIUM, D->portfolio_port_value_chg_ch, GUI_PRICE, D->portfolio_port_value_p_chg_ch, -1 );
+        }
     } else {
-        gtk_list_store_set ( store, &iter, GUI_FOREGROUND_COLOR, "DarkRed", GUI_SYMBOL, "Portfolio", GUI_SHARES_OUNCES, D->portfolio_port_value_ch, GUI_PREMIUM, D->portfolio_port_value_chg_ch, GUI_PRICE, D->portfolio_port_value_p_chg_ch, -1 );
+        gtk_list_store_append ( store, &iter );
+        gtk_list_store_set ( store, &iter, GUI_TYPE, "blank_space", GUI_SYMBOL, "Portfolio has no assets.", -1 );
     }
     
     gtk_list_store_append ( store, &iter );
-    gtk_list_store_set ( store, &iter, GUI_SYMBOL, "_______", -1 );
-    
+    gtk_list_store_set ( store, &iter, GUI_TYPE, "blank_space", GUI_SYMBOL, "_______", -1 );
+
     return store;
 }
 
@@ -288,9 +311,11 @@ static GtkListStore * main_default_store (void *data){
 
     /* Add data to the storage container. */
     gtk_list_store_append ( store, &iter );
+    gtk_list_store_set ( store, &iter, GUI_TYPE, "blank_space", GUI_SYMBOL, "", -1 );
+    gtk_list_store_append ( store, &iter );
     gtk_list_store_set ( store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "Bullion", -1 );
     gtk_list_store_append ( store, &iter );
-    gtk_list_store_set ( store, &iter, GUI_SYMBOL, "_______", -1 );
+    gtk_list_store_set ( store, &iter, GUI_TYPE, "blank_space", GUI_SYMBOL, "_______", -1 );
     gtk_list_store_append ( store, &iter );
     gtk_list_store_set ( store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "Metal", GUI_SHARES_OUNCES, "Ounces", GUI_PREMIUM, "Premium", -1 );
     gtk_list_store_append ( store, &iter );
@@ -298,12 +323,13 @@ static GtkListStore * main_default_store (void *data){
     gtk_list_store_append ( store, &iter );
     gtk_list_store_set ( store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "Silver", GUI_SHARES_OUNCES, M->Silver->ounce_ch, GUI_PREMIUM, M->Silver->premium_ch, -1 );
     gtk_list_store_append ( store, &iter );
+    gtk_list_store_set ( store, &iter, GUI_TYPE, "blank_space", GUI_SYMBOL, "", -1 );
     gtk_list_store_append ( store, &iter );
-    gtk_list_store_set ( store, &iter, GUI_SYMBOL, "_______", -1 );
+    gtk_list_store_set ( store, &iter, GUI_TYPE, "blank_space", GUI_SYMBOL, "_______", -1 );
     gtk_list_store_append ( store, &iter );
     gtk_list_store_set ( store, &iter, GUI_TYPE, "equity_total", GUI_SYMBOL, "Equity", -1 );
     gtk_list_store_append ( store, &iter );
-    gtk_list_store_set ( store, &iter, GUI_SYMBOL, "_______", -1 );
+    gtk_list_store_set ( store, &iter, GUI_TYPE, "blank_space", GUI_SYMBOL, "_______", -1 );
     gtk_list_store_append ( store, &iter );
     gtk_list_store_set ( store, &iter, GUI_TYPE, "equity_total", GUI_SYMBOL, "Symbol", GUI_SHARES_OUNCES, "Shares", -1 );
     
@@ -317,13 +343,127 @@ static GtkListStore * main_default_store (void *data){
     }
 
     gtk_list_store_append ( store, &iter );
-    gtk_list_store_set ( store, &iter, GUI_SYMBOL, "_______", -1 );
+    gtk_list_store_set ( store, &iter, GUI_TYPE, "blank_space", GUI_SYMBOL, "_______", -1 );
     gtk_list_store_append ( store, &iter );
     gtk_list_store_set ( store, &iter, GUI_TYPE, "cash", GUI_SYMBOL, "Cash", GUI_PREMIUM, D->cash_ch, -1 );
     gtk_list_store_append ( store, &iter );
-    gtk_list_store_set ( store, &iter, GUI_SYMBOL, "_______", -1 );
+    gtk_list_store_set ( store, &iter, GUI_TYPE, "blank_space", GUI_SYMBOL, "_______", -1 );
     
     return store;
+}
+
+static void show_indices_labels (){
+    GtkWidget* label = GTK_WIDGET ( gtk_builder_get_object (builder, "DowLabel") );
+    gtk_widget_set_visible ( label, true );
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "NasdaqLabel") );
+    gtk_widget_set_visible ( label, true );
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "SPLabel") );
+    gtk_widget_set_visible ( label, true );
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "BitcoinLabel") );
+    gtk_widget_set_visible ( label, true );
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "GoldLabel") );
+    gtk_widget_set_visible ( label, true );
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "SilverLabel") );
+    gtk_widget_set_visible ( label, true );
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "GSLabel") );
+    gtk_widget_set_visible ( label, true );
+
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "DowIndexValue") );
+    gtk_widget_set_visible ( label, true );
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "NasdaqIndexValue") );
+    gtk_widget_set_visible ( label, true );
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "SPIndexValue") );
+    gtk_widget_set_visible ( label, true );
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "BitcoinValue") );
+    gtk_widget_set_visible ( label, true );
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "GoldValue") );
+    gtk_widget_set_visible ( label, true );
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "SilverValue") );
+    gtk_widget_set_visible ( label, true );
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "GSValue") );
+    gtk_widget_set_visible ( label, true );
+}
+
+static void set_indices_labels (void *data){
+    /* Unpack the class package */
+    portfolio_packet *package = (portfolio_packet*)data;
+    meta *D = package->portfolio_meta_info;
+    metal *M = package->metal_chest;
+    const char *red_format = "<span foreground=\"black\">%s\n</span><span foreground=\"darkred\" size=\"small\">%s, %s</span>";
+    const char *green_format = "<span foreground=\"black\">%s\n</span><span foreground=\"darkgreen\" size=\"small\">%s, %s</span>";
+    const char *format;
+    char *markup;
+
+    if (*D->index_dow_value_chg_f >= 0) {
+        format = green_format;
+    } else {
+        format = red_format;
+    };
+
+    GtkWidget* label = GTK_WIDGET ( gtk_builder_get_object (builder, "DowIndexValue") );
+    markup = g_markup_printf_escaped ( format, D->index_dow_value_ch, D->index_dow_value_chg_ch, D->index_dow_value_p_chg_ch );
+    gtk_label_set_markup ( GTK_LABEL (label), markup );
+    g_free (markup);
+
+    if (*D->index_nasdaq_value_chg_f >= 0) {
+        format = green_format;
+    } else {
+        format = red_format;
+    };
+
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "NasdaqIndexValue") );
+    markup = g_markup_printf_escaped (format, D->index_nasdaq_value_ch, D->index_nasdaq_value_chg_ch, D->index_nasdaq_value_p_chg_ch );
+    gtk_label_set_markup ( GTK_LABEL (label), markup );
+    g_free (markup);
+
+    if (*D->index_sp_value_chg_f >= 0) {
+        format = green_format;
+    } else {
+        format = red_format;
+    };
+
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "SPIndexValue") );
+    markup = g_markup_printf_escaped ( format, D->index_sp_value_ch, D->index_sp_value_chg_ch, D->index_sp_value_p_chg_ch );
+    gtk_label_set_markup ( GTK_LABEL (label), markup );
+    g_free (markup);
+
+    if (*D->crypto_bitcoin_value_chg_f >= 0) {
+        format = green_format;
+    } else {
+        format = red_format;
+    };
+
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "BitcoinValue") );
+    markup = g_markup_printf_escaped ( format, D->crypto_bitcoin_value_ch, D->crypto_bitcoin_value_chg_ch, D->crypto_bitcoin_value_p_chg_ch );
+    gtk_label_set_markup ( GTK_LABEL (label), markup );
+    g_free (markup);
+
+    if (*M->Gold->change_ounce_f >= 0) {
+        format = green_format;
+    } else {
+        format = red_format;
+    };
+
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "GoldValue") );
+    markup = g_markup_printf_escaped ( format, M->Gold->spot_price_ch, M->Gold->change_ounce_ch, M->Gold->change_percent_raw_ch );
+    gtk_label_set_markup ( GTK_LABEL (label), markup );
+    g_free (markup);
+
+    if (*M->Silver->change_ounce_f >= 0) {
+        format = green_format;
+    } else {
+        format = red_format;
+    };
+
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "SilverValue") );
+    markup = g_markup_printf_escaped ( format, M->Silver->spot_price_ch, M->Silver->change_ounce_ch, M->Silver->change_percent_raw_ch );
+    gtk_label_set_markup ( GTK_LABEL (label), markup );
+    g_free (markup);
+
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "GSValue") );
+    markup = g_markup_printf_escaped ( "<span foreground=\"black\">%s</span>", M->gold_silver_ratio_ch );
+    gtk_label_set_markup ( GTK_LABEL (label), markup );
+    g_free (markup);
 }
 
 int MainPrimaryTreeview (void *data)
@@ -331,6 +471,12 @@ int MainPrimaryTreeview (void *data)
     /* Reset the ProgressBar */ 
     GtkWidget* ProgressBar = GTK_WIDGET ( gtk_builder_get_object (builder, "ProgressBar") );
     gtk_progress_bar_set_fraction ( GTK_PROGRESS_BAR( ProgressBar ), 0.0f );
+
+    /* Show the Indices Labels */ 
+    show_indices_labels ();
+
+    /* Set The Indices Labels */
+    set_indices_labels ( data );
 
     GtkListStore *store = NULL;
     GtkWidget* list = GTK_WIDGET ( gtk_builder_get_object (builder, "TreeView") );
@@ -357,9 +503,44 @@ int MainPrimaryTreeview (void *data)
     return 0;
 }
 
+static void hide_indices_labels (){
+    GtkWidget* label = GTK_WIDGET ( gtk_builder_get_object (builder, "DowLabel") );
+    gtk_widget_set_visible ( label, false );
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "NasdaqLabel") );
+    gtk_widget_set_visible ( label, false );
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "SPLabel") );
+    gtk_widget_set_visible ( label, false );
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "BitcoinLabel") );
+    gtk_widget_set_visible ( label, false );
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "GoldLabel") );
+    gtk_widget_set_visible ( label, false );
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "SilverLabel") );
+    gtk_widget_set_visible ( label, false );
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "GSLabel") );
+    gtk_widget_set_visible ( label, false );
+
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "DowIndexValue") );
+    gtk_widget_set_visible ( label, false );
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "NasdaqIndexValue") );
+    gtk_widget_set_visible ( label, false );
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "SPIndexValue") );
+    gtk_widget_set_visible ( label, false );
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "BitcoinValue") );
+    gtk_widget_set_visible ( label, false );
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "GoldValue") );
+    gtk_widget_set_visible ( label, false );
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "SilverValue") );
+    gtk_widget_set_visible ( label, false );
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "GSValue") );
+    gtk_widget_set_visible ( label, false );
+}
+
 int MainDefaultTreeview (void *data) {
     GtkListStore *store = NULL;
     GtkWidget* list = GTK_WIDGET ( gtk_builder_get_object (builder, "TreeView") );
+
+    /* Hide the Indices Labels */
+    hide_indices_labels ();
 
     /* Clear the current TreeView model */ 
     main_tree_view_clr ();

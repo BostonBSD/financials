@@ -313,9 +313,23 @@ static void start_threads ()
        This will download the NYSE and NASDAQ symbol list when the application loads.
        If there is no internet connection or the server is unavailable cURL will return an
        error, but otherwise the application should run as normal.
-    */
+
+       Comment out the next line to avoid the symbol list download. */
     pthread_create( &thread_id, NULL, GUIThreadHandler, (void *)RSI_COMPLETION );
 }
+
+/* Engineering Note */
+
+/* After the gtk_main loop starts nearly all computational tasks 
+   are running in a separate thread concurrently with the main thread. 
+
+   The GUIThreadHandler function in gui_threads.c is essentially the 
+   heart of the application after the main loop starts. Nearly every 
+   gui signal is connected to a callback function which then creates 
+   a new thread and passes a signal to the GUIThreadHandler function.
+
+   When the GUI needs to be updated a gdk_threads_add_idle statement 
+   sends a function into the main loop. */
 
 void GuiStart (void *data)
 /* Setup GUI widgets and display the GUI. */

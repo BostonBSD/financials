@@ -40,7 +40,7 @@ typedef struct MemType MemType;
 /* A data structure used to hold the result of the cURL request. */
 struct MemType { 
     size_t size;
-    char *memory;
+    char* memory;
 };
 
 #endif /* MULTICURL_TYPES_HEADER_H */

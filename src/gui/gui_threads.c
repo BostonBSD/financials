@@ -37,7 +37,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/gui.h"
 
 #include "../include/class_types.h"   /* portfolio_packet, equity_folder, metal, meta */
-#include "../include/sqlite.h"
 #include "../include/workfuncs.h"
 
 #include "../include/globals.h"       /* portfolio_packet packet, equity_folder *Folder, 
@@ -48,24 +47,20 @@ static symbol_name_map *sym_map = NULL;    /* A symbol to name map handle, only 
 
 static bool check_fetch_data_double_clicked (cb_signal index_signal){
     /* If MAIN_FETCH_BTN double clicked looping stops, change btn label. */
-    if ( index_signal == MAIN_FETCH_BTN && *MetaData->fetching_data_bool == true ){
-        pthread_mutex_lock( &mutex_working[ FETCH_DATA_MUTEX ] );   
+    if ( index_signal == MAIN_FETCH_BTN && packet->IsFetchingData () == true ){
         
-        *MetaData->fetching_data_bool = false;
+        packet->SetFetchingData ( false );
+        gdk_threads_add_idle ( MainFetchBTNLabel, packet );
         
-        pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
-
-        gdk_threads_add_idle ( MainFetchBTNLabel, MetaData->fetching_data_bool );
-        
-        /* If we are already fetching data, set fetching flag to false, change button label and
+        /* If we are already fetching data, set fetching data to false, change button label and
            exit this thread. */
         return true;
-    } else if ( index_signal == MAIN_FETCH_BTN && *MetaData->fetching_data_bool == false ){
+    } else if ( index_signal == MAIN_FETCH_BTN && packet->IsFetchingData () == false ){
 
-        *MetaData->fetching_data_bool = true;
-        gdk_threads_add_idle ( MainFetchBTNLabel, MetaData->fetching_data_bool );
+        packet->SetFetchingData ( true );
+        gdk_threads_add_idle ( MainFetchBTNLabel, packet );
 
-        /* If we are not fetching data, set fetching flag to true, change button label and
+        /* If we are not fetching data, set fetching data to true, change button label and
            continue this thread. */
         return false;
 
@@ -113,10 +108,10 @@ void *GUIThreadHandler (void *data){
     {
         case MAIN_FETCH_BTN:
             /* The number of seconds between data fetch operations. */
-            if( *MetaData->updates_per_min_f <= 0 ){
-                seconds_per_iteration = 0;
+            if( packet->GetUpdatesPerMinute () <= 0.0f ){
+                seconds_per_iteration = 0.0f;
             } else {
-                seconds_per_iteration = 60 / *MetaData->updates_per_min_f;
+                seconds_per_iteration = 60.0f / packet->GetUpdatesPerMinute ();
             }
 
             /* Because loop_val is not always evenly divisible by the
@@ -124,14 +119,14 @@ void *GUIThreadHandler (void *data){
                approximate length of time plus the slack seconds. */
 
             /* The number of seconds to keep looping. */
-            loop_val = 3600 * *MetaData->updates_hours_f;
+            loop_val = 3600 * packet->GetHoursOfUpdates ();
             /* If the hours to run is zero, run one loop iteration. */
-            if( loop_val == 0 ) loop_val = 1;
+            if( loop_val == 0.0f ) loop_val = 1.0f;
 
             time( &current_time );
             end_time = current_time + (time_t)loop_val;
             
-            while( current_time < end_time && *MetaData->fetching_data_bool == true ){
+            while( current_time < end_time && packet->IsFetchingData () ){
                 /* This mutex prevents the program from crashing if an
                    MAIN_EXIT, EQUITY_OK_BTN, 
                    BUL_OK_BTN, CASH_OK_BTN, 
@@ -141,37 +136,29 @@ void *GUIThreadHandler (void *data){
                 time( &start_curl );
                 pthread_mutex_lock( &mutex_working[ FETCH_DATA_MUTEX ] );     
                 
-                if ( *MetaData->multicurl_cancel_bool == true ){
-                    pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
+                if ( packet->IsCurlCanceled () ){
+                    pthread_mutex_unlock ( &mutex_working[ FETCH_DATA_MUTEX ] );
                     break;
                 }
 
-                Precious->GetData( Precious );
-                Folder->GetData( Folder );
+                packet->GetData ();
 
-                if ( *MetaData->multicurl_cancel_bool == true ){
-                    pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
+                if ( packet->IsCurlCanceled () ){
+                    pthread_mutex_unlock ( &mutex_working[ FETCH_DATA_MUTEX ] );
                     break;
                 }
 
-                pthread_mutex_lock( &mutex_working [CLASS_MEMBER_MUTEX ] );
+                packet->ExtractData ();
+                packet->Calculate ();
+                packet->ToStrings ();
 
-                Precious->ExtractData( Precious );
-                Folder->ExtractData( Folder );
-
-                pthread_mutex_unlock( &mutex_working [CLASS_MEMBER_MUTEX ] );
-
-                /* PerformCalculations has its own mutex */
-                PerformCalculations ( Folder, Precious, MetaData );
-
-                pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
+                pthread_mutex_unlock ( &mutex_working[ FETCH_DATA_MUTEX ] );
 
                 /* Set Gtk treeview. */
-                gdk_threads_add_idle ( MainPrimaryTreeview, &packet );
+                gdk_threads_add_idle ( MainPrimaryTreeview, packet );
            
-                seconds_to_open = SecondsToOpen ();
                 /* If the market is closed or today is a holiday only loop once. */
-                if( seconds_to_open != 0 || *MetaData->holiday_bool ) {
+                if( packet->SecondsToOpen () || packet->IsHoliday () || loop_val == 1.0f ) {
                     break;
                 }
 
@@ -188,8 +175,8 @@ void *GUIThreadHandler (void *data){
                 /* Find the current epoch time. */
                 time( &current_time );
             }
-            *MetaData->fetching_data_bool = false;
-            gdk_threads_add_idle ( MainFetchBTNLabel, MetaData->fetching_data_bool );
+            packet->SetFetchingData ( false );
+            gdk_threads_add_idle ( MainFetchBTNLabel, packet );
             break;
 
         case ABOUT_TOGGLE_BTN:
@@ -197,21 +184,19 @@ void *GUIThreadHandler (void *data){
             break;
 
         case EQUITY_TOGGLE_BTN:
-            gdk_threads_add_idle( AddRemShowHide, &packet );
+            gdk_threads_add_idle ( AddRemShowHide, packet );
             break;
 
         case EQUITY_OK_BTN: 
-            gdk_threads_add_idle( AddRemShowHide, &packet );            
+            gdk_threads_add_idle ( AddRemShowHide, packet );            
 
             /* The Mutex block is within this function. */
-            gdk_threads_add_idle( AddRemOk, &packet );
-            
-            if( *MetaData->fetching_data_bool == false ) gdk_threads_add_idle( MainDefaultTreeview, &packet );            
+            gdk_threads_add_idle ( AddRemOk, packet );           
 
             break;
 
         case EQUITY_CANCEL_BTN:
-            gdk_threads_add_idle( AddRemShowHide, &packet );
+            gdk_threads_add_idle ( AddRemShowHide, packet );
             break;
 
         case EQUITY_SWITCH:
@@ -227,22 +212,29 @@ void *GUIThreadHandler (void *data){
             break;
 
         case BUL_TOGGLE_BTN:
-            gdk_threads_add_idle( BullionShowHide, &packet );
+            gdk_threads_add_idle( BullionShowHide, packet );
             break;
 
         case BUL_OK_BTN:
-            pthread_mutex_lock( &mutex_working[ FETCH_DATA_MUTEX ] ); 
+            pthread_mutex_lock ( &mutex_working[ FETCH_DATA_MUTEX ] ); 
 
-            BullionOk ( &packet );
+            BullionOk ( packet );
 
-            pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
+            pthread_mutex_unlock ( &mutex_working[ FETCH_DATA_MUTEX ] );
 
-            gdk_threads_add_idle( BullionShowHide, &packet );
-            if( *MetaData->fetching_data_bool == false ) gdk_threads_add_idle( MainDefaultTreeview, &packet );
+            gdk_threads_add_idle ( BullionShowHide, packet );
+            if( packet->IsFetchingData () == false ) {
+                gdk_threads_add_idle ( MainDefaultTreeview, packet );
+            } else {
+                packet->Calculate ();
+                packet->ToStrings ();
+                /* Set Gtk treeview. */
+                gdk_threads_add_idle ( MainPrimaryTreeview, packet );
+            }
             break;
 
         case BUL_CANCEL_BTN:
-            gdk_threads_add_idle( BullionShowHide, &packet );
+            gdk_threads_add_idle ( BullionShowHide, packet );
             break;
 
         case BUL_CURSOR_MOVE:
@@ -250,22 +242,29 @@ void *GUIThreadHandler (void *data){
             break;
 
         case CASH_TOGGLE_BTN:
-            gdk_threads_add_idle( CashShowHide, &packet );
+            gdk_threads_add_idle ( CashShowHide, packet );
             break;
 
         case CASH_OK_BTN:
-            pthread_mutex_lock( &mutex_working[ FETCH_DATA_MUTEX ] );
+            pthread_mutex_lock ( &mutex_working[ FETCH_DATA_MUTEX ] );
 
-            CashOk ( &packet );
+            CashOk ( packet );
 
-            pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
+            pthread_mutex_unlock ( &mutex_working[ FETCH_DATA_MUTEX ] );
 
-            gdk_threads_add_idle( CashShowHide, &packet );
-            if( *MetaData->fetching_data_bool == false ) gdk_threads_add_idle( MainDefaultTreeview, &packet );
+            gdk_threads_add_idle ( CashShowHide, packet );
+            if( packet->IsFetchingData () == false ) {
+                gdk_threads_add_idle ( MainDefaultTreeview, packet );
+            } else {
+                packet->Calculate ();
+                packet->ToStrings ();
+                /* Set Gtk treeview. */
+                gdk_threads_add_idle ( MainPrimaryTreeview, packet );
+            }
             break;
 
         case CASH_CANCEL_BTN:
-            gdk_threads_add_idle( CashShowHide, &packet );
+            gdk_threads_add_idle ( CashShowHide, packet );
             break;
 
         case CASH_CURSOR_MOVE:
@@ -273,21 +272,21 @@ void *GUIThreadHandler (void *data){
             break;
 
         case API_TOGGLE_BTN:
-            gdk_threads_add_idle( APIShowHide, &packet );
+            gdk_threads_add_idle ( APIShowHide, packet );
             break;
 
         case API_OK_BTN:
-            pthread_mutex_lock( &mutex_working[ FETCH_DATA_MUTEX ] );
+            pthread_mutex_lock ( &mutex_working[ FETCH_DATA_MUTEX ] );
             
-            APIOk ( &packet );
+            APIOk ( packet );
 
-            pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
+            pthread_mutex_unlock ( &mutex_working[ FETCH_DATA_MUTEX ] );
 
-            gdk_threads_add_idle( APIShowHide, &packet );
+            gdk_threads_add_idle ( APIShowHide, packet );
             break;
 
         case API_CANCEL_BTN:
-            gdk_threads_add_idle( APIShowHide, &packet );
+            gdk_threads_add_idle ( APIShowHide, packet );
             break;
 
         case API_CURSOR_MOVE:
@@ -303,8 +302,8 @@ void *GUIThreadHandler (void *data){
                doesn't block the gui main loop. 
                */
             RSIGetSymbol( &symbol );
-            RSIOutput = FetchRSIData ( symbol, MetaData );
-            if ( *MetaData->multicurl_cancel_bool == true ){ 
+            RSIOutput = FetchRSIData ( symbol, packet );
+            if ( packet->IsCurlCanceled () ){ 
                 free( symbol );
                 if( RSIOutput ) { 
                     free ( RSIOutput->memory ); 
@@ -314,25 +313,25 @@ void *GUIThreadHandler (void *data){
             }
 
             /* Clear the current TreeView model */ 
-            gdk_threads_add_idle( RSITreeViewClear, NULL );
+            gdk_threads_add_idle ( RSITreeViewClear, NULL );
 
             /* Get the security name from the symbol map. */ 
-            sec_name = GetSecurityName( symbol, sym_map );
-            free( symbol );
+            sec_name = GetSecurityName ( symbol, sym_map );
+            free ( symbol );
 
             /* Set the security name label, this function runs inside the Gtk Loop. 
                And will free the sec_name string. */
-            gdk_threads_add_idle( RSISetSNLabel, sec_name );
+            gdk_threads_add_idle ( RSISetSNLabel, sec_name );
 
             /* Set and display the RSI treeview model.
                This function frees RSIOutput */
             /* gdk_threads_add_idle doesn't block this thread, we cannot free 
                RSIOutput here */
-            gdk_threads_add_idle( RSIMakeTreeview, RSIOutput );
+            gdk_threads_add_idle ( RSIMakeTreeview, RSIOutput );
             
             break;
         case RSI_CURSOR_MOVE:
-            gdk_threads_add_idle( RSICursorMove, NULL );
+            gdk_threads_add_idle ( RSICursorMove, NULL );
             break;
         case RSI_COMPLETION:
             /* Fetch the stock symbols and names outside the Gtk
@@ -347,16 +346,16 @@ void *GUIThreadHandler (void *data){
 
             pthread_mutex_lock( &mutex_working[ RSI_COMPLETION_FETCH_MUTEX ] );
 
-            sym_map = SymNameFetch ( MetaData );
+            sym_map = SymNameFetch ( packet );
 
-            if ( *MetaData->multicurl_cancel_bool == true ) {
+            if ( packet->IsCurlCanceled () ) {
                 pthread_mutex_unlock( &mutex_working[ RSI_COMPLETION_FETCH_MUTEX ] );
                 break;
             }
 
             /* gdk_threads_add_idle is non-blocking, we need the mutex
                in the RSICompletionSet function. */
-            if(sym_map) {
+            if( sym_map ) {
                 gdk_threads_add_idle( RSICompletionSet, sym_map );
             }
             pthread_mutex_unlock( &mutex_working[ RSI_COMPLETION_FETCH_MUTEX ] );
@@ -379,53 +378,46 @@ void *GUIThreadHandler (void *data){
             }
             break;
         case MAIN_TIME_CLOSE_INDICATOR:
-            NY_Time = NYTimeComponents ();
-            *MetaData->holiday_bool = IsHoliday ( NY_Time );
-            seconds_to_open = SecondsToOpen ();
+            NY_Time = packet->SetHoliday ();            
+            seconds_to_open = packet->SecondsToOpen ();
 
             while(1){
-                if ( *MetaData->holiday_bool ) {
-                    gdk_threads_add_idle ( MainDisplayTimeRemaining, &packet );
+                if ( packet->IsHoliday () ) {
+                    gdk_threads_add_idle ( MainDisplayTimeRemaining, packet );
                     sleep(  3600 * ( (9 + 24) - NY_Time.tm_hour ) );
-                    NY_Time = NYTimeComponents ();
-                    *MetaData->holiday_bool = IsHoliday ( NY_Time );
+                    NY_Time = packet->SetHoliday ();
                 }
 
-                if ( !(*MetaData->holiday_bool) && seconds_to_open == 0 ){
-                    gdk_threads_add_idle ( MainDisplayTimeRemaining, &packet );
+                if ( ( packet->IsHoliday () == false ) && ( seconds_to_open == 0 )){
+                    gdk_threads_add_idle ( MainDisplayTimeRemaining, packet );
 
                     sleep( 1 );
 
                     /* On Black Friday the market closes @ 13:00 EST */
                     if( NY_Time.tm_mon == 10 && NY_Time.tm_mday >= 23 && NY_Time.tm_mday <= 29 && NY_Time.tm_wday == 5 ){
-                        NY_Time = NYTimeComponents ();
-                        *MetaData->holiday_bool = IsHoliday ( NY_Time );
+                        NY_Time = packet->SetHoliday ();
                     }
                     
-                } else if ( !(*MetaData->holiday_bool) && seconds_to_open > 0 ){
-                    gdk_threads_add_idle ( MainDisplayTimeRemaining, &packet );
+                } else if ( ( packet->IsHoliday () == false ) && seconds_to_open > 0 ){
+                    gdk_threads_add_idle ( MainDisplayTimeRemaining, packet );
                     sleep( seconds_to_open );
-                    NY_Time = NYTimeComponents ();
-                    *MetaData->holiday_bool = IsHoliday ( NY_Time );
+                    NY_Time = packet->SetHoliday ();
                 } 
-                seconds_to_open = SecondsToOpen ();             
+                seconds_to_open = packet->SecondsToOpen ();             
             }
             break;
 
         case MAIN_EXIT:
 
-            *MetaData->multicurl_cancel_bool = true;
-            StopMultiCurl ( Folder, Precious, MetaData );
+            packet->SetCurlCanceled ( true );
+            packet->StopMultiCurl ();
 
             /* This mutex prevents the program from crashing if a
                MAIN_FETCH_BTN signal is run in parallel with this thread. */
             pthread_mutex_lock( &mutex_working[ FETCH_DATA_MUTEX ] );
 
             /* Save the Window Size and Location. */
-            SqliteAddMainWindowSize ( WindowStruct.main_width , WindowStruct.main_height, MetaData );
-            SqliteAddMainWindowPos ( WindowStruct.main_x_pos, WindowStruct.main_y_pos, MetaData );
-            SqliteAddRSIWindowSize ( WindowStruct.rsi_width, WindowStruct.rsi_height, MetaData );
-            SqliteAddRSIWindowPos ( WindowStruct.rsi_x_pos, WindowStruct.rsi_y_pos, MetaData );
+            packet->SetWindowDataSql ();
 
             /* This mutex prevents the program from crashing if a
                RSI_COMPLETION signal is run in parallel with this thread. */

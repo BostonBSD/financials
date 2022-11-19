@@ -30,10 +30,18 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef JSON_HEADER_H
-#define JSON_HEADER_H
+#ifndef CLASS_GLOBALS_HEADER_H
+#define CLASS_GLOBALS_HEADER_H
 
-/* json */
-void* JsonExtractEquity(char*,double*,double*,double*,double*,double*,double*,double*);
+#include "class_types.h"   /* portfolio_packet, equity_folder, metal, meta */
 
-#endif /* JSON_HEADER_H */
+/* Globals */
+/* These globals are only accessible from class_bullion.c, 
+   class_equity.c, class_meta.c, and class_packet.c */
+extern equity_folder* Folder;   /* A class handle to an array of stock class objects, */
+                                /* can change dynamically. [An array of nested classes 
+                                   within the Folder class] */
+extern metal* Precious;         /* A class handle to the bullion class object pointers. */
+extern meta* MetaData;          /* A class object pointer called MetaData. */
+
+#endif /* CLASS_GLOBALS_HEADER_H */

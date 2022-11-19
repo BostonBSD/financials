@@ -38,13 +38,13 @@ POSSIBILITY OF SUCH DAMAGE.
 
 void SqliteProcessing (equity_folder*,metal*,meta*,window_data*);
 
-void SqliteAddEquity (char*,char*,equity_folder*,meta*);
-void SqliteRemoveEquity (char*,equity_folder*,meta*);
-void SqliteRemoveAllEquity (equity_folder*,meta*);
+void SqliteAddEquity (char*,char*,meta*);
+void SqliteRemoveEquity (char*,meta*);
+void SqliteRemoveAllEquity (meta*);
 
 void SqliteAddBullion (char*,char*,char*,metal*,meta*);
 void SqliteAddCash (char*,meta*);
-void SqliteAddAPIData (char*,char*,equity_folder*,meta*);
+void SqliteAddAPIData (char*,char*,meta*);
 
 void SqliteAddMainWindowSize (int,int,meta*);
 void SqliteAddMainWindowPos (int,int,meta*);
