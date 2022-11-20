@@ -113,9 +113,6 @@ int RSICompletionSet (void *data){
     gtk_entry_completion_set_match_func(completion, (GtkEntryCompletionMatchFunc)rsi_completion_match, NULL, NULL);
     /* Set RSIView entrybox completion widget. */
     gtk_entry_set_completion( GTK_ENTRY( EntryBox ), completion );
-    /* Set AddRemoveSecuritySymbol entrybox completion widget. */
-    //EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecuritySymbolEntryBox") );
-    //gtk_entry_set_completion( GTK_ENTRY( EntryBox ), completion );
 
     /* The text column to display is column 2 */
     gtk_entry_completion_set_text_column( completion, 2 );

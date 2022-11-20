@@ -86,7 +86,7 @@ function, which takes two parameters. */
 gboolean GUICallbackHandler_expander_bar (GtkWidget *expander, void *data)
 {
     meta *D = packet->portfolio_meta_info;
-    *D->index_bar_expanded_bool = gtk_expander_get_expanded ( GTK_EXPANDER ( expander ) );
+    
     /* The expansion appears to be the state prior to the signal, so we invert the state */
     if ( gtk_expander_get_expanded ( GTK_EXPANDER ( expander ) ) ){
         *D->index_bar_expanded_bool = false;
