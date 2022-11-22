@@ -33,10 +33,9 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef SQLITE_HEADER_H
 #define SQLITE_HEADER_H
 
-#include "gui_types.h"       /* window_data */
-#include "class_types.h"     /* equity_folder, metal, meta */
+#include "class_types.h"     /* equity_folder, metal, meta, window_data */
 
-void SqliteProcessing (equity_folder*,metal*,meta*,window_data*);
+void SqliteProcessing (portfolio_packet*);
 
 void SqliteAddEquity (char*,char*,meta*);
 void SqliteRemoveEquity (char*,meta*);

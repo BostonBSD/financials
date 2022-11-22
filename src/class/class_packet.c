@@ -31,12 +31,13 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <stdlib.h>
+#include <time.h>                   /* time_t, struct tm, time ()  */
 
-#include "../include/class.h"
-#include "../include/class_globals.h"
+#include "../include/class.h"       /* The class init and destruct funcs are required 
+                                       in the class methods, includes portfolio_packet 
+                                       metal, meta, and equity_folder class types */
 
 #include "../include/globals.h"
-#include "../include/gui_globals.h"
 
 #include "../include/multicurl.h"
 #include "../include/mutex.h"
@@ -54,13 +55,13 @@ static void Calculate () {
     pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
 
     portfolio_packet* pkg = packet;
-    equity_folder* F = pkg->securities_folder;
-    metal* M = pkg->metal_chest;
-    meta* D = pkg->portfolio_meta_info;
+    equity_folder* F = pkg->GetEquityFolderClass ();
+    metal* M = pkg->GetMetalClass ();
+    meta* D = pkg->GetMetaClass ();
 
     F->Calculate ();
     M->Calculate ();
-    D->CalculatePortfolio (); 
+    D->CalculatePortfolio ( pkg ); 
     /* No need to calculate the index data [the gain calculation is performed during extraction] */
 
     pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );   
@@ -70,9 +71,9 @@ static void ToStrings () {
     pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
 
     portfolio_packet* pkg = packet;
-    equity_folder* F = pkg->securities_folder;
-    metal* M = pkg->metal_chest;
-    meta* D = pkg->portfolio_meta_info;
+    equity_folder* F = pkg->GetEquityFolderClass ();
+    metal* M = pkg->GetMetalClass ();
+    meta* D = pkg->GetMetaClass ();
 
     D->ToStringsPortfolio ();
     D->ToStringsIndices ();
@@ -83,9 +84,9 @@ static void ToStrings () {
 }
 
 static int perform_multicurl_request ( portfolio_packet *pkg ){
-    equity_folder* F = pkg->securities_folder;
-    metal* M = pkg->metal_chest;
-    meta* Met = pkg->portfolio_meta_info;
+    equity_folder* F = pkg->GetEquityFolderClass ();
+    metal* M = pkg->GetMetalClass ();
+    meta* Met = pkg->GetMetaClass ();
     int return_code = 0;
 
     /* Perform the cURL requests simultaneously using multi-cURL. */
@@ -117,9 +118,9 @@ static int GetData () {
     pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
 
     portfolio_packet* pkg = packet;
-    equity_folder* F = pkg->securities_folder;
-    metal* M = pkg->metal_chest;
-    meta* Met = pkg->portfolio_meta_info;
+    equity_folder* F = pkg->GetEquityFolderClass ();
+    metal* M = pkg->GetMetalClass ();
+    meta* Met = pkg->GetMetaClass ();
     int return_code = 0;
 
     Met->SetUpCurlIndicesData ( pkg );  /* Four Indices */
@@ -135,9 +136,9 @@ static void ExtractData () {
     pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
 
     portfolio_packet* pkg = packet;
-    equity_folder* F = pkg->securities_folder;
-    metal* M = pkg->metal_chest;
-    meta* D = pkg->portfolio_meta_info;
+    equity_folder* F = pkg->GetEquityFolderClass ();
+    metal* M = pkg->GetMetalClass ();
+    meta* D = pkg->GetMetaClass ();
 
     D->ExtractIndicesData ();
     M->ExtractData ();
@@ -148,7 +149,7 @@ static void ExtractData () {
 
 static bool IsFetchingData () {
     portfolio_packet *pkg = packet;
-    meta *D = pkg->portfolio_meta_info;
+    meta *D = pkg->GetMetaClass ();
     bool return_value = *D->fetching_data_bool;
     
     return return_value;
@@ -158,20 +159,18 @@ static void SetFetchingData ( bool data ) {
     pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
 
     portfolio_packet *pkg = packet;
-    meta *D = pkg->portfolio_meta_info;
+    meta *D = pkg->GetMetaClass ();
     *D->fetching_data_bool = data;
 
     pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] ); 
 }
 
 static bool IsCurlCanceled () {
-    pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
 
     portfolio_packet *pkg = packet;
-    meta *D = pkg->portfolio_meta_info;
+    meta *D = pkg->GetMetaClass ();
     bool return_value = *D->multicurl_cancel_bool;
 
-    pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] ); 
     return return_value;
 }
 
@@ -179,20 +178,18 @@ static void SetCurlCanceled ( bool data ) {
     pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
 
     portfolio_packet *pkg = packet;
-    meta *D = pkg->portfolio_meta_info;
+    meta *D = pkg->GetMetaClass ();
     *D->multicurl_cancel_bool = data;
 
     pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] ); 
 }
 
 static bool IsHoliday () {
-    pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
 
     portfolio_packet *pkg = packet;
-    meta *D = pkg->portfolio_meta_info;
+    meta *D = pkg->GetMetaClass ();
     bool return_value = *D->holiday_bool;
 
-    pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] ); 
     return return_value;
 }
 
@@ -200,7 +197,7 @@ static struct tm SetHoliday () {
     pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
 
     portfolio_packet *pkg = packet;
-    meta *D = pkg->portfolio_meta_info;
+    meta *D = pkg->GetMetaClass ();
     struct tm NY_Time = NYTimeComponents ();
     *D->holiday_bool = CheckHoliday ( NY_Time );
 
@@ -212,7 +209,7 @@ static double GetHoursOfUpdates () {
     pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
 
     portfolio_packet *pkg = packet;
-    meta *D = pkg->portfolio_meta_info;
+    meta *D = pkg->GetMetaClass ();
     double return_value = *D->updates_hours_f;
 
     pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] ); 
@@ -223,7 +220,7 @@ static double GetUpdatesPerMinute () {
     pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
 
     portfolio_packet *pkg = packet;
-    meta *D = pkg->portfolio_meta_info;
+    meta *D = pkg->GetMetaClass ();
     double return_value = *D->updates_per_min_f;
 
     pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] ); 
@@ -235,9 +232,9 @@ static void remove_main_curl_handles ( portfolio_packet *pkg )
    immediately. curl_multi_remove_handle does nothing if the easy handle is not
    currently set in the multihandle. */
 {
-    metal *M = pkg->metal_chest;
-    equity_folder *F = pkg->securities_folder;
-    meta *Met = pkg->portfolio_meta_info;
+    metal *M = pkg->GetMetalClass ();
+    equity_folder *F = pkg->GetEquityFolderClass ();
+    meta *Met = pkg->GetMetaClass ();
 
     curl_multi_wakeup( pkg->multicurl_main_hnd );
     pthread_mutex_lock( &mutex_working[ MULTICURL_PROG_MUTEX ] );
@@ -263,7 +260,7 @@ static void remove_main_curl_handles ( portfolio_packet *pkg )
 
 static void StopMultiCurl () {
     portfolio_packet *pkg = packet;
-    meta *Met = pkg->portfolio_meta_info;
+    meta *Met = pkg->GetMetaClass ();
 
     /* Symbol Name Fetch Multicurl Operation */
     Met->StopSNMapCurl (); 
@@ -276,21 +273,38 @@ static void StopMultiCurl () {
 }
 
 static void SetWindowDataSql () {
+    pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
+
     portfolio_packet *pkg = packet;
-    meta *D = pkg->portfolio_meta_info;
+    meta *D = pkg->GetMetaClass ();
+    window_data *W = pkg->GetWindowData ();
 
     /* Save the Window Size and Location. */
-    SqliteAddMainWindowSize ( WindowStruct.main_width , WindowStruct.main_height, D );
-    SqliteAddMainWindowPos ( WindowStruct.main_x_pos, WindowStruct.main_y_pos, D );
-    SqliteAddRSIWindowSize ( WindowStruct.rsi_width, WindowStruct.rsi_height, D );
-    SqliteAddRSIWindowPos ( WindowStruct.rsi_x_pos, WindowStruct.rsi_y_pos, D );
+    SqliteAddMainWindowSize ( W->main_width , W->main_height, D );
+    SqliteAddMainWindowPos ( W->main_x_pos, W->main_y_pos, D );
+    SqliteAddRSIWindowSize ( W->rsi_width, W->rsi_height, D );
+    SqliteAddRSIWindowPos ( W->rsi_x_pos, W->rsi_y_pos, D );
 
     /* Save the Expander Bar Position. */
     SqliteAddExpanderBarExpanded ( *D->index_bar_expanded_bool, D );
+
+    pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
 }
 
 static void *GetWindowData () {
-    return &WindowStruct;
+    return packet->window_struct;
+}
+
+static void *GetMetaClass () {
+    return packet->portfolio_meta_info;
+}
+
+static void *GetMetalClass () {
+    return packet->metal_chest;
+}
+
+static void *GetEquityFolderClass () {
+    return packet->securities_folder;
 }
 
 static unsigned int Seconds2Open () {
@@ -307,9 +321,7 @@ portfolio_packet *class_init_portfolio_packet ()
     new_class->metal_chest = class_init_metal ();
     new_class->securities_folder = class_init_equity_folder ();
     new_class->portfolio_meta_info = class_init_meta_data ();
-    Folder = new_class->securities_folder;
-    Precious = new_class->metal_chest;
-    MetaData = new_class->portfolio_meta_info;
+    new_class->window_struct = (window_data*) malloc ( sizeof(*new_class->window_struct) );
 
     /* Connect Function Pointers To Function Definitions */
     new_class->Calculate = Calculate;
@@ -327,17 +339,20 @@ portfolio_packet *class_init_portfolio_packet ()
     new_class->SetHoliday = SetHoliday;
     new_class->SetWindowDataSql = SetWindowDataSql;
     new_class->GetWindowData = GetWindowData;
+    new_class->GetMetaClass = GetMetaClass;
+    new_class->GetMetalClass = GetMetalClass;
+    new_class->GetEquityFolderClass = GetEquityFolderClass;
     new_class->SecondsToOpen = Seconds2Open;
 
     /* Initialize the main and rsi window size and locations */
-    WindowStruct.main_height = 0;
-    WindowStruct.main_width = 0;
-    WindowStruct.main_x_pos = 0;
-    WindowStruct.main_y_pos = 0;
-    WindowStruct.rsi_height = 0;
-    WindowStruct.rsi_width = 0;
-    WindowStruct.rsi_x_pos = 0;
-    WindowStruct.rsi_y_pos = 0;
+    new_class->window_struct->main_height = 0;
+    new_class->window_struct->main_width = 0;
+    new_class->window_struct->main_x_pos = 0;
+    new_class->window_struct->main_y_pos = 0;
+    new_class->window_struct->rsi_height = 0;
+    new_class->window_struct->rsi_width = 0;
+    new_class->window_struct->rsi_x_pos = 0;
+    new_class->window_struct->rsi_y_pos = 0;
 
     /* General Multicurl Handle for the Main Fetch Operation */
     new_class->multicurl_main_hnd = curl_multi_init ();
@@ -353,6 +368,7 @@ void class_destruct_portfolio_packet (portfolio_packet *pkg)
     if ( pkg->securities_folder ) class_destruct_equity_folder ( pkg->securities_folder );
     if ( pkg->metal_chest ) class_destruct_metal ( pkg->metal_chest );
     if ( pkg->portfolio_meta_info ) class_destruct_meta_data ( pkg->portfolio_meta_info );
+    if ( pkg->window_struct ) free ( pkg->window_struct );
 
     if ( pkg->multicurl_main_hnd ) curl_multi_cleanup ( pkg->multicurl_main_hnd );
 

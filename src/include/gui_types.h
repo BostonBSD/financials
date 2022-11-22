@@ -48,17 +48,6 @@ typedef struct {                    /* A container to hold the type of row and s
   char* symbol;
 } right_click_container;
 
-typedef struct {
-  int main_height;
-  int main_width;
-  int main_x_pos;
-  int main_y_pos;
-  int rsi_height;
-  int rsi_width;
-  int rsi_x_pos;
-  int rsi_y_pos;
-} window_data;
-
 /* Window Signals */
 enum {
   GUI_MAIN_WINDOW,

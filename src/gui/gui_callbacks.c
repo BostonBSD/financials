@@ -38,10 +38,10 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "../include/gui.h"
 #include "../include/gui_types.h"
-#include "../include/gui_globals.h"
+#include "../include/gui_globals.h"         /* GtkBuilder *builder */
 
 #include "../include/sqlite.h"
-#include "../include/class_types.h"         /* portfolio_packet, equity_folder, metal, meta */
+#include "../include/class_types.h"         /* portfolio_packet, equity_folder, metal, meta, window_data */
 #include "../include/globals.h"             /* portfolio_packet packet */
 #include "../include/mutex.h"               /* pthread_mutex_t mutex_working[ MUTEX_NUMBER ] */
 
@@ -85,7 +85,7 @@ function, which takes two parameters. */
 
 gboolean GUICallbackHandler_expander_bar (GtkWidget *expander, void *data)
 {
-    meta *D = packet->portfolio_meta_info;
+    meta *D = packet->GetMetaClass ();
     
     /* The expansion appears to be the state prior to the signal, so we invert the state */
     if ( gtk_expander_get_expanded ( GTK_EXPANDER ( expander ) ) ){
@@ -112,22 +112,24 @@ gboolean GUICallbackHandler_window_data (GtkWidget *window, GdkEvent *event, voi
     gtk_window_get_size ( GTK_WINDOW( window ), &width, &height );
     gtk_window_get_position ( GTK_WINDOW ( window ), &x, &y );
 
+    window_data *W = packet->GetWindowData ();
+
     int s = (int)((uintptr_t)data);    
 
     switch( s ){
         case GUI_MAIN_WINDOW:
-            WindowStruct.main_width = (int)width;
-            WindowStruct.main_height = (int)height;
+            W->main_width = (int)width;
+            W->main_height = (int)height;
 
-            WindowStruct.main_x_pos = (int)x;
-            WindowStruct.main_y_pos = (int)y;
+            W->main_x_pos = (int)x;
+            W->main_y_pos = (int)y;
             break;
         case GUI_RSI_WINDOW:
-            WindowStruct.rsi_width = (int)width;
-            WindowStruct.rsi_height = (int)height;
+            W->rsi_width = (int)width;
+            W->rsi_height = (int)height;
             
-            WindowStruct.rsi_x_pos = (int)x;
-            WindowStruct.rsi_y_pos = (int)y;
+            W->rsi_x_pos = (int)x;
+            W->rsi_y_pos = (int)y;
             break;    
     }
 
@@ -201,7 +203,7 @@ static void view_popup_menu_onViewRSIData (GtkWidget *menuitem, void *userdata)
     GtkWidget* Button = GTK_WIDGET ( gtk_builder_get_object (builder, "ViewRSIFetchDataBTN") );
     gboolean visible = gtk_widget_is_visible ( Window );
 
-    if( !visible ) RSIShowHide ();
+    if( !visible ) RSIShowHide ( packet );
 
     gtk_entry_set_text ( GTK_ENTRY( EntryBox ), symbol );
     /* move the cursor to the end of the string */
@@ -216,8 +218,8 @@ static void view_popup_menu_onDeleteRow (GtkWidget *menuitem, void *userdata)
     char *symbol = (char*) userdata;
 
     portfolio_packet *pkg = packet;
-    equity_folder *F = pkg->securities_folder;
-    meta *D = pkg->portfolio_meta_info;
+    equity_folder *F = pkg->GetEquityFolderClass ();
+    meta *D = pkg->GetMetaClass ();
 
     /* Prevents Program From Crashing During A Data Fetch Operation */
     pthread_mutex_lock( &mutex_working[ FETCH_DATA_MUTEX ] );
@@ -241,8 +243,8 @@ static void view_popup_menu_onDeleteAllEquityRows (GtkWidget *menuitem)
 {
     if (menuitem == NULL) return;
     portfolio_packet *pkg = packet;
-    equity_folder *F = pkg->securities_folder;
-    meta *D = pkg->portfolio_meta_info;
+    equity_folder *F = pkg->GetEquityFolderClass ();
+    meta *D = pkg->GetMetaClass ();
 
     /* Prevents Program From Crashing During A Data Fetch Operation */
     pthread_mutex_lock( &mutex_working[ FETCH_DATA_MUTEX ] );
@@ -293,8 +295,7 @@ gboolean view_onButtonPressed (GtkWidget *treeview, GdkEventButton *event)
     {
     /* optional: select row if no row is selected or only
      *  one other row is selected (will only do something
-     *  if you set a tree selection mode as described later
-     *  in the tutorial) */
+     *  if you set a tree selection mode) */
         if (1)
         {
             GtkTreeSelection *selection;          

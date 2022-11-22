@@ -33,14 +33,12 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <gtk/gtk.h>
 
 #include "../include/gui_types.h"     /* symbol_name_map, cb_signal, etc */
-#include "../include/gui_globals.h"   /* sem_t semaphore[ SIGNAL_NUM ], window_data WindowStruct */
+#include "../include/gui_globals.h"   /* sem_t semaphore[ SIGNAL_NUM ] */
 #include "../include/gui.h"
 
-#include "../include/class_types.h"   /* portfolio_packet, equity_folder, metal, meta */
 #include "../include/workfuncs.h"
 
-#include "../include/globals.h"       /* portfolio_packet packet, equity_folder *Folder, 
-                                         metal *Precious, meta *MetaData */
+#include "../include/globals.h"       /* portfolio_packet packet */
 #include "../include/mutex.h"         /* pthread_mutex_t mutex_working[ MUTEX_NUMBER ] */
 
 static symbol_name_map *sym_map = NULL;    /* A symbol to name map handle, only global to this file. */
@@ -158,7 +156,7 @@ void *GUIThreadHandler (void *data){
                 gdk_threads_add_idle ( MainPrimaryTreeview, packet );
            
                 /* If the market is closed or today is a holiday only loop once. */
-                if( packet->SecondsToOpen () || packet->IsHoliday () || loop_val == 1.0f ) {
+                if( loop_val == 1.0f || !packet->IsFetchingData () || packet->SecondsToOpen () || packet->IsHoliday () ) {
                     break;
                 }
 
@@ -170,6 +168,10 @@ void *GUIThreadHandler (void *data){
                    We have double to int casting truncation here. */
                 if( diff < seconds_per_iteration ){
                     sleep( (unsigned int)( seconds_per_iteration - diff ) );
+                } else if ( seconds_per_iteration == 0 ) {
+                    /* Continuous updating for an unlimited number of API calls 
+                       per minute [subscription accounts]. */
+                    sleep ( 1 );
                 }
 
                 /* Find the current epoch time. */
@@ -295,7 +297,7 @@ void *GUIThreadHandler (void *data){
 
         case RSI_TOGGLE_BTN:
             gdk_threads_add_idle( RSITreeViewClear, NULL );
-            gdk_threads_add_idle( RSIShowHide, NULL );
+            gdk_threads_add_idle( RSIShowHide, packet );
             break;
         case RSI_FETCH_BTN:
             /* Get the symbol string and perform multicurl,

@@ -107,7 +107,7 @@ static char *rsi_get_url ( const char *symbol ){
 }
 
 MemType *FetchRSIData (const char *symbol, portfolio_packet *pkg){
-    meta *Met = pkg->portfolio_meta_info;
+    meta *Met = pkg->GetMetaClass ();
     char *MyUrl = NULL;
     MyUrl = rsi_get_url ( symbol );
 

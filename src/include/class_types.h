@@ -227,7 +227,7 @@ typedef struct {
     sub_func_d_t* DoubToStr;
     sub_func_e_t* StrToDoub;
     sub_func_g_t* ToStringsPortfolio;
-    sub_func_g_t* CalculatePortfolio;
+    sub_func_o_t* CalculatePortfolio;
     sub_func_g_t* StopRSICurl;
     sub_func_g_t* StopSNMapCurl;
     sub_func_n_t* SetUpCurlIndicesData;
@@ -279,7 +279,7 @@ typedef struct {
     sub_func_d_t* DoubToStr;
     sub_func_g_t* ToStrings;
     sub_func_g_t* Calculate;
-    sub_func_g_t* GenerateURL;
+    sub_func_o_t* GenerateURL;
     sub_func_n_t* SetUpCurl;
     sub_func_g_t* ExtractData;
     sub_func_p_t* AddStock;
@@ -288,12 +288,25 @@ typedef struct {
     sub_func_o_t* RemoveStock;
 } equity_folder;
 
-/* A handle to our three primary classes for passing through threads */
 typedef struct {
-  /* handles to each of our three classes */
+  int main_height;
+  int main_width;
+  int main_x_pos;
+  int main_y_pos;
+  int rsi_height;
+  int rsi_width;
+  int rsi_x_pos;
+  int rsi_y_pos;
+} window_data;
+
+/* A handle to our three primary classes and the window_data struct for passing through threads */
+typedef struct {
+  /* handles to each of our three classes and the window_data struct */
   metal* metal_chest;
   equity_folder* securities_folder;
   meta* portfolio_meta_info;
+  window_data* window_struct;                          /* A struct that holds the size and position of 
+                                                          the main and rsi windows. */  
 
   /* Main Multicurl Handle for use with data fetch operation */
   CURLM* multicurl_main_hnd;
@@ -314,6 +327,9 @@ typedef struct {
   sub_func_l_t* SetHoliday;
   sub_func_g_t* SetWindowDataSql;
   sub_func_f_t* GetWindowData;
+  sub_func_f_t* GetMetaClass;
+  sub_func_f_t* GetMetalClass;
+  sub_func_f_t* GetEquityFolderClass;
   sub_func_m_t* SecondsToOpen;
 
 } portfolio_packet;

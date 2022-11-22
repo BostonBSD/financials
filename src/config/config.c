@@ -40,8 +40,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <errno.h>
 
 #include "../include/sqlite.h"
-#include "../include/gui_types.h"       /* window_data */
-#include "../include/class_types.h"     /* equity_folder, metal, meta */
+#include "../include/class_types.h"     /* equity_folder, metal, meta, window_data */
 #include "../include/macros.h"
 
 static void config_dir_processing ( const char *home_dir )
@@ -113,15 +112,12 @@ static void config_dir_processing ( const char *home_dir )
     free ( path );
 }
 
-void ReadConfig (portfolio_packet *pkg){
-    metal *M = pkg->metal_chest;
-    meta *D = pkg->portfolio_meta_info;
-    equity_folder *F = pkg->securities_folder;
-    window_data *Win = pkg->GetWindowData ();
+void ReadConfig ( portfolio_packet *pkg ){
+    meta *D = pkg->GetMetaClass ();
        
     /* Make sure the config directory exists. */
     config_dir_processing ( D->home_dir_ch );
 
     /* Process the sqlite db file and populate initial varables. */
-    SqliteProcessing ( F, M, D, Win );
+    SqliteProcessing ( pkg );
 }

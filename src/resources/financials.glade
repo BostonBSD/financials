@@ -949,6 +949,10 @@
                             <property name="halign">start</property>
                             <property name="margin-start">10</property>
                             <property name="label" translatable="yes">New York Time</property>
+                            <attributes>
+                              <attribute name="style" value="normal"/>
+                              <attribute name="variant" value="normal"/>
+                            </attributes>
                           </object>
                           <packing>
                             <property name="left-attach">0</property>
@@ -1001,6 +1005,9 @@
                             <property name="halign">end</property>
                             <property name="margin-end">10</property>
                             <property name="label" translatable="yes">Market Closes In</property>
+                            <attributes>
+                              <attribute name="style" value="normal"/>
+                            </attributes>
                           </object>
                           <packing>
                             <property name="left-attach">2</property>
@@ -1097,9 +1104,11 @@
                                                 <property name="margin-start">10</property>
                                                 <property name="label" translatable="yes">Dow</property>
                                                 <attributes>
-                                                  <attribute name="style" value="italic"/>
+                                                  <attribute name="style" value="normal"/>
+                                                  <attribute name="variant" value="normal"/>
                                                   <attribute name="underline" value="True"/>
-                                                  <attribute name="foreground" value="#34ab2cca4a3d"/>
+                                                  <attribute name="foreground" value="#00ab0a1c281b"/>
+                                                  <attribute name="underline-color" value="#636345452c2c"/>
                                                 </attributes>
                                               </object>
                                               <packing>
@@ -1115,9 +1124,11 @@
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">Nasdaq</property>
                                                 <attributes>
-                                                  <attribute name="style" value="italic"/>
+                                                  <attribute name="style" value="normal"/>
+                                                  <attribute name="variant" value="normal"/>
                                                   <attribute name="underline" value="True"/>
-                                                  <attribute name="foreground" value="#34ab2cca4a3d"/>
+                                                  <attribute name="foreground" value="#00ab0a1c281b"/>
+                                                  <attribute name="underline-color" value="#636345452c2c"/>
                                                 </attributes>
                                               </object>
                                               <packing>
@@ -1133,9 +1144,11 @@
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">S&amp;P 500</property>
                                                 <attributes>
-                                                  <attribute name="style" value="italic"/>
+                                                  <attribute name="style" value="normal"/>
+                                                  <attribute name="variant" value="normal"/>
                                                   <attribute name="underline" value="True"/>
-                                                  <attribute name="foreground" value="#34ab2cca4a3d"/>
+                                                  <attribute name="foreground" value="#00ab0a1c281b"/>
+                                                  <attribute name="underline-color" value="#636345452c2c"/>
                                                 </attributes>
                                               </object>
                                               <packing>
@@ -1151,9 +1164,11 @@
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">Bitcoin</property>
                                                 <attributes>
-                                                  <attribute name="style" value="italic"/>
+                                                  <attribute name="style" value="normal"/>
+                                                  <attribute name="variant" value="normal"/>
                                                   <attribute name="underline" value="True"/>
-                                                  <attribute name="foreground" value="#34ab2cca4a3d"/>
+                                                  <attribute name="foreground" value="#00ab0a1c281b"/>
+                                                  <attribute name="underline-color" value="#636345452c2c"/>
                                                 </attributes>
                                               </object>
                                               <packing>
@@ -1169,9 +1184,11 @@
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">Gold/Silver</property>
                                                 <attributes>
-                                                  <attribute name="style" value="italic"/>
+                                                  <attribute name="style" value="normal"/>
+                                                  <attribute name="variant" value="normal"/>
                                                   <attribute name="underline" value="True"/>
-                                                  <attribute name="foreground" value="#34ab2cca4a3d"/>
+                                                  <attribute name="foreground" value="#00ab0a1c281b"/>
+                                                  <attribute name="underline-color" value="#636345452c2c"/>
                                                 </attributes>
                                               </object>
                                               <packing>
@@ -1187,9 +1204,11 @@
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">Gold</property>
                                                 <attributes>
-                                                  <attribute name="style" value="italic"/>
+                                                  <attribute name="style" value="normal"/>
+                                                  <attribute name="variant" value="normal"/>
                                                   <attribute name="underline" value="True"/>
-                                                  <attribute name="foreground" value="#34ab2cca4a3d"/>
+                                                  <attribute name="foreground" value="#00ab0a1c281b"/>
+                                                  <attribute name="underline-color" value="#636345452c2c"/>
                                                 </attributes>
                                               </object>
                                               <packing>
@@ -1205,9 +1224,11 @@
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">Silver</property>
                                                 <attributes>
-                                                  <attribute name="style" value="italic"/>
+                                                  <attribute name="style" value="normal"/>
+                                                  <attribute name="variant" value="normal"/>
                                                   <attribute name="underline" value="True"/>
-                                                  <attribute name="foreground" value="#34ab2cca4a3d"/>
+                                                  <attribute name="foreground" value="#00ab0a1c281b"/>
+                                                  <attribute name="underline-color" value="#636345452c2c"/>
                                                 </attributes>
                                               </object>
                                               <packing>

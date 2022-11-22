@@ -36,7 +36,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <glib-object.h>
 #include <gtk/gtk.h>
 
-#include "../include/gui_globals.h"
+#include "../include/gui_globals.h"         /* GtkBuilder *builder */
 
 #include "../include/class_types.h"         /* portfolio_packet, equity_folder, metal, meta */
 #include "../include/sqlite.h"
@@ -46,7 +46,7 @@ int APIShowHide (void *data)
 {
     /* Unpack the package */
     portfolio_packet *package = (portfolio_packet*)data;
-    meta *D = package->portfolio_meta_info;
+    meta *D = package->GetMetaClass ();
 
     /* get the GObject and cast as a GtkWidget */
     GtkWidget* window = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoWindow") );
@@ -81,8 +81,8 @@ int APIOk (void *data)
 {
     /* Unpack the package */
     portfolio_packet *package = (portfolio_packet*)data;
-    equity_folder *F = package->securities_folder;
-    meta *D = package->portfolio_meta_info;
+    equity_folder *F = package->GetEquityFolderClass ();
+    meta *D = package->GetMetaClass ();
 
     GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoEquityUrlEntryBox") );
     char* new = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
@@ -90,6 +90,8 @@ int APIOk (void *data)
 
     if( ( strcmp( cur, new ) != 0) ){
         SqliteAddAPIData("Stock_URL", new, D);
+        free ( D->stock_url );
+        D->stock_url = strdup ( new );
     }
     free( new );
     free( cur );
@@ -100,6 +102,8 @@ int APIOk (void *data)
 
     if( ( strcmp( cur, new ) != 0) ){
         SqliteAddAPIData("URL_KEY", new, D);
+        free ( D->curl_key );
+        D->curl_key = strdup ( new );
     }
     free( new );
     free( cur );
@@ -111,6 +115,7 @@ int APIOk (void *data)
 
     if( new_f != cur_f ){
         SqliteAddAPIData("Updates_Per_Min", new, D);
+        *D->updates_per_min_f = (double)new_f;
     }
     free( new );
 
@@ -124,10 +129,11 @@ int APIOk (void *data)
         snprintf(new, 10, "%f", new_f);
         SqliteAddAPIData("Updates_Hours", new, D);
         free( new );
+        *D->updates_hours_f = (double)new_f;
     }
 
     /* Generate the Equity Request URLs. */
-    F->GenerateURL ();
+    F->GenerateURL ( package );
     return 0;
 }
 
@@ -163,7 +169,7 @@ int BullionShowHide (void *data)
 {
     /* Unpack the package */
     portfolio_packet *package = (portfolio_packet*)data;
-    metal *M = package->metal_chest;
+    metal *M = package->GetMetalClass ();
 
     /* get the GObject and cast as a GtkWidget */
     GtkWidget* window = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionWindow") );
@@ -211,8 +217,8 @@ int BullionOk (void *data)
 {
     /* Unpack the package */
     portfolio_packet *package = (portfolio_packet*)data;
-    metal *M = package->metal_chest;
-    meta *D = package->portfolio_meta_info;
+    metal *M = package->GetMetalClass ();
+    meta *D = package->GetMetaClass ();
 
     GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionGoldOuncesEntryBox") );
     char* new_ounces = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
@@ -291,7 +297,7 @@ int CashShowHide (void *data)
 {
     /* Unpack the package */
     portfolio_packet *package = (portfolio_packet*)data;
-    meta *D = package->portfolio_meta_info;
+    meta *D = package->GetMetaClass ();
 
     /* get the GObject and cast as a GtkWidget */
     GtkWidget* window = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveCashWindow") );
@@ -319,7 +325,7 @@ int CashOk (void *data)
 {
     /* Unpack the package */
     portfolio_packet *package = (portfolio_packet*)data;
-    meta *D = package->portfolio_meta_info;
+    meta *D = package->GetMetaClass ();
 
     GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveCashValueEntryBox") );
     char* new_value = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );

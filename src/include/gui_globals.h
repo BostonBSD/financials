@@ -35,16 +35,14 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <semaphore.h>  /* sem_t */
 #include <gtk/gtk.h>    /* GtkBuilder */
 
-#include "gui_types.h"  /* window_data, SIGNAL_NUM */
+#include "gui_types.h"  /* SIGNAL_NUM */
 
 /* These globals are only accessible from the gui 
-   source files, class_packet.c, and financials.c */
+   source files and financials.c */
 
 
 /* Global Variables */
 extern sem_t semaphore[ SIGNAL_NUM ];                   /* A Posix Semaphore Array */
-extern GtkBuilder* builder;                             /* The Gtk builder object */
-extern window_data WindowStruct;                        /* A struct that hold the size and position of 
-                                                           the main window. */
+extern GtkBuilder* builder;                             /* The Gtk builder object */                     
 
 #endif  /* GUI_GLOBALS_HEADER_H */

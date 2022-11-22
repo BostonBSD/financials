@@ -69,7 +69,7 @@ int AboutShowHide ();
 int ShortcutShowHide ();
 
 /* gui_rsi */
-int RSIShowHide ();
+int RSIShowHide (void*);
 int RSITreeViewClear();
 int RSIMakeTreeview (void*);
 int RSICursorMove ();

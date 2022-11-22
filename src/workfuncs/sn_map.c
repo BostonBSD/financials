@@ -103,7 +103,7 @@ static bool check_symbol ( const char *s )
 symbol_name_map *SymNameFetch (portfolio_packet *pkg)
 /* This function is only meant to be run once, at application startup. */
 {
-    meta *Met = pkg->portfolio_meta_info;
+    meta *Met = pkg->GetMetaClass ();
 
     char *line = malloc ( 1024 ), *line_start;
 	char *token;

@@ -47,7 +47,7 @@ POSSIBILITY OF SUCH DAMAGE.
                                        class_init_portfolio_packet () functions */
 #include "include/config.h"
 
-#include "include/gui_globals.h"    /* sem_t semaphore[ SIGNAL_NUM ], window_data WindowStruct */
+#include "include/gui_globals.h"    /* sem_t semaphore[ SIGNAL_NUM ] */
 #include "include/gui.h"
 
 #include "include/globals.h"        /* portfolio_packet *packet */

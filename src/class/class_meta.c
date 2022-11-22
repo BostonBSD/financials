@@ -33,6 +33,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <time.h>                         /* time_t, struct tm, time ()  */
 
 #include <unistd.h>
 #include <pwd.h>
@@ -40,8 +41,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <monetary.h>
 #include <locale.h>
 
-#include "../include/class.h"
-#include "../include/class_globals.h"
+#include "../include/class_types.h"       /* Includes portfolio_packet, metal, meta, 
+                                             and equity_folder class types */
 
 #include "../include/csv.h"
 #include "../include/multicurl.h"
@@ -49,11 +50,11 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/macros.h"
 #include "../include/mutex.h"
 
-/* The global variable 'MetaData' from class_globals.h is always accessed via these functions. */
+/* The static local-global variable 'MetaData' is always accessed via these functions. */
 /* This is an ad-hoc way of self referencing a class. 
    It prevents multiple instances of the meta class. */
    
-meta *MetaData;         /* A class object pointer called MetaData. */
+static meta *MetaData;         /* A class object pointer called MetaData. */
 
 /* Class Method (also called Function) Definitions */
 static double EntireStake (const double *bullion, const double *equity, const double *cash) {
@@ -105,10 +106,11 @@ static void ToStringsPortfolio () {
     snprintf( Met->portfolio_port_value_p_chg_ch, len, "%.3lf%%", *Met->portfolio_port_value_p_chg_f );
 }
 
-static void CalculatePortfolio () {
+static void CalculatePortfolio ( void *data ) {
+    portfolio_packet *pkg = (portfolio_packet*)data;
     meta* Met = MetaData;
-    metal* M = Precious;
-    equity_folder* F = Folder;
+    metal* M = pkg->GetMetalClass ();
+    equity_folder* F = pkg->GetEquityFolderClass ();
 
     /* The total portfolio value. */
     *Met->portfolio_port_value_f = Met->EntireStake( M->bullion_port_value_f, F->stock_port_value_f, Met->cash_f);
@@ -473,6 +475,9 @@ meta *class_init_meta_data ()
     new_class->SetUpCurlIndicesData = SetUpCurlIndicesData;
     new_class->ExtractIndicesData = ExtractIndicesData;
     new_class->ToStringsIndices = ToStringsIndices;
+
+    /* Set the local global variable so we can self-reference this class. */
+    MetaData = new_class;
 
     /* Return Our Initialized Class */
     return new_class; 

@@ -36,8 +36,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlite3.h>
 
-#include "../include/gui_types.h"       /* window_data */
-#include "../include/class_types.h"     /* equity_folder, metal, meta */
+#include "../include/class_types.h"     /* equity_folder, metal, meta, window_data */
 #include "../include/workfuncs.h"
 #include "../include/mutex.h"
 #include "../include/macros.h"
@@ -77,7 +76,7 @@ static int cash_callback (void *data, int argc, char **argv, char **ColName) {
 
 static int bullion_callback (void *data, int argc, char **argv, char **ColName) {
     /* argv[0] is Id, argv[1] is Metal, argv[2] is Ounces, argv[3] is Premium */
-    pthread_mutex_lock( &mutex_working [CLASS_MEMBER_MUTEX ] );
+    pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
 
     if ( argc != 4 ) return 1;
     if ( strcmp( ColName[0], "Id") != 0 ) return 1;
@@ -117,12 +116,14 @@ static int bullion_callback (void *data, int argc, char **argv, char **ColName) 
         m->Silver->premium_ch = m->Silver->DoubToStr( m->Silver->premium_f );
     }
 
-    pthread_mutex_unlock( &mutex_working [CLASS_MEMBER_MUTEX ] );
+    pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
     return 0;
 }
 
 static int api_callback (void *data, int argc, char **argv, char **ColName) {
     /* argv[0] is Id, argv[1] is Keyword, argv[2] is Data */
+    pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
+
     if ( argc != 3 ) return 1;
     if ( strcmp( ColName[0], "Id") != 0 ) return 1;
     if ( strcmp( ColName[1], "Keyword") != 0 ) return 1;
@@ -147,11 +148,15 @@ static int api_callback (void *data, int argc, char **argv, char **ColName) {
         *mdata->updates_hours_f = strtod( argv[2] ? argv[2] : "1", NULL );
     }
 
+    pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
+
     return 0;
 }
 
 static int main_wndwsz_callback (void *data, int argc, char **argv, char **ColName) {
     /* argv[0] is Id, argv[1] is height, argv[2] is width */
+    pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
+
     if ( argc != 3 ) return 1;
     if ( strcmp( ColName[0], "Id") != 0 ) return 1;
     if ( strcmp( ColName[1], "Height") != 0 ) return 1;
@@ -161,11 +166,14 @@ static int main_wndwsz_callback (void *data, int argc, char **argv, char **ColNa
     window->main_height = (int)strtol( argv[1] ? argv[1] : "0", NULL, 10 );
     window->main_width = (int)strtol( argv[2] ? argv[2] : "0", NULL, 10 );
     
+    pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
     return 0;
 }
 
 static int main_wndwpos_callback (void *data, int argc, char **argv, char **ColName) {
     /* argv[0] is Id, argv[1] is X, argv[2] is Y */
+    pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
+
     if ( argc != 3 ) return 1;
     if ( strcmp( ColName[0], "Id") != 0 ) return 1;
     if ( strcmp( ColName[1], "X") != 0 ) return 1;
@@ -174,12 +182,15 @@ static int main_wndwpos_callback (void *data, int argc, char **argv, char **ColN
     window_data *window = (window_data*)data;
     window->main_x_pos = (int)strtol( argv[1] ? argv[1] : "0", NULL, 10 );
     window->main_y_pos = (int)strtol( argv[2] ? argv[2] : "0", NULL, 10 );
-    
+
+    pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );    
     return 0;
 }
 
 static int rsi_wndwsz_callback (void *data, int argc, char **argv, char **ColName) {
     /* argv[0] is Id, argv[1] is height, argv[2] is width */
+    pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
+
     if ( argc != 3 ) return 1;
     if ( strcmp( ColName[0], "Id") != 0 ) return 1;
     if ( strcmp( ColName[1], "Height") != 0 ) return 1;
@@ -189,11 +200,14 @@ static int rsi_wndwsz_callback (void *data, int argc, char **argv, char **ColNam
     window->rsi_height = (int)strtol( argv[1] ? argv[1] : "0", NULL, 10 );
     window->rsi_width = (int)strtol( argv[2] ? argv[2] : "0", NULL, 10 );
     
+    pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
     return 0;
 }
 
 static int rsi_wndwpos_callback (void *data, int argc, char **argv, char **ColName) {
     /* argv[0] is Id, argv[1] is X, argv[2] is Y */
+    pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
+
     if ( argc != 3 ) return 1;
     if ( strcmp( ColName[0], "Id") != 0 ) return 1;
     if ( strcmp( ColName[1], "X") != 0 ) return 1;
@@ -203,6 +217,7 @@ static int rsi_wndwpos_callback (void *data, int argc, char **argv, char **ColNa
     window->rsi_x_pos = (int)strtol( argv[1] ? argv[1] : "0", NULL, 10 );
     window->rsi_y_pos = (int)strtol( argv[2] ? argv[2] : "0", NULL, 10 );
     
+    pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
     return 0;
 }
 
@@ -232,7 +247,11 @@ static void error_msg ( sqlite3 *db ){
     exit ( EXIT_FAILURE );
 }
 
-void SqliteProcessing (equity_folder* F, metal *M, meta *D, window_data *W){
+void SqliteProcessing ( portfolio_packet *pkg ){
+    equity_folder *F = pkg->GetEquityFolderClass ();
+    metal *M = pkg->GetMetalClass ();
+    meta *D = pkg->GetMetaClass ();
+    window_data *W = pkg->GetWindowData ();
     char    *err_msg = 0;
     sqlite3 *db;
 
@@ -335,7 +354,7 @@ void SqliteProcessing (equity_folder* F, metal *M, meta *D, window_data *W){
     F->Sort ();
 
     /* Generate the Equity Request URLs. */
-    F->GenerateURL ();
+    F->GenerateURL ( pkg );
 }
 
 void SqliteAddEquity (char *symbol, char *shares, meta *D){
@@ -440,10 +459,6 @@ void SqliteAddAPIData (char *keyword, char *data, meta *D){
     snprintf( sql_cmd, len, "INSERT INTO apidata VALUES(null, '%s', '%s');", keyword, data );
     if ( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK ) error_msg( db );
     free( sql_cmd );
-    
-    /* Update the API data in the MetaData class. */
-    sql_cmd = "SELECT * FROM apidata;";
-    if ( sqlite3_exec(db, sql_cmd, api_callback, D, &err_msg) != SQLITE_OK ) error_msg( db );
 
     /* Close the sqlite database file. */
     sqlite3_close( db );

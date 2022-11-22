@@ -40,8 +40,10 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <glib-object.h>
 #include <gtk/gtk.h>
 
+#include "../include/class_types.h"                  /* portfolio_packet, window_data */
+
 #include "../include/gui_types.h"                    /* enums, etc */
-#include "../include/gui_globals.h"
+#include "../include/gui_globals.h"                  /* GtkBuilder *builder */
 #include "../include/gui.h"
 
 #include "../include/workfuncs.h"
@@ -135,19 +137,22 @@ int RSICompletionSet (void *data){
     return 0;
 }
 
-int RSIShowHide ()
+int RSIShowHide (void *data)
 {
+    portfolio_packet *pkg = (portfolio_packet*)data;
+    window_data *W = pkg->GetWindowData ();
+
     /* get the GObject and cast as a GtkWidget */
     GtkWidget* window = GTK_WIDGET ( gtk_builder_get_object (builder, "ViewRSIWindow") );
     gboolean visible = gtk_widget_is_visible ( window );
     
     if ( visible ){
         gtk_widget_set_visible ( window, false );
-        gtk_window_resize ( GTK_WINDOW ( window ), WindowStruct.rsi_width, WindowStruct.rsi_height );
-        gtk_window_move ( GTK_WINDOW ( window ), WindowStruct.rsi_x_pos, WindowStruct.rsi_y_pos );
+        gtk_window_resize ( GTK_WINDOW ( window ), W->rsi_width, W->rsi_height );
+        gtk_window_move ( GTK_WINDOW ( window ), W->rsi_x_pos, W->rsi_y_pos );
     } else {
-        gtk_window_resize ( GTK_WINDOW ( window ), WindowStruct.rsi_width, WindowStruct.rsi_height );
-        gtk_window_move ( GTK_WINDOW ( window ), WindowStruct.rsi_x_pos, WindowStruct.rsi_y_pos );
+        gtk_window_resize ( GTK_WINDOW ( window ), W->rsi_width, W->rsi_height );
+        gtk_window_move ( GTK_WINDOW ( window ), W->rsi_x_pos, W->rsi_y_pos );
 
         GtkWidget* Button = GTK_WIDGET ( gtk_builder_get_object (builder, "ViewRSIFetchDataBTN") );
         gtk_widget_set_sensitive ( Button, false );

@@ -37,7 +37,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <gtk/gtk.h>
 
 #include "../include/gui_types.h"           /* enums, etc */
-#include "../include/gui_globals.h"
+#include "../include/gui_globals.h"         /* GtkBuilder *builder */
 
 #include "../include/class.h"               /* class_destruct_portfolio_packet(), portfolio_packet, 
                                                 equity_folder, metal, meta  */
@@ -168,9 +168,9 @@ static int main_set_columns (int column_type)
 static GtkListStore * main_primary_store (void *data){
     /* Unpack the class package */
     portfolio_packet *package = (portfolio_packet*)data;
-    metal *M = package->metal_chest;
-    equity_folder *F = package->securities_folder;
-    meta *D = package->portfolio_meta_info;
+    metal *M = package->GetMetalClass ();
+    equity_folder *F = package->GetEquityFolderClass ();
+    meta *D = package->GetMetaClass ();
 
     GtkListStore *store = NULL;
     GtkTreeIter iter;
@@ -298,9 +298,9 @@ static GtkListStore * main_primary_store (void *data){
 static GtkListStore * main_default_store (void *data){
     /* Unpack the class package */
     portfolio_packet *package = (portfolio_packet*)data;
-    metal *M = package->metal_chest;
-    equity_folder *F = package->securities_folder;
-    meta *D = package->portfolio_meta_info;
+    metal *M = package->GetMetalClass ();
+    equity_folder *F = package->GetEquityFolderClass ();
+    meta *D = package->GetMetaClass ();
 
     GtkListStore *store = NULL;
     GtkTreeIter iter;
@@ -355,7 +355,7 @@ static GtkListStore * main_default_store (void *data){
 static void show_indices_labels (void *data){
     /* Unpack the class package */
     portfolio_packet *package = (portfolio_packet*)data;
-    meta *D = package->portfolio_meta_info;
+    meta *D = package->GetMetaClass ();
 
     GtkWidget* indexframe = GTK_WIDGET ( gtk_builder_get_object (builder, "IndexFrame") );
     gtk_widget_set_visible ( indexframe, true );
@@ -368,8 +368,8 @@ static void show_indices_labels (void *data){
 static void set_indices_labels (void *data){
     /* Unpack the class package */
     portfolio_packet *package = (portfolio_packet*)data;
-    meta *D = package->portfolio_meta_info;
-    metal *M = package->metal_chest;
+    meta *D = package->GetMetaClass ();
+    metal *M = package->GetMetalClass ();
     const char *red_format = "<span foreground=\"black\">%s\n</span><span foreground=\"darkred\" size=\"small\">%s, %s</span>";
     const char *green_format = "<span foreground=\"black\">%s\n</span><span foreground=\"darkgreen\" size=\"small\">%s, %s</span>";
     const char *format;
@@ -538,7 +538,7 @@ int MainDisplayTime (){
 int MainDisplayTimeRemaining (void *data){
     /* Unpack the package */
     portfolio_packet *package = (portfolio_packet*)data;
-    meta *D = package->portfolio_meta_info;
+    meta *D = package->GetMetaClass ();
 
     GtkWidget* CloseLabel = GTK_WIDGET ( gtk_builder_get_object (builder, "MarketCloseLabel") );
     GtkWidget* TimeRemLabel = GTK_WIDGET ( gtk_builder_get_object (builder, "TimeLeftLabel") );

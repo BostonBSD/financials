@@ -33,12 +33,13 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>                         /* time_t, struct tm, time ()  */
 
 #include <monetary.h>
 #include <locale.h>
 
-#include "../include/class.h"
-#include "../include/class_globals.h"
+#include "../include/class_types.h"       /* Includes portfolio_packet, metal, meta, 
+                                             and equity_folder class types */
 
 #include "../include/workfuncs.h"
 #include "../include/multicurl.h"
@@ -46,11 +47,11 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/macros.h"
 #include "../include/mutex.h"
 
-/* The global variable 'Precious' from class_globals.h is always accessed via these functions. */
+/* The static local-global variable 'Precious' is always accessed via these functions. */
 /* This is an ad-hoc way of self referencing a class. 
    It prevents multiple instances of the metal class. */
 
-metal *Precious;        /* A class handle to the bullion class object pointers. */
+static metal *Precious;        /* A class handle to the bullion class object pointers. */
 
 /* Class Method (also called Function) Definitions */
 static double Stake (const double *ounces, const double *prem, const double *price) {
@@ -386,6 +387,9 @@ metal *class_init_metal ()
     new_class->Calculate = Calculate;
     new_class->SetUpCurl = SetUpCurl;
     new_class->ExtractData = ExtractData;
+
+    /* Set the local global variable so we can self-reference this class. */
+    Precious = new_class;
 
     /* Return Our Initialized Class */
     return new_class; 

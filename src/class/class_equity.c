@@ -36,8 +36,9 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <monetary.h>
 #include <locale.h>
 
-#include "../include/class.h" /* The class init and destruct funcs are required in the class methods */
-#include "../include/class_globals.h"
+#include "../include/class.h" /* The class init and destruct funcs are required 
+                                 in the class methods, includes portfolio_packet 
+                                 metal, meta, and equity_folder class types */
 
 #include "../include/multicurl.h"
 #include "../include/workfuncs.h"
@@ -45,11 +46,11 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/macros.h"
 #include "../include/mutex.h"
 
-/* The global variable 'Folder' from class_globals.h is always accessed via these functions. */
+/* The static local-global variable 'Folder' is always accessed via these functions. */
 /* This is an ad-hoc way of self referencing a class. 
    It prevents multiple instances of the equity_folder class. */
    
-equity_folder *Folder;  /* A class handle to an array of stock class objects, can change dynamically. */    
+static equity_folder *Folder;  /* A class handle to an array of stock class objects, can change dynamically. */    
 
 /* Class Method (also called Function) Definitions */
 static double Stake (const unsigned int *shares, const double *price) {
@@ -172,9 +173,10 @@ static void Calculate (){
     *F->stock_port_value_p_chg_f = CalcGain ( *F->stock_port_value_f, prev_total );
 }
 
-static void GenerateURL (){
+static void GenerateURL ( void *data ){
+    portfolio_packet *pkg = (portfolio_packet*)data;
     equity_folder *F = Folder;
-    meta *Met = MetaData;
+    meta *Met = pkg->GetMetaClass ();
 
     size_t len;
  
@@ -204,6 +206,8 @@ static int SetUpCurl ( void *data ){
 }
 
 static void Reset () {
+    pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
+
     equity_folder *F = Folder;
 
     if (F->size == 0){
@@ -243,12 +247,16 @@ static void Reset () {
         F->Equity = temp;
         F->size = 0;
     }
+
+    pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
 }
 
 static void AddStock ( char *symbol, char *shares )
 /* Adds a new stock object to our folder, 
    increments size. */
 {
+    pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
+
     equity_folder *F = Folder;
 
     /* realloc will free memory if assigned a smaller new value. */
@@ -271,6 +279,8 @@ static void AddStock ( char *symbol, char *shares )
     /* Add The Shares To the Folder */
     *F->Equity[ F->size ]->num_shares_stock_int = (unsigned int)strtol( shares ? shares : "0", NULL, 10 );
     F->size++;
+
+    pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
 }
 
 static void RemoveStock ( void *data ) 
@@ -278,6 +288,8 @@ static void RemoveStock ( void *data )
    decrements size. If the stock isn't found 
    the size doesn't change. */
 {
+    pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
+
     char* s = (char*)data;
     equity_folder *F = Folder;
     stock** tmp;
@@ -298,6 +310,8 @@ static void RemoveStock ( void *data )
         }
         i++;
     }
+
+    pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
 }
 
 static void ExtractData () {
@@ -340,9 +354,13 @@ static int alpha_asc (const void *a, const void *b)
 }
 
 static void Sort () {
+    pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
+
     /* Sort the equity folder in alphabetically ascending order. */
     equity_folder *F = Folder;
     qsort(&F->Equity[0], (size_t)F->size, sizeof(stock*), alpha_asc);
+
+    pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
 }
 
 /* Class Init Functions */
@@ -441,6 +459,9 @@ equity_folder *class_init_equity_folder ()
     new_class->Reset = Reset;
     new_class->Sort = Sort;
     new_class->RemoveStock = RemoveStock;
+
+    /* Set the local global variable so we can self-reference this class. */
+    Folder = new_class;
 
     /* Return Our Initialized Class */
     return new_class; 

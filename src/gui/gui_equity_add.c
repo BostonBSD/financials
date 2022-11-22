@@ -38,10 +38,10 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <glib-object.h>
 #include <gtk/gtk.h>
 
-#include "../include/gui_globals.h"
+#include "../include/gui_globals.h"         /* GtkBuilder *builder */
 #include "../include/gui.h"
 
-#include "../include/class_types.h"         /* portfolio_packet, equity_folder, metal, meta */
+#include "../include/class_types.h"         /* portfolio_packet, equity_folder, metal, meta, window_data */
 #include "../include/multicurl.h"
 #include "../include/json.h"
 #include "../include/sqlite.h"
@@ -209,8 +209,39 @@ int AddRemSwitchChange ()
     return 0;
 }
 
+static void *fetch_data_for_new_stock ( void *data )
+{
+    portfolio_packet *pkg = (portfolio_packet*)data;
+    equity_folder *F = pkg->GetEquityFolderClass ();
+
+    pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
+
+    /* The new stock is currently at the end of the Equity array. */
+    SetUpCurlHandle ( F->Equity[ F->size - 1 ]->easy_hnd, pkg->multicurl_main_hnd, F->Equity[ F->size - 1 ]->curl_url_stock_ch, &F->Equity[ F->size - 1 ]->JSON );
+    PerformMultiCurl ( pkg->multicurl_main_hnd, 1.0f );
+    /* Extract double values from JSON data using JSON-glib */
+    JsonExtractEquity( F->Equity[ F->size - 1 ]->JSON.memory, F->Equity[ F->size - 1 ]->current_price_stock_f, F->Equity[ F->size - 1 ]->high_stock_f, F->Equity[ F->size - 1 ]->low_stock_f, F->Equity[ F->size - 1 ]->opening_stock_f, F->Equity[ F->size - 1 ]->prev_closing_stock_f, F->Equity[ F->size - 1 ]->change_share_f, F->Equity[ F->size - 1 ]->change_percent_f);
+
+    /* Free memory. */
+    free( F->Equity[ F->size - 1 ]->JSON.memory );
+    F->Equity[ F->size - 1 ]->JSON.memory = NULL;
+
+    pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
+
+    /* Sort the equity folder. */
+    F->Sort (); /* The new stock is in alphabetical order within the array. */
+
+    pkg->Calculate ();
+    pkg->ToStrings ();
+    
+    /* Update the main window treeview. */
+    gdk_threads_add_idle ( MainPrimaryTreeview, data );
+
+    return NULL;
+}
+
 static void add_equity_to_folder ( char *symbol, char *shares, portfolio_packet *pkg ){
-    equity_folder *F = pkg->securities_folder;
+    equity_folder *F = pkg->GetEquityFolderClass ();
 
     /* Remove the stock if it already exists. */
     F->RemoveStock ( symbol );
@@ -219,28 +250,23 @@ static void add_equity_to_folder ( char *symbol, char *shares, portfolio_packet 
     F->AddStock ( symbol, shares );
 
     /* Generate the Equity Request URLs. */
-    F->GenerateURL ();
+    F->GenerateURL ( pkg );
 
     if( pkg->IsFetchingData () ){
-        SetUpCurlHandle ( F->Equity[ F->size - 1 ]->easy_hnd, pkg->multicurl_main_hnd, F->Equity[ F->size - 1 ]->curl_url_stock_ch, &F->Equity[ F->size - 1 ]->JSON );
-        PerformMultiCurl ( pkg->multicurl_main_hnd, 1.0f );
-        /* Extract double values from JSON data using JSON-glib */
-        JsonExtractEquity( F->Equity[ F->size - 1 ]->JSON.memory, F->Equity[ F->size - 1 ]->current_price_stock_f, F->Equity[ F->size - 1 ]->high_stock_f, F->Equity[ F->size - 1 ]->low_stock_f, F->Equity[ F->size - 1 ]->opening_stock_f, F->Equity[ F->size - 1 ]->prev_closing_stock_f, F->Equity[ F->size - 1 ]->change_share_f, F->Equity[ F->size - 1 ]->change_percent_f);
-
-        /* Free memory. */
-        free( F->Equity[ F->size - 1 ]->JSON.memory );
-        F->Equity[ F->size - 1 ]->JSON.memory = NULL; 
-    } 
-
-    /* Sort the equity folder. */
-    F->Sort ();   
+        /* Fetch the data in a separate thread */
+        pthread_t thread_id;
+        pthread_create( &thread_id, NULL, fetch_data_for_new_stock, pkg ); 
+    } else {
+        /* Sort the equity folder. */
+        F->Sort ();
+    }  
 }
 
 static int add_security_ok ( void *data )
 {
     /* Unpack the package */
     portfolio_packet *package = (portfolio_packet*)data;
-    meta *D = package->portfolio_meta_info;
+    meta *D = package->GetMetaClass ();
 
     GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecuritySymbolEntryBox") );
     char* symbol = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
@@ -264,8 +290,8 @@ static int remove_security_ok ( void *data )
 {
     /* Unpack the package */
     portfolio_packet *package = (portfolio_packet*)data;
-    equity_folder *F = package->securities_folder;
-    meta *D = package->portfolio_meta_info;
+    equity_folder *F = package->GetEquityFolderClass ();
+    meta *D = package->GetMetaClass ();
 
     GtkWidget* ComboBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecurityComboBox") );
     int index = gtk_combo_box_get_active ( GTK_COMBO_BOX ( ComboBox ) );
@@ -300,15 +326,10 @@ int AddRemOk ( void *data )
     } else {
         remove_security_ok ( data );
     }
-
+    
     if( package->IsFetchingData () == false ) {
         MainDefaultTreeview ( data );
-    } else {
-        package->Calculate ();
-        package->ToStrings ();
-        /* Set Gtk treeview. */
-        MainPrimaryTreeview ( data );
-    } 
+    }
 
     pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
 
@@ -319,7 +340,7 @@ int AddRemShowHide ( void *data )
 {
     /* Unpack the package */
     portfolio_packet *package = (portfolio_packet*)data;
-    equity_folder *F = package->securities_folder;
+    equity_folder *F = package->GetEquityFolderClass ();
 
     GtkWidget* window = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecurity") );
     gboolean visible = gtk_widget_is_visible ( window );

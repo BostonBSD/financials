@@ -35,11 +35,10 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "../include/gui.h"
 #include "../include/gui_types.h"
-#include "../include/class_types.h"
+#include "../include/class_types.h" /* portfolio_packet, window_data */
 #include "../include/ui.h"
 
 GtkBuilder *builder;
-window_data WindowStruct;
 
 static void shortcuts_set_treeview (){
     GtkWidget* TreeView = GTK_WIDGET ( gtk_builder_get_object (builder, "ShortcutWindowTreeView") );
@@ -141,9 +140,11 @@ static void about_set_label ()
     gtk_label_set_text ( GTK_LABEL ( Label ), LICENSE);
 }
 
-static void gui_signal_connect ()
+static void gui_signal_connect ( void *data )
 /* Connect GUI index signals to the signal handlers. */
 {
+    portfolio_packet *pkg = (portfolio_packet*)data;
+    window_data *W = pkg->GetWindowData ();
     GObject *window,*button;
 
     /* Connect signal handlers to the constructed widgets. */
@@ -154,8 +155,8 @@ static void gui_signal_connect ()
     window = gtk_builder_get_object (builder, "MainWindow");
     g_signal_connect ( window, "destroy", G_CALLBACK ( GUICallbackHandler ), (void *)MAIN_EXIT );
     g_signal_connect ( window, "configure-event", G_CALLBACK ( GUICallbackHandler_window_data ), (void *)GUI_MAIN_WINDOW );
-    gtk_window_resize ( GTK_WINDOW ( window ), WindowStruct.main_width, WindowStruct.main_height );
-    gtk_window_move ( GTK_WINDOW ( window ), WindowStruct.main_x_pos, WindowStruct.main_y_pos );
+    gtk_window_resize ( GTK_WINDOW ( window ), W->main_width, W->main_height );
+    gtk_window_move ( GTK_WINDOW ( window ), W->main_x_pos, W->main_y_pos );
 
     button = gtk_builder_get_object (builder, "IndicesExpander");
     g_signal_connect ( button, "activate", G_CALLBACK ( GUICallbackHandler_expander_bar ), NULL );
@@ -287,8 +288,8 @@ static void gui_signal_connect ()
     window = gtk_builder_get_object (builder, "ViewRSIWindow");
     g_signal_connect( window, "delete_event", G_CALLBACK( gtk_widget_hide_on_delete ), NULL);
     g_signal_connect ( window, "configure-event", G_CALLBACK ( GUICallbackHandler_window_data ), (void *)GUI_RSI_WINDOW );
-    gtk_window_resize ( GTK_WINDOW ( window ), WindowStruct.rsi_width, WindowStruct.rsi_height );
-    gtk_window_move ( GTK_WINDOW ( window ), WindowStruct.rsi_x_pos, WindowStruct.rsi_y_pos );
+    gtk_window_resize ( GTK_WINDOW ( window ), W->rsi_width, W->rsi_height );
+    gtk_window_move ( GTK_WINDOW ( window ), W->rsi_x_pos, W->rsi_y_pos );
 
     button = gtk_builder_get_object (builder, "ViewRSICloseBTN");
     g_signal_connect ( button, "clicked", G_CALLBACK ( GUICallbackHandler ), (void *)RSI_TOGGLE_BTN );
@@ -315,11 +316,11 @@ static void start_threads ()
     pthread_create( &thread_id, NULL, GUIThreadHandler, (void *)MAIN_TIME_CLOSE_INDICATOR );
 
     /* Set up the RSIView and AddRemSecurity Window's EntryBox Completion Widgets
-       This will download the NYSE and NASDAQ symbol list when the application loads.
+       This will download the NYSE and NASDAQ symbol lists when the application loads.
        If there is no internet connection or the server is unavailable cURL will return an
        error, but otherwise the application should run as normal.
 
-       Comment out the next line to avoid the symbol list download. */
+       Comment out the next line to prevent the symbol list download. */
     pthread_create( &thread_id, NULL, GUIThreadHandler, (void *)COMPLETION );
 }
 
@@ -365,7 +366,7 @@ void GuiStart (void *data)
     MainDefaultTreeview ( data );
 
     /* Connect callback functions to corresponding GUI signals. */
-    gui_signal_connect ();
+    gui_signal_connect ( data );
 
     /* Start the clock threads and download list of stock symbols */
     start_threads ();
