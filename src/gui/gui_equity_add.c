@@ -228,7 +228,7 @@ static void *fetch_data_for_new_stock ( void *data )
 
     pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
 
-    /* Sort the equity folder. */
+    /* Sort the equity folder, the following three statements lock the CLASS_MEMBER_MUTEX */
     F->Sort (); /* The new stock is in alphabetical order within the array. */
 
     pkg->Calculate ();
@@ -289,9 +289,9 @@ static int add_security_ok ( void *data )
 static int remove_security_ok ( void *data )
 {
     /* Unpack the package */
-    portfolio_packet *package = (portfolio_packet*)data;
-    equity_folder *F = package->GetEquityFolderClass ();
-    meta *D = package->GetMetaClass ();
+    portfolio_packet *pkg = (portfolio_packet*)data;
+    equity_folder *F = pkg->GetEquityFolderClass ();
+    meta *D = pkg->GetMetaClass ();
 
     GtkWidget* ComboBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecurityComboBox") );
     int index = gtk_combo_box_get_active ( GTK_COMBO_BOX ( ComboBox ) );
@@ -300,11 +300,30 @@ static int remove_security_ok ( void *data )
         SqliteRemoveAllEquity( D );
         /* Reset Equity Folder */
         F->Reset ();
+
+        pkg->Calculate ();
+        pkg->ToStrings ();
+    
+        if( pkg->IsFetchingData () ) {    
+            /* Update the main window treeview. */
+            MainPrimaryTreeview ( data );
+        }
     } else {
         char* symbol = gtk_combo_box_text_get_active_text ( GTK_COMBO_BOX_TEXT ( ComboBox ) );
         SqliteRemoveEquity( symbol, D );
         F->RemoveStock ( symbol );
         free( symbol );
+
+        /* Sort the equity folder, the following three statements lock the CLASS_MEMBER_MUTEX */
+        F->Sort (); /* The new stock is in alphabetical order within the array. */
+
+        pkg->Calculate ();
+        pkg->ToStrings ();
+    
+        if( pkg->IsFetchingData () ) {    
+            /* Update the main window treeview. */
+            MainPrimaryTreeview ( data );
+        }
     }
     return 0;
 }

@@ -174,6 +174,8 @@ static void Calculate (){
 }
 
 static void GenerateURL ( void *data ){
+    pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
+
     portfolio_packet *pkg = (portfolio_packet*)data;
     equity_folder *F = Folder;
     meta *Met = pkg->GetMetaClass ();
@@ -189,6 +191,8 @@ static void GenerateURL ( void *data ){
         F->Equity[ c ]->curl_url_stock_ch = (char*) malloc( len );
         snprintf( F->Equity[ c ]->curl_url_stock_ch, len, "%s%s%s", Met->stock_url, F->Equity[ c ]->symbol_stock_ch, Met->curl_key );
     }
+
+    pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
 }
 
 static int SetUpCurl ( void *data ){
