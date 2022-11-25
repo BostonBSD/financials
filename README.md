@@ -46,6 +46,8 @@ It might be useful to create a watch list that displays a list of stocks and the
 
 An RSS news reader that displays any current pertinent news in a plaintext format for listed stocks [Nasdaq RSS Feeds looks like a promising news source].
 
+Conversion to Gtk4 after an XML file creation application is developed [they aren't developing glade any longer].
+
 ----------------------------------------------------------
 
 RSI INDICATOR NOTE: 
