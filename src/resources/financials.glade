@@ -1602,6 +1602,7 @@
                   <object class="GtkGrid">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
+                    <property name="margin-top">5</property>
                     <property name="margin-bottom">20</property>
                     <property name="row-homogeneous">True</property>
                     <property name="column-homogeneous">True</property>
@@ -1614,17 +1615,6 @@
                         <property name="valign">center</property>
                         <property name="placeholder-text" translatable="yes">Enter a Stock Symbol</property>
                         <property name="input-purpose">alpha</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">1</property>
-                        <property name="top-attach">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">Symbol</property>
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
@@ -1642,22 +1632,19 @@
                         <property name="tooltip-text" translatable="yes">Fetch data from Yahoo! Finance</property>
                         <property name="halign">center</property>
                         <property name="valign">end</property>
+                        <property name="margin-top">10</property>
                         <accelerator key="d" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                       </object>
                       <packing>
-                        <property name="left-attach">0</property>
+                        <property name="left-attach">1</property>
                         <property name="top-attach">1</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">2</property>
-                        <property name="top-attach">1</property>
-                      </packing>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
                     </child>
                     <child>
                       <placeholder/>
@@ -1681,7 +1668,7 @@
       <object class="GtkHeaderBar">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="title" translatable="yes">Relative Strength Indicator</property>
+        <property name="title" translatable="yes">Relative Strength Index</property>
         <property name="subtitle" translatable="yes">Data Provided by Yahoo! Finance</property>
         <property name="show-close-button">True</property>
         <child>
