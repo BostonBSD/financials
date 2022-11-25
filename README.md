@@ -40,7 +40,11 @@ Debian “bullseye”, and Ubuntu 22.04.
 ----------------------------------------------------------
 
 Some additional features could include cryptocurrency, api selection 
-(inclusion of other data service providers), other metals, and RSI trendline calibration [we can account for trendlines by using one week intervals over a two year timespan instead of one day intervals].  It might be useful to create a watch list that displays a list of stocks and their stats, the current RSI, whether it is an upward or downward trend, and an indicator string, updating maybe every 4 or 5 seconds.  An RSS news reader that displays any current pertinent news in a plaintext format for listed stocks [Nasdaq RSS Feeds looks like a promising news source].
+(inclusion of other data service providers), and RSI trendline calibration [we can account for trendlines by using one week intervals over a two year timespan instead of one day intervals].  
+
+It might be useful to create a watch list that displays a list of stocks and their stats [one per row], the current RSI, whether it is an upward or downward trend, and an indicator string, updating maybe every 4 or 5 seconds.  
+
+An RSS news reader that displays any current pertinent news in a plaintext format for listed stocks [Nasdaq RSS Feeds looks like a promising news source].
 
 ----------------------------------------------------------
 
