@@ -2,42 +2,52 @@
 <!-- Generated with glade 3.40.0 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
+  <object class="GtkMenu" id="APIMenu">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <child>
+      <object class="GtkMenuItem" id="APIMenuClose">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label" translatable="yes">_Close</property>
+        <property name="use-underline">True</property>
+        <accelerator key="c" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+      </object>
+    </child>
+  </object>
+  <object class="GtkMenu" id="AboutMenu">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <child>
+      <object class="GtkMenuItem" id="AboutMenuClose">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label" translatable="yes">_Close</property>
+        <property name="use-underline">True</property>
+        <accelerator key="c" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+      </object>
+    </child>
+  </object>
   <object class="GtkWindow" id="AboutWindow">
     <property name="can-focus">False</property>
     <property name="can-default">True</property>
-    <property name="title" translatable="yes">About</property>
     <property name="resizable">False</property>
     <property name="default-width">525</property>
     <property name="default-height">550</property>
     <property name="destroy-with-parent">True</property>
     <property name="icon">Stocks-icon.png</property>
-    <property name="skip-taskbar-hint">True</property>
     <property name="skip-pager-hint">True</property>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="margin-start">5</property>
-        <property name="margin-end">5</property>
-        <property name="margin-top">10</property>
-        <property name="margin-bottom">10</property>
+        <property name="margin-start">15</property>
+        <property name="margin-end">15</property>
+        <property name="margin-top">25</property>
+        <property name="margin-bottom">25</property>
         <property name="vexpand">True</property>
         <property name="orientation">vertical</property>
         <property name="baseline-position">top</property>
-        <child>
-          <object class="GtkLabel">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="margin-bottom">10</property>
-            <property name="label" translatable="yes">Licenses</property>
-            <property name="justify">center</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
         <child>
           <object class="GtkScrolledWindow" id="AboutScrolledWindow">
             <property name="visible">True</property>
@@ -69,98 +79,157 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">1</property>
+            <property name="position">0</property>
           </packing>
         </child>
+      </object>
+    </child>
+    <child type="titlebar">
+      <object class="GtkHeaderBar">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="title" translatable="yes">About</property>
+        <property name="show-close-button">True</property>
         <child>
-          <object class="GtkButton" id="AboutOKBTN">
-            <property name="label" translatable="yes">OK</property>
+          <object class="GtkMenuButton">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="can-default">True</property>
-            <property name="has-default">True</property>
+            <property name="focus-on-click">False</property>
             <property name="receives-default">True</property>
-            <property name="tooltip-text" translatable="yes">Close this window</property>
-            <property name="halign">center</property>
-            <property name="valign">center</property>
-            <property name="margin-top">20</property>
-            <property name="margin-bottom">10</property>
-            <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+            <property name="relief">none</property>
+            <property name="popup">AboutMenu</property>
+            <property name="use-popover">False</property>
+            <child>
+              <placeholder/>
+            </child>
+            <accelerator key="f" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
           </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">2</property>
-          </packing>
         </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkMenu" id="BullionMenu">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <child>
+      <object class="GtkMenuItem" id="BullionMenuClose">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label" translatable="yes">_Close</property>
+        <property name="use-underline">True</property>
+        <accelerator key="c" signal="activate" modifiers="GDK_CONTROL_MASK"/>
       </object>
     </child>
   </object>
   <object class="GtkWindow" id="AddRemoveBullionWindow">
     <property name="can-focus">False</property>
     <property name="can-default">True</property>
-    <property name="title" translatable="yes">Bullion</property>
     <property name="resizable">False</property>
-    <property name="default-width">350</property>
-    <property name="default-height">300</property>
     <property name="destroy-with-parent">True</property>
     <property name="icon">Stocks-icon.png</property>
-    <property name="skip-taskbar-hint">True</property>
     <property name="skip-pager-hint">True</property>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
+        <property name="margin-start">15</property>
+        <property name="margin-end">15</property>
         <property name="margin-top">20</property>
+        <property name="margin-bottom">35</property>
         <property name="orientation">vertical</property>
         <property name="spacing">10</property>
         <property name="baseline-position">top</property>
         <child>
-          <!-- n-columns=3 n-rows=1 -->
+          <!-- n-columns=1 n-rows=5 -->
           <object class="GtkGrid">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="column-homogeneous">True</property>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Change Bullion Data</property>
-                <property name="justify">center</property>
-              </object>
-              <packing>
-                <property name="left-attach">1</property>
-                <property name="top-attach">0</property>
-              </packing>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">True</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <!-- n-columns=2 n-rows=4 -->
-          <object class="GtkGrid">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
+            <property name="margin-start">10</property>
+            <property name="margin-end">10</property>
             <property name="hexpand">True</property>
             <property name="vexpand">True</property>
             <property name="row-spacing">10</property>
             <property name="column-homogeneous">True</property>
             <child>
-              <object class="GtkLabel">
+              <object class="GtkFrame" id="AddRemoveBullionGoldFrame">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Gold Ounces</property>
-                <property name="justify">center</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">in</property>
+                <child>
+                  <!-- n-columns=2 n-rows=2 -->
+                  <object class="GtkGrid">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="margin-left">5</property>
+                    <property name="margin-right">5</property>
+                    <property name="margin-start">5</property>
+                    <property name="margin-end">5</property>
+                    <property name="margin-bottom">10</property>
+                    <property name="row-spacing">10</property>
+                    <property name="column-spacing">5</property>
+                    <property name="column-homogeneous">True</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Ounces</property>
+                        <property name="justify">center</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="AddRemoveBullionGoldOuncesEntryBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="input-purpose">alpha</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Premium</property>
+                        <property name="justify">center</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">1</property>
+                        <property name="top-attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="AddRemoveBullionGoldPremiumEntryBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="input-purpose">alpha</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">1</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                </child>
+                <child type="label">
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="margin-left">10</property>
+                    <property name="margin-start">10</property>
+                    <property name="label" translatable="yes">Gold</property>
+                  </object>
+                </child>
               </object>
               <packing>
                 <property name="left-attach">0</property>
@@ -168,25 +237,84 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
+              <object class="GtkFrame" id="AddRemoveBullionSilverFrame">
                 <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Silver Premium</property>
-                <property name="justify">center</property>
-              </object>
-              <packing>
-                <property name="left-attach">1</property>
-                <property name="top-attach">2</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkEntry" id="AddRemoveBullionGoldOuncesEntryBox">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="is-focus">True</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
-                <property name="input-purpose">alpha</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">in</property>
+                <child>
+                  <!-- n-columns=2 n-rows=2 -->
+                  <object class="GtkGrid">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="margin-left">5</property>
+                    <property name="margin-right">5</property>
+                    <property name="margin-start">5</property>
+                    <property name="margin-end">5</property>
+                    <property name="margin-bottom">10</property>
+                    <property name="row-spacing">10</property>
+                    <property name="column-spacing">5</property>
+                    <property name="column-homogeneous">True</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Ounces</property>
+                        <property name="justify">center</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Premium</property>
+                        <property name="justify">center</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">1</property>
+                        <property name="top-attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="AddRemoveBullionSilverOuncesEntryBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="input-purpose">alpha</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="AddRemoveBullionSilverPremiumEntryBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="input-purpose">alpha</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">1</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                </child>
+                <child type="label">
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="margin-left">10</property>
+                    <property name="margin-start">10</property>
+                    <property name="label" translatable="yes">Silver</property>
+                  </object>
+                </child>
               </object>
               <packing>
                 <property name="left-attach">0</property>
@@ -194,24 +322,84 @@
               </packing>
             </child>
             <child>
-              <object class="GtkEntry" id="AddRemoveBullionSilverPremiumEntryBox">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
-                <property name="input-purpose">alpha</property>
-              </object>
-              <packing>
-                <property name="left-attach">1</property>
-                <property name="top-attach">3</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
+              <object class="GtkFrame" id="AddRemoveBullionPlatinumFrame">
                 <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Silver Ounces</property>
-                <property name="justify">center</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">in</property>
+                <child>
+                  <!-- n-columns=2 n-rows=2 -->
+                  <object class="GtkGrid">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="margin-left">5</property>
+                    <property name="margin-right">5</property>
+                    <property name="margin-start">5</property>
+                    <property name="margin-end">5</property>
+                    <property name="margin-bottom">10</property>
+                    <property name="row-spacing">10</property>
+                    <property name="column-spacing">5</property>
+                    <property name="column-homogeneous">True</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Ounces</property>
+                        <property name="justify">center</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Premium</property>
+                        <property name="justify">center</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">1</property>
+                        <property name="top-attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="AddRemoveBullionPlatinumOuncesEntryBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="input-purpose">alpha</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="AddRemoveBullionPlatinumPremiumEntryBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="input-purpose">alpha</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">1</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                </child>
+                <child type="label">
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="margin-left">10</property>
+                    <property name="margin-start">10</property>
+                    <property name="label" translatable="yes">Platinum</property>
+                  </object>
+                </child>
               </object>
               <packing>
                 <property name="left-attach">0</property>
@@ -219,12 +407,84 @@
               </packing>
             </child>
             <child>
-              <object class="GtkEntry" id="AddRemoveBullionSilverOuncesEntryBox">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
-                <property name="input-purpose">alpha</property>
+              <object class="GtkFrame" id="AddRemoveBullionPalladiumFrame">
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">in</property>
+                <child>
+                  <!-- n-columns=2 n-rows=2 -->
+                  <object class="GtkGrid">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="margin-left">5</property>
+                    <property name="margin-right">5</property>
+                    <property name="margin-start">5</property>
+                    <property name="margin-end">5</property>
+                    <property name="margin-bottom">10</property>
+                    <property name="row-spacing">10</property>
+                    <property name="column-spacing">5</property>
+                    <property name="column-homogeneous">True</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Ounces</property>
+                        <property name="justify">center</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Premium</property>
+                        <property name="justify">center</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">1</property>
+                        <property name="top-attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="AddRemoveBullionPalladiumOuncesEntryBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="input-purpose">alpha</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="AddRemoveBullionPalladiumPremiumEntryBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="input-purpose">alpha</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">1</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                </child>
+                <child type="label">
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="margin-left">10</property>
+                    <property name="margin-start">10</property>
+                    <property name="label" translatable="yes">Palladium</property>
+                  </object>
+                </child>
               </object>
               <packing>
                 <property name="left-attach">0</property>
@@ -232,184 +492,162 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel">
+              <!-- n-columns=3 n-rows=1 -->
+              <object class="GtkGrid">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Gold Premium</property>
-                <property name="justify">center</property>
+                <property name="margin-top">5</property>
+                <property name="row-homogeneous">True</property>
+                <property name="column-homogeneous">True</property>
+                <child>
+                  <object class="GtkComboBoxText" id="AddRemoveBullionComboBox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="halign">center</property>
+                    <property name="active">0</property>
+                    <property name="active-id">0</property>
+                    <items>
+                      <item translatable="yes">Gold</item>
+                      <item translatable="yes">Silver</item>
+                      <item translatable="yes">Platinum</item>
+                      <item translatable="yes">Palladium</item>
+                    </items>
+                  </object>
+                  <packing>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="AddRemoveBullionOKBTN">
+                    <property name="label" translatable="yes">OK</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="can-default">True</property>
+                    <property name="has-default">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="tooltip-text" translatable="yes">Commit Changes</property>
+                    <property name="halign">center</property>
+                    <property name="valign">center</property>
+                    <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                  </object>
+                  <packing>
+                    <property name="left-attach">2</property>
+                    <property name="top-attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
               </object>
               <packing>
-                <property name="left-attach">1</property>
-                <property name="top-attach">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkEntry" id="AddRemoveBullionGoldPremiumEntryBox">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
-                <property name="input-purpose">alpha</property>
-              </object>
-              <packing>
-                <property name="left-attach">1</property>
-                <property name="top-attach">1</property>
+                <property name="left-attach">0</property>
+                <property name="top-attach">4</property>
               </packing>
             </child>
           </object>
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">1</property>
+            <property name="position">0</property>
           </packing>
         </child>
+      </object>
+    </child>
+    <child type="titlebar">
+      <object class="GtkHeaderBar">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="title" translatable="yes">Bullion</property>
+        <property name="show-close-button">True</property>
         <child>
-          <!-- n-columns=3 n-rows=1 -->
-          <object class="GtkGrid">
+          <object class="GtkMenuButton">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="row-homogeneous">True</property>
-            <property name="column-homogeneous">True</property>
-            <child>
-              <object class="GtkButton" id="AddRemoveBullionOKBTN">
-                <property name="label" translatable="yes">OK</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="can-default">True</property>
-                <property name="has-default">True</property>
-                <property name="receives-default">True</property>
-                <property name="tooltip-text" translatable="yes">Commit Changes</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
-                <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-              </object>
-              <packing>
-                <property name="left-attach">2</property>
-                <property name="top-attach">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton" id="AddRemoveBullionCancelBTN">
-                <property name="label" translatable="yes">Cancel</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="can-default">True</property>
-                <property name="receives-default">False</property>
-                <property name="tooltip-text" translatable="yes">Cancel Changes</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
-                <accelerator key="c" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-              </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">0</property>
-              </packing>
-            </child>
+            <property name="can-focus">True</property>
+            <property name="focus-on-click">False</property>
+            <property name="receives-default">True</property>
+            <property name="relief">none</property>
+            <property name="popup">BullionMenu</property>
+            <property name="use-popover">False</property>
             <child>
               <placeholder/>
             </child>
+            <accelerator key="f" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
           </object>
-          <packing>
-            <property name="expand">True</property>
-            <property name="fill">True</property>
-            <property name="padding">5</property>
-            <property name="position">2</property>
-          </packing>
         </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkMenu" id="CashMenu">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <child>
+      <object class="GtkMenuItem" id="CashMenuClose">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label" translatable="yes">_Close</property>
+        <property name="use-underline">True</property>
+        <accelerator key="c" signal="activate" modifiers="GDK_CONTROL_MASK"/>
       </object>
     </child>
   </object>
   <object class="GtkWindow" id="AddRemoveCashWindow">
     <property name="can-focus">False</property>
     <property name="can-default">True</property>
-    <property name="title" translatable="yes">Cash</property>
     <property name="resizable">False</property>
-    <property name="default-width">300</property>
-    <property name="default-height">200</property>
     <property name="destroy-with-parent">True</property>
     <property name="icon">Stocks-icon.png</property>
-    <property name="skip-taskbar-hint">True</property>
     <property name="skip-pager-hint">True</property>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
+        <property name="margin-start">50</property>
+        <property name="margin-end">50</property>
         <property name="margin-top">20</property>
-        <property name="margin-bottom">10</property>
+        <property name="margin-bottom">20</property>
         <property name="orientation">vertical</property>
         <property name="baseline-position">top</property>
         <child>
-          <!-- n-columns=3 n-rows=1 -->
+          <!-- n-columns=1 n-rows=1 -->
           <object class="GtkGrid">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="column-homogeneous">True</property>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Change Cash Value</property>
-                <property name="justify">center</property>
-              </object>
-              <packing>
-                <property name="left-attach">1</property>
-                <property name="top-attach">0</property>
-              </packing>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <!-- n-columns=1 n-rows=2 -->
-          <object class="GtkGrid">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="margin-top">30</property>
+            <property name="margin-top">10</property>
             <property name="margin-bottom">30</property>
             <property name="hexpand">True</property>
             <property name="row-homogeneous">True</property>
             <property name="column-homogeneous">True</property>
             <child>
-              <object class="GtkLabel">
+              <object class="GtkAspectFrame">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Value</property>
-                <property name="justify">center</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">in</property>
+                <child>
+                  <object class="GtkEntry" id="AddRemoveCashValueEntryBox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="halign">center</property>
+                    <property name="valign">center</property>
+                    <property name="margin-start">20</property>
+                    <property name="margin-end">20</property>
+                    <property name="margin-top">15</property>
+                    <property name="margin-bottom">15</property>
+                    <property name="input-purpose">alpha</property>
+                  </object>
+                </child>
               </object>
               <packing>
                 <property name="left-attach">0</property>
                 <property name="top-attach">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkEntry" id="AddRemoveCashValueEntryBox">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="is-focus">True</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
-                <property name="input-purpose">alpha</property>
-              </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">1</property>
               </packing>
             </child>
           </object>
           <packing>
             <property name="expand">False</property>
             <property name="fill">False</property>
-            <property name="position">1</property>
+            <property name="position">0</property>
           </packing>
         </child>
         <child>
@@ -417,24 +655,8 @@
           <object class="GtkGrid">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="margin-top">23</property>
             <property name="column-homogeneous">True</property>
-            <child>
-              <object class="GtkButton" id="AddRemoveCashCancelBTN">
-                <property name="label" translatable="yes">Cancel</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="can-default">True</property>
-                <property name="receives-default">False</property>
-                <property name="tooltip-text" translatable="yes">Cancel Changes</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
-                <accelerator key="c" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-              </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">0</property>
-              </packing>
-            </child>
             <child>
               <object class="GtkButton" id="AddRemoveCashOKBTN">
                 <property name="label" translatable="yes">OK</property>
@@ -449,9 +671,12 @@
                 <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
               </object>
               <packing>
-                <property name="left-attach">2</property>
+                <property name="left-attach">1</property>
                 <property name="top-attach">0</property>
               </packing>
+            </child>
+            <child>
+              <placeholder/>
             </child>
             <child>
               <placeholder/>
@@ -460,235 +685,126 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">False</property>
-            <property name="position">2</property>
+            <property name="position">1</property>
           </packing>
         </child>
       </object>
     </child>
-  </object>
-  <object class="GtkWindow" id="AddRemoveSecurity">
-    <property name="can-focus">False</property>
-    <property name="title" translatable="yes">Securities / Equities</property>
-    <property name="resizable">False</property>
-    <property name="default-width">440</property>
-    <property name="default-height">250</property>
-    <property name="destroy-with-parent">True</property>
-    <property name="icon">Stocks-icon.png</property>
-    <property name="skip-taskbar-hint">True</property>
-    <property name="skip-pager-hint">True</property>
-    <child>
-      <!-- n-columns=3 n-rows=6 -->
-      <object class="GtkGrid">
+    <child type="titlebar">
+      <object class="GtkHeaderBar">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="margin-end">20</property>
-        <property name="row-homogeneous">True</property>
-        <property name="column-homogeneous">True</property>
+        <property name="title" translatable="yes">Cash</property>
+        <property name="show-close-button">True</property>
         <child>
-          <object class="GtkButton" id="AddRemoveSecurityCancelBTN">
-            <property name="label" translatable="yes">Cancel</property>
+          <object class="GtkMenuButton">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
+            <property name="focus-on-click">False</property>
             <property name="receives-default">True</property>
-            <property name="tooltip-text" translatable="yes">Cancel Changes</property>
-            <property name="halign">center</property>
-            <property name="valign">center</property>
-            <property name="margin-top">5</property>
-            <property name="margin-bottom">20</property>
-            <accelerator key="c" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-            <accelerator key="c" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-          </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">5</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="label" translatable="yes">Symbol</property>
-          </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkEntry" id="AddRemoveSecuritySymbolEntryBox">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="tooltip-text" translatable="yes">A stock symbol.</property>
-            <property name="halign">center</property>
-            <property name="valign">center</property>
-            <property name="input-purpose">alpha</property>
-          </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">2</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="label" translatable="yes">Shares</property>
-          </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">3</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkEntry" id="AddRemoveSecuritySharesEntryBox">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="tooltip-text" translatable="yes">The number of shares in this stock</property>
-            <property name="halign">center</property>
-            <property name="valign">center</property>
-            <property name="input-purpose">digits</property>
-          </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">4</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkComboBoxText" id="AddRemoveSecurityComboBox">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">Select a table.</property>
-            <property name="halign">center</property>
-            <property name="valign">center</property>
-            <property name="margin-start">10</property>
-            <property name="margin-end">10</property>
-            <property name="active">0</property>
-            <property name="button-sensitivity">off</property>
-            <items>
-              <item translatable="yes">Select a security for removal</item>
-            </items>
-          </object>
-          <packing>
-            <property name="left-attach">2</property>
-            <property name="top-attach">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkButton" id="AddRemoveSecurityOkBTN">
-            <property name="label" translatable="yes">OK</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="can-default">True</property>
-            <property name="has-default">True</property>
-            <property name="receives-default">True</property>
-            <property name="tooltip-text" translatable="yes">Commit Changes</property>
-            <property name="halign">center</property>
-            <property name="valign">end</property>
-            <property name="margin-top">5</property>
-            <property name="margin-bottom">20</property>
-            <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-            <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-          </object>
-          <packing>
-            <property name="left-attach">2</property>
-            <property name="top-attach">5</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="label" translatable="yes">Add or Remove A Security</property>
-          </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">0</property>
-          </packing>
-        </child>
-        <child>
-          <!-- n-columns=3 n-rows=1 -->
-          <object class="GtkGrid">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="row-homogeneous">True</property>
-            <property name="column-homogeneous">True</property>
+            <property name="relief">none</property>
+            <property name="popup">CashMenu</property>
+            <property name="use-popover">False</property>
             <child>
-              <object class="GtkSwitch" id="AddRemoveSecuritySwitch">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
-              </object>
-              <packing>
-                <property name="left-attach">1</property>
-                <property name="top-attach">0</property>
-              </packing>
+              <placeholder/>
             </child>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Remove</property>
-              </object>
-              <packing>
-                <property name="left-attach">2</property>
-                <property name="top-attach">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Add</property>
-              </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">0</property>
-              </packing>
-            </child>
+            <accelerator key="f" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
           </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">4</property>
-          </packing>
         </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkMenu" id="MainEditMenu">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <child>
+      <object class="GtkMenuItem" id="MainEditMenuAPI">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label" translatable="yes">A_PI</property>
+        <property name="use-underline">True</property>
+        <accelerator key="p" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+      </object>
+    </child>
+    <child>
+      <object class="GtkMenuItem" id="MainEditMenuAddRemoveSecurity">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label" translatable="yes">_Securities / Equities</property>
+        <property name="use-underline">True</property>
+        <accelerator key="s" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+      </object>
+    </child>
+    <child>
+      <object class="GtkMenuItem" id="MainEditMenuBullion">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label" translatable="yes">_Bullion</property>
+        <property name="use-underline">True</property>
+        <accelerator key="b" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+      </object>
+    </child>
+    <child>
+      <object class="GtkMenuItem" id="MainEditMenuCash">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label" translatable="yes">_Cash</property>
+        <property name="use-underline">True</property>
+        <accelerator key="c" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+      </object>
+    </child>
+  </object>
+  <object class="GtkMenu" id="MainFileMenu">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <child>
+      <object class="GtkMenuItem" id="MainFileMenuRSI">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label" translatable="yes">_RSI</property>
+        <property name="use-underline">True</property>
+        <accelerator key="r" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+      </object>
+    </child>
+    <child>
+      <object class="GtkMenuItem" id="MainFileMenuQuit">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label" translatable="yes">_Quit</property>
+        <property name="use-underline">True</property>
+        <accelerator key="q" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+      </object>
+    </child>
+  </object>
+  <object class="GtkMenu" id="MainHelpMenu">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <child>
+      <object class="GtkMenuItem" id="MainHelpMenuKeyboardShortcuts">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label" translatable="yes">_Keyboard Shortcuts</property>
+        <property name="use-underline">True</property>
+        <accelerator key="k" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+      </object>
+    </child>
+    <child>
+      <object class="GtkMenuItem" id="MainHelpMenuAbout">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label" translatable="yes">_About</property>
+        <property name="use-underline">True</property>
+        <accelerator key="a" signal="activate" modifiers="GDK_CONTROL_MASK"/>
       </object>
     </child>
   </object>
   <object class="GtkApplicationWindow" id="MainWindow">
     <property name="visible">True</property>
     <property name="can-focus">True</property>
-    <property name="title" translatable="yes">Financials</property>
     <property name="default-width">875</property>
     <property name="default-height">825</property>
     <property name="icon">Stocks-icon.png</property>
+    <property name="show-menubar">False</property>
     <child>
       <object class="GtkScrolledWindow">
         <property name="visible">True</property>
@@ -699,235 +815,11 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <child>
-              <!-- n-columns=1 n-rows=4 -->
+              <!-- n-columns=1 n-rows=3 -->
               <object class="GtkGrid">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <child>
-                  <object class="GtkMenuBar">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <child>
-                      <object class="GtkMenuItem" id="MainWindowMenuFile">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">_File</property>
-                        <property name="use-underline">True</property>
-                        <child type="submenu">
-                          <object class="GtkMenu" id="MainWindowMenuFileMenu">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <child>
-                              <object class="GtkMenuItem" id="MainMenuViewRSIBTN">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">_RSI</property>
-                                <property name="use-underline">True</property>
-                                <accelerator key="r" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkMenuItem" id="MainMenuQuitBTN">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">_Quit</property>
-                                <property name="use-underline">True</property>
-                                <accelerator key="q" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkMenuItem" id="MainWindowMenuEdit">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">_Edit</property>
-                        <property name="use-underline">True</property>
-                        <child type="submenu">
-                          <object class="GtkMenu">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <child>
-                              <object class="GtkMenuItem" id="MainMenuChangeAPIinfoBTN">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">A_PI</property>
-                                <property name="use-underline">True</property>
-                                <accelerator key="p" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkMenuItem" id="MainMenuAddRemoveSecurityBTN">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">_Securities / Equities</property>
-                                <property name="use-underline">True</property>
-                                <accelerator key="s" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkMenuItem" id="MainMenuAddRemoveBullionBTN">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">_Bullion</property>
-                                <property name="use-underline">True</property>
-                                <accelerator key="b" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkMenuItem" id="MainMenuAddRemoveCashBTN">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">_Cash</property>
-                                <property name="use-underline">True</property>
-                                <accelerator key="c" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
-                        <accelerator key="h" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkMenuItem" id="MainWindowMenuHelp">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">_Help</property>
-                        <property name="use-underline">True</property>
-                        <child type="submenu">
-                          <object class="GtkMenu">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <child>
-                              <object class="GtkMenuItem" id="MainMenuShortcutBTN">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">_Keyboard Shortcuts</property>
-                                <property name="use-underline">True</property>
-                                <accelerator key="k" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkMenuItem" id="MainMenuAboutBTN">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">_About</property>
-                                <property name="use-underline">True</property>
-                                <accelerator key="a" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
-                        <accelerator key="h" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-                      </object>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="left-attach">0</property>
-                    <property name="top-attach">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkScrolledWindow">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="margin-start">10</property>
-                    <property name="margin-end">10</property>
-                    <property name="hexpand">True</property>
-                    <property name="vexpand">True</property>
-                    <property name="shadow-type">in</property>
-                    <property name="min-content-height">10</property>
-                    <property name="propagate-natural-height">True</property>
-                    <child>
-                      <object class="GtkTreeView" id="TreeView">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="reorderable">True</property>
-                        <property name="hover-selection">True</property>
-                        <property name="enable-grid-lines">both</property>
-                        <property name="enable-tree-lines">True</property>
-                        <property name="activate-on-single-click">True</property>
-                        <child internal-child="selection">
-                          <object class="GtkTreeSelection"/>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="left-attach">0</property>
-                    <property name="top-attach">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <!-- n-columns=3 n-rows=2 -->
-                  <object class="GtkGrid">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="row-homogeneous">True</property>
-                    <property name="column-homogeneous">True</property>
-                    <child>
-                      <object class="GtkButton" id="QuitBTN">
-                        <property name="label" translatable="yes">Quit</property>
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
-                        <property name="tooltip-text" translatable="yes">Quit this application.</property>
-                        <property name="halign">center</property>
-                        <property name="valign">end</property>
-                        <property name="margin-bottom">20</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">2</property>
-                        <property name="top-attach">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="FetchDataBTN">
-                        <property name="label" translatable="yes">Fetch Data</property>
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
-                        <property name="tooltip-text" translatable="yes">Fetch data from Finnhub.io</property>
-                        <property name="halign">center</property>
-                        <property name="valign">end</property>
-                        <property name="margin-bottom">20</property>
-                        <accelerator key="d" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-                      </object>
-                      <packing>
-                        <property name="left-attach">0</property>
-                        <property name="top-attach">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkProgressBar" id="ProgressBar">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="pulse-step">0.20</property>
-                        <property name="text" translatable="yes">Not Connected</property>
-                        <property name="show-text">True</property>
-                      </object>
-                      <packing>
-                        <property name="left-attach">1</property>
-                        <property name="top-attach">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="left-attach">0</property>
-                    <property name="top-attach">3</property>
-                  </packing>
-                </child>
+                <property name="margin-bottom">20</property>
                 <child>
                   <object class="GtkBox">
                     <property name="visible">True</property>
@@ -947,6 +839,7 @@
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="halign">start</property>
+                            <property name="margin-left">10</property>
                             <property name="margin-start">10</property>
                             <property name="label" translatable="yes">New York Time</property>
                             <attributes>
@@ -964,6 +857,7 @@
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="halign">start</property>
+                            <property name="margin-left">10</property>
                             <property name="margin-start">10</property>
                             <property name="label" translatable="yes">Saturday, September 10, 2022</property>
                             <property name="justify">center</property>
@@ -983,6 +877,7 @@
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="halign">start</property>
+                            <property name="margin-left">10</property>
                             <property name="margin-start">10</property>
                             <property name="margin-bottom">5</property>
                             <property name="label" translatable="yes">00:00</property>
@@ -1003,6 +898,7 @@
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="halign">end</property>
+                            <property name="margin-right">10</property>
                             <property name="margin-end">10</property>
                             <property name="label" translatable="yes">Market Closes In</property>
                             <attributes>
@@ -1019,6 +915,7 @@
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="halign">end</property>
+                            <property name="margin-right">10</property>
                             <property name="margin-end">10</property>
                             <property name="label" translatable="yes">00:00:00</property>
                             <attributes>
@@ -1055,6 +952,8 @@
                       <object class="GtkSeparator">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
+                        <property name="margin-left">10</property>
+                        <property name="margin-right">10</property>
                         <property name="margin-start">10</property>
                         <property name="margin-end">10</property>
                       </object>
@@ -1068,6 +967,8 @@
                       <object class="GtkFrame" id="IndexFrame">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
+                        <property name="margin-left">10</property>
+                        <property name="margin-right">10</property>
                         <property name="margin-start">10</property>
                         <property name="margin-end">10</property>
                         <property name="label-xalign">0</property>
@@ -1101,6 +1002,7 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
+                                                <property name="margin-left">10</property>
                                                 <property name="margin-start">10</property>
                                                 <property name="label" translatable="yes">Dow</property>
                                                 <attributes>
@@ -1121,6 +1023,7 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
+                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">Nasdaq</property>
                                                 <attributes>
@@ -1141,6 +1044,7 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
+                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">S&amp;P 500</property>
                                                 <attributes>
@@ -1161,6 +1065,7 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
+                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">Bitcoin</property>
                                                 <attributes>
@@ -1181,6 +1086,7 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
+                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">Gold/Silver</property>
                                                 <attributes>
@@ -1201,6 +1107,7 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
+                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">Gold</property>
                                                 <attributes>
@@ -1221,6 +1128,7 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
+                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">Silver</property>
                                                 <attributes>
@@ -1254,6 +1162,7 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
+                                                <property name="margin-left">10</property>
                                                 <property name="margin-start">10</property>
                                                 <property name="label" translatable="yes">33,536.70
 3245345</property>
@@ -1271,6 +1180,7 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
+                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">11,196.22</property>
                                                 <attributes>
@@ -1287,6 +1197,7 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
+                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">3,957.25</property>
                                                 <attributes>
@@ -1303,6 +1214,7 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
+                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">80</property>
                                                 <attributes>
@@ -1319,6 +1231,7 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
+                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">80</property>
                                                 <attributes>
@@ -1335,6 +1248,7 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
+                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">80</property>
                                                 <attributes>
@@ -1351,6 +1265,7 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
+                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">80</property>
                                                 <attributes>
@@ -1397,7 +1312,94 @@
                   </object>
                   <packing>
                     <property name="left-attach">0</property>
+                    <property name="top-attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkScrolledWindow">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="margin-start">10</property>
+                    <property name="margin-end">10</property>
+                    <property name="hexpand">True</property>
+                    <property name="vexpand">True</property>
+                    <property name="shadow-type">in</property>
+                    <property name="min-content-height">10</property>
+                    <property name="propagate-natural-height">True</property>
+                    <child>
+                      <object class="GtkTreeView" id="TreeView">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="reorderable">True</property>
+                        <property name="hover-selection">True</property>
+                        <property name="enable-grid-lines">both</property>
+                        <property name="enable-tree-lines">True</property>
+                        <property name="activate-on-single-click">True</property>
+                        <child internal-child="selection">
+                          <object class="GtkTreeSelection"/>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="left-attach">0</property>
                     <property name="top-attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <!-- n-columns=3 n-rows=2 -->
+                  <object class="GtkGrid">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="row-homogeneous">True</property>
+                    <property name="column-homogeneous">True</property>
+                    <child>
+                      <object class="GtkProgressBar" id="ProgressBar">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="halign">center</property>
+                        <property name="pulse-step">0.20</property>
+                        <property name="text" translatable="yes">Financials</property>
+                        <property name="show-text">True</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">1</property>
+                        <property name="top-attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="FetchDataBTN">
+                        <property name="label" translatable="yes">Fetch Data</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="tooltip-text" translatable="yes">Fetch data from Finnhub.io</property>
+                        <property name="halign">center</property>
+                        <property name="valign">end</property>
+                        <property name="margin-top">20</property>
+                        <accelerator key="d" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                      </object>
+                      <packing>
+                        <property name="left-attach">1</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">2</property>
                   </packing>
                 </child>
               </object>
@@ -1406,79 +1408,91 @@
         </child>
       </object>
     </child>
-  </object>
-  <object class="GtkWindow" id="ShortcutWindow">
-    <property name="can-focus">False</property>
-    <property name="can-default">True</property>
-    <property name="title" translatable="yes">Keyboard Shortcuts</property>
-    <property name="resizable">False</property>
-    <property name="default-width">280</property>
-    <property name="default-height">775</property>
-    <property name="destroy-with-parent">True</property>
-    <property name="icon">Stocks-icon.png</property>
-    <property name="skip-taskbar-hint">True</property>
-    <property name="skip-pager-hint">True</property>
-    <child>
-      <object class="GtkBox">
+    <child type="titlebar">
+      <object class="GtkHeaderBar" id="MainHeaderBar">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="margin-start">6</property>
-        <property name="margin-end">6</property>
-        <property name="margin-top">10</property>
-        <property name="margin-bottom">10</property>
-        <property name="orientation">vertical</property>
-        <property name="baseline-position">top</property>
+        <property name="title" translatable="yes">Financials</property>
+        <property name="show-close-button">True</property>
         <child>
-          <object class="GtkScrolledWindow" id="ShortcutScrolledWindow">
+          <object class="GtkMenuButton" id="MainFileMenuBTN">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="shadow-type">in</property>
-            <property name="min-content-width">200</property>
-            <property name="min-content-height">500</property>
+            <property name="can-focus">True</property>
+            <property name="focus-on-click">False</property>
+            <property name="receives-default">True</property>
+            <property name="relief">none</property>
+            <property name="popup">MainFileMenu</property>
+            <property name="use-popover">False</property>
             <child>
-              <object class="GtkTreeView" id="ShortcutWindowTreeView">
+              <placeholder/>
+            </child>
+            <accelerator key="f" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+          </object>
+        </child>
+        <child>
+          <object class="GtkMenuButton" id="MainEditMenuBTN">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="focus-on-click">False</property>
+            <property name="receives-default">True</property>
+            <property name="relief">none</property>
+            <property name="popup">MainEditMenu</property>
+            <property name="use-popover">False</property>
+            <child>
+              <object class="GtkImage">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <child internal-child="selection">
-                  <object class="GtkTreeSelection"/>
-                </child>
+                <property name="stock">gtk-add</property>
+                <property name="icon_size">1</property>
               </object>
             </child>
+            <accelerator key="e" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
           </object>
           <packing>
-            <property name="expand">True</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
+            <property name="position">1</property>
           </packing>
         </child>
         <child>
-          <object class="GtkButton" id="ShortcutOKBTN">
-            <property name="label" translatable="yes">OK</property>
+          <object class="GtkMenuButton" id="MainHelpMenuBTN">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="has-focus">True</property>
-            <property name="is-focus">True</property>
-            <property name="can-default">True</property>
-            <property name="has-default">True</property>
+            <property name="focus-on-click">False</property>
             <property name="receives-default">True</property>
-            <property name="tooltip-text" translatable="yes">Close this window</property>
-            <property name="halign">center</property>
-            <property name="valign">center</property>
-            <property name="margin-top">10</property>
-            <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+            <property name="relief">none</property>
+            <property name="popup">MainHelpMenu</property>
+            <property name="use-popover">False</property>
+            <child>
+              <object class="GtkImage">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="stock">gtk-help</property>
+                <property name="icon_size">1</property>
+              </object>
+            </child>
+            <accelerator key="h" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
           </object>
           <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
+            <property name="position">2</property>
           </packing>
         </child>
       </object>
     </child>
   </object>
+  <object class="GtkMenu" id="RSIMenu">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <child>
+      <object class="GtkMenuItem" id="RSIMenuCloseBTN">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label" translatable="yes">_Close</property>
+        <property name="use-underline">True</property>
+        <accelerator key="c" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+      </object>
+    </child>
+  </object>
   <object class="GtkWindow" id="ViewRSIWindow">
     <property name="can-focus">False</property>
-    <property name="title" translatable="yes">Relative Strength Index</property>
     <property name="default-width">925</property>
     <property name="default-height">700</property>
     <property name="icon">Stocks-icon.png</property>
@@ -1492,23 +1506,12 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <child>
-              <!-- n-columns=1 n-rows=4 -->
+              <!-- n-columns=1 n-rows=3 -->
               <object class="GtkGrid">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="margin-top">10</property>
                 <property name="row-spacing">5</property>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">RSI Data Provided by Yahoo! Finance</property>
-                  </object>
-                  <packing>
-                    <property name="left-attach">0</property>
-                    <property name="top-attach">0</property>
-                  </packing>
-                </child>
                 <child>
                   <!-- n-columns=3 n-rows=3 -->
                   <object class="GtkGrid">
@@ -1560,7 +1563,7 @@
                   </object>
                   <packing>
                     <property name="left-attach">0</property>
-                    <property name="top-attach">1</property>
+                    <property name="top-attach">0</property>
                   </packing>
                 </child>
                 <child>
@@ -1591,7 +1594,7 @@
                   </object>
                   <packing>
                     <property name="left-attach">0</property>
-                    <property name="top-attach">2</property>
+                    <property name="top-attach">1</property>
                   </packing>
                 </child>
                 <child>
@@ -1599,44 +1602,9 @@
                   <object class="GtkGrid">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
+                    <property name="margin-bottom">20</property>
                     <property name="row-homogeneous">True</property>
                     <property name="column-homogeneous">True</property>
-                    <child>
-                      <object class="GtkButton" id="ViewRSICloseBTN">
-                        <property name="label" translatable="yes">Close</property>
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
-                        <property name="tooltip-text" translatable="yes">Close Window</property>
-                        <property name="halign">center</property>
-                        <property name="valign">end</property>
-                        <property name="margin-bottom">20</property>
-                        <accelerator key="c" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-                      </object>
-                      <packing>
-                        <property name="left-attach">2</property>
-                        <property name="top-attach">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="ViewRSIFetchDataBTN">
-                        <property name="label" translatable="yes">Fetch Data</property>
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="can-default">True</property>
-                        <property name="has-default">True</property>
-                        <property name="receives-default">True</property>
-                        <property name="tooltip-text" translatable="yes">Fetch data from Yahoo! Finance</property>
-                        <property name="halign">center</property>
-                        <property name="valign">end</property>
-                        <property name="margin-bottom">20</property>
-                        <accelerator key="d" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-                      </object>
-                      <packing>
-                        <property name="left-attach">0</property>
-                        <property name="top-attach">1</property>
-                      </packing>
-                    </child>
                     <child>
                       <object class="GtkEntry" id="ViewRSISymbolEntryBox">
                         <property name="visible">True</property>
@@ -1664,6 +1632,34 @@
                       </packing>
                     </child>
                     <child>
+                      <object class="GtkButton" id="ViewRSIFetchDataBTN">
+                        <property name="label" translatable="yes">Fetch Data</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="can-default">True</property>
+                        <property name="has-default">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="tooltip-text" translatable="yes">Fetch data from Yahoo! Finance</property>
+                        <property name="halign">center</property>
+                        <property name="valign">end</property>
+                        <accelerator key="d" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                      </object>
+                      <packing>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">2</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
                       <placeholder/>
                     </child>
                     <child>
@@ -1672,11 +1668,365 @@
                   </object>
                   <packing>
                     <property name="left-attach">0</property>
-                    <property name="top-attach">3</property>
+                    <property name="top-attach">2</property>
                   </packing>
                 </child>
               </object>
             </child>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child type="titlebar">
+      <object class="GtkHeaderBar">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="title" translatable="yes">Relative Strength Indicator</property>
+        <property name="subtitle" translatable="yes">Data Provided by Yahoo! Finance</property>
+        <property name="show-close-button">True</property>
+        <child>
+          <object class="GtkMenuButton">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="focus-on-click">False</property>
+            <property name="receives-default">True</property>
+            <property name="relief">none</property>
+            <property name="popup">RSIMenu</property>
+            <child>
+              <placeholder/>
+            </child>
+            <accelerator key="f" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkMenu" id="SecuritiesMenu">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <child>
+      <object class="GtkMenuItem" id="SecuritiesMenuClose">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label" translatable="yes">_Close</property>
+        <property name="use-underline">True</property>
+        <accelerator key="c" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+      </object>
+    </child>
+  </object>
+  <object class="GtkWindow" id="AddRemoveSecurity">
+    <property name="can-focus">False</property>
+    <property name="resizable">False</property>
+    <property name="default-width">440</property>
+    <property name="default-height">250</property>
+    <property name="destroy-with-parent">True</property>
+    <property name="icon">Stocks-icon.png</property>
+    <property name="skip-pager-hint">True</property>
+    <child>
+      <!-- n-columns=3 n-rows=1 -->
+      <object class="GtkGrid">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="margin-end">20</property>
+        <property name="row-homogeneous">True</property>
+        <property name="column-homogeneous">True</property>
+        <child>
+          <!-- n-columns=1 n-rows=4 -->
+          <object class="GtkGrid">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="row-homogeneous">True</property>
+            <property name="column-homogeneous">True</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Symbol</property>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="AddRemoveSecuritySymbolEntryBox">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="tooltip-text" translatable="yes">A stock symbol.</property>
+                <property name="halign">center</property>
+                <property name="valign">center</property>
+                <property name="input-purpose">alpha</property>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Shares</property>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="AddRemoveSecuritySharesEntryBox">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="tooltip-text" translatable="yes">The number of shares in this stock</property>
+                <property name="halign">center</property>
+                <property name="valign">center</property>
+                <property name="margin-bottom">20</property>
+                <property name="input-purpose">digits</property>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">3</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">0</property>
+          </packing>
+        </child>
+        <child>
+          <!-- n-columns=1 n-rows=4 -->
+          <object class="GtkGrid">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="row-homogeneous">True</property>
+            <property name="column-homogeneous">True</property>
+            <child>
+              <!-- n-columns=3 n-rows=1 -->
+              <object class="GtkGrid">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="row-homogeneous">True</property>
+                <property name="column-homogeneous">True</property>
+                <child>
+                  <object class="GtkSwitch" id="AddRemoveSecuritySwitch">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="halign">center</property>
+                    <property name="valign">center</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">1</property>
+                    <property name="top-attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Remove</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">2</property>
+                    <property name="top-attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Add</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">0</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">0</property>
+          </packing>
+        </child>
+        <child>
+          <!-- n-columns=1 n-rows=4 -->
+          <object class="GtkGrid">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="row-homogeneous">True</property>
+            <property name="column-homogeneous">True</property>
+            <child>
+              <object class="GtkComboBoxText" id="AddRemoveSecurityComboBox">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="tooltip-text" translatable="yes">Select a table.</property>
+                <property name="halign">center</property>
+                <property name="valign">center</property>
+                <property name="margin-left">10</property>
+                <property name="margin-right">10</property>
+                <property name="margin-start">10</property>
+                <property name="margin-end">10</property>
+                <property name="active">0</property>
+                <property name="button-sensitivity">off</property>
+                <items>
+                  <item translatable="yes">Select a security for removal</item>
+                </items>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="AddRemoveSecurityOkBTN">
+                <property name="label" translatable="yes">OK</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="can-default">True</property>
+                <property name="has-default">True</property>
+                <property name="receives-default">True</property>
+                <property name="tooltip-text" translatable="yes">Commit Changes</property>
+                <property name="halign">center</property>
+                <property name="valign">end</property>
+                <property name="margin-top">5</property>
+                <property name="margin-bottom">20</property>
+                <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">0</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+    <child type="titlebar">
+      <object class="GtkHeaderBar">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="title" translatable="yes">Securities / Equities</property>
+        <property name="show-close-button">True</property>
+        <child>
+          <object class="GtkMenuButton">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="focus-on-click">False</property>
+            <property name="receives-default">True</property>
+            <property name="relief">none</property>
+            <property name="popup">SecuritiesMenu</property>
+            <property name="use-popover">False</property>
+            <child>
+              <placeholder/>
+            </child>
+            <accelerator key="f" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkMenu" id="ShortcutsMenu">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <child>
+      <object class="GtkMenuItem" id="ShortcutsMenuClose">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label" translatable="yes">_Close</property>
+        <property name="use-underline">True</property>
+        <accelerator key="c" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+      </object>
+    </child>
+  </object>
+  <object class="GtkWindow" id="ShortcutWindow">
+    <property name="can-focus">False</property>
+    <property name="can-default">True</property>
+    <property name="resizable">False</property>
+    <property name="default-width">280</property>
+    <property name="default-height">775</property>
+    <property name="destroy-with-parent">True</property>
+    <property name="icon">Stocks-icon.png</property>
+    <property name="skip-pager-hint">True</property>
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="margin-start">10</property>
+        <property name="margin-end">10</property>
+        <property name="margin-top">15</property>
+        <property name="margin-bottom">15</property>
+        <property name="orientation">vertical</property>
+        <property name="baseline-position">top</property>
+        <child>
+          <object class="GtkScrolledWindow" id="ShortcutScrolledWindow">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="shadow-type">in</property>
+            <property name="min-content-width">200</property>
+            <property name="min-content-height">500</property>
+            <child>
+              <object class="GtkTreeView" id="ShortcutWindowTreeView">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <child internal-child="selection">
+                  <object class="GtkTreeSelection"/>
+                </child>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+    <child type="titlebar">
+      <object class="GtkHeaderBar">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="title" translatable="yes">Shortcuts</property>
+        <property name="show-close-button">True</property>
+        <child>
+          <object class="GtkMenuButton">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="focus-on-click">False</property>
+            <property name="receives-default">True</property>
+            <property name="relief">none</property>
+            <property name="popup">ShortcutsMenu</property>
+            <property name="use-popover">False</property>
+            <child>
+              <placeholder/>
+            </child>
+            <accelerator key="f" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
           </object>
         </child>
       </object>
@@ -1690,13 +2040,11 @@
   <object class="GtkWindow" id="ChangeApiInfoWindow">
     <property name="can-focus">False</property>
     <property name="can-default">True</property>
-    <property name="title" translatable="yes">API</property>
     <property name="resizable">False</property>
     <property name="default-width">550</property>
     <property name="default-height">300</property>
     <property name="destroy-with-parent">True</property>
     <property name="icon">Stocks-icon.png</property>
-    <property name="skip-taskbar-hint">True</property>
     <property name="skip-pager-hint">True</property>
     <child>
       <object class="GtkBox">
@@ -1705,39 +2053,6 @@
         <property name="margin-top">10</property>
         <property name="orientation">vertical</property>
         <property name="baseline-position">top</property>
-        <child>
-          <!-- n-columns=3 n-rows=1 -->
-          <object class="GtkGrid">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="valign">start</property>
-            <property name="row-homogeneous">True</property>
-            <property name="column-homogeneous">True</property>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Finnhub.io API</property>
-                <property name="justify">center</property>
-              </object>
-              <packing>
-                <property name="left-attach">1</property>
-                <property name="top-attach">0</property>
-              </packing>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
         <child>
           <!-- n-columns=1 n-rows=4 -->
           <object class="GtkGrid">
@@ -1772,6 +2087,7 @@
                 <property name="valign">center</property>
                 <property name="margin-start">5</property>
                 <property name="margin-end">5</property>
+                <property name="margin-bottom">5</property>
                 <property name="input-purpose">alpha</property>
               </object>
               <packing>
@@ -1812,14 +2128,15 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">False</property>
-            <property name="position">1</property>
+            <property name="position">0</property>
           </packing>
         </child>
         <child>
-          <!-- n-columns=3 n-rows=5 -->
+          <!-- n-columns=3 n-rows=3 -->
           <object class="GtkGrid">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="margin-bottom">10</property>
             <property name="row-homogeneous">True</property>
             <property name="column-homogeneous">True</property>
             <child>
@@ -1845,47 +2162,14 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="ChangeApiInfoCancelBTN">
-                <property name="label" translatable="yes">Cancel</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="can-default">True</property>
-                <property name="receives-default">False</property>
-                <property name="tooltip-text" translatable="yes">Cancel Changes</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
-                <accelerator key="c" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-              </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">4</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton" id="ChangeApiInfoOKBTN">
-                <property name="label" translatable="yes">OK</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="can-default">True</property>
-                <property name="has-default">True</property>
-                <property name="receives-default">True</property>
-                <property name="tooltip-text" translatable="yes">Commit Changes</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
-                <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-              </object>
-              <packing>
-                <property name="left-attach">2</property>
-                <property name="top-attach">4</property>
-              </packing>
-            </child>
-            <child>
               <object class="GtkComboBoxText" id="ChangeApiInfoUpPerMinComboBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="tooltip-text" translatable="yes">The number of updates fetched per minute.</property>
                 <property name="halign">center</property>
                 <property name="valign">center</property>
+                <property name="margin-left">10</property>
+                <property name="margin-right">10</property>
                 <property name="margin-start">10</property>
                 <property name="margin-end">10</property>
                 <property name="hexpand">True</property>
@@ -1929,19 +2213,22 @@
               </packing>
             </child>
             <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
+              <object class="GtkButton" id="ChangeApiInfoOKBTN">
+                <property name="label" translatable="yes">OK</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="can-default">True</property>
+                <property name="has-default">True</property>
+                <property name="receives-default">True</property>
+                <property name="tooltip-text" translatable="yes">Commit Changes</property>
+                <property name="halign">center</property>
+                <property name="valign">center</property>
+                <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">2</property>
+              </packing>
             </child>
             <child>
               <placeholder/>
@@ -1959,8 +2246,31 @@
           <packing>
             <property name="expand">True</property>
             <property name="fill">True</property>
-            <property name="position">2</property>
+            <property name="position">1</property>
           </packing>
+        </child>
+      </object>
+    </child>
+    <child type="titlebar">
+      <object class="GtkHeaderBar">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="title" translatable="yes">API</property>
+        <property name="show-close-button">True</property>
+        <child>
+          <object class="GtkMenuButton">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="focus-on-click">False</property>
+            <property name="receives-default">True</property>
+            <property name="relief">none</property>
+            <property name="popup">APIMenu</property>
+            <property name="use-popover">False</property>
+            <child>
+              <placeholder/>
+            </child>
+            <accelerator key="f" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+          </object>
         </child>
       </object>
     </child>

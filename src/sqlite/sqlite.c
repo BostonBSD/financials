@@ -116,6 +116,36 @@ static int bullion_callback (void *data, int argc, char **argv, char **ColName) 
         m->Silver->premium_ch = m->Silver->DoubToStr( m->Silver->premium_f );
     }
 
+    if( strcasecmp( argv[1], "platinum" ) == 0 ){
+        *m->Platinum->ounce_f = m->Platinum->StrToDoub ( argv[2] ? argv[2] : "0" );
+
+        free( m->Platinum->ounce_ch );
+        m->Platinum->ounce_ch = strdup ( argv[2] ? argv[2] : "0" );
+        /* To make sure it's formatted correctly. */
+        FormatStr( m->Platinum->ounce_ch );
+        
+        *m->Platinum->premium_f = m->Platinum->StrToDoub ( argv[3] ? argv[3] : "0" );
+
+        free( m->Platinum->premium_ch );
+        /* To make sure it's formatted correctly. */
+        m->Platinum->premium_ch = m->Platinum->DoubToStr( m->Platinum->premium_f );
+    }
+
+    if( strcasecmp( argv[1], "palladium" ) == 0 ){
+        *m->Palladium->ounce_f = m->Palladium->StrToDoub ( argv[2] ? argv[2] : "0" );
+
+        free( m->Palladium->ounce_ch );
+        m->Palladium->ounce_ch = strdup ( argv[2] ? argv[2] : "0" );
+        /* To make sure it's formatted correctly. */
+        FormatStr( m->Palladium->ounce_ch );
+        
+        *m->Palladium->premium_f = m->Palladium->StrToDoub ( argv[3] ? argv[3] : "0" );
+
+        free( m->Palladium->premium_ch );
+        /* To make sure it's formatted correctly. */
+        m->Palladium->premium_ch = m->Palladium->DoubToStr( m->Palladium->premium_f );
+    }
+
     pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
     return 0;
 }

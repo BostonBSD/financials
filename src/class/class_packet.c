@@ -36,9 +36,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/class.h"       /* The class init and destruct funcs are required 
                                        in the class methods, includes portfolio_packet 
                                        metal, meta, and equity_folder class types */
-
-#include "../include/globals.h"
-
 #include "../include/multicurl.h"
 #include "../include/mutex.h"
 #include "../include/sqlite.h"
@@ -88,10 +85,13 @@ static int perform_multicurl_request ( portfolio_packet *pkg ){
     metal* M = pkg->GetMetalClass ();
     meta* Met = pkg->GetMetaClass ();
     int return_code = 0;
+    short num_metals = 2;
+    if( *M->Platinum->ounce_f > 0 ) num_metals++;
+    if( *M->Palladium->ounce_f > 0 ) num_metals++;
 
     /* Perform the cURL requests simultaneously using multi-cURL. */
     /* Four Indices plus Two Metals plus Number of Equities */
-    return_code = PerformMultiCurl( pkg->multicurl_main_hnd, 4.0f + 2.0f + (double)F->size );
+    return_code = PerformMultiCurl( pkg->multicurl_main_hnd, 4.0f + (double)num_metals + (double)F->size );
     if( return_code ){
         for( unsigned short c = 0; c < F->size; c++ ) {       
             free( F->Equity[ c ]->JSON.memory );
@@ -109,6 +109,10 @@ static int perform_multicurl_request ( portfolio_packet *pkg ){
         free ( M->Silver->CURLDATA.memory );
         M->Gold->CURLDATA.memory = NULL;
         M->Silver->CURLDATA.memory = NULL;
+        if ( M->Platinum->CURLDATA.memory ) free ( M->Platinum->CURLDATA.memory );
+        if ( M->Palladium->CURLDATA.memory ) free ( M->Palladium->CURLDATA.memory );
+        M->Platinum->CURLDATA.memory = NULL;
+        M->Palladium->CURLDATA.memory = NULL;
     }
 
     return return_code;
@@ -124,7 +128,7 @@ static int GetData () {
     int return_code = 0;
 
     Met->SetUpCurlIndicesData ( pkg );  /* Four Indices */
-    M->SetUpCurl ( pkg );               /* Two Metals */
+    M->SetUpCurl ( pkg );               /* Two to Four Metals */
     F->SetUpCurl ( pkg );  
     return_code = perform_multicurl_request ( pkg ); 
 

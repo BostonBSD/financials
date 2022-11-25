@@ -38,7 +38,7 @@ POSSIBILITY OF SUCH DAMAGE.
 /* Globals */
 
 /* The packet global class is only accessible from financials.c, 
-   class_packet.c, gui_callbacks.c, and gui_threads.c */
+   gui_callbacks.c, and gui_threads.c */
 /* All other functions access the class data through pass by reference */
 
 extern portfolio_packet* packet;        /* The gui worker functions need access to the classes, 

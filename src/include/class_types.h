@@ -42,7 +42,7 @@ POSSIBILITY OF SUCH DAMAGE.
    Define the function pointer type here. */
 typedef double sub_func_a_t (const unsigned int*,const double*);
 typedef double sub_func_b_t (const double*,const double*,const double*);
-typedef double sub_func_c_t (const double*,const double*);
+typedef double sub_func_c_t (const double*,const double*,const double*,const double*);
 typedef char* sub_func_d_t (const double*);
 typedef double sub_func_e_t (const char*);
 typedef void* sub_func_f_t ();
@@ -239,6 +239,8 @@ typedef struct {
     /* Bullion Handles */
 	bullion* Gold;
     bullion* Silver;
+    bullion* Platinum;
+    bullion* Palladium;
 
     /* Data Variables */
     double* bullion_port_value_f;

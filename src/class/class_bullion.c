@@ -58,8 +58,8 @@ static double Stake (const double *ounces, const double *prem, const double *pri
     return ( ((*prem) + (*price)) * (*ounces) );
 }
 
-static double BullionStake (const double *gold_stake, const double *silver_stake) {
-    return ( (*gold_stake) + (*silver_stake) );
+static double BullionStake (const double *gold_stake, const double *silver_stake, const double *platinum_stake, const double *palladium_stake) {
+    return ( (*gold_stake) + (*silver_stake) + (*platinum_stake) + (*palladium_stake) );
 }
 
 static char *DoubToStr (const double *num) 
@@ -132,6 +132,8 @@ static void ToStrings () {
     metal *M = Precious;
     convert_bullion_to_strings ( M->Gold );
     convert_bullion_to_strings ( M->Silver );
+    if( *M->Platinum->ounce_f > 0 ) convert_bullion_to_strings ( M->Platinum );
+    if( *M->Palladium->ounce_f > 0 ) convert_bullion_to_strings ( M->Palladium );
 
     /* The total investment in bullion. */
     free( M->bullion_port_value_ch );
@@ -184,12 +186,15 @@ static void Calculate (){
 
     bullion_calculations ( M->Gold );
     bullion_calculations ( M->Silver );
+    /* There's no if statement here, the user might update during a fetch operation. */
+    bullion_calculations ( M->Platinum );
+    bullion_calculations ( M->Palladium );
 
     /* The total investment in bullion. */
-    *M->bullion_port_value_f = M->BullionStake( M->Gold->port_value_f, M->Silver->port_value_f );
+    *M->bullion_port_value_f = M->BullionStake( M->Gold->port_value_f, M->Silver->port_value_f, M->Platinum->port_value_f, M->Palladium->port_value_f );
 
     /* The change in total investment in bullion. */
-    *M->bullion_port_value_chg_f = *M->Gold->change_value_f + *M->Silver->change_value_f;
+    *M->bullion_port_value_chg_f = *M->Gold->change_value_f + *M->Silver->change_value_f + *M->Platinum->change_value_f + *M->Palladium->change_value_f;
 
     /* The change in total investment in bullion as a percentage. */
     double prev_total = *M->bullion_port_value_f - *M->bullion_port_value_chg_f;
@@ -224,9 +229,13 @@ static int SetUpCurl ( void *data ){
 
     create_bullion_url ( M->Gold, "GC=F" );
     create_bullion_url ( M->Silver, "SI=F" );
+    if( *M->Platinum->ounce_f > 0 ) create_bullion_url ( M->Platinum, "PL=F" );
+    if( *M->Palladium->ounce_f > 0 ) create_bullion_url ( M->Palladium, "PA=F" );
 
     SetUpCurlHandle( M->Silver->YAHOO_hnd, pkg->multicurl_main_hnd, M->Silver->url_ch, &M->Silver->CURLDATA );
     SetUpCurlHandle( M->Gold->YAHOO_hnd, pkg->multicurl_main_hnd, M->Gold->url_ch, &M->Gold->CURLDATA );
+    if( *M->Platinum->ounce_f > 0 ) SetUpCurlHandle( M->Platinum->YAHOO_hnd, pkg->multicurl_main_hnd, M->Platinum->url_ch, &M->Platinum->CURLDATA );
+    if( *M->Palladium->ounce_f > 0 ) SetUpCurlHandle( M->Palladium->YAHOO_hnd, pkg->multicurl_main_hnd, M->Palladium->url_ch, &M->Palladium->CURLDATA );
 
     return 0;
 }
@@ -290,6 +299,8 @@ static void ExtractData () {
 
     extract_bullion_data ( M->Gold );
     extract_bullion_data ( M->Silver );
+    if( *M->Platinum->ounce_f > 0 ) extract_bullion_data ( M->Platinum );
+    if( *M->Palladium->ounce_f > 0 ) extract_bullion_data ( M->Palladium );
 }
 
 /* Class Init Functions */
@@ -362,6 +373,8 @@ metal *class_init_metal ()
     /* Initialize Nested Class Objects */
     new_class->Gold = class_init_bullion ();
     new_class->Silver = class_init_bullion ();
+    new_class->Platinum = class_init_bullion ();
+    new_class->Palladium = class_init_bullion ();
 
     /* Allocate Memory For Variables */
     new_class->bullion_port_value_f = (double*) malloc( sizeof(double) );
@@ -444,6 +457,8 @@ void class_destruct_metal (metal *metal_handle)
     /* Free Memory From Class Objects */
     if ( metal_handle->Gold ) class_destruct_bullion ( metal_handle->Gold );
     if ( metal_handle->Silver ) class_destruct_bullion ( metal_handle->Silver );
+    if ( metal_handle->Platinum ) class_destruct_bullion ( metal_handle->Platinum );
+    if ( metal_handle->Palladium ) class_destruct_bullion ( metal_handle->Palladium );
 
     /* Free Memory From Variables */
     if ( metal_handle->bullion_port_value_f ) free( metal_handle->bullion_port_value_f );

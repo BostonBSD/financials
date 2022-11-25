@@ -59,6 +59,7 @@ int AddRemCompletionSet (void*);
 int APIShowHide (void*);
 int APIOk (void*);
 int APICursorMove ();
+int BullionComBoxChange ();
 int BullionShowHide (void*);
 int BullionOk (void*);
 int BullionCursorMove ();
@@ -80,6 +81,7 @@ int RSIGetSymbol (char**);
 /* GUI Callback Functions */
 void GUICallbackHandler_add_rem_switch (GtkSwitch*,bool,void*);
 void GUICallbackHandler (GtkWidget*,void*);
+gboolean GUICallbackHandler_hide_rsi_on_delete (GtkWidget*,GdkEvent*,void*);
 gboolean GUICallbackHandler_expander_bar (GtkWidget*,void*);
 gboolean GUICallbackHandler_window_data (GtkWidget*,GdkEvent*,void*);
 gboolean GUICallbackHandler_select_comp (GtkEntryCompletion*,GtkTreeModel*,GtkTreeIter*);

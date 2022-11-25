@@ -36,7 +36,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <stdbool.h>                      /* bool */
 #include <time.h>                         /* struct tm  */
 
-#include "class_types.h"        /* equity_folder, metal, meta */
+#include "class_types.h"        /* equity_folder, metal, meta, portfolio_packet */
 #include "gui_types.h"          /* symbol_name_map */
 #include "multicurl_types.h"    /* MemType */
 

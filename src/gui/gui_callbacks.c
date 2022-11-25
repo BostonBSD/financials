@@ -44,6 +44,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/class_types.h"         /* portfolio_packet, equity_folder, metal, meta, window_data */
 #include "../include/globals.h"             /* portfolio_packet packet */
 #include "../include/mutex.h"               /* pthread_mutex_t mutex_working[ MUTEX_NUMBER ] */
+#include "../include/workfuncs.h"           /* LowerCaseStr () */
 
 void GUICallbackHandler (GtkWidget *widget, void *data)
 /* The widget callback functions block the gui loop until they return,
@@ -81,6 +82,14 @@ function, which takes two parameters. */
     pthread_t thread_id;
     /* Create a thread, pass the func and widget signal to it. */
     pthread_create( &thread_id, NULL, GUIThreadHandler, data );
+}
+
+gboolean GUICallbackHandler_hide_rsi_on_delete (GtkWidget *window, GdkEvent *event, void *data)
+{
+    if( !( event ) ) return gtk_widget_hide_on_delete ( window );
+    RSITreeViewClear ();
+    RSIShowHide ( packet );
+    return gtk_widget_hide_on_delete ( window );
 }
 
 gboolean GUICallbackHandler_expander_bar (GtkWidget *expander, void *data)
@@ -212,7 +221,63 @@ static void view_popup_menu_onViewRSIData (GtkWidget *menuitem, void *userdata)
     gtk_button_clicked ( GTK_BUTTON ( Button ) );
 }
 
-static void view_popup_menu_onDeleteRow (GtkWidget *menuitem, void *userdata)
+static void view_popup_menu_onDeleteBullion (GtkWidget *menuitem, void *userdata)
+{
+    if (menuitem == NULL) return;
+    char *symbol = (char*) userdata;
+    char *metal_name = strdup ( symbol );
+    LowerCaseStr ( metal_name );    
+
+    portfolio_packet *pkg = packet;
+    metal *M = pkg->GetMetalClass ();
+    meta *D = pkg->GetMetaClass ();
+
+    /* Prevents Program From Crashing During A Data Fetch Operation */
+    pthread_mutex_lock( &mutex_working[ FETCH_DATA_MUTEX ] );
+
+    SqliteAddBullion ( metal_name, "0","0", M, D );
+    free ( metal_name );
+
+    pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
+
+    if( pkg->IsFetchingData () == false ) {
+        gdk_threads_add_idle ( MainDefaultTreeview, packet );
+    } else {
+        pkg->Calculate ();
+        pkg->ToStrings ();
+        /* Set Gtk treeview. */
+        gdk_threads_add_idle ( MainPrimaryTreeview, packet );
+    }
+}
+
+static void view_popup_menu_onDeleteAllBullion (GtkWidget *menuitem)
+{
+    if (menuitem == NULL) return;
+    portfolio_packet *pkg = packet;
+    metal *M = pkg->GetMetalClass ();
+    meta *D = pkg->GetMetaClass ();
+
+    /* Prevents Program From Crashing During A Data Fetch Operation */
+    pthread_mutex_lock( &mutex_working[ FETCH_DATA_MUTEX ] );
+
+    SqliteAddBullion ( "gold", "0","0", M, D );
+    SqliteAddBullion ( "silver", "0","0", M, D );
+    SqliteAddBullion ( "platinum", "0","0", M, D );
+    SqliteAddBullion ( "palladium", "0","0", M, D );
+
+    pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
+
+    if( pkg->IsFetchingData () == false ) {
+        gdk_threads_add_idle ( MainDefaultTreeview, packet );
+    } else {
+        pkg->Calculate ();
+        pkg->ToStrings ();
+        /* Set Gtk treeview. */
+        gdk_threads_add_idle ( MainPrimaryTreeview, packet );
+    }
+}
+
+static void view_popup_menu_onDeleteEquity (GtkWidget *menuitem, void *userdata)
 {
     if (menuitem == NULL) return;
     char *symbol = (char*) userdata;
@@ -229,17 +294,17 @@ static void view_popup_menu_onDeleteRow (GtkWidget *menuitem, void *userdata)
 
     pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
 
-    if( packet->IsFetchingData () == false ) {
+    if( pkg->IsFetchingData () == false ) {
         gdk_threads_add_idle ( MainDefaultTreeview, packet );
     } else {
-        packet->Calculate ();
-        packet->ToStrings ();
+        pkg->Calculate ();
+        pkg->ToStrings ();
         /* Set Gtk treeview. */
         gdk_threads_add_idle ( MainPrimaryTreeview, packet );
     }
 }
 
-static void view_popup_menu_onDeleteAllEquityRows (GtkWidget *menuitem)
+static void view_popup_menu_onDeleteAllEquity (GtkWidget *menuitem)
 {
     if (menuitem == NULL) return;
     portfolio_packet *pkg = packet;
@@ -256,11 +321,11 @@ static void view_popup_menu_onDeleteAllEquityRows (GtkWidget *menuitem)
 
     pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
 
-    if( packet->IsFetchingData () == false ) {
+    if( pkg->IsFetchingData () == false ) {
         gdk_threads_add_idle ( MainDefaultTreeview, packet );
     } else {
-        packet->Calculate ();
-        packet->ToStrings ();
+        pkg->Calculate ();
+        pkg->ToStrings ();
         /* Set Gtk treeview. */
         gdk_threads_add_idle ( MainPrimaryTreeview, packet );
     }
@@ -276,6 +341,8 @@ static void view_popup_menu_onAddRow (GtkWidget *menuitem, void *userdata)
     } else if ( strcmp( type, "equity_total" ) == 0 ) {
         gdk_threads_add_idle( AddRemShowHide, packet );
     } else if ( strcmp( type, "bullion" ) == 0 ) {
+        gdk_threads_add_idle( BullionShowHide, packet );
+    } else if ( strcmp( type, "bullion_total" ) == 0 ) {
         gdk_threads_add_idle( BullionShowHide, packet );
     } else if ( strcmp( type, "cash" ) == 0 ) {
         gdk_threads_add_idle( CashShowHide, packet );
@@ -310,6 +377,7 @@ gboolean view_onButtonPressed (GtkWidget *treeview, GdkEventButton *event)
                 int eq_flag = strcmp( type, "equity" );
                 int eq_tot_flag = strcmp( type, "equity_total" );
                 int bu_flag = strcmp( type, "bullion" );
+                int bu_tot_flag = strcmp( type, "bullion_total" );
                 int ca_flag = strcmp( type, "cash" );
                 int bs_flag = strcmp( type, "blank_space" );
 
@@ -338,22 +406,22 @@ gboolean view_onButtonPressed (GtkWidget *treeview, GdkEventButton *event)
                     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
                     g_object_ref_sink( G_OBJECT ( menuitem ) );
 
-                    menuitem = gtk_menu_item_new_with_label("Add / Edit Equity");
+                    menuitem = gtk_menu_item_new_with_label("Edit Equity");
                     g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onAddRow ), my_data->type);
                     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
                     g_object_ref_sink( G_OBJECT ( menuitem ) );
 
-                    size_t len = strlen("Delete Entry ") + strlen( my_data->symbol ) + 1;
+                    size_t len = strlen("Delete ") + strlen( my_data->symbol ) + 1;
                     char *menu_label = (char*)malloc( len );
-                    snprintf(menu_label, len, "Delete Entry %s", my_data->symbol );
+                    snprintf(menu_label, len, "Delete %s", my_data->symbol );
                     menuitem = gtk_menu_item_new_with_label( menu_label );
-                    g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onDeleteRow ), my_data->symbol);
+                    g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onDeleteEquity ), my_data->symbol);
                     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
                     free ( menu_label );
                     g_object_ref_sink( G_OBJECT ( menuitem ) );
 
                     menuitem = gtk_menu_item_new_with_label("Delete All Equity");
-                    g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onDeleteAllEquityRows ), NULL);
+                    g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onDeleteAllEquity ), NULL);
                     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
                     g_object_ref_sink( G_OBJECT ( menuitem ) );
 
@@ -365,13 +433,13 @@ gboolean view_onButtonPressed (GtkWidget *treeview, GdkEventButton *event)
                 } else if ( eq_tot_flag == 0 ) 
                 {
                     menu = gtk_menu_new();
-                    menuitem = gtk_menu_item_new_with_label("Delete All Equity");
-                    g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onDeleteAllEquityRows ), NULL);
+                    menuitem = gtk_menu_item_new_with_label("Edit Equity");
+                    g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onAddRow ), my_data->type);
                     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
                     g_object_ref_sink( G_OBJECT ( menuitem ) );
 
-                    menuitem = gtk_menu_item_new_with_label("Add / Edit Equity");
-                    g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onAddRow ), my_data->type);
+                    menuitem = gtk_menu_item_new_with_label("Delete All Equity");
+                    g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onDeleteAllEquity ), NULL);
                     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
                     g_object_ref_sink( G_OBJECT ( menuitem ) );
 
@@ -380,9 +448,9 @@ gboolean view_onButtonPressed (GtkWidget *treeview, GdkEventButton *event)
 
                     g_object_ref_sink( G_OBJECT ( menu ) );
 
-                } else if ( (bu_flag == 0) || (ca_flag == 0) ) 
+                } else if ( (bu_flag == 0) || (bu_tot_flag == 0) || (ca_flag == 0) ) 
                 {
-                    if (bu_flag == 0){
+                    if (bu_flag == 0 || bu_tot_flag == 0){
                         menuitem = gtk_menu_item_new_with_label("Edit Bullion");
                     } else {
                         menuitem = gtk_menu_item_new_with_label("Edit Cash");
@@ -392,6 +460,24 @@ gboolean view_onButtonPressed (GtkWidget *treeview, GdkEventButton *event)
                     g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onAddRow ), my_data->type);
                     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
                     g_object_ref_sink( G_OBJECT ( menuitem ) );
+
+                    if (bu_flag == 0){
+                        size_t len = strlen("Delete ") + strlen( my_data->symbol ) + 1;
+                        char *menu_label = (char*)malloc( len );
+                        snprintf(menu_label, len, "Delete %s", my_data->symbol );
+                        menuitem = gtk_menu_item_new_with_label( menu_label );
+                        g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onDeleteBullion ), my_data->symbol);
+                        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+                        free ( menu_label );
+                        g_object_ref_sink( G_OBJECT ( menuitem ) );
+                    }
+
+                    if (bu_flag == 0 || bu_tot_flag == 0){
+                        menuitem = gtk_menu_item_new_with_label("Delete All Bullion");
+                        g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onDeleteAllBullion ), NULL);
+                        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+                        g_object_ref_sink( G_OBJECT ( menuitem ) );
+                    }
 
                     gtk_widget_show_all(menu);
                     gtk_menu_popup_at_pointer (GTK_MENU(menu), (GdkEvent*)event); 
@@ -411,7 +497,7 @@ gboolean view_onButtonPressed (GtkWidget *treeview, GdkEventButton *event)
                     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
                     g_object_ref_sink( G_OBJECT ( menuitem ) );
 
-                    menuitem = gtk_menu_item_new_with_label("Add / Edit Equity");
+                    menuitem = gtk_menu_item_new_with_label("Edit Equity");
                     g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onAddRow ), "equity");
                     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
                     g_object_ref_sink( G_OBJECT ( menuitem ) );                   

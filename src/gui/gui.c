@@ -68,54 +68,52 @@ static void shortcuts_set_treeview (){
     gtk_list_store_append( store, &iter );
     gtk_list_store_set( store, &iter, 0, "Application Window", -1 );
     gtk_list_store_append( store, &iter );
-    gtk_list_store_set( store, &iter, 0, "----------------------------------", -1 );
+    gtk_list_store_set( store, &iter, 0, "      File", 1, "Ctrl - F", -1 );
     gtk_list_store_append( store, &iter );
-    gtk_list_store_set( store, &iter, 0, "File", 1, "<Alt> f", -1 );
+    gtk_list_store_set( store, &iter, 0, "      RSI", 1, "Ctrl - R", -1 );
     gtk_list_store_append( store, &iter );
-    gtk_list_store_set( store, &iter, 0, "RSI", 1, "<Ctrl> r", -1 );
-    gtk_list_store_append( store, &iter );
-    gtk_list_store_set( store, &iter, 0, "Quit", 1, "<Ctrl> q", -1 );
+    gtk_list_store_set( store, &iter, 0, "      Quit", 1, "Ctrl - Q", -1 );
     gtk_list_store_append( store, &iter );
     gtk_list_store_append( store, &iter );
-    gtk_list_store_set( store, &iter, 0, "Edit", 1, "<Alt> e", -1 );
+    gtk_list_store_set( store, &iter, 0, "      Edit", 1, "Ctrl - E", -1 );
     gtk_list_store_append( store, &iter );
-    gtk_list_store_set( store, &iter, 0, "API", 1, "<Ctrl> p", -1 );
+    gtk_list_store_set( store, &iter, 0, "      API", 1, "Ctrl - P", -1 );
     gtk_list_store_append( store, &iter );
-    gtk_list_store_set( store, &iter, 0, "Securities", 1, "<Ctrl> s", -1 );
+    gtk_list_store_set( store, &iter, 0, "      Securities", 1, "Ctrl - S", -1 );
     gtk_list_store_append( store, &iter );
-    gtk_list_store_set( store, &iter, 0, "Bullion", 1, "<Ctrl> b", -1 );
+    gtk_list_store_set( store, &iter, 0, "      Bullion", 1, "Ctrl - B", -1 );
     gtk_list_store_append( store, &iter );
-    gtk_list_store_set( store, &iter, 0, "Cash", 1, "<Ctrl> c", -1 );
-    gtk_list_store_append( store, &iter );
-    gtk_list_store_append( store, &iter );
-    gtk_list_store_set( store, &iter, 0, "Help", 1, "<Alt> h", -1 );
-    gtk_list_store_append( store, &iter );
-    gtk_list_store_set( store, &iter, 0, "Keyboard Shortcuts", 1, "<Ctrl> k", -1 );
-    gtk_list_store_append( store, &iter );
-    gtk_list_store_set( store, &iter, 0, "About", 1, "<Ctrl> a", -1 );
+    gtk_list_store_set( store, &iter, 0, "      Cash", 1, "Ctrl - C", -1 );
     gtk_list_store_append( store, &iter );
     gtk_list_store_append( store, &iter );
-    gtk_list_store_set( store, &iter, 0, "Fetch Data", 1, "<Ctrl> d", -1 );
+    gtk_list_store_set( store, &iter, 0, "      Help", 1, "Ctrl - H", -1 );
     gtk_list_store_append( store, &iter );
-    gtk_list_store_set( store, &iter, 0, "Quit", 1, "<Ctrl> q", -1 );
+    gtk_list_store_set( store, &iter, 0, "      Keyboard Shortcuts", 1, "Ctrl - K", -1 );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_set( store, &iter, 0, "      About", 1, "Ctrl - A", -1 );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_set( store, &iter, 0, "      Fetch Data", 1, "Ctrl - D", -1 );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_set( store, &iter, 0, "      Quit", 1, "Ctrl - Q", -1 );
     gtk_list_store_append( store, &iter );
     gtk_list_store_append( store, &iter );
     gtk_list_store_set( store, &iter, 0, "RSI Window", -1 );
     gtk_list_store_append( store, &iter );
-    gtk_list_store_set( store, &iter, 0, "----------------------------------", -1 );
+    gtk_list_store_set( store, &iter, 0, "      File", 1, "Ctrl - F", -1 );
     gtk_list_store_append( store, &iter );
-    gtk_list_store_set( store, &iter, 0, "Fetch Data", 1, "<Ctrl> d", -1 );
+    gtk_list_store_set( store, &iter, 0, "      Fetch Data", 1, "Ctrl - D", -1 );
     gtk_list_store_append( store, &iter );
-    gtk_list_store_set( store, &iter, 0, "Close", 1, "<Ctrl> c", -1 );
+    gtk_list_store_set( store, &iter, 0, "      Close", 1, "Ctrl - C", -1 );
     gtk_list_store_append( store, &iter );
     gtk_list_store_append( store, &iter );
     gtk_list_store_set( store, &iter, 0, "All Other Windows", -1 );
     gtk_list_store_append( store, &iter );
-    gtk_list_store_set( store, &iter, 0, "----------------------------------", -1 );
+    gtk_list_store_set( store, &iter, 0, "      File", 1, "Ctrl - F", -1 );
     gtk_list_store_append( store, &iter );
-    gtk_list_store_set( store, &iter, 0, "OK", 1, "<Ctrl> o", -1 );
+    gtk_list_store_set( store, &iter, 0, "      OK", 1, "Ctrl - O", -1 );
     gtk_list_store_append( store, &iter );
-    gtk_list_store_set( store, &iter, 0, "Cancel", 1, "<Ctrl> c", -1 );
+    gtk_list_store_set( store, &iter, 0, "      Close", 1, "Ctrl - C", -1 );
 
 
     /* Add the store of data to the TreeView. */
@@ -152,6 +150,7 @@ static void gui_signal_connect ( void *data )
        small to larger datatype, in the GUIThreadHandler we cast this back to an enum/int,
        because it started as an enum/int we should not worry about data loss through 
        casting truncation. */
+    
     window = gtk_builder_get_object (builder, "MainWindow");
     g_signal_connect ( window, "destroy", G_CALLBACK ( GUICallbackHandler ), (void *)MAIN_EXIT );
     g_signal_connect ( window, "configure-event", G_CALLBACK ( GUICallbackHandler_window_data ), (void *)GUI_MAIN_WINDOW );
@@ -165,14 +164,14 @@ static void gui_signal_connect ( void *data )
     g_signal_connect ( button, "clicked", G_CALLBACK ( GUICallbackHandler ), (void *)MAIN_FETCH_BTN );
     gtk_widget_grab_focus ( GTK_WIDGET ( button ) );
 
-    button = gtk_builder_get_object (builder, "MainMenuQuitBTN");
+    button = gtk_builder_get_object (builder, "MainFileMenuQuit");
     g_signal_connect ( button, "activate", G_CALLBACK ( GUICallbackHandler ), (void *)MAIN_EXIT );
 
-    button = gtk_builder_get_object (builder, "QuitBTN");
-    g_signal_connect ( button, "clicked", G_CALLBACK ( GUICallbackHandler ), (void *)MAIN_EXIT );
 
+    button = gtk_builder_get_object (builder, "MainEditMenuAddRemoveSecurity");
+    g_signal_connect ( button, "activate", G_CALLBACK ( GUICallbackHandler ), (void *)EQUITY_TOGGLE_BTN );
 
-    button = gtk_builder_get_object (builder, "MainMenuAddRemoveSecurityBTN");
+    button = gtk_builder_get_object (builder, "SecuritiesMenuClose");
     g_signal_connect ( button, "activate", G_CALLBACK ( GUICallbackHandler ), (void *)EQUITY_TOGGLE_BTN );
 
     window = gtk_builder_get_object (builder, "AddRemoveSecurity");
@@ -180,9 +179,6 @@ static void gui_signal_connect ( void *data )
 
     button = gtk_builder_get_object (builder, "AddRemoveSecurityOkBTN");
     g_signal_connect ( button, "clicked", G_CALLBACK ( GUICallbackHandler ), (void *)EQUITY_OK_BTN );
-
-    button = gtk_builder_get_object (builder, "AddRemoveSecurityCancelBTN");
-    g_signal_connect ( button, "clicked", G_CALLBACK ( GUICallbackHandler ), (void *)EQUITY_CANCEL_BTN );
 
     button = gtk_builder_get_object (builder, "AddRemoveSecuritySwitch");
     g_signal_connect ( button, "state-set", G_CALLBACK ( GUICallbackHandler_add_rem_switch ), (void *)EQUITY_SWITCH );
@@ -197,27 +193,30 @@ static void gui_signal_connect ( void *data )
     g_signal_connect ( button, "changed", G_CALLBACK ( GUICallbackHandler ), (void *)EQUITY_CURSOR_MOVE );
 
     
-    button = gtk_builder_get_object (builder, "MainMenuAboutBTN");
+    button = gtk_builder_get_object (builder, "MainHelpMenuAbout");
+    g_signal_connect ( button, "activate", G_CALLBACK ( GUICallbackHandler ), (void *)ABOUT_TOGGLE_BTN );
+
+    button = gtk_builder_get_object (builder, "AboutMenuClose");
     g_signal_connect ( button, "activate", G_CALLBACK ( GUICallbackHandler ), (void *)ABOUT_TOGGLE_BTN );
 
     window = gtk_builder_get_object (builder, "AboutWindow");
     g_signal_connect( window, "delete_event", G_CALLBACK( gtk_widget_hide_on_delete ), NULL);
 
-    button = gtk_builder_get_object (builder, "AboutOKBTN");
-    g_signal_connect ( button, "clicked", G_CALLBACK ( GUICallbackHandler ), (void *)ABOUT_TOGGLE_BTN );
 
+    button = gtk_builder_get_object (builder, "MainHelpMenuKeyboardShortcuts");
+    g_signal_connect ( button, "activate", G_CALLBACK ( GUICallbackHandler ), (void *)SHORTCUT_TOGGLE_BTN );
 
-    button = gtk_builder_get_object (builder, "MainMenuShortcutBTN");
+    button = gtk_builder_get_object (builder, "ShortcutsMenuClose");
     g_signal_connect ( button, "activate", G_CALLBACK ( GUICallbackHandler ), (void *)SHORTCUT_TOGGLE_BTN );
 
     window = gtk_builder_get_object (builder, "ShortcutWindow");
     g_signal_connect( window, "delete_event", G_CALLBACK( gtk_widget_hide_on_delete ), NULL);
 
-    button = gtk_builder_get_object (builder, "ShortcutOKBTN");
-    g_signal_connect ( button, "clicked", G_CALLBACK ( GUICallbackHandler ), (void *)SHORTCUT_TOGGLE_BTN );
 
+    button = gtk_builder_get_object (builder, "MainEditMenuBullion");
+    g_signal_connect ( button, "activate", G_CALLBACK ( GUICallbackHandler ), (void *)BUL_TOGGLE_BTN );
 
-    button = gtk_builder_get_object (builder, "MainMenuAddRemoveBullionBTN");
+    button = gtk_builder_get_object (builder, "BullionMenuClose");
     g_signal_connect ( button, "activate", G_CALLBACK ( GUICallbackHandler ), (void *)BUL_TOGGLE_BTN );
 
     window = gtk_builder_get_object (builder, "AddRemoveBullionWindow");
@@ -226,9 +225,6 @@ static void gui_signal_connect ( void *data )
     button = gtk_builder_get_object (builder, "AddRemoveBullionOKBTN");
     g_signal_connect ( button, "clicked", G_CALLBACK ( GUICallbackHandler ), (void *)BUL_OK_BTN );
     gtk_widget_set_sensitive ( GTK_WIDGET ( button ) , false );
-
-    button = gtk_builder_get_object (builder, "AddRemoveBullionCancelBTN");
-    g_signal_connect ( button, "clicked", G_CALLBACK ( GUICallbackHandler ), (void *)BUL_CANCEL_BTN );
 
     button = gtk_builder_get_object (builder, "AddRemoveBullionGoldOuncesEntryBox");
     g_signal_connect ( button, "changed", G_CALLBACK ( GUICallbackHandler ), (void *)BUL_CURSOR_MOVE );
@@ -242,8 +238,26 @@ static void gui_signal_connect ( void *data )
     button = gtk_builder_get_object (builder, "AddRemoveBullionSilverPremiumEntryBox");
     g_signal_connect ( button, "changed", G_CALLBACK ( GUICallbackHandler ), (void *)BUL_CURSOR_MOVE );
 
+    button = gtk_builder_get_object (builder, "AddRemoveBullionPlatinumOuncesEntryBox");
+    g_signal_connect ( button, "changed", G_CALLBACK ( GUICallbackHandler ), (void *)BUL_CURSOR_MOVE );
 
-    button = gtk_builder_get_object (builder, "MainMenuAddRemoveCashBTN");
+    button = gtk_builder_get_object (builder, "AddRemoveBullionPlatinumPremiumEntryBox");
+    g_signal_connect ( button, "changed", G_CALLBACK ( GUICallbackHandler ), (void *)BUL_CURSOR_MOVE );
+
+    button = gtk_builder_get_object (builder, "AddRemoveBullionPalladiumOuncesEntryBox");
+    g_signal_connect ( button, "changed", G_CALLBACK ( GUICallbackHandler ), (void *)BUL_CURSOR_MOVE );
+
+    button = gtk_builder_get_object (builder, "AddRemoveBullionPalladiumPremiumEntryBox");
+    g_signal_connect ( button, "changed", G_CALLBACK ( GUICallbackHandler ), (void *)BUL_CURSOR_MOVE );
+
+    button = gtk_builder_get_object (builder, "AddRemoveBullionComboBox");
+    g_signal_connect ( button, "changed", G_CALLBACK ( GUICallbackHandler ), (void *)BUL_COMBO_BOX );
+
+
+    button = gtk_builder_get_object (builder, "MainEditMenuCash");
+    g_signal_connect ( button, "activate", G_CALLBACK ( GUICallbackHandler ), (void *)CASH_TOGGLE_BTN );
+
+    button = gtk_builder_get_object (builder, "CashMenuClose");
     g_signal_connect ( button, "activate", G_CALLBACK ( GUICallbackHandler ), (void *)CASH_TOGGLE_BTN );
 
     window = gtk_builder_get_object (builder, "AddRemoveCashWindow");
@@ -253,13 +267,14 @@ static void gui_signal_connect ( void *data )
     g_signal_connect ( button, "clicked", G_CALLBACK ( GUICallbackHandler ), (void *)CASH_OK_BTN );
     gtk_widget_set_sensitive ( GTK_WIDGET ( button ) , false );
 
-    button = gtk_builder_get_object (builder, "AddRemoveCashCancelBTN");
-    g_signal_connect ( button, "clicked", G_CALLBACK ( GUICallbackHandler ), (void *)CASH_CANCEL_BTN );
-
     button = gtk_builder_get_object (builder, "AddRemoveCashValueEntryBox");
     g_signal_connect ( button, "changed", G_CALLBACK ( GUICallbackHandler ), (void *)CASH_CURSOR_MOVE );
 
-    button = gtk_builder_get_object (builder, "MainMenuChangeAPIinfoBTN");
+
+    button = gtk_builder_get_object (builder, "MainEditMenuAPI");
+    g_signal_connect ( button, "activate", G_CALLBACK ( GUICallbackHandler ), (void *)API_TOGGLE_BTN );
+
+    button = gtk_builder_get_object (builder, "APIMenuClose");
     g_signal_connect ( button, "activate", G_CALLBACK ( GUICallbackHandler ), (void *)API_TOGGLE_BTN );
 
     window = gtk_builder_get_object (builder, "ChangeApiInfoWindow");
@@ -268,9 +283,6 @@ static void gui_signal_connect ( void *data )
     button = gtk_builder_get_object (builder, "ChangeApiInfoOKBTN");
     g_signal_connect ( button, "clicked", G_CALLBACK ( GUICallbackHandler ), (void *)API_OK_BTN );
     gtk_widget_set_sensitive ( GTK_WIDGET ( button ) , false );
-
-    button = gtk_builder_get_object (builder, "ChangeApiInfoCancelBTN");
-    g_signal_connect ( button, "clicked", G_CALLBACK ( GUICallbackHandler ), (void *)API_CANCEL_BTN );
 
     button = gtk_builder_get_object (builder, "ChangeApiInfoEquityUrlEntryBox");
     g_signal_connect ( button, "changed", G_CALLBACK ( GUICallbackHandler ), (void *)API_CURSOR_MOVE );
@@ -282,17 +294,17 @@ static void gui_signal_connect ( void *data )
     g_signal_connect ( button, "changed", G_CALLBACK ( GUICallbackHandler ), (void *)API_CURSOR_MOVE );
 
 
-    button = gtk_builder_get_object (builder, "MainMenuViewRSIBTN");
+    button = gtk_builder_get_object (builder, "MainFileMenuRSI");
     g_signal_connect ( button, "activate", G_CALLBACK ( GUICallbackHandler ), (void *)RSI_TOGGLE_BTN );
 
     window = gtk_builder_get_object (builder, "ViewRSIWindow");
-    g_signal_connect( window, "delete_event", G_CALLBACK( gtk_widget_hide_on_delete ), NULL);
+    g_signal_connect( window, "delete_event", G_CALLBACK( GUICallbackHandler_hide_rsi_on_delete ), NULL);
     g_signal_connect ( window, "configure-event", G_CALLBACK ( GUICallbackHandler_window_data ), (void *)GUI_RSI_WINDOW );
     gtk_window_resize ( GTK_WINDOW ( window ), W->rsi_width, W->rsi_height );
     gtk_window_move ( GTK_WINDOW ( window ), W->rsi_x_pos, W->rsi_y_pos );
 
-    button = gtk_builder_get_object (builder, "ViewRSICloseBTN");
-    g_signal_connect ( button, "clicked", G_CALLBACK ( GUICallbackHandler ), (void *)RSI_TOGGLE_BTN );
+    button = gtk_builder_get_object (builder, "RSIMenuCloseBTN");
+    g_signal_connect ( button, "activate", G_CALLBACK ( GUICallbackHandler ), (void *)RSI_TOGGLE_BTN );
 
     button = gtk_builder_get_object (builder, "ViewRSIFetchDataBTN");
     g_signal_connect ( button, "clicked", G_CALLBACK ( GUICallbackHandler ), (void *)RSI_FETCH_BTN );

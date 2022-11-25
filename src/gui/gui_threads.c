@@ -197,10 +197,6 @@ void *GUIThreadHandler (void *data){
 
             break;
 
-        case EQUITY_CANCEL_BTN:
-            gdk_threads_add_idle ( AddRemShowHide, packet );
-            break;
-
         case EQUITY_SWITCH:
             gdk_threads_add_idle( AddRemSwitchChange, NULL );
             break;
@@ -235,8 +231,8 @@ void *GUIThreadHandler (void *data){
             }
             break;
 
-        case BUL_CANCEL_BTN:
-            gdk_threads_add_idle ( BullionShowHide, packet );
+        case BUL_COMBO_BOX:
+            gdk_threads_add_idle( BullionComBoxChange, NULL );
             break;
 
         case BUL_CURSOR_MOVE:
@@ -265,10 +261,6 @@ void *GUIThreadHandler (void *data){
             }
             break;
 
-        case CASH_CANCEL_BTN:
-            gdk_threads_add_idle ( CashShowHide, packet );
-            break;
-
         case CASH_CURSOR_MOVE:
             gdk_threads_add_idle( CashCursorMove, NULL );
             break;
@@ -284,10 +276,6 @@ void *GUIThreadHandler (void *data){
 
             pthread_mutex_unlock ( &mutex_working[ FETCH_DATA_MUTEX ] );
 
-            gdk_threads_add_idle ( APIShowHide, packet );
-            break;
-
-        case API_CANCEL_BTN:
             gdk_threads_add_idle ( APIShowHide, packet );
             break;
 
