@@ -248,7 +248,7 @@ bool TimeToClose ( bool holiday, int *h_r, int *m_r, int *s_r ) {
     hour_closed_NY = 16;
     hour_closed_black_friday_NY = 13;
     
-    /* Open */
+    /* Closed */
     if( holiday || hour < hour_open_NY || ( hour == hour_open_NY && min < 30 ) || hour >= hour_closed_NY || weekday == 0 || weekday == 6 ){
         *h_r = 0;
         *m_r = 0;
@@ -260,7 +260,7 @@ bool TimeToClose ( bool holiday, int *h_r, int *m_r, int *s_r ) {
         *m_r = 59 - min;
         *s_r = 59 - sec;
         closed = false;
-    /* Closed */    
+    /* Open */    
     } else {
         *h_r = hour_closed_NY - 1 - hour;
         *m_r = 59 - min;
