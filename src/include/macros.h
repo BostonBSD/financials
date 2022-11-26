@@ -75,7 +75,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 /* The symbol URL macros are used by the SymNameFetch function */
 #ifndef NASDAQ_SYMBOL_URL
-#define NASDAQ_SYMBOL_URL "http://nasdaqtrader.com/dynamic/SymDir/nasdaqlisted.txt"
+#define NASDAQ_SYMBOL_URL "http://www.nasdaqtrader.com/dynamic/SymDir/nasdaqlisted.txt"
 #endif
 
 /* Includes other exchanges as well */
