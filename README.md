@@ -48,7 +48,7 @@ An RSS news reader that displays any current pertinent news in a plaintext forma
 
 Conversion to Gtk4 after an XML file creation application is developed [they aren't developing glade any longer].
 
-Other pattern indicators such as Williams %R, MACD, the moving average crossover, etc.
+Other pattern indicators such as Williams %R, MACD, the moving average crossover, commodity channel index, stochastic oscillator, etc.
 
 ----------------------------------------------------------
 
