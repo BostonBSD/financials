@@ -48,8 +48,6 @@ An RSS news reader that displays any current pertinent news in a plaintext forma
 
 Conversion to Gtk4 after an XML file creation application is developed [they aren't developing glade any longer].
 
-Create an sqlite table for the stock symbol list.
-
 ----------------------------------------------------------
 
 RSI INDICATOR NOTE: 
