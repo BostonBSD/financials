@@ -459,10 +459,14 @@ meta *class_init_meta_data ()
 
     new_class->home_dir_ch = strdup( pw->pw_dir ); 
 
-    /* Append the sqlite db file path to the end of the home directory path. */
+    /* Append the sqlite db file paths to the end of the home directory path. */
     size_t len = strlen( pw->pw_dir ) + strlen( DB_FILE ) + 1;
     new_class->sqlite_db_path_ch = (char*) malloc( len );
     snprintf( new_class->sqlite_db_path_ch, len, "%s%s", pw->pw_dir, DB_FILE );
+
+    len = strlen( pw->pw_dir ) + strlen( SN_DB_FILE ) + 1;
+    new_class->sqlite_symbol_name_db_path_ch = (char*) malloc( len );
+    snprintf( new_class->sqlite_symbol_name_db_path_ch, len, "%s%s", pw->pw_dir, SN_DB_FILE );
 
     /* Connect Function Pointers To Function Definitions */
     new_class->EntireStake = EntireStake;

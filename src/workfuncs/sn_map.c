@@ -36,6 +36,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <stdbool.h>
 
 #include "../include/gui_types.h"
+#include "../include/sqlite.h"
 #include "../include/multicurl.h"
 #include "../include/class_types.h"
 #include "../include/macros.h"
@@ -100,19 +101,42 @@ static bool check_symbol ( const char *s )
     return true;
 }
 
-symbol_name_map *SymNameFetch (portfolio_packet *pkg)
-/* This function is only meant to be run once, at application startup. */
+void AddSymbolToMap ( const char *symbol, const char *name, symbol_name_map *sn_map ){
+    /* Increase the array to hold another pointer address */
+    symbol_to_security_name_container **tmp = realloc( sn_map->sn_container_arr, sizeof( symbol_to_security_name_container* ) * ( sn_map->size + 1 ) );
+    sn_map->sn_container_arr = tmp;
+    /* Allocate memory for a pointer address and add it to the array */
+    sn_map->sn_container_arr[ sn_map->size ] = malloc ( sizeof( symbol_to_security_name_container ) );
+    /* Populate a data member with the symbol string */
+    sn_map->sn_container_arr[ sn_map->size ]->symbol = strdup( symbol ? symbol : "EOF Incomplete Symbol List" );
+    /* Populate a data member with the security_name string and increment the size */
+    sn_map->sn_container_arr[ sn_map->size++ ]->security_name = strdup( name ? name : "EOF Incomplete Symbol List" );
+}
+
+static symbol_name_map *sym_name_map_dup ( symbol_name_map *sn_map )
+/* Create a duplicate sn_map. */
 {
+    symbol_name_map *sn_map_dup = (symbol_name_map*) malloc ( sizeof(*sn_map_dup) );
+    sn_map_dup->sn_container_arr = malloc ( 1 );
+    sn_map_dup->size = 0;
+
+    for( int g = 0; g < sn_map->size; g++){
+        AddSymbolToMap( sn_map->sn_container_arr[g]->symbol, sn_map->sn_container_arr[g]->security_name, sn_map_dup );
+    }
+
+    return sn_map_dup;
+}
+
+static symbol_name_map *symbol_list_fetch (portfolio_packet *pkg){
     meta *Met = pkg->GetMetaClass ();
 
     char *line = malloc ( 1024 ), *line_start;
-	char *token;
+	char *symbol_token, *name_token;
 	line_start = line;
 
     symbol_name_map *sn_map = (symbol_name_map*) malloc ( sizeof(*sn_map) );
     sn_map->sn_container_arr = malloc ( 1 );
     sn_map->size = 0;
-    symbol_to_security_name_container **sec_sym_tmp = NULL;
 
     char* Nasdaq_Url = NASDAQ_SYMBOL_URL; 
     char* NYSE_Url = NYSE_SYMBOL_URL; 
@@ -139,26 +163,18 @@ symbol_name_map *SymNameFetch (portfolio_packet *pkg)
     short k = 0;
 	while( k < 2 ){
         /* Read the file stream one line at a time */
-        /* Populate the Symbol-Name Array. The second list is concatenated after the first list. */
+        /* Populate the Symbol-Name Array. The second list is added after the first list. */
         while ( fgets( line, 1024, fp[k] ) != NULL ) {
             
             /* Extract the symbol from the line. */
-            token = strsep( &line, "|" );
-            if ( check_symbol( token ) == false ){ line = line_start; continue; }
-
-            /* Increase the array to hold another pointer address */
-            sec_sym_tmp = realloc( sn_map->sn_container_arr, sizeof( symbol_to_security_name_container* ) * ( sn_map->size + 1 ) );
-            sn_map->sn_container_arr = sec_sym_tmp;
-            /* Allocate memory for a pointer address and add it to the array */
-            sn_map->sn_container_arr[ sn_map->size ] = malloc( sizeof( symbol_to_security_name_container ) );
-            /* Populate a data member with the symbol string */
-            sn_map->sn_container_arr[ sn_map->size ]->symbol = strdup( token ? token : "EOF Incomplete Symbol List" );
+            symbol_token = strsep( &line, "|" );
+            if ( check_symbol( symbol_token ) == false ){ line = line_start; continue; }
 
             /* Extract the security name from the line. */
-            token = strsep( &line, "|" );
+            name_token = strsep( &line, "|" );
 
-            /* Populate a data member with the security_name string and increment the size */
-            sn_map->sn_container_arr[ sn_map->size++ ]->security_name = strdup( token ? token : "EOF Incomplete Symbol List" );
+            /* Add the symbol and the name to the symbol-name map. */
+            if( symbol_token && name_token ) AddSymbolToMap ( symbol_token, name_token, sn_map );
 
             /* strsep moves the line pointer, we need to reset it so the pointer memory can be reused */
             line = line_start;
@@ -178,13 +194,47 @@ symbol_name_map *SymNameFetch (portfolio_packet *pkg)
     } /* end while loop */
     free( line );
 
-    /* Sort the security symbol array, this merges both lists into one sorted list. */
+    /* Sort the security symbol array, this reorders both lists into one sorted list. */
     qsort( &sn_map->sn_container_arr[ 0 ], sn_map->size, sizeof(symbol_to_security_name_container*), alpha_asc_sec_name );    
 
     fclose( fp[0] ); 
     fclose( fp[1] );
     free( Nasdaq_Struct.memory );
     free( NYSE_Struct.memory );
+    return sn_map;
+}
+
+symbol_name_map *SymNameFetch (portfolio_packet *pkg)
+/* This function is only meant to be run once, at application startup. */
+{
+    meta *Met = pkg->GetMetaClass ();
+    symbol_name_map *sn_map_dup = NULL;
+
+    /* Check the database first */
+    symbol_name_map *sn_map = SqliteGetSymbolNameMap ( Met );
+    if ( sn_map ) return sn_map;
+
+    /* Download the symbol lists from the server */
+    sn_map = symbol_list_fetch ( pkg );
+    /* Create a duplicate symbol-name map */
+    if ( sn_map ) sn_map_dup = sym_name_map_dup ( sn_map );
+    /* Add the symbol mapping to the db, sn_map_dup is freed in the sqlite thread. */
+    if ( sn_map ) SqliteAddMap ( sn_map_dup, Met );
+    return sn_map;
+}
+
+symbol_name_map *SymNameFetchUpdate (portfolio_packet *pkg)
+/* Update the symbol to name mapping in the database. */
+{
+    meta *Met = pkg->GetMetaClass ();
+    symbol_name_map *sn_map_dup = NULL;
+
+    /* Download the symbol lists from the server */
+    symbol_name_map *sn_map = symbol_list_fetch ( pkg );
+    /* Create a duplicate symbol-name map */
+    if ( sn_map ) sn_map_dup = sym_name_map_dup ( sn_map );
+    /* Add the symbol mapping to the db, sn_map_dup is freed in the sqlite thread. */
+    if ( sn_map ) SqliteAddMap ( sn_map_dup, Met );
     return sn_map;
 }
 
@@ -195,9 +245,12 @@ void SNMapDestruct ( symbol_name_map *sn_map ) {
         for(int i=0; i<sn_map->size; i++ ){
             /* Free the string members */
             free( sn_map->sn_container_arr[ i ]->symbol );
+            sn_map->sn_container_arr[ i ]->symbol = NULL;
             free( sn_map->sn_container_arr[ i ]->security_name );
+            sn_map->sn_container_arr[ i ]->security_name = NULL;
             /* Free the memory that the address is pointing to */
             free( sn_map->sn_container_arr[ i ] );
+            sn_map->sn_container_arr[ i ] = NULL;
         }
         /* Free the array of pointer addresses */
         free( sn_map->sn_container_arr );

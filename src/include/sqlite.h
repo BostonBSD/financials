@@ -33,6 +33,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef SQLITE_HEADER_H
 #define SQLITE_HEADER_H
 
+#include "gui_types.h"       /* symbol_name_map */
 #include "class_types.h"     /* equity_folder, metal, meta, window_data */
 
 void SqliteProcessing (portfolio_packet*);
@@ -50,6 +51,9 @@ void SqliteAddMainWindowPos (int,int,meta*);
 void SqliteAddRSIWindowSize (int,int,meta*);
 void SqliteAddRSIWindowPos (int,int,meta*);
 
-void SqliteAddExpanderBarExpanded(bool,meta*);
+void SqliteAddExpanderBarExpanded (bool,meta*);
+
+symbol_name_map *SqliteGetSymbolNameMap (meta*);
+void SqliteAddMap (symbol_name_map*,meta*);
 
 #endif /* SQLITE_HEADER_H */

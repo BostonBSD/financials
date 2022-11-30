@@ -46,6 +46,10 @@ POSSIBILITY OF SUCH DAMAGE.
 #define DB_FILE CONFIG_FILE_DIR "/financials.db"
 #endif
 
+#ifndef SN_DB_FILE
+#define SN_DB_FILE CONFIG_FILE_DIR "/financials_symbols.db"
+#endif
+
 /* The current locale */
 #ifndef LOCALE
 #define LOCALE "en_US.UTF-8"

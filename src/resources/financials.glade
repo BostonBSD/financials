@@ -2155,8 +2155,6 @@
                 <property name="tooltip-text" translatable="yes">The number of updates fetched per minute.</property>
                 <property name="halign">center</property>
                 <property name="valign">center</property>
-                <property name="margin-left">10</property>
-                <property name="margin-right">10</property>
                 <property name="margin-start">10</property>
                 <property name="margin-end">10</property>
                 <property name="hexpand">True</property>
@@ -2218,10 +2216,84 @@
               </packing>
             </child>
             <child>
-              <placeholder/>
+              <object class="GtkBox">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="margin-top">10</property>
+                <property name="margin-bottom">5</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Stock Symbol Update</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="orientation">vertical</property>
+                    <child>
+                      <object class="GtkLabel" id="ChangeApiInfoStockSymbolUpdateLabel">
+                        <property name="can-focus">False</property>
+                        <property name="ypad">5</property>
+                        <property name="label" translatable="yes">Finished</property>
+                        <attributes>
+                          <attribute name="weight" value="bold"/>
+                          <attribute name="foreground" value="#a5a51d1d2d2d"/>
+                        </attributes>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSpinner" id="ChangeApiInfoStockSymbolUpdateSpinner">
+                        <property name="can-focus">False</property>
+                        <property name="margin-top">5</property>
+                        <property name="margin-bottom">5</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">0</property>
+              </packing>
             </child>
             <child>
-              <placeholder/>
+              <object class="GtkButton" id="ChangeApiInfoStockSymbolUpdateBTN">
+                <property name="label" translatable="yes">Update Symbols</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="halign">center</property>
+                <property name="valign">center</property>
+                <accelerator key="u" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">1</property>
+              </packing>
             </child>
             <child>
               <placeholder/>

@@ -103,7 +103,7 @@ static gboolean rsi_completion_match (GtkEntryCompletion *completion, const gcha
 }
 
 int RSICompletionSet (void *data){
-    pthread_mutex_lock( &mutex_working[ COMPLETION_FETCH_MUTEX ] );
+    pthread_mutex_lock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
     if( data == NULL ) return 0;
 
     GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ViewRSISymbolEntryBox") );
@@ -133,7 +133,7 @@ int RSICompletionSet (void *data){
 
     g_object_unref( G_OBJECT( completion ) );
 
-    pthread_mutex_unlock( &mutex_working[ COMPLETION_FETCH_MUTEX ] );
+    pthread_mutex_unlock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
     return 0;
 }
 

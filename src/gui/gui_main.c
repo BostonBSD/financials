@@ -618,3 +618,31 @@ int MainDisplayTimeRemaining (void *data){
 
     return 0;
 }
+
+int MainHideWindow (){
+    GtkWidget* window = GTK_WIDGET ( gtk_builder_get_object (builder, "MainWindow") );
+    gtk_widget_set_visible ( window, false );
+
+    window = GTK_WIDGET ( gtk_builder_get_object (builder, "AboutWindow") );
+    gtk_widget_set_visible ( window, false );
+
+    window = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionWindow") );
+    gtk_widget_set_visible ( window, false );
+
+    window = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveCashWindow") );
+    gtk_widget_set_visible ( window, false );
+
+    window = GTK_WIDGET ( gtk_builder_get_object (builder, "ViewRSIWindow") );
+    gtk_widget_set_visible ( window, false );
+
+    window = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecurity") );
+    gtk_widget_set_visible ( window, false );
+
+    window = GTK_WIDGET ( gtk_builder_get_object (builder, "ShortcutWindow") );
+    gtk_widget_set_visible ( window, false );
+
+    window = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoWindow") );
+    gtk_widget_set_visible ( window, false );
+
+    return 0;
+}

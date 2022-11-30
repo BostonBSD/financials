@@ -75,6 +75,11 @@ int APIShowHide (void *data)
         gtk_adjustment_set_value ( Adjustment, *D->updates_hours_f );
         g_object_set ( G_OBJECT ( SpinBox ), "activates-default", TRUE, NULL );
 
+        GtkWidget* label = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoStockSymbolUpdateLabel") );
+        gtk_widget_set_visible ( label, false );
+        label = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoStockSymbolUpdateSpinner") );
+        gtk_widget_set_visible ( label, false );
+
         gtk_widget_set_visible ( window, true );
     }
     return 0;
@@ -165,6 +170,38 @@ int APICursorMove ()
     free ( Equity_URL );
     free ( URL_KEY );
     free ( Updates_Hours );
+    return 0;
+}
+
+int APIStartSpinner ()
+{
+    GtkWidget* label = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoStockSymbolUpdateSpinner") );
+    gtk_widget_set_visible ( label, true );
+    gtk_spinner_start ( GTK_SPINNER ( label ) );
+
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoStockSymbolUpdateLabel") );
+    gtk_widget_set_visible ( label, false );
+
+    GtkWidget* button = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoStockSymbolUpdateBTN") );
+    gtk_widget_set_sensitive ( button, false );
+    gtk_button_set_label ( GTK_BUTTON ( button ), "Please Wait..." );
+
+    return 0;
+}
+
+int APIStopSpinner ()
+{
+    GtkWidget* label = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoStockSymbolUpdateSpinner") );
+    gtk_widget_set_visible ( label, false );
+    gtk_spinner_stop ( GTK_SPINNER ( label ) );
+
+    label = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoStockSymbolUpdateLabel") );
+    gtk_widget_set_visible ( label, true );
+
+    GtkWidget* button = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoStockSymbolUpdateBTN") );
+    gtk_widget_set_sensitive ( button, true );
+    gtk_button_set_label ( GTK_BUTTON ( button ), "Update Symbols" );
+
     return 0;
 }
 

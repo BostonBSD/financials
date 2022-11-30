@@ -279,6 +279,31 @@ void *GUIThreadHandler (void *data){
             gdk_threads_add_idle ( APIShowHide, packet );
             break;
 
+        case API_SYMBOL_UPDATE_BTN:
+            pthread_mutex_lock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
+            /* Free the symbol to security name mapping array. */
+            SNMapDestruct ( sym_map );
+            if ( sym_map ) { free( sym_map ); sym_map = NULL; }
+
+            gdk_threads_add_idle( APIStartSpinner, NULL );
+            sym_map = SymNameFetchUpdate ( packet );
+            gdk_threads_add_idle( APIStopSpinner, NULL );
+
+            if ( packet->IsCurlCanceled () ) {
+                pthread_mutex_unlock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
+                break;
+            }
+
+            /* gdk_threads_add_idle is non-blocking, we need the mutex
+               in the RSICompletionSet and AddRemCompletionSet functions. */
+            if( sym_map ) {
+                gdk_threads_add_idle( RSICompletionSet, sym_map );
+                gdk_threads_add_idle( AddRemCompletionSet, sym_map );
+            }
+            pthread_mutex_unlock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
+
+            break;
+
         case API_CURSOR_MOVE:
             gdk_threads_add_idle( APICursorMove, NULL );
             break;
@@ -306,7 +331,9 @@ void *GUIThreadHandler (void *data){
             gdk_threads_add_idle ( RSITreeViewClear, NULL );
 
             /* Get the security name from the symbol map. */ 
+            pthread_mutex_lock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
             sec_name = GetSecurityName ( symbol, sym_map );
+            pthread_mutex_unlock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
             free ( symbol );
 
             /* Set the security name label, this function runs inside the Gtk Loop. 
@@ -334,12 +361,12 @@ void *GUIThreadHandler (void *data){
                This signal is only run once at application start.
             */
 
-            pthread_mutex_lock( &mutex_working[ COMPLETION_FETCH_MUTEX ] );
+            pthread_mutex_lock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
 
             sym_map = SymNameFetch ( packet );
 
             if ( packet->IsCurlCanceled () ) {
-                pthread_mutex_unlock( &mutex_working[ COMPLETION_FETCH_MUTEX ] );
+                pthread_mutex_unlock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
                 break;
             }
 
@@ -349,7 +376,7 @@ void *GUIThreadHandler (void *data){
                 gdk_threads_add_idle( RSICompletionSet, sym_map );
                 gdk_threads_add_idle( AddRemCompletionSet, sym_map );
             }
-            pthread_mutex_unlock( &mutex_working[ COMPLETION_FETCH_MUTEX ] );
+            pthread_mutex_unlock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
             
             break;
         case SHORTCUT_TOGGLE_BTN:
@@ -407,12 +434,18 @@ void *GUIThreadHandler (void *data){
                MAIN_FETCH_BTN signal is run in parallel with this thread. */
             pthread_mutex_lock( &mutex_working[ FETCH_DATA_MUTEX ] );
 
-            /* Save the Window Size, Location, and Expander Bar setting. */
+             /* Save the Window Size, Location, and Expander Bar setting. */
             packet->SetWindowDataSql ();
 
+            /* Hide the windows. Prevents them from hanging open if a db write is in progress. */
+            gdk_threads_add_idle ( MainHideWindow, NULL );
+
             /* This mutex prevents the program from crashing if a
-               RSI_COMPLETION signal is run in parallel with this thread. */
-            pthread_mutex_lock( &mutex_working[ COMPLETION_FETCH_MUTEX ] );
+               COMPLETION signal is run in parallel with this thread. */
+            pthread_mutex_lock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] ); 
+
+            /* Hold the application until the Sqlite thread is finished [prevents db write errors]. */
+            pthread_mutex_lock( &mutex_working[ SYMBOL_NAME_MAP_SQLITE_MUTEX ] );          
 
             /* Exit the GTK main loop. */
             gtk_main_quit ();
@@ -421,7 +454,9 @@ void *GUIThreadHandler (void *data){
             SNMapDestruct ( sym_map );
             if ( sym_map ) free( sym_map );
 
-            pthread_mutex_unlock( &mutex_working[ COMPLETION_FETCH_MUTEX ] );
+            
+            pthread_mutex_unlock( &mutex_working[ SYMBOL_NAME_MAP_SQLITE_MUTEX ] );
+            pthread_mutex_unlock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
             pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
             break;
 

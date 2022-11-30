@@ -41,7 +41,9 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "multicurl_types.h"    /* MemType */
 
 /* sn_map */
+void AddSymbolToMap (const char*,const char*,symbol_name_map*);
 symbol_name_map* SymNameFetch (portfolio_packet*);
+symbol_name_map* SymNameFetchUpdate (portfolio_packet*);
 char* GetSecurityName (const char*,symbol_name_map*);
 void SNMapDestruct (symbol_name_map*);
 

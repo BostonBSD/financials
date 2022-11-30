@@ -96,9 +96,9 @@ void *SetUpCurlHandle (CURL *hnd, CURLM *mh, char *url, MemType *output)
         curl_easy_setopt(hnd, CURLOPT_WRITEDATA, (void *)output);
         /* Connection timeout after 5 seconds. */
         curl_easy_setopt(hnd, CURLOPT_CONNECTTIMEOUT_MS, 5000);
-        /* Total data transfer timeout after 6 seconds,
+        /* Total data transfer timeout after 10 seconds,
            this is a static use case, don't use in a dynamic use case. */
-        curl_easy_setopt(hnd, CURLOPT_TIMEOUT_MS, 6000);
+        curl_easy_setopt(hnd, CURLOPT_TIMEOUT_MS, 10000);
         /* Uncomment the next line for detailed info on
            the connections cURL is communicating over. */
         //curl_easy_setopt(hnd, CURLOPT_VERBOSE, 1L);

@@ -100,11 +100,12 @@ static void shortcuts_set_treeview (){
     gtk_list_store_append( store, &iter );
     gtk_list_store_set( store, &iter, 0, "RSI Window", -1 );
     gtk_list_store_append( store, &iter );
-    gtk_list_store_set( store, &iter, 0, "      File", 1, "Ctrl - F", -1 );
-    gtk_list_store_append( store, &iter );
     gtk_list_store_set( store, &iter, 0, "      Fetch Data", 1, "Ctrl - D", -1 );
     gtk_list_store_append( store, &iter );
-    gtk_list_store_set( store, &iter, 0, "      Close", 1, "Ctrl - C", -1 );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_set( store, &iter, 0, "API Window", -1 );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_set( store, &iter, 0, "      Update Symbols", 1, "Ctrl - U", -1 );
     gtk_list_store_append( store, &iter );
     gtk_list_store_append( store, &iter );
     gtk_list_store_set( store, &iter, 0, "All Other Windows", -1 );
@@ -283,6 +284,9 @@ static void gui_signal_connect ( void *data )
     button = gtk_builder_get_object (builder, "ChangeApiInfoOKBTN");
     g_signal_connect ( button, "clicked", G_CALLBACK ( GUICallbackHandler ), (void *)API_OK_BTN );
     gtk_widget_set_sensitive ( GTK_WIDGET ( button ) , false );
+
+    button = gtk_builder_get_object (builder, "ChangeApiInfoStockSymbolUpdateBTN");
+    g_signal_connect ( button, "clicked", G_CALLBACK ( GUICallbackHandler ), (void *)API_SYMBOL_UPDATE_BTN );
 
     button = gtk_builder_get_object (builder, "ChangeApiInfoEquityUrlEntryBox");
     g_signal_connect ( button, "changed", G_CALLBACK ( GUICallbackHandler ), (void *)API_CURSOR_MOVE );

@@ -46,6 +46,7 @@ int MainFetchBTNLabel (void*);
 int MainDisplayTime ();
 int MainDisplayTimeRemaining (void*);
 void MainProgBar (double*);
+int MainHideWindow ();
 
 /* gui_equity */
 int AddRemShowHide (void*);
@@ -59,6 +60,8 @@ int AddRemCompletionSet (void*);
 int APIShowHide (void*);
 int APIOk (void*);
 int APICursorMove ();
+int APIStartSpinner ();
+int APIStopSpinner ();
 int BullionComBoxChange ();
 int BullionShowHide (void*);
 int BullionOk (void*);

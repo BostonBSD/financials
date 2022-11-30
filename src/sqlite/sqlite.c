@@ -36,6 +36,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlite3.h>
 
+#include "../include/gui_types.h"       /* symbol_to_security_name_container, symbol_name_map */
 #include "../include/class_types.h"     /* equity_folder, metal, meta, window_data */
 #include "../include/workfuncs.h"
 #include "../include/mutex.h"
@@ -271,6 +272,19 @@ static int index_bar_expanded_callback (void *data, int argc, char **argv, char 
     return 0;
 }
 
+static int symbol_name_callback (void *data, int argc, char **argv, char **ColName) {
+    /* argv[0] is Id, argv[1] is symbol, argv[2] is name */
+    if ( argc != 3 ) return 1;
+    if ( strcmp( ColName[0], "Id") != 0 ) return 1;
+    if ( strcmp( ColName[1], "symbol") != 0 ) return 1;
+    if ( strcmp( ColName[2], "name") != 0 ) return 1;
+
+    symbol_name_map *sn_map = (symbol_name_map*)data;
+    AddSymbolToMap ( argv[1], argv[2], sn_map );
+
+    return 0;
+}
+
 static void error_msg ( sqlite3 *db ){
     fprintf( stderr, "Cannot open sqlite3 database: %s\n", sqlite3_errmsg( db ) );
     sqlite3_close(db);
@@ -278,6 +292,8 @@ static void error_msg ( sqlite3 *db ){
 }
 
 void SqliteProcessing ( portfolio_packet *pkg ){
+    /* There are two database files, one holds the config info, 
+    the other holds the stock symbol-security name mapping. */
     equity_folder *F = pkg->GetEquityFolderClass ();
     metal *M = pkg->GetMetalClass ();
     meta *D = pkg->GetMetaClass ();
@@ -285,11 +301,21 @@ void SqliteProcessing ( portfolio_packet *pkg ){
     char    *err_msg = 0;
     sqlite3 *db;
 
-    /* Open the sqlite database file. */
+    /* Open the sqlite symbol-name database file. */
+    if ( sqlite3_open( D->sqlite_symbol_name_db_path_ch, &db) != SQLITE_OK ) error_msg( db );
+
+    /* Create the Symbol-Security Name table if it doesn't already exist. */
+    char *sql_cmd = "CREATE TABLE IF NOT EXISTS symbolname(Id INTEGER PRIMARY KEY, symbol TEXT NOT NULL, name TEXT NOT NULL);";
+    if ( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK ) error_msg( db );
+
+    /* Close the sqlite symbol-name database file. */
+    sqlite3_close( db );
+
+    /* Open the regular config sqlite database file. */
     if ( sqlite3_open( D->sqlite_db_path_ch, &db) != SQLITE_OK ) error_msg( db );
 
     /* Create the apidata table if it doesn't already exist. */
-    char *sql_cmd = "CREATE TABLE IF NOT EXISTS apidata(Id INTEGER PRIMARY KEY, Keyword TEXT NOT NULL, Data TEXT NOT NULL);";
+    sql_cmd = "CREATE TABLE IF NOT EXISTS apidata(Id INTEGER PRIMARY KEY, Keyword TEXT NOT NULL, Data TEXT NOT NULL);";
     if ( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK ) error_msg( db );
 
     /* Create the equity table if it doesn't already exist. */
@@ -640,4 +666,149 @@ void SqliteAddExpanderBarExpanded (bool val, meta *D){
 
     /* Close the sqlite database file. */
     sqlite3_close( db );
+}
+
+symbol_name_map *SqliteGetSymbolNameMap (meta *D){
+    char    *err_msg = 0;
+    sqlite3 *db;
+    symbol_name_map *sn_map = (symbol_name_map*) malloc ( sizeof(*sn_map) );
+    sn_map->sn_container_arr = malloc ( 1 );
+    sn_map->size = 0;
+
+    /* Open the sqlite database file. */
+    if ( sqlite3_open( D->sqlite_symbol_name_db_path_ch, &db) != SQLITE_OK ) error_msg( db );
+
+    char *sql_cmd = "SELECT * FROM symbolname;";
+    if ( sqlite3_exec(db, sql_cmd, symbol_name_callback, sn_map, &err_msg) != SQLITE_OK ) error_msg( db );
+
+    /* Close the sqlite database file. */
+    sqlite3_close( db );
+
+    if ( sn_map->size == 0 ){
+        free ( sn_map->sn_container_arr );
+        free ( sn_map );
+        return NULL;
+    } else {
+        return sn_map;
+    }
+}
+
+static bool check_apostrophy ( const char *s )
+/* Check if there's an apostrophy in the string
+*/
+{ 
+    if (s == NULL) return false;
+	if ( strpbrk( s, "'" ) ) return true; 
+    return false;
+}
+
+static void escape_apostrophy ( char **s )
+/* Insert an sqlite escape apostrophy to the string
+*/
+{
+    if (s == NULL) return;
+    if (s[0] == NULL) return;
+
+	/* Read character by character until the null character is reached. */
+    for(int i = 0; s[0][i]; i++){
+        /* If we find an ''' character, ASCII decimal code 39 */
+        if(s[0][i]==39){
+            /* Increase the character array by one character */
+            char *tmp = realloc ( s[0], strlen(s[0]) + sizeof( char ) + 1);
+            s[0] = tmp;
+
+            /* Read each character from null back to that character */
+            for(int j = strlen( s[0] ); j>=i; j--){
+                /* Shift the array one character [duplicate the character] */
+                s[0][j+1]=s[0][j];
+            }
+            /* Because we have a duplicate we need to skip the next increment of i */
+            i++;
+        }
+    }
+}
+
+static void remove_apostrophy (char *s)
+/* Remove duplicate apostrophies ''' from a string */
+{
+    if (s == NULL) return;
+
+    /* Read character by character until the null character is reached. */
+    for(int i = 0; s[i]; i++){
+        /* If we find double ''' characters, ASCII decimal code 39 */
+        if(s[i]==39 && s[i+1]==39){
+            /* Read each character thereafter and */
+            for(int j = i; s[j]; j++){
+                /* Shift the array down one character [remove the duplicate character] */
+                s[j]=s[j+1];
+            }
+        }
+    }
+}
+
+typedef struct{
+    symbol_name_map *map;
+    meta *metadata;
+} meta_map_container;
+
+static void *add_mapping_to_database ( void *data ){
+    pthread_mutex_lock( &mutex_working [ SYMBOL_NAME_MAP_SQLITE_MUTEX ] );   
+
+    meta_map_container *mmc = (meta_map_container*)data;
+    symbol_name_map *sn_map = mmc->map;
+    meta *D = mmc->metadata;
+    
+    char *err_msg = 0;
+    sqlite3 *db;
+    size_t len;
+    bool check = false;
+
+    /* Open the sqlite database file. */
+    if ( sqlite3_open( D->sqlite_symbol_name_db_path_ch, &db) != SQLITE_OK ) error_msg( db );
+
+    /* Drop the symbolname table and create a new one. */
+    char *sql_cmd = "DROP TABLE symbolname;";
+    if ( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK ) error_msg( db );
+
+    sql_cmd = "CREATE TABLE IF NOT EXISTS symbolname(Id INTEGER PRIMARY KEY, symbol TEXT NOT NULL, name TEXT NOT NULL);";
+    if ( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK ) error_msg( db );
+
+    /* Insert the mapping into the table. */
+    for ( int g = 0; g < sn_map->size; g++ ){
+        if ( sn_map->sn_container_arr[ g ] == NULL || sn_map->sn_container_arr == NULL ) break;
+
+        check = check_apostrophy ( sn_map->sn_container_arr[ g ]->security_name );
+        if ( check ) escape_apostrophy ( &sn_map->sn_container_arr[ g ]->security_name );
+
+        len = strlen("INSERT INTO symbolname VALUES(null, '', '');") + strlen( sn_map->sn_container_arr[ g ]->symbol ) + strlen( sn_map->sn_container_arr[ g ]->security_name ) + 1;
+        sql_cmd = (char*) malloc( len );        
+        snprintf( sql_cmd, len, "INSERT INTO symbolname VALUES(null, '%s', '%s');", sn_map->sn_container_arr[ g ]->symbol, sn_map->sn_container_arr[ g ]->security_name );
+        if ( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK ) error_msg( db );
+        free( sql_cmd );
+
+        if ( check ) remove_apostrophy ( sn_map->sn_container_arr[ g ]->security_name );
+    }
+
+    /* Close the sqlite database file. */
+    sqlite3_close( db );
+
+    /* Remove the duplicate map from memory. */
+    SNMapDestruct ( sn_map );
+    free ( sn_map );
+
+    /* Don't Free the member pointers */
+    free ( mmc );
+
+    pthread_mutex_unlock( &mutex_working [ SYMBOL_NAME_MAP_SQLITE_MUTEX ] );
+    return NULL;
+}
+
+void SqliteAddMap ( symbol_name_map *sn_map, meta *D){
+    meta_map_container *mmc = malloc ( sizeof(*mmc) );
+    mmc->map = sn_map;
+    mmc->metadata = D;
+
+    /* Add the data in a separate thread; saves time. */
+    pthread_t thread_id;
+    pthread_create( &thread_id, NULL, add_mapping_to_database, mmc );    
 }
