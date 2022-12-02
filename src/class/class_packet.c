@@ -252,6 +252,8 @@ static void remove_main_curl_handles ( portfolio_packet *pkg )
     /* Bullion Multicurl Operation */
     curl_multi_remove_handle( pkg->multicurl_main_hnd, M->Gold->YAHOO_hnd );
     curl_multi_remove_handle( pkg->multicurl_main_hnd, M->Silver->YAHOO_hnd );
+    if( *M->Platinum->ounce_f > 0 ) curl_multi_remove_handle( pkg->multicurl_main_hnd, M->Platinum->YAHOO_hnd );
+    if( *M->Palladium->ounce_f > 0 ) curl_multi_remove_handle( pkg->multicurl_main_hnd, M->Palladium->YAHOO_hnd );
 
     /* Indices Multicurl Operation */
     curl_multi_remove_handle( pkg->multicurl_main_hnd, Met->index_dow_hnd );

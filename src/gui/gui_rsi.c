@@ -344,7 +344,11 @@ static void rsi_set_store (GtkListStore *store, void *data){
     prev_price = strtod( csv_array[ 4 ], NULL );
     free_csv_line( csv_array );
 
-    while ( fgets( line, 1024, fp) != NULL ) {       
+    while ( fgets( line, 1024, fp) != NULL ) {
+        /* If there is a null error in this line, ignore the line.
+           Sometimes Yahoo! data is incomplete, the result is more
+           correct if we ignore the incomplete portion of data. */
+        if ( strstr( line, "null" ) ) continue;
 
         Chomp( line );
     	csv_array = parse_csv( line );

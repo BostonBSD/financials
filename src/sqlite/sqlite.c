@@ -693,43 +693,42 @@ symbol_name_map *SqliteGetSymbolNameMap (meta *D){
     }
 }
 
-static bool check_apostrophy ( const char *s )
-/* Check if there's an apostrophy in the string
-*/
-{ 
-    if (s == NULL) return false;
-	if ( strpbrk( s, "'" ) ) return true; 
-    return false;
-}
-
-static void escape_apostrophy ( char **s )
-/* Insert an sqlite escape apostrophy to the string
+static bool escape_apostrophy ( char **s )
+/* Check and insert an sqlite escape apostrophy to the string.
+   Returns true if found, false if not found.
 */
 {
-    if (s == NULL) return;
-    if (s[0] == NULL) return;
+    bool return_value = false;
+    if (s == NULL) return return_value;
+    if (s[0] == NULL) return return_value;
 
 	/* Read character by character until the null character is reached. */
     for(int i = 0; s[0][i]; i++){
         /* If we find an ''' character, ASCII decimal code 39 */
         if(s[0][i]==39){
-            /* Increase the character array by one character */
-            char *tmp = realloc ( s[0], strlen(s[0]) + sizeof( char ) + 1);
+            return_value = true;
+
+            /* Increase the character array by one character. */
+            char *tmp = realloc ( s[0], ( strlen(s[0]) + 1 + 1 ) * sizeof( char ) );
             s[0] = tmp;
 
             /* Read each character from null back to that character */
             for(int j = strlen( s[0] ); j>=i; j--){
-                /* Shift the array one character [duplicate the character] */
+                /* Shift the array one character to the right [duplicate the character] */
                 s[0][j+1]=s[0][j];
             }
+
             /* Because we have a duplicate we need to skip the next increment of i */
             i++;
         }
     }
+    return return_value;
 }
 
 static void remove_apostrophy (char *s)
-/* Remove duplicate apostrophies ''' from a string */
+/* Remove escaped apostrophies ''' from a string */
+/* If there is an odd number of apostrophies, undefined behavior. 
+*/
 {
     if (s == NULL) return;
 
@@ -739,7 +738,7 @@ static void remove_apostrophy (char *s)
         if(s[i]==39 && s[i+1]==39){
             /* Read each character thereafter and */
             for(int j = i; s[j]; j++){
-                /* Shift the array down one character [remove the duplicate character] */
+                /* Shift the array one character to the left [remove the duplicate character] */
                 s[j]=s[j+1];
             }
         }
@@ -761,7 +760,7 @@ static void *add_mapping_to_database ( void *data ){
     char *err_msg = 0;
     sqlite3 *db;
     size_t len;
-    bool check = false;
+    bool apostrophy_found = false;
 
     /* Open the sqlite database file. */
     if ( sqlite3_open( D->sqlite_symbol_name_db_path_ch, &db) != SQLITE_OK ) error_msg( db );
@@ -777,8 +776,7 @@ static void *add_mapping_to_database ( void *data ){
     for ( int g = 0; g < sn_map->size; g++ ){
         if ( sn_map->sn_container_arr[ g ] == NULL || sn_map->sn_container_arr == NULL ) break;
 
-        check = check_apostrophy ( sn_map->sn_container_arr[ g ]->security_name );
-        if ( check ) escape_apostrophy ( &sn_map->sn_container_arr[ g ]->security_name );
+        apostrophy_found = escape_apostrophy ( &sn_map->sn_container_arr[ g ]->security_name );
 
         len = strlen("INSERT INTO symbolname VALUES(null, '', '');") + strlen( sn_map->sn_container_arr[ g ]->symbol ) + strlen( sn_map->sn_container_arr[ g ]->security_name ) + 1;
         sql_cmd = (char*) malloc( len );        
@@ -786,7 +784,7 @@ static void *add_mapping_to_database ( void *data ){
         if ( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK ) error_msg( db );
         free( sql_cmd );
 
-        if ( check ) remove_apostrophy ( sn_map->sn_container_arr[ g ]->security_name );
+        if ( apostrophy_found ) remove_apostrophy ( sn_map->sn_container_arr[ g ]->security_name );
     }
 
     /* Close the sqlite database file. */

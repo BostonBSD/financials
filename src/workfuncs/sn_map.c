@@ -109,12 +109,12 @@ void AddSymbolToMap ( const char *symbol, const char *name, symbol_name_map *sn_
     sn_map->sn_container_arr[ sn_map->size ] = malloc ( sizeof( symbol_to_security_name_container ) );
     /* Populate a data member with the symbol string */
     sn_map->sn_container_arr[ sn_map->size ]->symbol = strdup( symbol ? symbol : "EOF Incomplete Symbol List" );
-    /* Populate a data member with the security_name string and increment the size */
+    /* Populate a data member with the name string and increment the size */
     sn_map->sn_container_arr[ sn_map->size++ ]->security_name = strdup( name ? name : "EOF Incomplete Symbol List" );
 }
 
 static symbol_name_map *sym_name_map_dup ( symbol_name_map *sn_map )
-/* Create a duplicate sn_map. */
+/* Create a duplicate symbol_name_map. */
 {
     symbol_name_map *sn_map_dup = (symbol_name_map*) malloc ( sizeof(*sn_map_dup) );
     sn_map_dup->sn_container_arr = malloc ( 1 );
@@ -125,6 +125,60 @@ static symbol_name_map *sym_name_map_dup ( symbol_name_map *sn_map )
     }
 
     return sn_map_dup;
+}
+
+static void add_special_symbols ( symbol_name_map *sn_map )
+{
+    /* Indicies. */
+    AddSymbolToMap ( "^DJI", "Dow Jones Industrial Average", sn_map );
+    AddSymbolToMap ( "^IXIC", "Nasdaq Composite Index", sn_map );
+    AddSymbolToMap ( "^GSPC", "S&P 500 Index", sn_map );
+
+    /* Commodities. */
+    AddSymbolToMap ( "GC=F", "Gold Futures", sn_map );
+    AddSymbolToMap ( "SI=F", "Silver Futures", sn_map );
+    AddSymbolToMap ( "PL=F", "Platinum Futures", sn_map );
+    AddSymbolToMap ( "PA=F", "Palladium Futures", sn_map );
+    AddSymbolToMap ( "HG=F", "Copper Futures", sn_map );
+    AddSymbolToMap ( "CL=F", "Crude Oil Futures", sn_map );
+    AddSymbolToMap ( "BZ=F", "Brent Crude Oil Futures", sn_map );
+    AddSymbolToMap ( "NG=F", "Natural Gas Futures", sn_map );
+    AddSymbolToMap ( "ZC=F", "Corn Futures", sn_map );
+    AddSymbolToMap ( "ZO=F", "Oat Futures", sn_map );
+    AddSymbolToMap ( "KC=F", "Coffee Futures", sn_map );
+    AddSymbolToMap ( "CT=F", "Cotton Futures", sn_map );
+    AddSymbolToMap ( "CC=F", "Cocoa Futures", sn_map );
+    AddSymbolToMap ( "SB=F", "Sugar Futures", sn_map );
+    AddSymbolToMap ( "ZS=F", "Soybean Futures", sn_map );
+    AddSymbolToMap ( "ZL=F", "Soybean Oil Futures", sn_map );
+    AddSymbolToMap ( "HO=F", "Heating Oil Futures", sn_map );    
+    AddSymbolToMap ( "OJ=F", "Orange Juice Futures", sn_map );
+    AddSymbolToMap ( "GNF=F", "Milk ( Nonfat Dry ) Futures", sn_map );
+    AddSymbolToMap ( "ZW=F", "Wheat ( Chicago SRW ) Futures", sn_map );
+    AddSymbolToMap ( "KE=F", "Wheat ( KC HRW ) Futures", sn_map );
+    AddSymbolToMap ( "ZWT=F", "Wheat ( Chicago SRW ) TAS Futures", sn_map );
+    AddSymbolToMap ( "LBR=F", "Lumber Futures", sn_map );
+    AddSymbolToMap ( "LBS=F", "Lumber ( Random Length ) Futures", sn_map );
+
+    /* Bonds */
+    AddSymbolToMap ( "ZB=F", "Treasury Bond ( U.S. ) Futures", sn_map );
+    AddSymbolToMap ( "ZN=F", "Treasury Note ( 10-Year U.S. ) Futures", sn_map );
+    AddSymbolToMap ( "ZF=F", "Treasury Note ( 5-Year U.S. ) Futures", sn_map );
+    AddSymbolToMap ( "ZT=F", "Treasury Note ( 2-Year U.S. ) Futures", sn_map );
+
+    /* Crypto Coins/Tokens/Stablecoins/Etcetera */
+    AddSymbolToMap ( "BTC-USD", "Bitcoin ( US Dollars )", sn_map );
+    AddSymbolToMap ( "BCH-USD", "Bitcoin Cash ( US Dollars )", sn_map );
+    AddSymbolToMap ( "ETH-USD", "Ethereum ( US Dollars )", sn_map );
+    AddSymbolToMap ( "LTC-USD", "Litecoin ( US Dollars )", sn_map );
+    AddSymbolToMap ( "XRP-USD", "XRP Token ( US Dollars )", sn_map );
+    AddSymbolToMap ( "USDT-USD", "Tether Stablecoin ( US Dollars )", sn_map );
+    AddSymbolToMap ( "BUSD-USD", "Binance Stablecoin ( US Dollars )", sn_map );
+    AddSymbolToMap ( "BNB-USD", "Binance Coin ( US Dollars )", sn_map );
+    AddSymbolToMap ( "DASH-USD", "Dash Digital Cash ( US Dollars )", sn_map );
+    AddSymbolToMap ( "DOGE-USD", "Dogecoin ( US Dollars )", sn_map );
+    AddSymbolToMap ( "ADA-USD", "Cardano Token ( US Dollars )", sn_map );
+    AddSymbolToMap ( "MATIC-USD", "Polygon Coin ( US Dollars )", sn_map );
 }
 
 static symbol_name_map *symbol_list_fetch (portfolio_packet *pkg){
@@ -193,6 +247,9 @@ static symbol_name_map *symbol_list_fetch (portfolio_packet *pkg){
 
     } /* end while loop */
     free( line );
+
+    /* Add special symbols such as indicies and bullion to the map. */
+    add_special_symbols ( sn_map );
 
     /* Sort the security symbol array, this reorders both lists into one sorted list. */
     qsort( &sn_map->sn_container_arr[ 0 ], sn_map->size, sizeof(symbol_to_security_name_container*), alpha_asc_sec_name );    
