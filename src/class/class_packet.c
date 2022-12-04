@@ -94,19 +94,19 @@ static int perform_multicurl_request ( portfolio_packet *pkg ){
     return_code = PerformMultiCurl( pkg->multicurl_main_hnd, 4.0f + (double)num_metals + (double)F->size );
     if( return_code ){
         for( unsigned short c = 0; c < F->size; c++ ) {       
-            free( F->Equity[ c ]->JSON.memory );
+            if ( F->Equity[ c ]->JSON.memory ) free( F->Equity[ c ]->JSON.memory );
             F->Equity[ c ]->JSON.memory = NULL;
         }
-        free ( Met->INDEX_DOW_CURLDATA.memory );
-        free ( Met->INDEX_NASDAQ_CURLDATA.memory );
-        free ( Met->INDEX_SP_CURLDATA.memory );
-        free ( Met->CRYPTO_BITCOIN_CURLDATA.memory );
+        if ( Met->INDEX_DOW_CURLDATA.memory ) free ( Met->INDEX_DOW_CURLDATA.memory );
+        if ( Met->INDEX_NASDAQ_CURLDATA.memory ) free ( Met->INDEX_NASDAQ_CURLDATA.memory );
+        if ( Met->INDEX_SP_CURLDATA.memory ) free ( Met->INDEX_SP_CURLDATA.memory );
+        if ( Met->CRYPTO_BITCOIN_CURLDATA.memory ) free ( Met->CRYPTO_BITCOIN_CURLDATA.memory );
         Met->INDEX_DOW_CURLDATA.memory = NULL;
         Met->INDEX_NASDAQ_CURLDATA.memory = NULL;
         Met->INDEX_SP_CURLDATA.memory = NULL;
         Met->CRYPTO_BITCOIN_CURLDATA.memory = NULL;
-        free ( M->Gold->CURLDATA.memory );
-        free ( M->Silver->CURLDATA.memory );
+        if ( M->Gold->CURLDATA.memory ) free ( M->Gold->CURLDATA.memory );
+        if ( M->Silver->CURLDATA.memory ) free ( M->Silver->CURLDATA.memory );
         M->Gold->CURLDATA.memory = NULL;
         M->Silver->CURLDATA.memory = NULL;
         if ( M->Platinum->CURLDATA.memory ) free ( M->Platinum->CURLDATA.memory );
@@ -179,13 +179,11 @@ static bool IsCurlCanceled () {
 }
 
 static void SetCurlCanceled ( bool data ) {
-    pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
 
     portfolio_packet *pkg = packet;
     meta *D = pkg->GetMetaClass ();
     *D->multicurl_cancel_bool = data;
 
-    pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] ); 
 }
 
 static bool IsHoliday () {
@@ -317,6 +315,15 @@ static unsigned int Seconds2Open () {
     return SecondsToOpen ();
 }
 
+static void *GetSymNameMap () {
+    return packet->sym_map;
+}
+
+static void SetSymNameMap ( void *data ) {
+    symbol_name_map *sn_map = (symbol_name_map*)data;
+    packet->sym_map = sn_map;
+}
+
 /* Class Init Functions */
 portfolio_packet *class_init_portfolio_packet ()
 { 
@@ -328,6 +335,7 @@ portfolio_packet *class_init_portfolio_packet ()
     new_class->securities_folder = class_init_equity_folder ();
     new_class->portfolio_meta_info = class_init_meta_data ();
     new_class->window_struct = (window_data*) malloc ( sizeof(*new_class->window_struct) );
+    new_class->sym_map = NULL;
 
     /* Connect Function Pointers To Function Definitions */
     new_class->Calculate = Calculate;
@@ -349,6 +357,8 @@ portfolio_packet *class_init_portfolio_packet ()
     new_class->GetMetalClass = GetMetalClass;
     new_class->GetEquityFolderClass = GetEquityFolderClass;
     new_class->SecondsToOpen = Seconds2Open;
+    new_class->GetSymNameMap = GetSymNameMap;
+    new_class->SetSymNameMap = SetSymNameMap;
 
     /* Initialize the main and rsi window size and locations */
     new_class->window_struct->main_height = 0;
@@ -375,6 +385,17 @@ void class_destruct_portfolio_packet (portfolio_packet *pkg)
     if ( pkg->metal_chest ) class_destruct_metal ( pkg->metal_chest );
     if ( pkg->portfolio_meta_info ) class_destruct_meta_data ( pkg->portfolio_meta_info );
     if ( pkg->window_struct ) free ( pkg->window_struct );
+
+    /* Free the symbol to security name mapping array. */
+    pthread_mutex_lock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] ); 
+
+    if ( pkg->sym_map ) { 
+        SNMapDestruct ( pkg->sym_map ); 
+        free ( pkg->sym_map ); 
+        pkg->sym_map = NULL; 
+    }
+
+    pthread_mutex_unlock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] ); 
 
     if ( pkg->multicurl_main_hnd ) curl_multi_cleanup ( pkg->multicurl_main_hnd );
 

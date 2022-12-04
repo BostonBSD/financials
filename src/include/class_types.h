@@ -38,6 +38,8 @@ POSSIBILITY OF SUCH DAMAGE.
 /* We need the MemType, CURL, and CURLM types from this header file. */
 #include "multicurl_types.h"
 
+#include "gui_types.h" /*  */
+
 /* Method prototypes used by these classes
    Define the function pointer type here. */
 typedef double sub_func_a_t (const unsigned int*,const double*);
@@ -309,7 +311,8 @@ typedef struct {
   equity_folder* securities_folder;
   meta* portfolio_meta_info;
   window_data* window_struct;                          /* A struct that holds the size and position of 
-                                                          the main and rsi windows. */  
+                                                          the main and rsi windows. */
+  symbol_name_map* sym_map;                            /* The symbol to name mapping struct */
 
   /* Main Multicurl Handle for use with data fetch operation */
   CURLM* multicurl_main_hnd;
@@ -332,6 +335,8 @@ typedef struct {
   sub_func_f_t* GetWindowData;
   sub_func_f_t* GetMetaClass;
   sub_func_f_t* GetMetalClass;
+  sub_func_f_t* GetSymNameMap;
+  sub_func_o_t* SetSymNameMap;
   sub_func_f_t* GetEquityFolderClass;
   sub_func_m_t* SecondsToOpen;
 

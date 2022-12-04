@@ -41,8 +41,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/globals.h"       /* portfolio_packet packet */
 #include "../include/mutex.h"         /* pthread_mutex_t mutex_working[ MUTEX_NUMBER ] */
 
-static symbol_name_map *sym_map = NULL;    /* A symbol to name map handle, only global to this file. */
-
 static bool check_fetch_data_double_clicked (cb_signal index_signal){
     /* If MAIN_FETCH_BTN double clicked looping stops, change btn label. */
     if ( index_signal == MAIN_FETCH_BTN && packet->IsFetchingData () == true ){
@@ -99,8 +97,9 @@ void *GUIThreadHandler (void *data){
     time_t current_time, end_time;
     time_t start_curl, end_curl;
     struct tm NY_Time; 
-    MemType *RSIOutput;
+    MemType *RSIOutput = NULL;
     char *sec_name, *symbol;
+    symbol_name_map *sym_map = NULL;
 
     switch ( index_signal )
     {
@@ -138,7 +137,7 @@ void *GUIThreadHandler (void *data){
                     pthread_mutex_unlock ( &mutex_working[ FETCH_DATA_MUTEX ] );
                     break;
                 }
-
+                
                 packet->GetData ();
 
                 if ( packet->IsCurlCanceled () ){
@@ -281,12 +280,11 @@ void *GUIThreadHandler (void *data){
 
         case API_SYMBOL_UPDATE_BTN:
             pthread_mutex_lock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
-            /* Free the symbol to security name mapping array. */
-            SNMapDestruct ( sym_map );
-            if ( sym_map ) { free( sym_map ); sym_map = NULL; }
 
             gdk_threads_add_idle( APIStartSpinner, NULL );
-            sym_map = SymNameFetchUpdate ( packet );
+            sym_map = packet->GetSymNameMap ();
+            sym_map = SymNameFetchUpdate ( packet, sym_map );
+            packet->SetSymNameMap( sym_map );
             gdk_threads_add_idle( APIStopSpinner, NULL );
 
             if ( packet->IsCurlCanceled () ) {
@@ -332,6 +330,7 @@ void *GUIThreadHandler (void *data){
 
             /* Get the security name from the symbol map. */ 
             pthread_mutex_lock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
+            sym_map = packet->GetSymNameMap ();
             sec_name = GetSecurityName ( symbol, sym_map );
             pthread_mutex_unlock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
             free ( symbol );
@@ -364,6 +363,7 @@ void *GUIThreadHandler (void *data){
             pthread_mutex_lock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
 
             sym_map = SymNameFetch ( packet );
+            packet->SetSymNameMap( sym_map );
 
             if ( packet->IsCurlCanceled () ) {
                 pthread_mutex_unlock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
@@ -377,6 +377,9 @@ void *GUIThreadHandler (void *data){
                 gdk_threads_add_idle( AddRemCompletionSet, sym_map );
             }
             pthread_mutex_unlock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
+
+            /* Set the default treeview. */
+            gdk_threads_add_idle( MainDefaultTreeview, packet );
             
             break;
         case SHORTCUT_TOGGLE_BTN:
@@ -449,11 +452,6 @@ void *GUIThreadHandler (void *data){
 
             /* Exit the GTK main loop. */
             gtk_main_quit ();
-
-            /* Free the symbol to security name mapping array. */
-            SNMapDestruct ( sym_map );
-            if ( sym_map ) free( sym_map );
-
             
             pthread_mutex_unlock( &mutex_working[ SYMBOL_NAME_MAP_SQLITE_MUTEX ] );
             pthread_mutex_unlock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );

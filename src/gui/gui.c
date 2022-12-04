@@ -372,20 +372,23 @@ void GuiStart (void *data)
         exit( EXIT_FAILURE );
     }
 
+    /* Start the clock threads and download the list of stock symbols */
+    start_threads ();
+
     /* Add the keyboard shortcuts to the Keyboard Shortcut window. */
     shortcuts_set_treeview ();
 
     /* Add the license to the About window. */
     about_set_label ();
 
-    /* Set the default treeview. */
-    MainDefaultTreeview ( data );
-
     /* Connect callback functions to corresponding GUI signals. */
     gui_signal_connect ( data );
 
-    /* Start the clock threads and download list of stock symbols */
-    start_threads ();
+    /* Set the default treeview.
+       This treeview is already set in the COMPLETION thread,
+       however, there may be a networking delay before it is displayed.
+       So we set it here showing any available data. */
+    MainDefaultTreeview ( data );
 
     /* Start the gtk_main loop. */
     gtk_main ();

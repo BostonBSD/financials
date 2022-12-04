@@ -47,10 +47,10 @@ static int sym_search_func (const void *a, const void *b){
    /* Cast the void pointer to a double struct pointer. */
    symbol_to_security_name_container** bb = (symbol_to_security_name_container **)b;
 
-   return strcasecmp( aa, bb[0]->symbol ); 
+   return strcasecmp( aa, bb[ 0 ]->symbol ); 
 }
 
-char *GetSecurityName (const char *s, symbol_name_map *sn_map)
+char *GetSecurityName (const char *s, const symbol_name_map *sn_map)
 /* Look for a Security Name using the Symbol as a key value.
    Must free return value. */
 {
@@ -62,7 +62,7 @@ char *GetSecurityName (const char *s, symbol_name_map *sn_map)
     /* It's basically searching through an array of pointer addresses, the compare function dereferences
        the pointer address to get the string we are comparing against. */
     /* The array must already be sorted for bsearch to work. */
-    item = (symbol_to_security_name_container**) bsearch (s, &sn_map->sn_container_arr[0], sn_map->size, sizeof (symbol_to_security_name_container*), sym_search_func);
+    item = (symbol_to_security_name_container**) bsearch (s, &sn_map->sn_container_arr[ 0 ], sn_map->size, sizeof (symbol_to_security_name_container*), sym_search_func);
 
     if ( item ){
         /* The item pointer is not freed. It points to an item in the 
@@ -70,6 +70,27 @@ char *GetSecurityName (const char *s, symbol_name_map *sn_map)
         return strdup( item[ 0 ]->security_name );
     } else {
         return NULL;
+    }
+}
+
+void SNMapDestruct ( symbol_name_map *sn_map ) {
+    if ( sn_map == NULL ) return;
+    
+    if ( sn_map->sn_container_arr ){
+        for(int i=0; i<sn_map->size; i++ ){
+            /* Free the string members */
+            free( sn_map->sn_container_arr[ i ]->symbol );
+            sn_map->sn_container_arr[ i ]->symbol = NULL;
+            free( sn_map->sn_container_arr[ i ]->security_name );
+            sn_map->sn_container_arr[ i ]->security_name = NULL;
+            /* Free the memory that the address is pointing to */
+            free( sn_map->sn_container_arr[ i ] );
+            sn_map->sn_container_arr[ i ] = NULL;
+        }
+        /* Free the array of pointer addresses */
+        free( sn_map->sn_container_arr );
+        sn_map->sn_container_arr = NULL;
+        sn_map->size = 0;
     }
 }
 
@@ -92,11 +113,22 @@ static bool check_symbol ( const char *s )
 /* Depository share symbols include dollars signs, which we don't want. 
    The first line of the file includes the "Symbol" string, which we don't want.
    The last line of the file includes the "File Creation Time" string, which we don't want.
+   Some symbols are test stocks, which we don't want.
 */
 { 
 	if ( strpbrk( s, "$" ) ) return false;
     if ( strstr( s, "Symbol" ) ) return false;
     if ( strstr( s, "File Creation Time" ) ) return false;
+    /* Test Stock Symbols */
+    if ( strstr( s, "TEST" ) ) return false;
+    if ( strstr( s, "ZXYZ.A" ) ) return false;
+    if ( strstr( s, "ZZT" ) ) return false;
+    if ( strstr( s, "ZEXIT" ) ) return false;
+    if ( strstr( s, "ZIEXT" ) ) return false;
+    if ( strstr( s, "ZVZZC" ) ) return false;
+    if ( strstr( s, "ZVV" ) ) return false;
+    if ( strstr( s, "ZXIET" ) ) return false;
+    if ( strstr( s, "ZBZX" ) ) return false;
 
     return true;
 }
@@ -129,10 +161,26 @@ static symbol_name_map *sym_name_map_dup ( symbol_name_map *sn_map )
 
 static void add_special_symbols ( symbol_name_map *sn_map )
 {
-    /* Indicies. */
-    AddSymbolToMap ( "^DJI", "Dow Jones Industrial Average", sn_map );
+    /* Indices. */
+    AddSymbolToMap ( "^DJI", "Dow Jones Industrial Average ( Dow 30 Index )", sn_map );
     AddSymbolToMap ( "^IXIC", "Nasdaq Composite Index", sn_map );
     AddSymbolToMap ( "^GSPC", "S&P 500 Index", sn_map );
+    AddSymbolToMap ( "^RUT", "Russell 2000 Index", sn_map );
+    AddSymbolToMap ( "^N225", "Nikkei 225 Index", sn_map );
+    AddSymbolToMap ( "^N100", "Euronext 100 Index", sn_map );
+    AddSymbolToMap ( "^HSI", "Hang Seng Index", sn_map );
+    AddSymbolToMap ( "^NYA", "NYSE Composite (DJ) Index", sn_map );
+    AddSymbolToMap ( "^XAX", "NYSE - AMEX Composite Index", sn_map );
+    AddSymbolToMap ( "IMOEX.ME", "MOEX Russia Index", sn_map );
+    AddSymbolToMap ( "^JKSE", "Jakarta Composite Index", sn_map );
+    AddSymbolToMap ( "399001.SZ", "Shenzhen Index", sn_map );
+    AddSymbolToMap ( "^STI", "STI Index", sn_map );
+    AddSymbolToMap ( "^BUK100P", "Cboe UK 100 Index", sn_map );
+    AddSymbolToMap ( "^MXX", "IPC MEXICO Index", sn_map );
+    AddSymbolToMap ( "^KS11", "KOSPI Composite Index", sn_map );
+    AddSymbolToMap ( "^KLSE", "FTSE Bursa Malaysia KLCI Index", sn_map );
+    AddSymbolToMap ( "^FTSE", "FTSE 100 Index", sn_map );
+    AddSymbolToMap ( "^GDAXI", "DAX Performance Index", sn_map );
 
     /* Commodities. */
     AddSymbolToMap ( "GC=F", "Gold Futures", sn_map );
@@ -141,7 +189,7 @@ static void add_special_symbols ( symbol_name_map *sn_map )
     AddSymbolToMap ( "PA=F", "Palladium Futures", sn_map );
     AddSymbolToMap ( "HG=F", "Copper Futures", sn_map );
     AddSymbolToMap ( "CL=F", "Crude Oil Futures", sn_map );
-    AddSymbolToMap ( "BZ=F", "Brent Crude Oil Futures", sn_map );
+    AddSymbolToMap ( "BZ=F", "Crude Oil ( Brent ) Futures", sn_map );
     AddSymbolToMap ( "NG=F", "Natural Gas Futures", sn_map );
     AddSymbolToMap ( "ZC=F", "Corn Futures", sn_map );
     AddSymbolToMap ( "ZO=F", "Oat Futures", sn_map );
@@ -160,11 +208,17 @@ static void add_special_symbols ( symbol_name_map *sn_map )
     AddSymbolToMap ( "LBR=F", "Lumber Futures", sn_map );
     AddSymbolToMap ( "LBS=F", "Lumber ( Random Length ) Futures", sn_map );
 
-    /* Bonds */
+    /* Bond Futures */
     AddSymbolToMap ( "ZB=F", "Treasury Bond ( U.S. ) Futures", sn_map );
     AddSymbolToMap ( "ZN=F", "Treasury Note ( 10-Year U.S. ) Futures", sn_map );
     AddSymbolToMap ( "ZF=F", "Treasury Note ( 5-Year U.S. ) Futures", sn_map );
     AddSymbolToMap ( "ZT=F", "Treasury Note ( 2-Year U.S. ) Futures", sn_map );
+
+    /* Bond Rates */
+    AddSymbolToMap ( "^IRX", "Treasury Bill ( 13 Weeks )", sn_map );
+    AddSymbolToMap ( "^FVX", "Treasury Bond Yield ( 5 Years )", sn_map );
+    AddSymbolToMap ( "^TNX", "Treasury Bond Yield ( 10 Years )", sn_map );
+    AddSymbolToMap ( "^TYX", "Treasury Bond Yield ( 30 Years )", sn_map );
 
     /* Crypto Coins/Tokens/Stablecoins/Etcetera */
     AddSymbolToMap ( "BTC-USD", "Bitcoin ( US Dollars )", sn_map );
@@ -182,7 +236,7 @@ static void add_special_symbols ( symbol_name_map *sn_map )
 }
 
 static symbol_name_map *symbol_list_fetch (portfolio_packet *pkg){
-    meta *Met = pkg->GetMetaClass ();
+    meta *D = pkg->GetMetaClass ();
 
     char *line = malloc ( 1024 ), *line_start;
 	char *symbol_token, *name_token;
@@ -198,9 +252,9 @@ static symbol_name_map *symbol_list_fetch (portfolio_packet *pkg){
     Nasdaq_Struct.memory = NULL;
     NYSE_Struct.memory = NULL;
     
-    SetUpCurlHandle( Met->NASDAQ_completion_hnd, Met->multicurl_cmpltn_hnd, Nasdaq_Url, &Nasdaq_Struct );
-    SetUpCurlHandle( Met->NYSE_completion_hnd, Met->multicurl_cmpltn_hnd, NYSE_Url, &NYSE_Struct );
-    if ( PerformMultiCurl_no_prog( Met->multicurl_cmpltn_hnd ) != 0 || pkg->IsCurlCanceled () ) { 
+    SetUpCurlHandle( D->NASDAQ_completion_hnd, D->multicurl_cmpltn_hnd, Nasdaq_Url, &Nasdaq_Struct );
+    SetUpCurlHandle( D->NYSE_completion_hnd, D->multicurl_cmpltn_hnd, NYSE_Url, &NYSE_Struct );
+    if ( PerformMultiCurl_no_prog( D->multicurl_cmpltn_hnd ) != 0 || pkg->IsCurlCanceled () ) { 
         if ( Nasdaq_Struct.memory ) free( Nasdaq_Struct.memory );
         if ( NYSE_Struct.memory ) free( NYSE_Struct.memory ); 
         if ( sn_map->sn_container_arr ) free( sn_map->sn_container_arr );
@@ -248,7 +302,7 @@ static symbol_name_map *symbol_list_fetch (portfolio_packet *pkg){
     } /* end while loop */
     free( line );
 
-    /* Add special symbols such as indicies and bullion to the map. */
+    /* Add special symbols such as indices, commodities, bonds, and crypto to the map. */
     add_special_symbols ( sn_map );
 
     /* Sort the security symbol array, this reorders both lists into one sorted list. */
@@ -264,54 +318,57 @@ static symbol_name_map *symbol_list_fetch (portfolio_packet *pkg){
 symbol_name_map *SymNameFetch (portfolio_packet *pkg)
 /* This function is only meant to be run once, at application startup. */
 {
-    meta *Met = pkg->GetMetaClass ();
-    symbol_name_map *sn_map_dup = NULL;
+    meta *D = pkg->GetMetaClass ();
 
     /* Check the database first */
-    symbol_name_map *sn_map = SqliteGetSymbolNameMap ( Met );
-    if ( sn_map ) return sn_map;
+    symbol_name_map *sn_map = SqliteGetSymbolNameMap ( D );
+
+    if ( sn_map ) {
+        /* Sort the sn_map [it should already be sorted from the Db, but just to make sure]. */
+        qsort( &sn_map->sn_container_arr[ 0 ], sn_map->size, sizeof(symbol_to_security_name_container*), alpha_asc_sec_name );    
+        return sn_map;
+    }
 
     /* Download the symbol lists from the server */
     sn_map = symbol_list_fetch ( pkg );
-    /* Create a duplicate symbol-name map */
-    if ( sn_map ) sn_map_dup = sym_name_map_dup ( sn_map );
-    /* Add the symbol mapping to the db, sn_map_dup is freed in the sqlite thread. */
-    if ( sn_map ) SqliteAddMap ( sn_map_dup, Met );
+
+    if ( sn_map ) {
+        /* Create a duplicate symbol-name map */
+        symbol_name_map *sn_map_dup = sym_name_map_dup ( sn_map );
+        /* Add the symbol mapping to the db, sn_map_dup is freed in the sqlite thread. */
+        SqliteAddMap ( sn_map_dup, D );
+    }
+
     return sn_map;
 }
 
-symbol_name_map *SymNameFetchUpdate (portfolio_packet *pkg)
-/* Update the symbol to name mapping in the database. */
+symbol_name_map *SymNameFetchUpdate (portfolio_packet *pkg, symbol_name_map *sn_map)
+/* Update the symbol to name mapping in the database. 
+   If a new symbol-name map can be populated this function will free 
+   the current symbol_name_map, otherwise no change performed. */
 {
-    meta *Met = pkg->GetMetaClass ();
+    meta *D = pkg->GetMetaClass ();
     symbol_name_map *sn_map_dup = NULL;
 
     /* Download the symbol lists from the server */
-    symbol_name_map *sn_map = symbol_list_fetch ( pkg );
-    /* Create a duplicate symbol-name map */
-    if ( sn_map ) sn_map_dup = sym_name_map_dup ( sn_map );
-    /* Add the symbol mapping to the db, sn_map_dup is freed in the sqlite thread. */
-    if ( sn_map ) SqliteAddMap ( sn_map_dup, Met );
-    return sn_map;
-}
+    symbol_name_map *sn_map_new = symbol_list_fetch ( pkg );
 
-void SNMapDestruct ( symbol_name_map *sn_map ) {
-    if ( sn_map == NULL ) return;
-    
-    if ( sn_map->sn_container_arr ){
-        for(int i=0; i<sn_map->size; i++ ){
-            /* Free the string members */
-            free( sn_map->sn_container_arr[ i ]->symbol );
-            sn_map->sn_container_arr[ i ]->symbol = NULL;
-            free( sn_map->sn_container_arr[ i ]->security_name );
-            sn_map->sn_container_arr[ i ]->security_name = NULL;
-            /* Free the memory that the address is pointing to */
-            free( sn_map->sn_container_arr[ i ] );
-            sn_map->sn_container_arr[ i ] = NULL;
-        }
-        /* Free the array of pointer addresses */
-        free( sn_map->sn_container_arr );
-        sn_map->sn_container_arr = NULL;
-        sn_map->size = 0;
+    if ( sn_map_new ) {
+        /* Free the current symbol to security name mapping array. */
+        SNMapDestruct ( sn_map );
+        if ( sn_map ) free( sn_map );
+
+        /* Create a duplicate symbol-name map */
+        sn_map_dup = sym_name_map_dup ( sn_map_new );
+
+        /* Add the symbol mapping to the db, sn_map_dup is freed in the sqlite thread. */
+        SqliteAddMap ( sn_map_dup, D );
+
+        /* Return the new symbol-name mapping */
+        return sn_map_new;
+    } else {
+        
+        /* Return the current symbol-name mapping, unchanged */
+        return sn_map;
     }
 }

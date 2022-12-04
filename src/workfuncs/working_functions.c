@@ -40,7 +40,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/macros.h"
 #include "../include/mutex.h"
 
-double CalcGain ( double cur_price, double prev_price ){
+double CalcGain ( double cur_price, double prev_price ){   
 	return ( 100 * ( ( cur_price - prev_price ) / prev_price ) );
 }
 
@@ -107,15 +107,15 @@ static char *rsi_get_url ( const char *symbol ){
 }
 
 MemType *FetchRSIData (const char *symbol, portfolio_packet *pkg){
-    meta *Met = pkg->GetMetaClass ();
+    meta *D = pkg->GetMetaClass ();
     char *MyUrl = NULL;
     MyUrl = rsi_get_url ( symbol );
 
     MemType *MyOutputStruct = (MemType*)malloc( sizeof(*MyOutputStruct) );
     MyOutputStruct->memory = NULL;
 
-    SetUpCurlHandle( Met->rsi_hnd, Met->multicurl_rsi_hnd, MyUrl, MyOutputStruct );
-    if ( PerformMultiCurl_no_prog( Met->multicurl_rsi_hnd ) != 0 ) { 
+    SetUpCurlHandle( D->rsi_hnd, D->multicurl_rsi_hnd, MyUrl, MyOutputStruct );
+    if ( PerformMultiCurl_no_prog( D->multicurl_rsi_hnd ) != 0 ) { 
         free ( MyUrl ); 
         free ( MyOutputStruct->memory );
         free ( MyOutputStruct );

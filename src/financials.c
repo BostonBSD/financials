@@ -94,11 +94,11 @@ static void class_package_init ()
 static void class_package_destruct ()
 /* Free Memory */
 {
-    pthread_mutex_lock( &mutex_working [CLASS_MEMBER_MUTEX ] );
+    pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
 
     class_destruct_portfolio_packet ( packet );
 
-    pthread_mutex_unlock( &mutex_working [CLASS_MEMBER_MUTEX ] );
+    pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
 
 }
 

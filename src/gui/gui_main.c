@@ -321,11 +321,12 @@ static GtkListStore * main_default_store (void *data){
     metal *M = package->GetMetalClass ();
     equity_folder *F = package->GetEquityFolderClass ();
     meta *D = package->GetMetaClass ();
+    symbol_name_map *sn_map = package->GetSymNameMap ();
     bool no_assets = true;
 
     GtkListStore *store = NULL;
     GtkTreeIter iter;
-    char shares[13];
+    char shares[13], *stock_name = NULL;
 
     /* Set up the storage container with the number of columns and column type */
     store = gtk_list_store_new( GUI_N_COLUMNS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING );
@@ -373,10 +374,15 @@ static GtkListStore * main_default_store (void *data){
 
         unsigned short c = 0;
         while(c < F->size){
+            if( sn_map ) stock_name = GetSecurityName( F->Equity[ c ]->symbol_stock_ch, sn_map );
             snprintf(shares, 13, "%d",*F->Equity[ c ]->num_shares_stock_int);
             gtk_list_store_append ( store, &iter );
-            gtk_list_store_set ( store, &iter, GUI_TYPE, "equity", GUI_SYMBOL, F->Equity[ c ]->symbol_stock_ch, GUI_SHARES_OUNCES, shares, -1 );
-
+            if( sn_map ){
+                gtk_list_store_set ( store, &iter, GUI_TYPE, "equity", GUI_SYMBOL, F->Equity[ c ]->symbol_stock_ch, GUI_SHARES_OUNCES, shares, GUI_PREMIUM, stock_name ? stock_name : "", -1 );
+                if( stock_name ) free ( stock_name );
+            } else {
+                gtk_list_store_set ( store, &iter, GUI_TYPE, "equity", GUI_SYMBOL, F->Equity[ c ]->symbol_stock_ch, GUI_SHARES_OUNCES, shares, -1 );
+            }
             c++;
         }
         no_assets = false;

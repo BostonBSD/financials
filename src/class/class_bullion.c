@@ -178,7 +178,12 @@ static void bullion_calculations (bullion *B){
     }
 
     /* The raw change in bullion as a percentage. */
-    *B->change_percent_raw_f = CalcGain ( *B->spot_price_f, *B->prev_closing_metal_f );
+    /* This if statement prevent's a "nan%" string in the index label. */
+    if( *B->prev_closing_metal_f == 0 ) {
+        *B->change_percent_raw_f = 0.0f;
+    } else {
+        *B->change_percent_raw_f = CalcGain ( *B->spot_price_f, *B->prev_closing_metal_f );
+    }
 }
 
 static void Calculate (){
