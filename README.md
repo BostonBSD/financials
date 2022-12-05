@@ -13,17 +13,16 @@ gtk3 for example:
 gtk+-3.0 json-glib-1.0 glib-2.0 libcurl sqlite3 libx11 cmake clang/gcc
 
 Once these development packages are installed, open a terminal to the project root directory.
-Type these commands: 
 
-Make a build directory and change to the src directory.
+Make a build directory and change to the src directory:
 
 `mkdir build && cd src/`
 
-Compile the project.
+Compile the project:
 
 `make`
 
-Run the binary.
+Run the binary:
 
 `../build/financials`
 
