@@ -200,7 +200,7 @@ int APIStopSpinner ()
 
     GtkWidget* button = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoStockSymbolUpdateBTN") );
     gtk_widget_set_sensitive ( button, true );
-    gtk_button_set_label ( GTK_BUTTON ( button ), "Update Symbols" );
+    gtk_button_set_label ( GTK_BUTTON ( button ), "Get Symbols" );
 
     return 0;
 }

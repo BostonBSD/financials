@@ -379,7 +379,7 @@ void *GUIThreadHandler (void *data){
             pthread_mutex_unlock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
 
             /* Set the default treeview. */
-            gdk_threads_add_idle( MainDefaultTreeview, packet );
+            if ( !packet->IsFetchingData () ) gdk_threads_add_idle( MainDefaultTreeview, packet );
             
             break;
         case SHORTCUT_TOGGLE_BTN:

@@ -221,6 +221,17 @@ static void view_popup_menu_onViewRSIData (GtkWidget *menuitem, void *userdata)
     gtk_button_clicked ( GTK_BUTTON ( Button ) );
 }
 
+static void view_popup_menu_onViewSummary (GtkWidget *menuitem)
+{
+    if (menuitem == NULL) return;
+
+    GtkWidget* Button = GTK_WIDGET ( gtk_builder_get_object (builder, "FetchDataBTN") );
+    if ( packet->IsFetchingData () ) gtk_button_clicked ( GTK_BUTTON ( Button ) );
+
+    MainDefaultTreeview ( packet );
+}
+
+
 static void view_popup_menu_onDeleteBullion (GtkWidget *menuitem, void *userdata)
 {
     if (menuitem == NULL) return;
@@ -379,7 +390,8 @@ gboolean view_onButtonPressed (GtkWidget *treeview, GdkEventButton *event)
                 int bu_flag = strcmp( type, "bullion" );
                 int bu_tot_flag = strcmp( type, "bullion_total" );
                 int ca_flag = strcmp( type, "cash" );
-                int bs_flag = strcmp( type, "blank_space" );
+                int bs_d_flag = strcmp( type, "blank_space_default" );
+                int bs_p_flag = strcmp( type, "blank_space_primary" );
 
                 /* Some of the menu signal connections need the type and symbol strings.
                    We make the container static and free it on subsequent clicks, which keeps the
@@ -484,8 +496,15 @@ gboolean view_onButtonPressed (GtkWidget *treeview, GdkEventButton *event)
 
                     g_object_ref_sink( G_OBJECT ( menu ) );
 
-                } else if ( bs_flag == 0 ){
+                } else if ( bs_d_flag == 0 || bs_p_flag == 0 ){
                     menu = gtk_menu_new();
+
+                    if ( bs_p_flag == 0 ) {
+                        menuitem = gtk_menu_item_new_with_label("View Summary");
+                        g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onViewSummary ), NULL);
+                        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+                        g_object_ref_sink( G_OBJECT ( menuitem ) );  
+                    }
 
                     menuitem = gtk_menu_item_new_with_label("Edit Cash");
                     g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onAddRow ), "cash");

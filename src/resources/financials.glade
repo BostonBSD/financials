@@ -1369,11 +1369,11 @@
                     </child>
                     <child>
                       <object class="GtkButton" id="FetchDataBTN">
-                        <property name="label" translatable="yes">Fetch Data</property>
+                        <property name="label" translatable="yes">Get Data</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
-                        <property name="tooltip-text" translatable="yes">Fetch data from Finnhub.io</property>
+                        <property name="tooltip-text" translatable="yes">Download data from Finnhub.io and Yahoo! Finance</property>
                         <property name="halign">center</property>
                         <property name="valign">end</property>
                         <property name="margin-top">20</property>
@@ -1623,13 +1623,13 @@
                     </child>
                     <child>
                       <object class="GtkButton" id="ViewRSIFetchDataBTN">
-                        <property name="label" translatable="yes">Fetch Data</property>
+                        <property name="label" translatable="yes">Get Data</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="can-default">True</property>
                         <property name="has-default">True</property>
                         <property name="receives-default">True</property>
-                        <property name="tooltip-text" translatable="yes">Fetch data from Yahoo! Finance</property>
+                        <property name="tooltip-text" translatable="yes">Download data from Yahoo! Finance</property>
                         <property name="halign">center</property>
                         <property name="valign">end</property>
                         <property name="margin-top">10</property>
@@ -1892,8 +1892,8 @@
                 <property name="valign">end</property>
                 <property name="margin-top">5</property>
                 <property name="margin-bottom">20</property>
-                <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                 <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
               </object>
               <packing>
                 <property name="left-attach">0</property>
@@ -2152,7 +2152,7 @@
               <object class="GtkComboBoxText" id="ChangeApiInfoUpPerMinComboBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="tooltip-text" translatable="yes">The number of updates fetched per minute.</property>
+                <property name="tooltip-text" translatable="yes">The number of data updates per minute.</property>
                 <property name="halign">center</property>
                 <property name="valign">center</property>
                 <property name="margin-start">10</property>
@@ -2180,7 +2180,7 @@
               <object class="GtkSpinButton" id="ChangeApiInfoHoursSpinBox">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
-                <property name="tooltip-text" translatable="yes">The number of hours to run fetch updates for.</property>
+                <property name="tooltip-text" translatable="yes">The number of hours to run data updates for.</property>
                 <property name="halign">center</property>
                 <property name="valign">center</property>
                 <property name="hexpand">True</property>
@@ -2226,7 +2226,7 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Stock Symbol Update</property>
+                    <property name="label" translatable="yes">Stock Symbol List</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -2282,14 +2282,14 @@
             </child>
             <child>
               <object class="GtkButton" id="ChangeApiInfoStockSymbolUpdateBTN">
-                <property name="label" translatable="yes">Update Symbols</property>
+                <property name="label" translatable="yes">Get Symbols</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
-                <property name="tooltip-text" translatable="yes">Fetch symbol list from NasdaqTrader.com</property>
+                <property name="tooltip-text" translatable="yes">Download symbol list from NasdaqTrader.com</property>
                 <property name="halign">center</property>
                 <property name="valign">center</property>
-                <accelerator key="u" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                <accelerator key="s" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
               </object>
               <packing>
                 <property name="left-attach">1</property>
