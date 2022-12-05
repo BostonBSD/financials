@@ -16,10 +16,15 @@ Once these development packages are installed, open a terminal to the project ro
 Type these commands: 
 
 Make a build directory and change to the src directory.
+
 `mkdir build && cd src/`
+
 Compile the project.
+
 `make`
+
 Run the binary.
+
 `../build/financials`
 
 The binary can be copied to wherever the user binaries are installed.
