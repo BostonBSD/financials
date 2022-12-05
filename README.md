@@ -12,18 +12,17 @@ gtk3 for example:
 
 gtk+-3.0 json-glib-1.0 glib-2.0 libcurl sqlite3 libx11 cmake clang/gcc
 
-Once these development packages are installed, open a terminal to the project root directory and make a build directory: 
+Once these development packages are installed, open a terminal to the project root directory.
+Type these commands: 
 
-mkdir build
+Make a build directory and change to the src directory.
+`mkdir build && cd src/`
+Compile the project.
+`make`
+Run the binary.
+`../build/financials`
 
-and type: 
-
-cd src
-
-make
-
-The resulting binary should be in the build directory,
-which can be copied to wherever the user binaries are installed.
+The binary can be copied to wherever the user binaries are installed.
 
 The user needs a free account at finnhub.io, which will give them an access key.
 
