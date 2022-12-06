@@ -26,7 +26,7 @@ Run the binary:
 
 `../build/financials`
 
-The binary can be copied to wherever the user binaries are installed.
+The binary can be copied to wherever the user binaries are installed [usually ~/.bin or ~/.local/bin].
 
 The user needs a free account at finnhub.io, which will give them an access key.
 
