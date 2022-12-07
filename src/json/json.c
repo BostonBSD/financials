@@ -84,7 +84,5 @@ void *JsonExtractEquity (char *str, double *current_price_f, double *high_f, dou
     }
 
     g_object_unref (parser);
-
-    /* The values were passed by reference, no need to return anything. */
     return NULL;
 }

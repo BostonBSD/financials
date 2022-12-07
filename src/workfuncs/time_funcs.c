@@ -57,67 +57,71 @@ unsigned int ClockSleepSeconds (){
 }
 
 char* MonthNameStr ( int month ){
+    enum { JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV };
+
     switch ( month ){
-        case 0:
+        case JAN:
             return "January";
             break;
-        case 1:
+        case FEB:
             return "February";
             break;
-        case 2:
+        case MAR:
             return "March";
             break;
-        case 3:
+        case APR:
             return "April";
             break;
-        case 4:
+        case MAY:
             return "May";
             break;
-        case 5:
+        case JUN:
             return "June";
             break;
-        case 6:
+        case JUL:
             return "July";
             break;
-        case 7:
+        case AUG:
             return "August";
             break;
-        case 8:
+        case SEP:
             return "September";
             break;
-        case 9:
+        case OCT:
             return "October";
             break;
-        case 10:
+        case NOV:
             return "November";
             break;
-        default:
+        default: /* DEC */
             return "December";
             break;
     }
 }
 
 char* WeekDayStr ( int weekday ){
+    enum { SUN, MON, TUES, WEDS, THURS, FRI };
+
     switch ( weekday ){
-        case 0:
+        case SUN:
             return "Sunday";
             break;
-        case 1:
+        case MON:
             return "Monday";
             break;
-        case 2:
+        case TUES:
             return "Tuesday";
             break;
-        case 3:
+        case WEDS:
             return "Wednesday";
             break;
-        case 4:
+        case THURS:
             return "Thursday";
             break;
-        case 5:
+        case FRI:
             return "Friday";
             break;
-        default:
+        default: /* SAT */
             return "Saturday";
             break;
     }
@@ -163,65 +167,126 @@ static void easter (int year, int *month, int *day)
 }
 
 char* WhichHoliday (struct tm NY_tz){
-    /* New Years Day */
-    if(NY_tz.tm_mon == 0 && NY_tz.tm_mday == 1 ) return "Market Closed - New Years Day";
-    /* Presidents Day */
-    if(NY_tz.tm_mon == 0 && NY_tz.tm_wday == 1 && NY_tz.tm_mday >= 15 && NY_tz.tm_mday <= 21) return "Market Closed - Presidents Day";
-    /* Martin Luther King Jr. Day */
-    if(NY_tz.tm_mon == 1 && NY_tz.tm_wday == 1 && NY_tz.tm_mday >= 15 && NY_tz.tm_mday <= 21) return "Market Closed - Martin Luther King Jr. Day";
-    /* Memorial Day */
-    if(NY_tz.tm_mon == 4 && NY_tz.tm_wday == 1 && NY_tz.tm_mday >= 25 && NY_tz.tm_mday <= 31) return "Market Closed - Memorial Day";
-    /* Juneteenth Day */
-    if(NY_tz.tm_mon == 5 && NY_tz.tm_mday == 19 ) return "Market Closed - Juneteenth Day";
-    if(NY_tz.tm_mon == 5 && NY_tz.tm_wday == 1 && NY_tz.tm_mday >= 19 && NY_tz.tm_mday <= 21) return "Market Closed - Juneteenth Holiday";
-    /* US Independence Day */
-    if(NY_tz.tm_mon == 6 && NY_tz.tm_mday == 4 ) return "Market Closed - US Independence Day";
-    if(NY_tz.tm_mon == 6 && NY_tz.tm_wday == 1 && NY_tz.tm_mday >= 4 && NY_tz.tm_mday <= 6) return "Market Closed - US Independence Holiday";
-    /* Labor Day */
-    if(NY_tz.tm_mon == 8 && NY_tz.tm_wday == 1 && NY_tz.tm_mday >= 1 && NY_tz.tm_mday <= 7) return "Market Closed - Labor Day";
-    /* Thanksgiving Day */
-    if(NY_tz.tm_mon == 10 && NY_tz.tm_wday == 4 && NY_tz.tm_mday >= 22 && NY_tz.tm_mday <= 28) return "Market Closed - Thanksgiving Day";
-    /* Black Friday */
-    if(NY_tz.tm_mon == 10 && NY_tz.tm_wday == 5 && NY_tz.tm_mday >= 23 && NY_tz.tm_mday <= 29 && NY_tz.tm_hour >= 13) return "Market Closed Early - Black Friday";
-    /* Christmas Day */
-    if(NY_tz.tm_mon == 11 && NY_tz.tm_mday == 25 ) return "Market Closed - Christmas Day";
-    if(NY_tz.tm_mon == 11 && NY_tz.tm_wday == 1 && NY_tz.tm_mday >= 25 && NY_tz.tm_mday <= 27) return "Market Closed - Christmas Holiday";
-    /* Good Friday */
+    enum { JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC };
+    enum { SUN, MON, TUES, WEDS, THURS, FRI };
     int month, day;
-    easter( (int)NY_tz.tm_year + 1900, &month, &day ); /* Finds the date of easter for a given year. */
-    if( ( (int)NY_tz.tm_mon + 1 ) == month && (int)NY_tz.tm_mday == ( day - 2 ) ) return "Market Closed - Good Friday";
+
+    switch ( NY_tz.tm_mon % 12 ){
+        case JAN:
+            /* New Years Day */
+            if( NY_tz.tm_mday == 1 ) return "Market Closed - New Years Day";
+
+            /* Presidents Day */
+            if( NY_tz.tm_wday == MON && NY_tz.tm_mday >= 15 && NY_tz.tm_mday <= 21 ) return "Market Closed - Presidents Day";
+            break;
+        case FEB:
+            /* Martin Luther King Junior Day */
+            if( NY_tz.tm_wday == MON && NY_tz.tm_mday >= 15 && NY_tz.tm_mday <= 21 ) return "Market Closed - Martin Luther King Jr. Day";
+            break;
+        case MAY:
+            /* Memorial Day */
+            if( NY_tz.tm_wday == MON && NY_tz.tm_mday >= 25 && NY_tz.tm_mday <= 31 ) return "Market Closed - Memorial Day";
+            break;
+        case JUN:
+            /* Juneteenth Day */
+            if( NY_tz.tm_mday == 19 ) return "Market Closed - Juneteenth Day";
+            if( NY_tz.tm_wday == MON && NY_tz.tm_mday >= 19 && NY_tz.tm_mday <= 21 ) return "Market Closed - Juneteenth Holiday";
+            break;
+        case JUL:
+            /* US Independence Day */
+            if( NY_tz.tm_mday == 4 ) return "Market Closed - US Independence Day";
+            if( NY_tz.tm_wday == MON && NY_tz.tm_mday >= 4 && NY_tz.tm_mday <= 6 ) return "Market Closed - US Independence Holiday";
+            break;
+        case AUG:
+            return "Not A Holiday - Error";
+            break;
+        case SEP:
+            /* Labor Day */
+            if( NY_tz.tm_wday == MON && NY_tz.tm_mday >= 1 && NY_tz.tm_mday <= 7 ) return "Market Closed - Labor Day";
+            break;
+        case OCT:
+            return "Not A Holiday - Error";
+            break;
+        case NOV:
+            /* Thanksgiving Day */
+            if( NY_tz.tm_wday == THURS && NY_tz.tm_mday >= 22 && NY_tz.tm_mday <= 28 ) return "Market Closed - Thanksgiving Day";
+            /* Black Friday */
+            if( NY_tz.tm_wday == FRI && NY_tz.tm_mday >= 23 && NY_tz.tm_mday <= 29 && NY_tz.tm_hour >= 13 ) return "Market Closed Early - Black Friday";
+            break;
+        case DEC:
+            /* Christmas Day */
+            if( NY_tz.tm_mday == 25 ) return "Market Closed - Christmas Day";
+            if( NY_tz.tm_wday == MON && NY_tz.tm_mday >= 25 && NY_tz.tm_mday <= 27 ) return "Market Closed - Christmas Holiday";
+            break;
+        default: /* MAR || APR */
+            /* Good Friday */
+            easter( NY_tz.tm_year + 1900, &month, &day ); /* Finds the date of easter for a given year. */
+            if( ( NY_tz.tm_mon + 1 ) == month && NY_tz.tm_mday == ( day - 2 ) ) return "Market Closed - Good Friday";
+            break;
+    }
 
     return "Not A Holiday - Error";
 }
 
 bool CheckHoliday (struct tm NY_tz){
-    /* New Years Day */
-    if(NY_tz.tm_mon == 0 && NY_tz.tm_mday == 1 ) return true;
-    /* Presidents Day */
-    if(NY_tz.tm_mon == 0 && NY_tz.tm_wday == 1 && NY_tz.tm_mday >= 15 && NY_tz.tm_mday <= 21) return true;
-    /* Martin Luther King Junior Day */
-    if(NY_tz.tm_mon == 1 && NY_tz.tm_wday == 1 && NY_tz.tm_mday >= 15 && NY_tz.tm_mday <= 21) return true;
-    /* Memorial Day */
-    if(NY_tz.tm_mon == 4 && NY_tz.tm_wday == 1 && NY_tz.tm_mday >= 25 && NY_tz.tm_mday <= 31) return true;
-    /* Juneteenth Day */
-    if(NY_tz.tm_mon == 5 && NY_tz.tm_mday == 19 ) return true;
-    if(NY_tz.tm_mon == 5 && NY_tz.tm_wday == 1 && NY_tz.tm_mday >= 19 && NY_tz.tm_mday <= 21) return true;
-    /* US Independence Day */
-    if(NY_tz.tm_mon == 6 && NY_tz.tm_mday == 4 ) return true;
-    if(NY_tz.tm_mon == 6 && NY_tz.tm_wday == 1 && NY_tz.tm_mday >= 4 && NY_tz.tm_mday <= 6) return true;
-    /* Labor Day */
-    if(NY_tz.tm_mon == 8 && NY_tz.tm_wday == 1 && NY_tz.tm_mday >= 1 && NY_tz.tm_mday <= 7) return true;
-    /* Thanksgiving Day */
-    if(NY_tz.tm_mon == 10 && NY_tz.tm_wday == 4 && NY_tz.tm_mday >= 22 && NY_tz.tm_mday <= 28) return true;
-    /* Black Friday */
-    if(NY_tz.tm_mon == 10 && NY_tz.tm_wday == 5 && NY_tz.tm_mday >= 23 && NY_tz.tm_mday <= 29 && NY_tz.tm_hour >= 13) return true;
-    /* Christmas Day */
-    if(NY_tz.tm_mon == 11 && NY_tz.tm_mday == 25 ) return true;
-    if(NY_tz.tm_mon == 11 && NY_tz.tm_wday == 1 && NY_tz.tm_mday >= 25 && NY_tz.tm_mday <= 27) return true;
-    /* Good Friday */
-    int month, day;
-    easter( (int)NY_tz.tm_year + 1900, &month, &day ); /* Finds the date of easter for a given year. */
-    if( ( (int)NY_tz.tm_mon + 1 ) == month && (int)NY_tz.tm_mday == ( day - 2 ) ) return true;
+    enum { JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC };
+    enum { SUN, MON, TUES, WEDS, THURS, FRI };
+    int easter_month, easter_day;
+
+    switch ( NY_tz.tm_mon % 12 ){
+        case JAN:
+            /* New Years Day */
+            if( NY_tz.tm_mday == 1 ) return true;
+
+            /* Presidents Day */
+            if( NY_tz.tm_wday == MON && NY_tz.tm_mday >= 15 && NY_tz.tm_mday <= 21 ) return true;
+            break;
+        case FEB:
+            /* Martin Luther King Junior Day */
+            if( NY_tz.tm_wday == MON && NY_tz.tm_mday >= 15 && NY_tz.tm_mday <= 21 ) return true;
+            break;
+        case MAY:
+            /* Memorial Day */
+            if( NY_tz.tm_wday == MON && NY_tz.tm_mday >= 25 && NY_tz.tm_mday <= 31 ) return true;
+            break;
+        case JUN:
+            /* Juneteenth Day */
+            if( NY_tz.tm_mday == 19 ) return true;
+            if( NY_tz.tm_wday == MON && NY_tz.tm_mday >= 19 && NY_tz.tm_mday <= 21 ) return true;
+            break;
+        case JUL:
+            /* US Independence Day */
+            if( NY_tz.tm_mday == 4 ) return true;
+            if( NY_tz.tm_wday == MON && NY_tz.tm_mday >= 4 && NY_tz.tm_mday <= 6 ) return true;
+            break;
+        case AUG:
+            return false;
+            break;
+        case SEP:
+            /* Labor Day */
+            if( NY_tz.tm_wday == MON && NY_tz.tm_mday >= 1 && NY_tz.tm_mday <= 7 ) return true;
+            break;
+        case OCT:
+            return false;
+            break;
+        case NOV:
+            /* Thanksgiving Day */
+            if( NY_tz.tm_wday == THURS && NY_tz.tm_mday >= 22 && NY_tz.tm_mday <= 28 ) return true;
+            /* Black Friday */
+            if( NY_tz.tm_wday == FRI && NY_tz.tm_mday >= 23 && NY_tz.tm_mday <= 29 && NY_tz.tm_hour >= 13 ) return true;
+            break;
+        case DEC:
+            /* Christmas Day */
+            if( NY_tz.tm_mday == 25 ) return true;
+            if( NY_tz.tm_wday == MON && NY_tz.tm_mday >= 25 && NY_tz.tm_mday <= 27 ) return true;
+            break;
+        default: /* MAR || APR */
+            /* Good Friday */
+            if( NY_tz.tm_wday != FRI ) return false;
+            easter( NY_tz.tm_year + 1900, &easter_month, &easter_day ); /* Finds the date of easter for a given year. */
+            if( ( NY_tz.tm_mon + 1 ) == easter_month && NY_tz.tm_mday == ( easter_day - 2 ) ) return true;
+            break;
+    }
 
     return false;
 }
@@ -254,8 +319,8 @@ bool TimeToClose ( bool holiday, int *h_r, int *m_r, int *s_r ) {
         *m_r = 0;
         *s_r = 0;
         closed = true;
-    /* Closes early on black friday */
-    } else if (month == 10 && weekday == 5 && dayofmonth >= 23 && dayofmonth <= 29){
+    /* Open: closes early on black friday */
+    } else if ( month == 10 && weekday == 5 && dayofmonth >= 23 && dayofmonth <= 29 ){
         *h_r = hour_closed_black_friday_NY - 1 - hour;
         *m_r = 59 - min;
         *s_r = 59 - sec;
@@ -270,23 +335,183 @@ bool TimeToClose ( bool holiday, int *h_r, int *m_r, int *s_r ) {
     return closed;
 }
 
+static bool is_leap_year ( struct tm NY_tz ){
+    short year = (short)( NY_tz.tm_year + 1900 );
+    /* The year is evenly divisible by 4 and it is not evenly divisible by 100 */
+    /* Or the year is evenly divisible by 400. */
+    if( ( ( year % 4 == 0 ) && ( year % 100 != 0 ) ) || ( year % 400 == 0 ) )
+    {
+        /* Leap year. */
+        return true;
+    } else {
+        /* Not a leap year. */
+        return false;
+    }
+}
+
+static void days_in_month_and_year ( struct tm NY_tz, short *days_in_month, short *days_in_year ){
+    enum { JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC };
+
+    /* The number of days in the year is only relevent in December. */
+    switch ( NY_tz.tm_mon ){
+        /* Months with 30 days. */
+        case ( APR ):
+            *days_in_month = 30;
+            *days_in_year = 365;
+            return;
+            break;
+        case ( JUN ):
+            *days_in_month = 30;
+            *days_in_year = 365;
+            return;
+            break;
+        case ( SEP ):
+            *days_in_month = 30;
+            *days_in_year = 365;
+            return;
+            break;
+        case ( NOV ):
+            *days_in_month = 30;
+            *days_in_year = 365;
+            return;
+            break;
+        /* Months with 31 days. */
+        case ( JAN ):
+            *days_in_month = 31;
+            *days_in_year = 365;
+            return;
+            break;
+        case ( MAR ):
+            *days_in_month = 31;
+            *days_in_year = 365;
+            return;
+            break;
+        case ( MAY ):
+            *days_in_month = 31;
+            *days_in_year = 365;
+            return;
+            break;
+        case ( JUL ):
+            *days_in_month = 31;
+            *days_in_year = 365;
+            return;
+            break;
+        case ( AUG ):
+            *days_in_month = 31;
+            *days_in_year = 365;
+            return;
+            break;
+        case ( OCT ):
+            *days_in_month = 31;
+            *days_in_year = 365;
+            return;
+            break;
+        case ( DEC ):
+            *days_in_month = 31;
+            if( is_leap_year ( NY_tz ) )
+            {
+                /* Leap year. */
+                *days_in_year = 366;
+                return;
+            } else {
+                /* Not a leap year. */
+                *days_in_year = 365;
+                return;
+            }
+            break;
+        /* February */
+        default:
+            if( is_leap_year ( NY_tz ) )
+            {
+                /* Leap year. */
+                *days_in_month = 29;
+                *days_in_year = 366;
+                return;
+            } else {
+                /* Not a leap year. */
+                *days_in_month = 28;
+                *days_in_year = 365;
+                return;
+            }
+            break;
+    }
+}
+
+static void date_adjustment ( struct tm *NY_tz )
+{
+    short hour = (short)( (NY_tz->tm_hour)%24 );
+    short weekday = (short)NY_tz->tm_wday;
+    short hour_open_NY, hour_closed_NY;
+    short days_in_mon, days_in_year, day_adjustment;
+    short day_of_month = (short)NY_tz->tm_mday;
+    short day_of_year = (short)NY_tz->tm_yday;
+    enum { SUN, MON, TUES, WEDS, THURS, FRI, SAT };
+
+    days_in_month_and_year ( *NY_tz, &days_in_mon, &days_in_year );
+
+    hour_open_NY = 9;
+    hour_closed_NY = 16; /* The early close on Black Friday will yield a holiday = true */
+
+    day_adjustment = 0;
+    switch ( weekday ){
+        case SUN:
+            day_adjustment = 1;
+            break;
+        case FRI:
+            /* It is past 16:00 EST/EDST or today is a holiday. */
+            if ( hour >= hour_closed_NY || CheckHoliday ( *NY_tz ) ) day_adjustment = 3;
+            break;
+        case SAT:
+            day_adjustment = 2;
+            break;
+        default: /* MON, TUES, WEDS, THURS */
+            if ( hour >= hour_closed_NY || CheckHoliday ( *NY_tz ) ) day_adjustment = 1;
+            break;
+    };
+
+    if ( ( day_of_month + day_adjustment ) > days_in_mon ) {
+        /* Adjustment overflowed the month. */
+        NY_tz->tm_mday = (int)( ( day_of_month + day_adjustment ) % days_in_mon );
+        NY_tz->tm_mon = ( NY_tz->tm_mon + 1 ) % 12;
+    } else {
+        /* Adjustment didn't overflow the month. */
+        NY_tz->tm_mday += (int)day_adjustment;
+    }
+
+    if ( ( day_of_year + day_adjustment ) > days_in_year ) {
+        /* Adjustment overflowed the year. */
+        NY_tz->tm_year++;
+    }
+
+    /* The market always opens at 09:30:00 EST/EDST */
+    NY_tz->tm_hour = (int)hour_open_NY;
+    NY_tz->tm_min = 30;
+    NY_tz->tm_sec = 0;
+    /* Let mktime () determine whether to use daylight savings time or not. */
+    NY_tz->tm_isdst = -1;
+
+    /* Check if the future date is a holiday.
+       If so, increment the future day by 1. */
+    /* If Memorial Day falls on the 31st, mktime() will adjust
+       the month and day accordingly. The 32nd day of May is June 1st. */
+    if ( CheckHoliday ( *NY_tz ) ) NY_tz->tm_mday++;
+    /* If the future day is now a Saturday the next iteration of the close indicator loop
+       will catch it.  The Thurs before Good Friday, for example. */
+    return;
+}
+
 unsigned int SecondsToOpen () {
-    /* The seconds until the NYSE/NASDAQ markets open, does not account
-    for holidays. */
+    /* The seconds until the NYSE/NASDAQ markets open. */
     struct tm NY_tz;
     time_t currenttime, futuretime;
     unsigned int diff;
-
-    /* The current time in Epoch seconds */
-    time( &currenttime );
 
     /* Get the localtime in NY from Epoch seconds 
        We need to do this to account for DST changes when
        determining the future Epoch time. 
     */
 
-    NY_tz = NYTimeComponents ();
-    
+    NY_tz = NYTimeComponents ();    
 
     int hour = (NY_tz.tm_hour)%24;
     int min = NY_tz.tm_min;
@@ -296,36 +521,24 @@ unsigned int SecondsToOpen () {
     hour_open_NY = 9;
     hour_closed_NY = 16;
 
-    if( ( hour > hour_open_NY || ( hour == hour_open_NY && min >= 30 ) ) && hour < hour_closed_NY && weekday != 0 && weekday != 6 ){
+    /* If today isn't Sat or Sun */
+    /* 6 % 6 == 0, 0 % 6 == 0 */
+    if( weekday % 6 != 0 ){
+        /* If it is currently normal operating hours */
+        if ( ( hour > hour_open_NY || ( hour == hour_open_NY && min >= 30 ) ) && hour < hour_closed_NY ){
+            /* If today is not a holiday */
+            if ( !CheckHoliday ( NY_tz ) ) {
+                /* The market is open */
+                return 0;
+            }
+        }
+    }
+    
+    /* Find when the market opens */
+    date_adjustment ( &NY_tz );
 
-        /* The market is open. */
-        return 0;
-    }
-    
-    /* Today is not Fri and today is not Sat and today is not Sun and it is past 4 PM EST/EDST */
-    if( weekday != 5 && weekday != 6 && weekday != 0 && hour >= hour_closed_NY ){
-    	NY_tz.tm_mday++;
-    }
-    
-    /* Today is Sun */
-    if( weekday == 0 ) {
-    	NY_tz.tm_mday++;
-    }
-    
-    /* Today is Sat */
-    if( weekday == 6 ) {
-    	NY_tz.tm_mday += 2;
-    }
-
-    /* Today is Fri and it is past 4 PM EST/EDST */
-    if( weekday == 5 && hour >= hour_closed_NY ) {
-    	NY_tz.tm_mday += 3;
-    }
-     
-    /* The market always opens at 09:30:00 EST/EDST */
-    NY_tz.tm_hour = hour_open_NY;
-    NY_tz.tm_min = 30;
-    NY_tz.tm_sec = 0;
+    /* The current time in Epoch seconds */
+    time( &currenttime );
     
     /* The future NY EST/EDST date to time in Epoch seconds. */
     futuretime = mktime( &NY_tz );
@@ -333,5 +546,5 @@ unsigned int SecondsToOpen () {
     /* The market is closed, reopens in this many seconds. */
     diff = (unsigned int) difftime( futuretime, currenttime );
 
-    return ( diff );
+    return diff;
 }

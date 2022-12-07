@@ -95,8 +95,7 @@ void *GUIThreadHandler (void *data){
     unsigned int seconds_to_open;
     double loop_val, diff, seconds_per_iteration;
     time_t current_time, end_time;
-    time_t start_curl, end_curl;
-    struct tm NY_Time; 
+    time_t start_curl, end_curl; 
     MemType *RSIOutput = NULL;
     char *sec_name, *symbol;
     symbol_name_map *sym_map = NULL;
@@ -127,7 +126,7 @@ void *GUIThreadHandler (void *data){
                 /* This mutex prevents the program from crashing if an
                    MAIN_EXIT, EQUITY_OK_BTN, 
                    BUL_OK_BTN, CASH_OK_BTN, 
-                   or API_OK_BTN signal is run in parallel with 
+                   or API_OK_BTN signal is run concurrently with 
                    this thread. */
 
                 time( &start_curl );
@@ -154,8 +153,8 @@ void *GUIThreadHandler (void *data){
                 /* Set Gtk treeview. */
                 gdk_threads_add_idle ( MainPrimaryTreeview, packet );
            
-                /* If the market is closed or today is a holiday only loop once. */
-                if( loop_val == 1.0f || !packet->IsFetchingData () || packet->SecondsToOpen () || packet->IsHoliday () ) {
+                /* If hours to update is zero, loop canceled, or the market is closed; only loop once. */
+                if( loop_val == 1.0f || !packet->IsFetchingData () || packet->SecondsToOpen () ) {
                     break;
                 }
 
@@ -355,7 +354,7 @@ void *GUIThreadHandler (void *data){
                a GtkEntryCompletion widget. */
 
             /* This mutex prevents the program from crashing if an
-               MAIN_EXIT signal is run in parallel with this thread.
+               MAIN_EXIT signal is run concurrently with this thread.
 
                This signal is only run once at application start.
             */
@@ -392,38 +391,31 @@ void *GUIThreadHandler (void *data){
                The process is always using New York time.
             */
 
-            while(1){
+            while ( 1 )
+            {
                 gdk_threads_add_idle ( MainDisplayTime, NULL );
 
                 sleep( ClockSleepSeconds () );
             }
             break;
-        case MAIN_TIME_CLOSE_INDICATOR:
-            NY_Time = packet->SetHoliday ();            
+        case MAIN_TIME_CLOSE_INDICATOR: 
+            packet->SetHoliday ();         
             seconds_to_open = packet->SecondsToOpen ();
 
-            while(1){
-                if ( packet->IsHoliday () ) {
+            while ( 1 )
+            {
+                if ( seconds_to_open == 0 ){
                     gdk_threads_add_idle ( MainDisplayTimeRemaining, packet );
-                    sleep(  3600 * ( (9 + 24) - NY_Time.tm_hour ) );
-                    NY_Time = packet->SetHoliday ();
-                }
-
-                if ( ( packet->IsHoliday () == false ) && ( seconds_to_open == 0 )){
-                    gdk_threads_add_idle ( MainDisplayTimeRemaining, packet );
-
                     sleep( 1 );
-
-                    /* On Black Friday the market closes @ 13:00 EST */
-                    if( NY_Time.tm_mon == 10 && NY_Time.tm_mday >= 23 && NY_Time.tm_mday <= 29 && NY_Time.tm_wday == 5 ){
-                        NY_Time = packet->SetHoliday ();
-                    }
                     
-                } else if ( ( packet->IsHoliday () == false ) && seconds_to_open > 0 ){
+                } else {
+                    packet->SetHoliday ();
                     gdk_threads_add_idle ( MainDisplayTimeRemaining, packet );
                     sleep( seconds_to_open );
-                    NY_Time = packet->SetHoliday ();
+                    packet->SetHoliday ();
                 } 
+                /* SecondsToOpen () will take into account holidays, 
+                   including the black friday early close. */
                 seconds_to_open = packet->SecondsToOpen ();             
             }
             break;
@@ -434,7 +426,7 @@ void *GUIThreadHandler (void *data){
             packet->StopMultiCurl ();
 
             /* This mutex prevents the program from crashing if a
-               MAIN_FETCH_BTN signal is run in parallel with this thread. */
+               MAIN_FETCH_BTN signal is run concurrently with this thread. */
             pthread_mutex_lock( &mutex_working[ FETCH_DATA_MUTEX ] );
 
              /* Save the Window Size, Location, and Expander Bar setting. */
@@ -444,7 +436,7 @@ void *GUIThreadHandler (void *data){
             gdk_threads_add_idle ( MainHideWindow, NULL );
 
             /* This mutex prevents the program from crashing if a
-               COMPLETION signal is run in parallel with this thread. */
+               COMPLETION signal is run concurrently with this thread. */
             pthread_mutex_lock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] ); 
 
             /* Hold the application until the Sqlite thread is finished [prevents db write errors]. */

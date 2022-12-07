@@ -596,30 +596,29 @@ int MainDisplayTime (){
 int MainDisplayTimeRemaining (void *data){
     /* Unpack the package */
     portfolio_packet *package = (portfolio_packet*)data;
-    meta *D = package->GetMetaClass ();
 
     GtkWidget* CloseLabel = GTK_WIDGET ( gtk_builder_get_object (builder, "MarketCloseLabel") );
     GtkWidget* TimeRemLabel = GTK_WIDGET ( gtk_builder_get_object (builder, "TimeLeftLabel") );
     int h, m, s;
     char time_left_ch[10];
     bool isclosed;
-    struct tm NY_Time; 
+    struct tm NY_Time;
 
-    isclosed = TimeToClose ( *D->holiday_bool, &h, &m, &s );
-    snprintf ( time_left_ch, 10, "%02d:%02d:%02d", h, m, s);
-    gtk_label_set_text ( GTK_LABEL ( TimeRemLabel ), time_left_ch );
-    if ( !isclosed ) { 
-        gtk_label_set_text ( GTK_LABEL ( CloseLabel ), "Market Closes In" ); 
-        return 0; 
-    }
+    isclosed = TimeToClose ( package->IsHoliday (), &h, &m, &s );
     
     if ( isclosed ) {
-        if ( !(*D->holiday_bool) ) {
-            gtk_label_set_text ( GTK_LABEL ( CloseLabel ), "Market Closed" );
-        } else {
+        if ( package->IsHoliday () ) {
             NY_Time = NYTimeComponents ();
             gtk_label_set_text ( GTK_LABEL ( CloseLabel ), WhichHoliday ( NY_Time ) );
+        } else {
+            gtk_label_set_text ( GTK_LABEL ( CloseLabel ), "Market Closed" );
         }
+        gtk_widget_set_visible ( TimeRemLabel, false );
+    } else {
+        gtk_label_set_text ( GTK_LABEL ( CloseLabel ), "Market Closes In" );
+        snprintf ( time_left_ch, 10, "%02d:%02d:%02d", h, m, s);
+        gtk_label_set_text ( GTK_LABEL ( TimeRemLabel ), time_left_ch );
+        gtk_widget_set_visible ( TimeRemLabel, true );
     }
 
     return 0;

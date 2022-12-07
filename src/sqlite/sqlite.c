@@ -286,7 +286,7 @@ static int symbol_name_callback (void *data, int argc, char **argv, char **ColNa
 }
 
 static void error_msg ( sqlite3 *db ){
-    fprintf( stderr, "Cannot open sqlite3 database: %s\n", sqlite3_errmsg( db ) );
+    fprintf( stderr, "Sqlite3 database error: %s\n", sqlite3_errmsg( db ) );
     sqlite3_close(db);
     exit ( EXIT_FAILURE );
 }
@@ -475,14 +475,10 @@ void SqliteAddCash (char *value, meta *D){
     if ( sqlite3_open( D->sqlite_db_path_ch, &db) != SQLITE_OK ) error_msg( db );
 
     /* Delete entry if already exists, then insert entry. */
-    len = strlen("DELETE FROM cash WHERE Id = 1;") + 1;
-    char *sql_cmd = (char*) malloc( len );
-    snprintf( sql_cmd, len, "DELETE FROM cash WHERE Id = 1;");
-    if ( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK ) error_msg( db );
-    free( sql_cmd );
+    if ( sqlite3_exec(db, "DELETE FROM cash WHERE Id = 1;", 0, 0, &err_msg) != SQLITE_OK ) error_msg( db );
 
     len = strlen("INSERT INTO cash VALUES(1, '');") + strlen( value ) + 1;
-    sql_cmd = (char*) malloc( len );
+    char *sql_cmd = (char*) malloc( len );
     snprintf( sql_cmd, len, "INSERT INTO cash VALUES(1, '%s');", value );
     if ( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK ) error_msg( db );
     free( sql_cmd );
@@ -547,10 +543,9 @@ void SqliteRemoveAllEquity (meta *D){
     if ( sqlite3_open( D->sqlite_db_path_ch, &db) != SQLITE_OK ) error_msg( db );
 
     /* Drop the equity table and create a new one. */
-    char *sql_cmd = "DROP TABLE equity;";
-    if ( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK ) error_msg( db );
+    if ( sqlite3_exec(db, "DROP TABLE equity;", 0, 0, &err_msg) != SQLITE_OK ) error_msg( db );
 
-    sql_cmd = "CREATE TABLE IF NOT EXISTS equity(Id INTEGER PRIMARY KEY, Symbol TEXT NOT NULL, Shares TEXT NOT NULL);";
+    char *sql_cmd = "CREATE TABLE IF NOT EXISTS equity(Id INTEGER PRIMARY KEY, Symbol TEXT NOT NULL, Shares TEXT NOT NULL);";
     if ( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK ) error_msg( db );
 
     /* Close the sqlite database file. */
@@ -693,20 +688,17 @@ symbol_name_map *SqliteGetSymbolNameMap (meta *D){
     }
 }
 
-static bool escape_apostrophy ( char **s )
-/* Check and insert an sqlite escape apostrophy to the string.
-   Returns true if found, false if not found.
-*/
+static void escape_apostrophy ( char **s )
+/* If required, insert an sqlite escape apostrophy to the string. */
 {
-    bool return_value = false;
-    if (s == NULL) return return_value;
-    if (s[0] == NULL) return return_value;
+    if (s == NULL) return;
+    if (s[0] == NULL) return;
 
 	/* Read character by character until the null character is reached. */
     for(int i = 0; s[0][i]; i++){
+
         /* If we find an ''' character, ASCII decimal code 39 */
         if(s[0][i]==39){
-            return_value = true;
 
             /* Increase the character array by one character. */
             char *tmp = realloc ( s[0], ( strlen(s[0]) + 1 + 1 ) * sizeof( char ) );
@@ -720,27 +712,6 @@ static bool escape_apostrophy ( char **s )
 
             /* Because we have a duplicate we need to skip the next increment of i */
             i++;
-        }
-    }
-    return return_value;
-}
-
-static void remove_apostrophy (char *s)
-/* Remove escaped apostrophies ''' from a string */
-/* If there is an odd number of apostrophies, undefined behavior. 
-*/
-{
-    if (s == NULL) return;
-
-    /* Read character by character until the null character is reached. */
-    for(int i = 0; s[i]; i++){
-        /* If we find double ''' characters, ASCII decimal code 39 */
-        if(s[i]==39 && s[i+1]==39){
-            /* Read each character thereafter and */
-            for(int j = i; s[j]; j++){
-                /* Shift the array one character to the left [remove the duplicate character] */
-                s[j]=s[j+1];
-            }
         }
     }
 }
@@ -760,7 +731,6 @@ static void *add_mapping_to_database ( void *data ){
     char *err_msg = 0;
     sqlite3 *db;
     size_t len;
-    bool apostrophy_found = false;
 
     /* Open the sqlite database file. */
     if ( sqlite3_open( D->sqlite_symbol_name_db_path_ch, &db) != SQLITE_OK ) error_msg( db );
@@ -776,15 +746,14 @@ static void *add_mapping_to_database ( void *data ){
     for ( int g = 0; g < sn_map->size; g++ ){
         if ( sn_map->sn_container_arr[ g ] == NULL || sn_map->sn_container_arr == NULL ) break;
 
-        apostrophy_found = escape_apostrophy ( &sn_map->sn_container_arr[ g ]->security_name );
+        /* Insert an escape apostrophy into the string where needed. */
+        escape_apostrophy ( &sn_map->sn_container_arr[ g ]->security_name );
 
         len = strlen("INSERT INTO symbolname VALUES(null, '', '');") + strlen( sn_map->sn_container_arr[ g ]->symbol ) + strlen( sn_map->sn_container_arr[ g ]->security_name ) + 1;
         sql_cmd = (char*) malloc( len );        
         snprintf( sql_cmd, len, "INSERT INTO symbolname VALUES(null, '%s', '%s');", sn_map->sn_container_arr[ g ]->symbol, sn_map->sn_container_arr[ g ]->security_name );
         if ( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK ) error_msg( db );
         free( sql_cmd );
-
-        if ( apostrophy_found ) remove_apostrophy ( sn_map->sn_container_arr[ g ]->security_name );
     }
 
     /* Close the sqlite database file. */
