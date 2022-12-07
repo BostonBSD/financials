@@ -445,6 +445,7 @@ static void date_adjustment ( struct tm *NY_tz )
     short days_in_mon, days_in_year, day_adjustment;
     short day_of_month = (short)NY_tz->tm_mday;
     short day_of_year = (short)NY_tz->tm_yday;
+    short day_of_week = (short)NY_tz->tm_wday;
     enum { SUN, MON, TUES, WEDS, THURS, FRI, SAT };
 
     days_in_month_and_year ( *NY_tz, &days_in_mon, &days_in_year );
@@ -471,11 +472,16 @@ static void date_adjustment ( struct tm *NY_tz )
 
     if ( ( day_of_month + day_adjustment ) > days_in_mon ) {
         /* Adjustment overflowed the month. */
+
         NY_tz->tm_mday = (int)( ( day_of_month + day_adjustment ) % days_in_mon );
+        /* CheckHoliday () uses the weekday to determine if it is a holiday. */
+        NY_tz->tm_wday = (int)( ( day_of_week + day_adjustment ) % 7 );
         NY_tz->tm_mon = ( NY_tz->tm_mon + 1 ) % 12;
     } else {
         /* Adjustment didn't overflow the month. */
+        
         NY_tz->tm_mday += (int)day_adjustment;
+        NY_tz->tm_wday = (int)( ( day_of_week + day_adjustment ) % 7 );
     }
 
     if ( ( day_of_year + day_adjustment ) > days_in_year ) {
