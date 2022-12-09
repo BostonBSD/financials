@@ -161,22 +161,40 @@ static int api_callback (void *data, int argc, char **argv, char **ColName) {
     if ( strcmp( ColName[2], "Data") != 0 ) return 1;
 
     meta *mdata = (meta*)data;
-    if ( strcasecmp( argv[1], "Stock_URL") == 0){
-        free ( mdata->stock_url );
-        mdata->stock_url = strdup( argv[2] ? argv[2] : FINNHUB_URL );
+    if ( strcasecmp( argv[1], "Stock_URL") == 0 ){
+        free ( mdata->stock_url_ch );
+        mdata->stock_url_ch = strdup( argv[2] ? argv[2] : FINNHUB_URL );
     }
 
-    if ( strcasecmp( argv[1], "URL_KEY") == 0){
-        free ( mdata->curl_key );
-        mdata->curl_key = strdup( argv[2] ? argv[2] : FINNHUB_URL_TOKEN );
+    if ( strcasecmp( argv[1], "URL_KEY") == 0 ){
+        free ( mdata->curl_key_ch );
+        mdata->curl_key_ch = strdup( argv[2] ? argv[2] : FINNHUB_URL_TOKEN );
     }
 
-    if ( strcasecmp( argv[1], "Updates_Per_Min") == 0){
+    if ( strcasecmp( argv[1], "Nasdaq_Symbol_URL") == 0 ){
+        free ( mdata->Nasdaq_Symbol_url_ch );
+        mdata->Nasdaq_Symbol_url_ch = strdup( argv[2] ? argv[2] : NASDAQ_SYMBOL_URL );
+    }
+
+    if ( strcasecmp( argv[1], "NYSE_Symbol_URL") == 0 ){
+        free ( mdata->NYSE_Symbol_url_ch );
+        mdata->NYSE_Symbol_url_ch = strdup( argv[2] ? argv[2] : NYSE_SYMBOL_URL );
+    }
+
+    if ( strcasecmp( argv[1], "Updates_Per_Min") == 0 ){
         *mdata->updates_per_min_f = strtod( argv[2] ? argv[2] : "6", NULL );
     }
 
-    if ( strcasecmp( argv[1], "Updates_Hours") == 0){
+    if ( strcasecmp( argv[1], "Updates_Hours") == 0 ){
         *mdata->updates_hours_f = strtod( argv[2] ? argv[2] : "1", NULL );
+    }
+
+    if ( strcasecmp( argv[1], "Clocks_Displayed") == 0 ){
+        if ( strcasecmp( argv[2] ? argv[2] : "true", "true" ) == 0 ){
+            *mdata->clocks_displayed_bool = true;
+        } else {
+            *mdata->clocks_displayed_bool = false;
+        }
     }
 
     pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );

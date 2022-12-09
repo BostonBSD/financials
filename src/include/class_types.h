@@ -172,8 +172,10 @@ typedef struct {
     double* updates_per_min_f;
     double* updates_hours_f;
 
-    char* stock_url;                        /* First component of the stock request URL */
-	char* curl_key;                         /* Last component of the stock request URL */
+    char* stock_url_ch;                        /* First component of the stock request URL */
+	char* curl_key_ch;                         /* Last component of the stock request URL */
+    char* Nasdaq_Symbol_url_ch;                /* Nasdaq Symbol List URL */
+    char* NYSE_Symbol_url_ch;                  /* NYSE Symbol List URL */
   
     char* cash_ch;                          /* Total value of cash */
     char* portfolio_port_value_ch;          /* Total value of the entire portfolio */
@@ -204,6 +206,7 @@ typedef struct {
     bool* holiday_bool;                     /* Indicates if today is a holiday. */
     bool* multicurl_cancel_bool;            /* Indicates if we should cancel the multicurl request. */
     bool* index_bar_expanded_bool;          /* Indicates if the indices bar is expanded or not. */
+    bool* clocks_displayed_bool;          /* Indicates if the clocks are displayed or not. */
 
     CURL* rsi_hnd;                          /* RSI Data cURL Easy Handle. */
     CURL* NASDAQ_completion_hnd;            /* RSI NASDAQ Symbol list cURL Easy Handle. */
@@ -339,6 +342,8 @@ typedef struct {
   sub_func_o_t* SetSymNameMap;
   sub_func_f_t* GetEquityFolderClass;
   sub_func_m_t* SecondsToOpen;
+  sub_func_i_t* IsClockDisplayed;
+  sub_func_j_t* SetClockDisplayed;
 
 } portfolio_packet;
 

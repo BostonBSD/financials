@@ -77,7 +77,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #define YAHOO_URL_END "&interval=1d&events=history&includeAdjustedClose=true"
 #endif
 
-/* The symbol URL macros are used by the symbol_list_fetch () function */
+/* The symbol URL macros are used by the class_init_meta_data () and api_callback () functions */
 #ifndef NASDAQ_SYMBOL_URL
 #define NASDAQ_SYMBOL_URL "http://www.nasdaqtrader.com/dynamic/SymDir/nasdaqlisted.txt"
 #endif

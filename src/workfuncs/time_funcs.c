@@ -31,8 +31,13 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <stdbool.h>
-#include <time.h>
+#include <sys/time.h>
 #include <math.h>
+
+#define OPEN_HOUR 9
+#define OPEN_MINUTE 30
+#define CLOSING_HOUR 16
+#define CLOSING_HOUR_BLACK_FRIDAY 13
 
 struct tm NYTimeComponents (){
     time_t currenttime;
@@ -45,13 +50,22 @@ struct tm NYTimeComponents (){
     return NY_tz;
 }
 
+unsigned int ClockSleepMicroSeconds (){
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+
+    /* The number of microseconds in a second
+       minus the number of microseconds which have
+       passed in the current second. */
+    return ( 1000000 - tv.tv_usec );
+}
+
 unsigned int ClockSleepSeconds (){
     time_t currenttime;
     struct tm tm_struct;
 
     time( &currenttime );
 
-    /* The timezone here isn't relevant. */
     localtime_r( &currenttime, &tm_struct );
     return ( 60 - tm_struct.tm_sec );
 }
@@ -211,7 +225,7 @@ char* WhichHoliday (struct tm NY_tz){
             /* Thanksgiving Day */
             if( NY_tz.tm_wday == THURS && NY_tz.tm_mday >= 22 && NY_tz.tm_mday <= 28 ) return "Market Closed - Thanksgiving Day";
             /* Black Friday */
-            if( NY_tz.tm_wday == FRI && NY_tz.tm_mday >= 23 && NY_tz.tm_mday <= 29 && NY_tz.tm_hour >= 13 ) return "Market Closed Early - Black Friday";
+            if( NY_tz.tm_wday == FRI && NY_tz.tm_mday >= 23 && NY_tz.tm_mday <= 29 && NY_tz.tm_hour >= CLOSING_HOUR_BLACK_FRIDAY ) return "Market Closed Early - Black Friday";
             break;
         case DEC:
             /* Christmas Day */
@@ -273,7 +287,7 @@ bool CheckHoliday (struct tm NY_tz){
             /* Thanksgiving Day */
             if( NY_tz.tm_wday == THURS && NY_tz.tm_mday >= 22 && NY_tz.tm_mday <= 28 ) return true;
             /* Black Friday */
-            if( NY_tz.tm_wday == FRI && NY_tz.tm_mday >= 23 && NY_tz.tm_mday <= 29 && NY_tz.tm_hour >= 13 ) return true;
+            if( NY_tz.tm_wday == FRI && NY_tz.tm_mday >= 23 && NY_tz.tm_mday <= 29 && NY_tz.tm_hour >= CLOSING_HOUR_BLACK_FRIDAY ) return true;
             break;
         case DEC:
             /* Christmas Day */
@@ -300,21 +314,21 @@ bool TimeToClose ( bool holiday, int *h_r, int *m_r, int *s_r ) {
     /* Accounts if it is DST or STD time in NY. */
     NY_tz = NYTimeComponents ();
 
-    int hour = (NY_tz.tm_hour)%24;
-    int min = NY_tz.tm_min;
-    int sec = NY_tz.tm_sec;
-    int weekday = NY_tz.tm_wday;
-    int month = NY_tz.tm_mon;
+    int hour = NY_tz.tm_hour % 24;
+    int min = NY_tz.tm_min % 60;
+    int sec = NY_tz.tm_sec % 60;
+    int weekday = NY_tz.tm_wday % 7;
+    int month = NY_tz.tm_mon % 12;
     int dayofmonth = NY_tz.tm_mday;
 
     int hour_open_NY, hour_closed_NY, hour_closed_black_friday_NY;    
 
-    hour_open_NY = 9;
-    hour_closed_NY = 16;
-    hour_closed_black_friday_NY = 13;
+    hour_open_NY = OPEN_HOUR;
+    hour_closed_NY = CLOSING_HOUR;
+    hour_closed_black_friday_NY = CLOSING_HOUR_BLACK_FRIDAY;
     
     /* Closed */
-    if( holiday || hour < hour_open_NY || ( hour == hour_open_NY && min < 30 ) || hour >= hour_closed_NY || weekday == 0 || weekday == 6 ){
+    if( holiday || hour < hour_open_NY || ( hour == hour_open_NY && min < OPEN_MINUTE ) || hour >= hour_closed_NY || weekday % 6 == 0 ){
         *h_r = 0;
         *m_r = 0;
         *s_r = 0;
@@ -450,8 +464,8 @@ static void date_adjustment ( struct tm *NY_tz )
 
     days_in_month_and_year ( *NY_tz, &days_in_mon, &days_in_year );
 
-    hour_open_NY = 9;
-    hour_closed_NY = 16; /* The early close on Black Friday will yield a holiday = true */
+    hour_open_NY = OPEN_HOUR;
+    hour_closed_NY = CLOSING_HOUR; /* The early close on Black Friday will yield a holiday = true */
 
     day_adjustment = 0;
     switch ( weekday ){
@@ -491,7 +505,7 @@ static void date_adjustment ( struct tm *NY_tz )
 
     /* The market always opens at 09:30:00 EST/EDST */
     NY_tz->tm_hour = (int)hour_open_NY;
-    NY_tz->tm_min = 30;
+    NY_tz->tm_min = OPEN_MINUTE;
     NY_tz->tm_sec = 0;
     /* Let mktime () determine whether to use daylight savings time or not. */
     NY_tz->tm_isdst = -1;
@@ -524,14 +538,14 @@ unsigned int SecondsToOpen () {
     int weekday = NY_tz.tm_wday;
     int hour_open_NY, hour_closed_NY;
 
-    hour_open_NY = 9;
-    hour_closed_NY = 16;
+    hour_open_NY = OPEN_HOUR;
+    hour_closed_NY = CLOSING_HOUR;
 
     /* If today isn't Sat or Sun */
     /* 6 % 6 == 0, 0 % 6 == 0 */
     if( weekday % 6 != 0 ){
         /* If it is currently normal operating hours */
-        if ( ( hour > hour_open_NY || ( hour == hour_open_NY && min >= 30 ) ) && hour < hour_closed_NY ){
+        if ( ( hour > hour_open_NY || ( hour == hour_open_NY && min >= OPEN_MINUTE ) ) && hour < hour_closed_NY ){
             /* If today is not a holiday */
             if ( !CheckHoliday ( NY_tz ) ) {
                 /* The market is open */
@@ -542,12 +556,13 @@ unsigned int SecondsToOpen () {
     
     /* Find when the market opens */
     date_adjustment ( &NY_tz );
+    
+    /* The future NY EST/EDST date to time in Epoch seconds. */
+    /* Takes into account daylight-savings time. */
+    futuretime = mktime( &NY_tz );
 
     /* The current time in Epoch seconds */
     time( &currenttime );
-    
-    /* The future NY EST/EDST date to time in Epoch seconds. */
-    futuretime = mktime( &NY_tz );
     
     /* The market is closed, reopens in this many seconds. */
     diff = (unsigned int) difftime( futuretime, currenttime );

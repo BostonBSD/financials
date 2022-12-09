@@ -829,20 +829,20 @@
                     <property name="orientation">vertical</property>
                     <child>
                       <!-- n-columns=3 n-rows=3 -->
-                      <object class="GtkGrid">
+                      <object class="GtkGrid" id="MainClockGrid">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="hexpand">True</property>
                         <property name="column-homogeneous">True</property>
                         <child>
-                          <object class="GtkLabel">
+                          <object class="GtkLabel" id="NewYorkTimeLabel">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="halign">start</property>
-                            <property name="margin-left">10</property>
                             <property name="margin-start">10</property>
                             <property name="label" translatable="yes">New York Time</property>
                             <attributes>
+                              <attribute name="font-desc" value="Sans 10"/>
                               <attribute name="style" value="normal"/>
                               <attribute name="variant" value="normal"/>
                             </attributes>
@@ -857,14 +857,14 @@
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="halign">start</property>
-                            <property name="margin-left">10</property>
                             <property name="margin-start">10</property>
                             <property name="label" translatable="yes">Saturday, September 10, 2022</property>
                             <property name="justify">center</property>
                             <attributes>
-                              <attribute name="font-desc" value="Sans 8"/>
+                              <attribute name="font-desc" value="Sans 10"/>
+                              <attribute name="style" value="normal"/>
+                              <attribute name="variant" value="normal"/>
                               <attribute name="foreground" value="#636345452c2c"/>
-                              <attribute name="size" value="10240"/>
                             </attributes>
                           </object>
                           <packing>
@@ -877,15 +877,15 @@
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="halign">start</property>
-                            <property name="margin-left">10</property>
                             <property name="margin-start">10</property>
                             <property name="margin-bottom">5</property>
                             <property name="label" translatable="yes">00:00</property>
                             <property name="justify">center</property>
                             <attributes>
-                              <attribute name="font-desc" value="Sans 8"/>
+                              <attribute name="font-desc" value="Sans 10"/>
+                              <attribute name="style" value="normal"/>
+                              <attribute name="variant" value="normal"/>
                               <attribute name="foreground" value="#09023610962f"/>
-                              <attribute name="size" value="10240"/>
                             </attributes>
                           </object>
                           <packing>
@@ -898,11 +898,12 @@
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="halign">end</property>
-                            <property name="margin-right">10</property>
                             <property name="margin-end">10</property>
                             <property name="label" translatable="yes">Market Closes In</property>
                             <attributes>
+                              <attribute name="font-desc" value="Sans 10"/>
                               <attribute name="style" value="normal"/>
+                              <attribute name="variant" value="normal"/>
                             </attributes>
                           </object>
                           <packing>
@@ -912,16 +913,16 @@
                         </child>
                         <child>
                           <object class="GtkLabel" id="TimeLeftLabel">
-                            <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="halign">end</property>
-                            <property name="margin-right">10</property>
                             <property name="margin-end">10</property>
                             <property name="label" translatable="yes">00:00:00</property>
+                            <property name="justify">center</property>
                             <attributes>
-                              <attribute name="font-desc" value="Roboto 10"/>
+                              <attribute name="font-desc" value="Sans 10"/>
+                              <attribute name="style" value="normal"/>
+                              <attribute name="variant" value="normal"/>
                               <attribute name="foreground" value="#09023610962f"/>
-                              <attribute name="size" value="12288"/>
                             </attributes>
                           </object>
                           <packing>
@@ -952,8 +953,6 @@
                       <object class="GtkSeparator">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="margin-left">10</property>
-                        <property name="margin-right">10</property>
                         <property name="margin-start">10</property>
                         <property name="margin-end">10</property>
                       </object>
@@ -967,8 +966,6 @@
                       <object class="GtkFrame" id="IndexFrame">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="margin-left">10</property>
-                        <property name="margin-right">10</property>
                         <property name="margin-start">10</property>
                         <property name="margin-end">10</property>
                         <property name="label-xalign">0</property>
@@ -1002,7 +999,6 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
-                                                <property name="margin-left">10</property>
                                                 <property name="margin-start">10</property>
                                                 <property name="label" translatable="yes">Dow</property>
                                                 <attributes>
@@ -1023,7 +1019,6 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
-                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">Nasdaq</property>
                                                 <attributes>
@@ -1044,7 +1039,6 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
-                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">S&amp;P 500</property>
                                                 <attributes>
@@ -1065,7 +1059,6 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
-                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">Bitcoin</property>
                                                 <attributes>
@@ -1086,7 +1079,6 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
-                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">Gold/Silver</property>
                                                 <attributes>
@@ -1107,7 +1099,6 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
-                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">Gold</property>
                                                 <attributes>
@@ -1128,7 +1119,6 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
-                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">Silver</property>
                                                 <attributes>
@@ -1162,7 +1152,6 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
-                                                <property name="margin-left">10</property>
                                                 <property name="margin-start">10</property>
                                                 <property name="label" translatable="yes">33,536.70
 3245345</property>
@@ -1180,7 +1169,6 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
-                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">11,196.22</property>
                                                 <attributes>
@@ -1197,7 +1185,6 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
-                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">3,957.25</property>
                                                 <attributes>
@@ -1214,7 +1201,6 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
-                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">80</property>
                                                 <attributes>
@@ -1231,7 +1217,6 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
-                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">80</property>
                                                 <attributes>
@@ -1248,7 +1233,6 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
-                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">80</property>
                                                 <attributes>
@@ -1265,7 +1249,6 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
-                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">80</property>
                                                 <attributes>
@@ -2041,7 +2024,7 @@
         <property name="orientation">vertical</property>
         <property name="baseline-position">top</property>
         <child>
-          <!-- n-columns=1 n-rows=4 -->
+          <!-- n-columns=1 n-rows=8 -->
           <object class="GtkGrid">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
@@ -2109,6 +2092,65 @@
               <packing>
                 <property name="left-attach">0</property>
                 <property name="top-attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="ChangeApiInfoNYSESymbolsUrlEntryBox">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="tooltip-text" translatable="yes">The NYSE and Other exchanges Symbol Url
+
+"http://www.nasdaqtrader.com/dynamic/SymDir/otherlisted.txt"</property>
+                <property name="valign">center</property>
+                <property name="margin-start">5</property>
+                <property name="margin-end">5</property>
+                <property name="input-purpose">alpha</property>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">7</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">NYSE and Other Symbol URL</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">6</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="ChangeApiInfoNasdaqSymbolsUrlEntryBox">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="tooltip-text" translatable="yes">The Nasdaq Symbol Url
+
+"http://www.nasdaqtrader.com/dynamic/SymDir/nasdaqlisted.txt"</property>
+                <property name="valign">center</property>
+                <property name="margin-start">5</property>
+                <property name="margin-end">5</property>
+                <property name="margin-bottom">5</property>
+                <property name="input-purpose">alpha</property>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">5</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Nasdaq Symbol URL</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">4</property>
               </packing>
             </child>
           </object>
@@ -2198,28 +2240,10 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="ChangeApiInfoOKBTN">
-                <property name="label" translatable="yes">OK</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="can-default">True</property>
-                <property name="has-default">True</property>
-                <property name="receives-default">True</property>
-                <property name="tooltip-text" translatable="yes">Commit Changes</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
-                <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-              </object>
-              <packing>
-                <property name="left-attach">1</property>
-                <property name="top-attach">2</property>
-              </packing>
-            </child>
-            <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="margin-top">10</property>
+                <property name="margin-top">35</property>
                 <property name="margin-bottom">5</property>
                 <property name="orientation">vertical</property>
                 <child>
@@ -2297,7 +2321,61 @@
               </packing>
             </child>
             <child>
-              <placeholder/>
+              <object class="GtkBox">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="margin-top">20</property>
+                <property name="margin-bottom">20</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="margin-bottom">10</property>
+                    <property name="label" translatable="yes">Show Clocks</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkSwitch" id="ChangeApiInfoShowClocksSwitch">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="halign">center</property>
+                    <property name="active">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="ChangeApiInfoOKBTN">
+                <property name="label" translatable="yes">OK</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="can-default">True</property>
+                <property name="has-default">True</property>
+                <property name="receives-default">True</property>
+                <property name="tooltip-text" translatable="yes">Commit Changes</property>
+                <property name="halign">center</property>
+                <property name="valign">center</property>
+                <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+              </object>
+              <packing>
+                <property name="left-attach">2</property>
+                <property name="top-attach">2</property>
+              </packing>
             </child>
             <child>
               <placeholder/>

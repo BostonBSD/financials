@@ -324,6 +324,18 @@ static void SetSymNameMap ( void *data ) {
     packet->sym_map = sn_map;
 }
 
+static bool IsClockDisplayed () {
+    portfolio_packet *pkg = packet;
+    meta *D = pkg->GetMetaClass ();    
+    return *D->clocks_displayed_bool;
+}
+
+static void SetClockDisplayed ( bool data ) {
+    portfolio_packet *pkg = packet;
+    meta *D = pkg->GetMetaClass ();
+    *D->clocks_displayed_bool = data;
+}
+
 /* Class Init Functions */
 portfolio_packet *class_init_portfolio_packet ()
 { 
@@ -359,6 +371,8 @@ portfolio_packet *class_init_portfolio_packet ()
     new_class->SecondsToOpen = Seconds2Open;
     new_class->GetSymNameMap = GetSymNameMap;
     new_class->SetSymNameMap = SetSymNameMap;
+    new_class->IsClockDisplayed = IsClockDisplayed;
+    new_class->SetClockDisplayed = SetClockDisplayed;
 
     /* Initialize the main and rsi window size and locations */
     new_class->window_struct->main_height = 0;

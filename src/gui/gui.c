@@ -294,6 +294,12 @@ static void gui_signal_connect ( void *data )
     button = gtk_builder_get_object (builder, "ChangeApiInfoUrlKeyEntryBox");
     g_signal_connect ( button, "changed", G_CALLBACK ( GUICallbackHandler ), (void *)API_CURSOR_MOVE );
 
+    button = gtk_builder_get_object (builder, "ChangeApiInfoNasdaqSymbolsUrlEntryBox");
+    g_signal_connect ( button, "changed", G_CALLBACK ( GUICallbackHandler ), (void *)API_CURSOR_MOVE );
+
+    button = gtk_builder_get_object (builder, "ChangeApiInfoNYSESymbolsUrlEntryBox");
+    g_signal_connect ( button, "changed", G_CALLBACK ( GUICallbackHandler ), (void *)API_CURSOR_MOVE );
+
     button = gtk_builder_get_object (builder, "ChangeApiInfoHoursSpinBox");
     g_signal_connect ( button, "changed", G_CALLBACK ( GUICallbackHandler ), (void *)API_CURSOR_MOVE );
 
@@ -332,11 +338,10 @@ static void start_threads ()
     pthread_create( &thread_id, NULL, GUIThreadHandler, (void *)MAIN_TIME_CLOSE_INDICATOR );
 
     /* Set up the RSIView and AddRemSecurity Window's EntryBox Completion Widgets
-       This will download the NYSE and NASDAQ symbol lists when the application loads.
-       If there is no internet connection or the server is unavailable cURL will return an
-       error, but otherwise the application should run as normal.
-
-       Comment out the next line to prevent the symbol list download. */
+       This will populate the NYSE and NASDAQ symbol to name mapping, from an sqlite Db, 
+       when the application loads.  It will not download anything at application startup.
+       The Db of symbol to name mappings needs to be downloaded manually by the user
+       [in the API window]. */
     pthread_create( &thread_id, NULL, GUIThreadHandler, (void *)COMPLETION );
 }
 
@@ -380,6 +385,9 @@ void GuiStart (void *data)
 
     /* Add the license to the About window. */
     about_set_label ();
+
+    /* Set whether the clocks are displayed or not. */
+    MainDisplayClocks ( data );
 
     /* Connect callback functions to corresponding GUI signals. */
     gui_signal_connect ( data );

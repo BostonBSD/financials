@@ -596,6 +596,7 @@ int MainDisplayTime (){
 int MainDisplayTimeRemaining (void *data){
     /* Unpack the package */
     portfolio_packet *package = (portfolio_packet*)data;
+    if( package->IsClockDisplayed () == false ) return 0;
 
     GtkWidget* CloseLabel = GTK_WIDGET ( gtk_builder_get_object (builder, "MarketCloseLabel") );
     GtkWidget* TimeRemLabel = GTK_WIDGET ( gtk_builder_get_object (builder, "TimeLeftLabel") );
@@ -650,4 +651,44 @@ int MainHideWindow (){
     gtk_widget_set_visible ( window, false );
 
     return 0;
+}
+
+int MainDisplayClocks (void *data){
+    portfolio_packet *pkg = (portfolio_packet*)data;
+
+    if ( pkg->IsClockDisplayed () ){
+        GtkWidget* widget = GTK_WIDGET ( gtk_builder_get_object (builder, "MainClockGrid") );
+        gtk_widget_set_margin_bottom ( widget, 0 );
+        widget = GTK_WIDGET ( gtk_builder_get_object (builder, "NewYorkTimeLabel") );
+        gtk_widget_set_visible ( widget, true );
+        widget = GTK_WIDGET ( gtk_builder_get_object (builder, "NYDateLabel") );
+        gtk_widget_set_visible ( widget, true );
+        widget = GTK_WIDGET ( gtk_builder_get_object (builder, "NYTimeLabel") );
+        gtk_widget_set_visible ( widget, true );
+        widget = GTK_WIDGET ( gtk_builder_get_object (builder, "MarketCloseLabel") );
+        gtk_widget_set_visible ( widget, true );
+        widget = GTK_WIDGET ( gtk_builder_get_object (builder, "TimeLeftLabel") );
+        if( pkg->SecondsToOpen () ) {
+            /* The Market Is Closed */
+            gtk_widget_set_visible ( widget, false );
+        } else {
+            /* The Market Is Open */
+            gtk_widget_set_visible ( widget, true );
+        }
+    } else {
+        GtkWidget* widget = GTK_WIDGET ( gtk_builder_get_object (builder, "MainClockGrid") );
+        gtk_widget_set_margin_bottom ( widget, 60 );
+        widget = GTK_WIDGET ( gtk_builder_get_object (builder, "NewYorkTimeLabel") );
+        gtk_widget_set_visible ( widget, false );
+        widget = GTK_WIDGET ( gtk_builder_get_object (builder, "NYDateLabel") );
+        gtk_widget_set_visible ( widget, false );
+        widget = GTK_WIDGET ( gtk_builder_get_object (builder, "NYTimeLabel") );
+        gtk_widget_set_visible ( widget, false );
+        widget = GTK_WIDGET ( gtk_builder_get_object (builder, "MarketCloseLabel") );
+        gtk_widget_set_visible ( widget, false );
+        widget = GTK_WIDGET ( gtk_builder_get_object (builder, "TimeLeftLabel") );
+        gtk_widget_set_visible ( widget, false );
+    }
+
+    return 0;    
 }

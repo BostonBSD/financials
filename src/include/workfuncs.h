@@ -34,7 +34,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #define WORKFUNCS_HEADER_H
 
 #include <stdbool.h>                      /* bool */
-#include <time.h>                         /* struct tm  */
+
+#include <sys/time.h>                     /* struct tm  */
 
 #include "class_types.h"        /* equity_folder, metal, meta, portfolio_packet */
 #include "gui_types.h"          /* symbol_name_map */
@@ -69,6 +70,7 @@ struct tm NYTimeComponents();
 char* WhichHoliday (struct tm);
 bool CheckHoliday (struct tm);
 unsigned int ClockSleepSeconds ();
+unsigned long ClockSleepMicroSeconds ();
 
 /* working_functions */
 MemType* FetchRSIData (const char*,portfolio_packet*);

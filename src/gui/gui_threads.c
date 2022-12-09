@@ -349,7 +349,7 @@ void *GUIThreadHandler (void *data){
             gdk_threads_add_idle ( RSICursorMove, NULL );
             break;
         case COMPLETION:
-            /* Fetch the stock symbols and names outside the Gtk
+            /* Fetch the stock symbols and names [from a local Db] outside the Gtk
                main loop, then create a GtkListStore and set it into
                a GtkEntryCompletion widget. */
 
@@ -393,20 +393,22 @@ void *GUIThreadHandler (void *data){
 
             while ( 1 )
             {
-                gdk_threads_add_idle ( MainDisplayTime, NULL );
-
+                if( packet->IsClockDisplayed () ) gdk_threads_add_idle ( MainDisplayTime, NULL );
+                
+                /* Sleep until the end of the current second. */
+                usleep( (useconds_t)ClockSleepMicroSeconds () );
+                /* Sleep until the end of the current minute. */
                 sleep( ClockSleepSeconds () );
             }
             break;
         case MAIN_TIME_CLOSE_INDICATOR: 
             packet->SetHoliday ();         
             seconds_to_open = packet->SecondsToOpen ();
-
             while ( 1 )
             {
                 if ( seconds_to_open == 0 ){
                     gdk_threads_add_idle ( MainDisplayTimeRemaining, packet );
-                    sleep( 1 );
+                    usleep( (useconds_t)ClockSleepMicroSeconds () );
                     
                 } else {
                     packet->SetHoliday ();

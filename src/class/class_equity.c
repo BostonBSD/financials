@@ -187,9 +187,9 @@ static void GenerateURL ( void *data ){
         /* Generate the request URL for this equity. */
         free( F->Equity[ c ]->curl_url_stock_ch );
 
-        len = strlen(Met->stock_url) + strlen(F->Equity[ c ]->symbol_stock_ch) + strlen(Met->curl_key)+1;
+        len = strlen(Met->stock_url_ch) + strlen(F->Equity[ c ]->symbol_stock_ch) + strlen(Met->curl_key_ch)+1;
         F->Equity[ c ]->curl_url_stock_ch = (char*) malloc( len );
-        snprintf( F->Equity[ c ]->curl_url_stock_ch, len, "%s%s%s", Met->stock_url, F->Equity[ c ]->symbol_stock_ch, Met->curl_key );
+        snprintf( F->Equity[ c ]->curl_url_stock_ch, len, "%s%s%s", Met->stock_url_ch, F->Equity[ c ]->symbol_stock_ch, Met->curl_key_ch );
     }
 
     pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );

@@ -389,10 +389,13 @@ meta *class_init_meta_data ()
     new_class->holiday_bool = (bool*) malloc( sizeof(bool) );
     new_class->multicurl_cancel_bool = (bool*) malloc( sizeof(bool) );
     new_class->index_bar_expanded_bool = (bool*) malloc( sizeof(bool) );
+    new_class->clocks_displayed_bool = (bool*) malloc( sizeof(bool) );
 
     /* Initialize Variables */
-    new_class->stock_url = strdup( FINNHUB_URL );
-	new_class->curl_key = strdup( FINNHUB_URL_TOKEN );                 
+    new_class->stock_url_ch = strdup( FINNHUB_URL );
+	new_class->curl_key_ch = strdup( FINNHUB_URL_TOKEN );
+    new_class->Nasdaq_Symbol_url_ch = strdup( NASDAQ_SYMBOL_URL );
+    new_class->NYSE_Symbol_url_ch = strdup( NYSE_SYMBOL_URL );              
 
     new_class->cash_ch = strdup( "$0.00" );                          
     new_class->portfolio_port_value_ch = strdup( "$0.00" ); 
@@ -426,6 +429,8 @@ meta *class_init_meta_data ()
     *new_class->holiday_bool = false;
     *new_class->multicurl_cancel_bool = false;
     *new_class->index_bar_expanded_bool = true;
+    *new_class->clocks_displayed_bool = true;
+
 
     new_class->rsi_hnd = curl_easy_init ();
     new_class->NASDAQ_completion_hnd = curl_easy_init ();
@@ -515,8 +520,10 @@ void class_destruct_meta_data (meta *meta_class)
     if ( meta_class->updates_per_min_f ) free( meta_class->updates_per_min_f );
     if ( meta_class->updates_hours_f ) free( meta_class->updates_hours_f );
 
-    if ( meta_class->stock_url ) free( meta_class->stock_url );
-	if ( meta_class->curl_key ) free( meta_class->curl_key );                 
+    if ( meta_class->stock_url_ch ) free( meta_class->stock_url_ch );
+	if ( meta_class->curl_key_ch ) free( meta_class->curl_key_ch ); 
+    if ( meta_class->Nasdaq_Symbol_url_ch ) free( meta_class->Nasdaq_Symbol_url_ch ); 
+    if ( meta_class->NYSE_Symbol_url_ch ) free( meta_class->NYSE_Symbol_url_ch );                 
 
     if ( meta_class->cash_ch ) free( meta_class->cash_ch );                      
     if ( meta_class->portfolio_port_value_ch ) free( meta_class->portfolio_port_value_ch );
@@ -547,6 +554,7 @@ void class_destruct_meta_data (meta *meta_class)
     if ( meta_class->holiday_bool ) free( meta_class->holiday_bool );
     if ( meta_class->multicurl_cancel_bool ) free( meta_class->multicurl_cancel_bool );
     if ( meta_class->index_bar_expanded_bool ) free( meta_class->index_bar_expanded_bool );
+    if ( meta_class->clocks_displayed_bool ) free( meta_class->clocks_displayed_bool );
 
     if ( meta_class->NASDAQ_completion_hnd ) curl_easy_cleanup( meta_class->NASDAQ_completion_hnd );
     if ( meta_class->NYSE_completion_hnd ) curl_easy_cleanup( meta_class->NYSE_completion_hnd );

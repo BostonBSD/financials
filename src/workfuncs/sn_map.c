@@ -246,14 +246,12 @@ static symbol_name_map *symbol_list_fetch (portfolio_packet *pkg){
     sn_map->sn_container_arr = malloc ( 1 );
     sn_map->size = 0;
 
-    char* Nasdaq_Url = NASDAQ_SYMBOL_URL; 
-    char* NYSE_Url = NYSE_SYMBOL_URL; 
    	MemType Nasdaq_Struct, NYSE_Struct;
     Nasdaq_Struct.memory = NULL;
     NYSE_Struct.memory = NULL;
     
-    SetUpCurlHandle( D->NASDAQ_completion_hnd, D->multicurl_cmpltn_hnd, Nasdaq_Url, &Nasdaq_Struct );
-    SetUpCurlHandle( D->NYSE_completion_hnd, D->multicurl_cmpltn_hnd, NYSE_Url, &NYSE_Struct );
+    SetUpCurlHandle( D->NASDAQ_completion_hnd, D->multicurl_cmpltn_hnd, D->Nasdaq_Symbol_url_ch, &Nasdaq_Struct );
+    SetUpCurlHandle( D->NYSE_completion_hnd, D->multicurl_cmpltn_hnd, D->NYSE_Symbol_url_ch, &NYSE_Struct );
     if ( PerformMultiCurl_no_prog( D->multicurl_cmpltn_hnd ) != 0 || pkg->IsCurlCanceled () ) { 
         if ( Nasdaq_Struct.memory ) free( Nasdaq_Struct.memory );
         if ( NYSE_Struct.memory ) free( NYSE_Struct.memory ); 
@@ -316,36 +314,30 @@ static symbol_name_map *symbol_list_fetch (portfolio_packet *pkg){
 }
 
 symbol_name_map *SymNameFetch (portfolio_packet *pkg)
-/* This function is only meant to be run once, at application startup. */
+/* This function is only meant to be run once, at application startup. 
+   Populate the symbol-name map from the local Db.  
+   Does not initiate a remote server download.
+*/
 {
     meta *D = pkg->GetMetaClass ();
 
-    /* Check the database first */
+    /* Check the database */
     symbol_name_map *sn_map = SqliteGetSymbolNameMap ( D );
 
     if ( sn_map ) {
         /* Sort the sn_map [it should already be sorted from the Db, but just to make sure]. */
         qsort( &sn_map->sn_container_arr[ 0 ], sn_map->size, sizeof(symbol_to_security_name_container*), alpha_asc_sec_name );    
-        return sn_map;
-    }
-
-    /* Download the symbol lists from the server */
-    sn_map = symbol_list_fetch ( pkg );
-
-    if ( sn_map ) {
-        /* Create a duplicate symbol-name map */
-        symbol_name_map *sn_map_dup = sym_name_map_dup ( sn_map );
-        /* Add the symbol mapping to the db, sn_map_dup is freed in the sqlite thread. */
-        SqliteAddMap ( sn_map_dup, D );
     }
 
     return sn_map;
 }
 
 symbol_name_map *SymNameFetchUpdate (portfolio_packet *pkg, symbol_name_map *sn_map)
-/* Update the symbol to name mapping in the database. 
+/* Initates a remote server download; downloads NYSE and NASDAQ stock symbols and names.
+   Update the symbol to name mapping in the database. 
    If a new symbol-name map can be populated this function will free 
-   the current symbol_name_map, otherwise no change performed. */
+   the current symbol_name_map, otherwise no change performed. 
+*/
 {
     meta *D = pkg->GetMetaClass ();
     symbol_name_map *sn_map_dup = NULL;
@@ -355,8 +347,7 @@ symbol_name_map *SymNameFetchUpdate (portfolio_packet *pkg, symbol_name_map *sn_
 
     if ( sn_map_new ) {
         /* Free the current symbol to security name mapping array. */
-        SNMapDestruct ( sn_map );
-        if ( sn_map ) free( sn_map );
+        if ( sn_map ) { SNMapDestruct ( sn_map ); free( sn_map ); }
 
         /* Create a duplicate symbol-name map */
         sn_map_dup = sym_name_map_dup ( sn_map_new );

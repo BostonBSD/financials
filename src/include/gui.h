@@ -47,6 +47,7 @@ int MainDisplayTime ();
 int MainDisplayTimeRemaining (void*);
 void MainProgBar (double*);
 int MainHideWindow ();
+int MainDisplayClocks (void*);
 
 /* gui_equity */
 int AddRemShowHide (void*);

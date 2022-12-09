@@ -59,12 +59,20 @@ int APIShowHide (void *data)
         gtk_widget_set_visible ( window, false );
     } else {
         GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoEquityUrlEntryBox") );
-        gtk_entry_set_text ( GTK_ENTRY( EntryBox ), D->stock_url );
+        gtk_entry_set_text ( GTK_ENTRY( EntryBox ), D->stock_url_ch );
         gtk_widget_grab_focus ( EntryBox );
         g_object_set ( G_OBJECT ( EntryBox ), "activates-default", TRUE, NULL );
 
         EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoUrlKeyEntryBox") );
-        gtk_entry_set_text ( GTK_ENTRY( EntryBox ), D->curl_key );
+        gtk_entry_set_text ( GTK_ENTRY( EntryBox ), D->curl_key_ch );
+        g_object_set ( G_OBJECT ( EntryBox ), "activates-default", TRUE, NULL );
+
+        EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoNasdaqSymbolsUrlEntryBox") );
+        gtk_entry_set_text ( GTK_ENTRY( EntryBox ), D->Nasdaq_Symbol_url_ch );
+        g_object_set ( G_OBJECT ( EntryBox ), "activates-default", TRUE, NULL );
+
+        EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoNYSESymbolsUrlEntryBox") );
+        gtk_entry_set_text ( GTK_ENTRY( EntryBox ), D->NYSE_Symbol_url_ch );
         g_object_set ( G_OBJECT ( EntryBox ), "activates-default", TRUE, NULL );
 
         GtkWidget* ComboBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoUpPerMinComboBox") );
@@ -80,6 +88,9 @@ int APIShowHide (void *data)
         label = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoStockSymbolUpdateSpinner") );
         gtk_widget_set_visible ( label, false );
 
+        GtkWidget* Switch = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoShowClocksSwitch") );
+        gtk_switch_set_active ( GTK_SWITCH( Switch ), *D->clocks_displayed_bool );
+
         gtk_widget_set_visible ( window, true );
     }
     return 0;
@@ -94,24 +105,48 @@ int APIOk (void *data)
 
     GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoEquityUrlEntryBox") );
     char* new = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
-    char* cur = strdup( D->stock_url );
+    char* cur = strdup( D->stock_url_ch );
 
     if( ( strcmp( cur, new ) != 0) ){
         SqliteAddAPIData("Stock_URL", new, D);
-        free ( D->stock_url );
-        D->stock_url = strdup ( new );
+        free ( D->stock_url_ch );
+        D->stock_url_ch = strdup ( new );
     }
     free( new );
     free( cur );
 
     EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoUrlKeyEntryBox") );
     new = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
-    cur = strdup( D->curl_key );
+    cur = strdup( D->curl_key_ch );
 
     if( ( strcmp( cur, new ) != 0) ){
         SqliteAddAPIData("URL_KEY", new, D);
-        free ( D->curl_key );
-        D->curl_key = strdup ( new );
+        free ( D->curl_key_ch );
+        D->curl_key_ch = strdup ( new );
+    }
+    free( new );
+    free( cur );
+
+    EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoNasdaqSymbolsUrlEntryBox") );
+    new = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
+    cur = strdup( D->Nasdaq_Symbol_url_ch );
+
+    if( ( strcmp( cur, new ) != 0) ){
+        SqliteAddAPIData("Nasdaq_Symbol_URL", new, D);
+        free ( D->Nasdaq_Symbol_url_ch );
+        D->Nasdaq_Symbol_url_ch = strdup ( new );
+    }
+    free( new );
+    free( cur );
+
+    EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoNYSESymbolsUrlEntryBox") );
+    new = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
+    cur = strdup( D->NYSE_Symbol_url_ch );
+
+    if( ( strcmp( cur, new ) != 0) ){
+        SqliteAddAPIData("NYSE_Symbol_URL", new, D);
+        free ( D->NYSE_Symbol_url_ch );
+        D->NYSE_Symbol_url_ch = strdup ( new );
     }
     free( new );
     free( cur );
@@ -140,6 +175,21 @@ int APIOk (void *data)
         *D->updates_hours_f = (double)new_f;
     }
 
+    GtkWidget* Switch = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoShowClocksSwitch") );
+    bool switch_set = gtk_switch_get_active ( GTK_SWITCH( Switch ) );
+
+    if( switch_set != *D->clocks_displayed_bool ){
+        if ( switch_set ) {
+            SqliteAddAPIData("Clocks_Displayed", "true", D);
+        } else {
+            SqliteAddAPIData("Clocks_Displayed", "false", D);
+        }
+        package->SetClockDisplayed ( switch_set );
+        gdk_threads_add_idle ( MainDisplayClocks, package );
+        gdk_threads_add_idle ( MainDisplayTime, NULL );
+        gdk_threads_add_idle ( MainDisplayTimeRemaining, package );
+    }
+
     /* Generate the Equity Request URLs. */
     F->GenerateURL ( package );
     return 0;
@@ -154,10 +204,17 @@ int APICursorMove ()
     EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoUrlKeyEntryBox") );
     char* URL_KEY = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
 
+    EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoNasdaqSymbolsUrlEntryBox") );
+    char* Nasdaq_URL = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
+
+    EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoNYSESymbolsUrlEntryBox") );
+    char* NYSE_URL = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
+
     EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoHoursSpinBox") );
     char* Updates_Hours = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
 
     bool check = CheckValidString( Equity_URL ) & CheckValidString( URL_KEY );
+    check = check & CheckValidString( Nasdaq_URL ) & CheckValidString( NYSE_URL );
     check = check & CheckValidString( Updates_Hours );
     check = check & ( strtod( Updates_Hours, NULL ) <= 7 ) & CheckIfStringDoublePositiveNumber( Updates_Hours );
 
@@ -169,6 +226,8 @@ int APICursorMove ()
 
     free ( Equity_URL );
     free ( URL_KEY );
+    free ( Nasdaq_URL );
+    free ( NYSE_URL );
     free ( Updates_Hours );
     return 0;
 }
