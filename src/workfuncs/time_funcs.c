@@ -31,7 +31,8 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <stdbool.h>
-#include <sys/time.h>
+#include <time.h>       /* localtime_r(), mktime(), time(), difftime(), struct tm */
+#include <sys/time.h>   /* gettimeofday(), struct timeval */
 #include <math.h>
 
 #define OPEN_HOUR 9
