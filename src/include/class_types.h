@@ -105,7 +105,7 @@ typedef struct {
 
 typedef struct {
     /* Data Variables */
-	unsigned int* num_shares_stock_int;           
+	unsigned int* num_shares_stock_int;     /* Cannot hold more than 4294967295 shares of stock on most 64-bit machines */        
 
     double* current_price_stock_f;
     double* high_stock_f; 

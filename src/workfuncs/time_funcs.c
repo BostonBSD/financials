@@ -30,10 +30,11 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <stdbool.h>
 #include <time.h>       /* localtime_r(), mktime(), time(), difftime(), struct tm */
 #include <sys/time.h>   /* gettimeofday(), struct timeval */
+
 #include <math.h>
+#include <stdbool.h>
 
 #define OPEN_HOUR 9
 #define OPEN_MINUTE 30

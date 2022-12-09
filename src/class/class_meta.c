@@ -64,14 +64,14 @@ static double EntireStake (const double *bullion, const double *equity, const do
 static char *DoubToStr (const double *num) 
 /* Take in a double pointer [the datatype is double] and convert to a monetary format string. */
 {    
-    /* Char variables are 1 byte long, no need to scale strlen() by sizeof(char). */
-    char* str = (char*) malloc( strlen("############.##")+1 ); 
+    size_t len = strlen("###,###,###,###,###.###") + 1;
+    char* str = (char*) malloc( len ); 
 
     /* The C.UTF-8 locale does not have a monetary 
        format and is the default in C. 
     */
     setlocale(LC_ALL, LOCALE);  
-    strfmon(str, strlen("############.##"), "%(.3n", *num);
+    strfmon(str, len, "%(.3n", *num);
 
     return str;
 }

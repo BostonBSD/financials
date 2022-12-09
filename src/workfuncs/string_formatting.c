@@ -121,13 +121,13 @@ char* StringToMonetary (const char *s)
    If the string cannot be converted to a double, undefined behavior.
    Must free return value. */
 {
-    
     double num = strtod(s, NULL);
-    char* str = (char*) malloc ( strlen( "############.####" )+1 ); 
+    size_t len = strlen("###,###,###,###,###.###") + 1;
+    char* str = (char*) malloc ( len ); 
 
     /* From the locale man page: By default, C programs start in the "C" locale. */
     setlocale ( LC_ALL, LOCALE ); 
-    strfmon ( str, strlen ( "############.####" ), "%(.3n", num );
+    strfmon ( str, len, "%(.3n", num );
 
     return str;
 }
@@ -137,14 +137,14 @@ char* DoubleToMonetary (const double num)
    Must free return value.
 */
 {    
-    /* Char variables are 1 byte long, no need to scale strlen() by sizeof(char). */
-    char* str = (char*) malloc( strlen("############.##")+1 ); 
+    size_t len = strlen("###,###,###,###,###.###") + 1;
+    char* str = (char*) malloc( len ); 
 
     /* The C.UTF-8 locale does not have a monetary 
        format and is the default in C. 
     */
     setlocale(LC_ALL, LOCALE);  
-    strfmon(str, strlen("############.##"), "%(.3n", num);
+    strfmon(str, len, "%(.3n", num);
 
     return str;
 }

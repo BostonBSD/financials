@@ -247,7 +247,7 @@ static GtkListStore * main_primary_store (void *data){
 
         unsigned short c = 0;
         while( c < F->size ){
-            snprintf(shares, 13, "%d",*F->Equity[ c ]->num_shares_stock_int);
+            snprintf(shares, 13, "%u",*F->Equity[ c ]->num_shares_stock_int);
             gtk_list_store_append ( store, &iter );
             if( *F->Equity[ c ]->change_value_f == 0 ) {
                 gtk_list_store_set ( store, &iter, GUI_TYPE, "equity", GUI_SYMBOL, F->Equity[ c ]->symbol_stock_ch, GUI_SHARES_OUNCES, shares, GUI_PREMIUM, F->Equity[ c ]->current_price_stock_ch, GUI_PRICE, F->Equity[ c ]->high_stock_ch, GUI_TOTAL, F->Equity[ c ]->low_stock_ch, GUI_EXTRA_ONE, F->Equity[ c ]->opening_stock_ch, GUI_EXTRA_TWO, F->Equity[ c ]->prev_closing_stock_ch, GUI_EXTRA_THREE, F->Equity[ c ]->change_share_ch, GUI_EXTRA_FOUR, F->Equity[ c ]->change_value_ch, GUI_EXTRA_FIVE, F->Equity[ c ]->current_investment_stock_ch, GUI_EXTRA_SIX, F->Equity[ c ]->change_percent_ch, -1 );
@@ -374,7 +374,7 @@ static GtkListStore * main_default_store (void *data){
 
         unsigned short c = 0;
         while(c < F->size){
-            snprintf(shares, 13, "%d",*F->Equity[ c ]->num_shares_stock_int);
+            snprintf(shares, 13, "%u",*F->Equity[ c ]->num_shares_stock_int);
             gtk_list_store_append ( store, &iter );
             if( sn_map ){
                 stock_name = GetSecurityName( F->Equity[ c ]->symbol_stock_ch, sn_map );
@@ -451,7 +451,7 @@ static void set_indices_labels (void *data){
     };
 
     label = GTK_WIDGET ( gtk_builder_get_object (builder, "NasdaqIndexValue") );
-    markup = g_markup_printf_escaped (format, D->index_nasdaq_value_ch, D->index_nasdaq_value_chg_ch, D->index_nasdaq_value_p_chg_ch );
+    markup = g_markup_printf_escaped ( format, D->index_nasdaq_value_ch, D->index_nasdaq_value_chg_ch, D->index_nasdaq_value_p_chg_ch );
     gtk_label_set_markup ( GTK_LABEL (label), markup );
     g_free (markup);
 
