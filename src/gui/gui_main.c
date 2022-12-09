@@ -577,17 +577,14 @@ int MainDefaultTreeview (void *data) {
 
 int MainDisplayTime (){
     GtkWidget* NewYorkTimeLabel = GTK_WIDGET ( gtk_builder_get_object (builder, "NYTimeLabel") );
-    GtkWidget* NewYorkDateLabel = GTK_WIDGET ( gtk_builder_get_object (builder, "NYDateLabel") );
-    int ny_h, ny_m, ny_month, ny_day_month, ny_day_week, ny_year;
-    char time_ch[30];
+    int ny_h, ny_m;
+    char time_ch[10];
 
     /* Get the current New York time */
-    NYTime( &ny_h, &ny_m, &ny_month, &ny_day_month, &ny_day_week, &ny_year );
+    NYTime( &ny_h, &ny_m );
 
-    /* Set the New York date and time labels */
-    snprintf( time_ch, 30, "%s, %s %d, %d", WeekDayStr( ny_day_week ), MonthNameStr( ny_month ), ny_day_month, ny_year );
-    gtk_label_set_text ( GTK_LABEL ( NewYorkDateLabel ), time_ch );
-    snprintf( time_ch, 30, "%02d:%02d", ny_h, ny_m );
+    /* Set the New York time label */
+    snprintf( time_ch, 10, "%02d:%02d", ny_h, ny_m );
     gtk_label_set_text ( GTK_LABEL ( NewYorkTimeLabel ), time_ch );
 
     return 0;
@@ -614,7 +611,7 @@ int MainDisplayTimeRemaining (void *data){
         } else {
             gtk_label_set_text ( GTK_LABEL ( CloseLabel ), "Market Closed" );
         }
-        gtk_widget_set_visible ( TimeRemLabel, false );
+        gtk_label_set_text ( GTK_LABEL ( TimeRemLabel ), "" );
     } else {
         gtk_label_set_text ( GTK_LABEL ( CloseLabel ), "Market Closes In" );
         snprintf ( time_left_ch, 10, "%02d:%02d:%02d", h, m, s);
@@ -661,26 +658,17 @@ int MainDisplayClocks (void *data){
         gtk_widget_set_margin_bottom ( widget, 0 );
         widget = GTK_WIDGET ( gtk_builder_get_object (builder, "NewYorkTimeLabel") );
         gtk_widget_set_visible ( widget, true );
-        widget = GTK_WIDGET ( gtk_builder_get_object (builder, "NYDateLabel") );
-        gtk_widget_set_visible ( widget, true );
         widget = GTK_WIDGET ( gtk_builder_get_object (builder, "NYTimeLabel") );
         gtk_widget_set_visible ( widget, true );
         widget = GTK_WIDGET ( gtk_builder_get_object (builder, "MarketCloseLabel") );
         gtk_widget_set_visible ( widget, true );
         widget = GTK_WIDGET ( gtk_builder_get_object (builder, "TimeLeftLabel") );
-        if( pkg->SecondsToOpen () ) {
-            /* The Market Is Closed */
-            gtk_widget_set_visible ( widget, false );
-        } else {
-            /* The Market Is Open */
-            gtk_widget_set_visible ( widget, true );
-        }
+        gtk_widget_set_visible ( widget, true );
+        gtk_label_set_text ( GTK_LABEL ( widget ), "" );
     } else {
         GtkWidget* widget = GTK_WIDGET ( gtk_builder_get_object (builder, "MainClockGrid") );
-        gtk_widget_set_margin_bottom ( widget, 60 );
+        gtk_widget_set_margin_bottom ( widget, 40 );
         widget = GTK_WIDGET ( gtk_builder_get_object (builder, "NewYorkTimeLabel") );
-        gtk_widget_set_visible ( widget, false );
-        widget = GTK_WIDGET ( gtk_builder_get_object (builder, "NYDateLabel") );
         gtk_widget_set_visible ( widget, false );
         widget = GTK_WIDGET ( gtk_builder_get_object (builder, "NYTimeLabel") );
         gtk_widget_set_visible ( widget, false );

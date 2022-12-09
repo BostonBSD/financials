@@ -58,6 +58,12 @@ int APIShowHide (void *data)
     if ( visible ){
         gtk_widget_set_visible ( window, false );
     } else {
+        GtkWidget* stack = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeAPIInfoStack") );
+        gtk_stack_set_visible_child_name ( GTK_STACK ( stack ), "page0"  );
+
+        GtkWidget* Switch = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoShowClocksSwitch") );
+        gtk_switch_set_active ( GTK_SWITCH( Switch ), *D->clocks_displayed_bool );
+
         GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoEquityUrlEntryBox") );
         gtk_entry_set_text ( GTK_ENTRY( EntryBox ), D->stock_url_ch );
         gtk_widget_grab_focus ( EntryBox );
@@ -87,9 +93,6 @@ int APIShowHide (void *data)
         gtk_widget_set_visible ( label, false );
         label = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoStockSymbolUpdateSpinner") );
         gtk_widget_set_visible ( label, false );
-
-        GtkWidget* Switch = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoShowClocksSwitch") );
-        gtk_switch_set_active ( GTK_SWITCH( Switch ), *D->clocks_displayed_bool );
 
         gtk_widget_set_visible ( window, true );
     }

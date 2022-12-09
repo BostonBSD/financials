@@ -31,10 +31,10 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <time.h>       /* localtime_r(), mktime(), time(), difftime(), struct tm */
-#include <sys/time.h>   /* gettimeofday(), struct timeval */
-
 #include <math.h>
 #include <stdbool.h>
+
+#include <sys/time.h>   /* gettimeofday(), struct timeval */
 
 #define OPEN_HOUR 9
 #define OPEN_MINUTE 30
@@ -143,18 +143,14 @@ char* WeekDayStr ( int weekday ){
     }
 }
 
-void NYTime (int *ny_h, int *ny_m, int *ny_month, int *ny_day_month, int *ny_day_week, int *ny_year) {
+void NYTime ( int *ny_h, int *ny_m ) {
     struct tm NY_tz;
 
     /* Get the NY time from Epoch seconds */
     NY_tz = NYTimeComponents ();
 
     *ny_h = (NY_tz.tm_hour)%24;
-    *ny_m = NY_tz.tm_min;
-    *ny_month = NY_tz.tm_mon;
-    *ny_day_month = NY_tz.tm_mday;
-    *ny_day_week = NY_tz.tm_wday;
-    *ny_year = NY_tz.tm_year + 1900;  
+    *ny_m = NY_tz.tm_min; 
 }
 
 static void easter (int year, int *month, int *day)

@@ -54,9 +54,6 @@ bool CheckValidString (const char *string)
 	/* The string cannot contain these characters  */
 	if ( strpbrk( string, "\n\"\'\\)(][}{~`, " ) ) return false;
 	
-	/* The string cannot contain a double space  */
-	if ( strstr( string, "  " ) ) return false;
-	
 	return true;
 }
 
@@ -122,12 +119,16 @@ char* StringToMonetary (const char *s)
    Must free return value. */
 {
     double num = strtod(s, NULL);
-    size_t len = strlen("###,###,###,###,###.###") + 1;
+    size_t len = strlen("###,###,###,###,###,###.###") + 1;
     char* str = (char*) malloc ( len ); 
 
     /* From the locale man page: By default, C programs start in the "C" locale. */
     setlocale ( LC_ALL, LOCALE ); 
     strfmon ( str, len, "%(.3n", num );
+
+    /* Trying not to waste memory. */
+    char* tmp = realloc( str, strlen ( str ) + 1 );
+    str = tmp;
 
     return str;
 }
@@ -137,7 +138,7 @@ char* DoubleToMonetary (const double num)
    Must free return value.
 */
 {    
-    size_t len = strlen("###,###,###,###,###.###") + 1;
+    size_t len = strlen("###,###,###,###,###,###.###") + 1;
     char* str = (char*) malloc( len ); 
 
     /* The C.UTF-8 locale does not have a monetary 
@@ -145,6 +146,10 @@ char* DoubleToMonetary (const double num)
     */
     setlocale(LC_ALL, LOCALE);  
     strfmon(str, len, "%(.3n", num);
+
+    /* Trying not to waste memory. */
+    char* tmp = realloc( str, strlen ( str ) + 1 );
+    str = tmp;
 
     return str;
 }

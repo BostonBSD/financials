@@ -161,8 +161,6 @@
                   <object class="GtkGrid">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="margin-left">5</property>
-                    <property name="margin-right">5</property>
                     <property name="margin-start">5</property>
                     <property name="margin-end">5</property>
                     <property name="margin-bottom">10</property>
@@ -225,7 +223,6 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="margin-left">10</property>
                     <property name="margin-start">10</property>
                     <property name="label" translatable="yes">Gold</property>
                   </object>
@@ -246,8 +243,6 @@
                   <object class="GtkGrid">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="margin-left">5</property>
-                    <property name="margin-right">5</property>
                     <property name="margin-start">5</property>
                     <property name="margin-end">5</property>
                     <property name="margin-bottom">10</property>
@@ -310,7 +305,6 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="margin-left">10</property>
                     <property name="margin-start">10</property>
                     <property name="label" translatable="yes">Silver</property>
                   </object>
@@ -331,8 +325,6 @@
                   <object class="GtkGrid">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="margin-left">5</property>
-                    <property name="margin-right">5</property>
                     <property name="margin-start">5</property>
                     <property name="margin-end">5</property>
                     <property name="margin-bottom">10</property>
@@ -395,7 +387,6 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="margin-left">10</property>
                     <property name="margin-start">10</property>
                     <property name="label" translatable="yes">Platinum</property>
                   </object>
@@ -416,8 +407,6 @@
                   <object class="GtkGrid">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="margin-left">5</property>
-                    <property name="margin-right">5</property>
                     <property name="margin-start">5</property>
                     <property name="margin-end">5</property>
                     <property name="margin-bottom">10</property>
@@ -480,7 +469,6 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="margin-left">10</property>
                     <property name="margin-start">10</property>
                     <property name="label" translatable="yes">Palladium</property>
                   </object>
@@ -828,24 +816,67 @@
                     <property name="margin-bottom">5</property>
                     <property name="orientation">vertical</property>
                     <child>
-                      <!-- n-columns=3 n-rows=3 -->
+                      <!-- n-columns=3 n-rows=1 -->
                       <object class="GtkGrid" id="MainClockGrid">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="hexpand">True</property>
                         <property name="column-homogeneous">True</property>
                         <child>
-                          <object class="GtkLabel" id="NewYorkTimeLabel">
+                          <object class="GtkAspectFrame">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="halign">start</property>
                             <property name="margin-start">10</property>
-                            <property name="label" translatable="yes">New York Time</property>
-                            <attributes>
-                              <attribute name="font-desc" value="Sans 10"/>
-                              <attribute name="style" value="normal"/>
-                              <attribute name="variant" value="normal"/>
-                            </attributes>
+                            <property name="label-xalign">0</property>
+                            <property name="shadow-type">in</property>
+                            <child>
+                              <object class="GtkBox">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="orientation">vertical</property>
+                                <child>
+                                  <object class="GtkLabel" id="NewYorkTimeLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">center</property>
+                                    <property name="margin-start">3</property>
+                                    <property name="margin-end">3</property>
+                                    <property name="label" translatable="yes">New York Time</property>
+                                    <attributes>
+                                      <attribute name="font-desc" value="Sans 10"/>
+                                      <attribute name="style" value="normal"/>
+                                      <attribute name="variant" value="normal"/>
+                                    </attributes>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel" id="NYTimeLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">center</property>
+                                    <property name="label" translatable="yes">00:00</property>
+                                    <property name="justify">center</property>
+                                    <attributes>
+                                      <attribute name="font-desc" value="Sans 10"/>
+                                      <attribute name="style" value="normal"/>
+                                      <attribute name="variant" value="normal"/>
+                                      <attribute name="foreground" value="#09023610962f"/>
+                                    </attributes>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                              </object>
+                            </child>
                           </object>
                           <packing>
                             <property name="left-attach">0</property>
@@ -853,91 +884,67 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkLabel" id="NYDateLabel">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="halign">start</property>
-                            <property name="margin-start">10</property>
-                            <property name="label" translatable="yes">Saturday, September 10, 2022</property>
-                            <property name="justify">center</property>
-                            <attributes>
-                              <attribute name="font-desc" value="Sans 10"/>
-                              <attribute name="style" value="normal"/>
-                              <attribute name="variant" value="normal"/>
-                              <attribute name="foreground" value="#636345452c2c"/>
-                            </attributes>
-                          </object>
-                          <packing>
-                            <property name="left-attach">0</property>
-                            <property name="top-attach">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel" id="NYTimeLabel">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="halign">start</property>
-                            <property name="margin-start">10</property>
-                            <property name="margin-bottom">5</property>
-                            <property name="label" translatable="yes">00:00</property>
-                            <property name="justify">center</property>
-                            <attributes>
-                              <attribute name="font-desc" value="Sans 10"/>
-                              <attribute name="style" value="normal"/>
-                              <attribute name="variant" value="normal"/>
-                              <attribute name="foreground" value="#09023610962f"/>
-                            </attributes>
-                          </object>
-                          <packing>
-                            <property name="left-attach">0</property>
-                            <property name="top-attach">2</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel" id="MarketCloseLabel">
+                          <object class="GtkAspectFrame">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="halign">end</property>
                             <property name="margin-end">10</property>
-                            <property name="label" translatable="yes">Market Closes In</property>
-                            <attributes>
-                              <attribute name="font-desc" value="Sans 10"/>
-                              <attribute name="style" value="normal"/>
-                              <attribute name="variant" value="normal"/>
-                            </attributes>
+                            <property name="label-xalign">0</property>
+                            <property name="shadow-type">in</property>
+                            <child>
+                              <object class="GtkBox">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="orientation">vertical</property>
+                                <child>
+                                  <object class="GtkLabel" id="MarketCloseLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">center</property>
+                                    <property name="margin-left">3</property>
+                                    <property name="margin-right">3</property>
+                                    <property name="margin-start">3</property>
+                                    <property name="margin-end">3</property>
+                                    <property name="label" translatable="yes">Market Closes In</property>
+                                    <attributes>
+                                      <attribute name="font-desc" value="Sans 10"/>
+                                      <attribute name="style" value="normal"/>
+                                      <attribute name="variant" value="normal"/>
+                                    </attributes>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel" id="TimeLeftLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="halign">center</property>
+                                    <property name="label" translatable="yes">00:00:00</property>
+                                    <property name="justify">center</property>
+                                    <attributes>
+                                      <attribute name="font-desc" value="Sans 10"/>
+                                      <attribute name="style" value="normal"/>
+                                      <attribute name="variant" value="normal"/>
+                                      <attribute name="foreground" value="#09023610962f"/>
+                                    </attributes>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                              </object>
+                            </child>
                           </object>
                           <packing>
                             <property name="left-attach">2</property>
                             <property name="top-attach">0</property>
                           </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel" id="TimeLeftLabel">
-                            <property name="can-focus">False</property>
-                            <property name="halign">end</property>
-                            <property name="margin-end">10</property>
-                            <property name="label" translatable="yes">00:00:00</property>
-                            <property name="justify">center</property>
-                            <attributes>
-                              <attribute name="font-desc" value="Sans 10"/>
-                              <attribute name="style" value="normal"/>
-                              <attribute name="variant" value="normal"/>
-                              <attribute name="foreground" value="#09023610962f"/>
-                            </attributes>
-                          </object>
-                          <packing>
-                            <property name="left-attach">2</property>
-                            <property name="top-attach">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <placeholder/>
-                        </child>
-                        <child>
-                          <placeholder/>
-                        </child>
-                        <child>
-                          <placeholder/>
                         </child>
                         <child>
                           <placeholder/>
@@ -950,24 +957,12 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkSeparator">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="margin-start">10</property>
-                        <property name="margin-end">10</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                    <child>
                       <object class="GtkFrame" id="IndexFrame">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="margin-start">10</property>
                         <property name="margin-end">10</property>
+                        <property name="margin-top">10</property>
                         <property name="label-xalign">0</property>
                         <child>
                           <object class="GtkExpander" id="IndicesExpander">
@@ -999,6 +994,7 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
+                                                <property name="margin-left">10</property>
                                                 <property name="margin-start">10</property>
                                                 <property name="label" translatable="yes">Dow</property>
                                                 <attributes>
@@ -1019,6 +1015,7 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
+                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">Nasdaq</property>
                                                 <attributes>
@@ -1039,6 +1036,7 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
+                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">S&amp;P 500</property>
                                                 <attributes>
@@ -1059,6 +1057,7 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
+                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">Bitcoin</property>
                                                 <attributes>
@@ -1079,6 +1078,7 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
+                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">Gold/Silver</property>
                                                 <attributes>
@@ -1099,6 +1099,7 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
+                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">Gold</property>
                                                 <attributes>
@@ -1119,6 +1120,7 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
+                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">Silver</property>
                                                 <attributes>
@@ -1152,6 +1154,7 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
+                                                <property name="margin-left">10</property>
                                                 <property name="margin-start">10</property>
                                                 <property name="label" translatable="yes">33,536.70
 3245345</property>
@@ -1169,6 +1172,7 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
+                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">11,196.22</property>
                                                 <attributes>
@@ -1185,6 +1189,7 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
+                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">3,957.25</property>
                                                 <attributes>
@@ -1201,6 +1206,7 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
+                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">80</property>
                                                 <attributes>
@@ -1217,6 +1223,7 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
+                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">80</property>
                                                 <attributes>
@@ -1233,6 +1240,7 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
+                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">80</property>
                                                 <attributes>
@@ -1249,6 +1257,7 @@
                                                 <property name="visible">True</property>
                                                 <property name="can-focus">False</property>
                                                 <property name="halign">start</property>
+                                                <property name="margin-left">5</property>
                                                 <property name="margin-start">5</property>
                                                 <property name="label" translatable="yes">80</property>
                                                 <attributes>
@@ -1289,7 +1298,7 @@
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">True</property>
-                        <property name="position">2</property>
+                        <property name="position">1</property>
                       </packing>
                     </child>
                   </object>
@@ -2012,7 +2021,7 @@
     <property name="can-default">True</property>
     <property name="resizable">False</property>
     <property name="default-width">550</property>
-    <property name="default-height">300</property>
+    <property name="default-height">250</property>
     <property name="destroy-with-parent">True</property>
     <property name="icon">Stocks-icon.png</property>
     <property name="skip-pager-hint">True</property>
@@ -2020,258 +2029,57 @@
       <object class="GtkBox">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="margin-top">10</property>
+        <property name="margin-top">20</property>
+        <property name="margin-bottom">10</property>
         <property name="orientation">vertical</property>
+        <property name="spacing">20</property>
         <property name="baseline-position">top</property>
         <child>
-          <!-- n-columns=1 n-rows=8 -->
-          <object class="GtkGrid">
+          <object class="GtkStackSwitcher">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="margin-start">10</property>
-            <property name="margin-end">10</property>
-            <property name="hexpand">True</property>
-            <property name="vexpand">True</property>
-            <property name="row-spacing">3</property>
-            <property name="row-homogeneous">True</property>
-            <property name="column-homogeneous">True</property>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Equity URL</property>
-                <property name="justify">center</property>
-              </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkEntry" id="ChangeApiInfoEquityUrlEntryBox">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="tooltip-text" translatable="yes">The finnhub.io equity request URL, not including a symbol or key value.
-
-"https://finnhub.io/api/v1/quote?symbol="</property>
-                <property name="valign">center</property>
-                <property name="margin-start">5</property>
-                <property name="margin-end">5</property>
-                <property name="margin-bottom">5</property>
-                <property name="input-purpose">alpha</property>
-              </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">URL Key</property>
-                <property name="justify">center</property>
-              </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">2</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkEntry" id="ChangeApiInfoUrlKeyEntryBox">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="tooltip-text" translatable="yes">Append "&amp;token=" before your finnhub.io key.
-
-"&amp;token=&lt;YOUR ACCOUNT KEY&gt;"</property>
-                <property name="valign">center</property>
-                <property name="margin-start">5</property>
-                <property name="margin-end">5</property>
-                <property name="input-purpose">alpha</property>
-              </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">3</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkEntry" id="ChangeApiInfoNYSESymbolsUrlEntryBox">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="tooltip-text" translatable="yes">The NYSE and Other exchanges Symbol Url
-
-"http://www.nasdaqtrader.com/dynamic/SymDir/otherlisted.txt"</property>
-                <property name="valign">center</property>
-                <property name="margin-start">5</property>
-                <property name="margin-end">5</property>
-                <property name="input-purpose">alpha</property>
-              </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">7</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">NYSE and Other Symbol URL</property>
-                <property name="justify">center</property>
-              </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">6</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkEntry" id="ChangeApiInfoNasdaqSymbolsUrlEntryBox">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="tooltip-text" translatable="yes">The Nasdaq Symbol Url
-
-"http://www.nasdaqtrader.com/dynamic/SymDir/nasdaqlisted.txt"</property>
-                <property name="valign">center</property>
-                <property name="margin-start">5</property>
-                <property name="margin-end">5</property>
-                <property name="margin-bottom">5</property>
-                <property name="input-purpose">alpha</property>
-              </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">5</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Nasdaq Symbol URL</property>
-                <property name="justify">center</property>
-              </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">4</property>
-              </packing>
-            </child>
+            <property name="halign">center</property>
+            <property name="stack">ChangeAPIInfoStack</property>
           </object>
           <packing>
             <property name="expand">False</property>
-            <property name="fill">False</property>
+            <property name="fill">True</property>
             <property name="position">0</property>
           </packing>
         </child>
         <child>
-          <!-- n-columns=3 n-rows=3 -->
-          <object class="GtkGrid">
+          <object class="GtkStack" id="ChangeAPIInfoStack">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="margin-bottom">10</property>
-            <property name="row-homogeneous">True</property>
-            <property name="column-homogeneous">True</property>
+            <property name="margin-top">5</property>
+            <property name="margin-bottom">20</property>
+            <property name="hhomogeneous">False</property>
+            <property name="transition-duration">500</property>
+            <property name="transition-type">slide-left-right</property>
+            <property name="interpolate-size">True</property>
             <child>
-              <object class="GtkLabel">
+              <object class="GtkFrame" id="Equity API">
+                <property name="name">Equity API</property>
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Updates Per Minute</property>
-              </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Hours of Updates</property>
-              </object>
-              <packing>
-                <property name="left-attach">2</property>
-                <property name="top-attach">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkComboBoxText" id="ChangeApiInfoUpPerMinComboBox">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="tooltip-text" translatable="yes">The number of data updates per minute.</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
-                <property name="margin-start">10</property>
-                <property name="margin-end">10</property>
-                <property name="hexpand">True</property>
-                <property name="resize-mode">immediate</property>
-                <property name="active">0</property>
-                <property name="popup-fixed-width">False</property>
-                <items>
-                  <item translatable="yes">0</item>
-                  <item translatable="yes">1</item>
-                  <item translatable="yes">2</item>
-                  <item translatable="yes">3</item>
-                  <item translatable="yes">4</item>
-                  <item translatable="yes">5</item>
-                  <item translatable="yes">6</item>
-                </items>
-              </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkSpinButton" id="ChangeApiInfoHoursSpinBox">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="tooltip-text" translatable="yes">The number of hours to run data updates for.</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
-                <property name="hexpand">True</property>
-                <property name="text" translatable="yes">1</property>
-                <property name="adjustment">adjustment1</property>
-                <property name="climb-rate">1</property>
-                <property name="snap-to-ticks">True</property>
-                <property name="numeric">True</property>
-                <property name="wrap">True</property>
-                <property name="value">1</property>
-              </object>
-              <packing>
-                <property name="left-attach">2</property>
-                <property name="top-attach">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkBox">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="margin-top">35</property>
-                <property name="margin-bottom">5</property>
-                <property name="orientation">vertical</property>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Stock Symbol List</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
+                <property name="margin-start">5</property>
+                <property name="margin-end">5</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">in</property>
                 <child>
                   <object class="GtkBox">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
+                    <property name="margin-top">5</property>
+                    <property name="margin-bottom">5</property>
                     <property name="orientation">vertical</property>
+                    <property name="spacing">5</property>
                     <child>
-                      <object class="GtkLabel" id="ChangeApiInfoStockSymbolUpdateLabel">
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="ypad">5</property>
-                        <property name="label" translatable="yes">Finished</property>
-                        <attributes>
-                          <attribute name="weight" value="bold"/>
-                          <attribute name="foreground" value="#a5a51d1d2d2d"/>
-                        </attributes>
+                        <property name="label" translatable="yes">Equity URL</property>
+                        <property name="justify">center</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -2280,10 +2088,218 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkSpinner" id="ChangeApiInfoStockSymbolUpdateSpinner">
-                        <property name="can-focus">False</property>
-                        <property name="margin-top">5</property>
+                      <object class="GtkEntry" id="ChangeApiInfoEquityUrlEntryBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="tooltip-text" translatable="yes">The finnhub.io equity request URL, not including a symbol or key value.
+
+"https://finnhub.io/api/v1/quote?symbol="</property>
+                        <property name="valign">center</property>
+                        <property name="margin-start">5</property>
+                        <property name="margin-end">5</property>
                         <property name="margin-bottom">5</property>
+                        <property name="input-purpose">alpha</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">URL Key</property>
+                        <property name="justify">center</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="ChangeApiInfoUrlKeyEntryBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="tooltip-text" translatable="yes">Append "&amp;token=" before your finnhub.io key.
+
+"&amp;token=&lt;YOUR ACCOUNT KEY&gt;"</property>
+                        <property name="valign">center</property>
+                        <property name="margin-start">5</property>
+                        <property name="margin-end">5</property>
+                        <property name="margin-bottom">5</property>
+                        <property name="input-purpose">alpha</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
+                  </object>
+                </child>
+                <child type="label_item">
+                  <placeholder/>
+                </child>
+              </object>
+              <packing>
+                <property name="name">page0</property>
+                <property name="title" translatable="yes">Equity API</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkFrame" id="Symbol Urls">
+                <property name="name">Symbol Urls</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="margin-start">5</property>
+                <property name="margin-end">5</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">in</property>
+                <child>
+                  <object class="GtkBox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="margin-top">5</property>
+                    <property name="margin-bottom">5</property>
+                    <property name="orientation">vertical</property>
+                    <property name="spacing">5</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Nasdaq Symbol URL</property>
+                        <property name="justify">center</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="ChangeApiInfoNasdaqSymbolsUrlEntryBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="tooltip-text" translatable="yes">The Nasdaq Symbol Url
+
+"http://www.nasdaqtrader.com/dynamic/SymDir/nasdaqlisted.txt"</property>
+                        <property name="valign">center</property>
+                        <property name="margin-start">5</property>
+                        <property name="margin-end">5</property>
+                        <property name="margin-bottom">5</property>
+                        <property name="input-purpose">alpha</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">NYSE and Other Symbol URL</property>
+                        <property name="justify">center</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="ChangeApiInfoNYSESymbolsUrlEntryBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="tooltip-text" translatable="yes">The NYSE and Other exchanges Symbol Url
+
+"http://www.nasdaqtrader.com/dynamic/SymDir/otherlisted.txt"</property>
+                        <property name="valign">center</property>
+                        <property name="margin-start">5</property>
+                        <property name="margin-end">5</property>
+                        <property name="margin-bottom">5</property>
+                        <property name="input-purpose">alpha</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
+                  </object>
+                </child>
+                <child type="label_item">
+                  <placeholder/>
+                </child>
+              </object>
+              <packing>
+                <property name="name">page1</property>
+                <property name="title" translatable="yes">Symbol Urls</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkBox" id="Symbol List">
+                <property name="name">Symbol List</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="orientation">vertical</property>
+                <property name="spacing">20</property>
+                <child>
+                  <object class="GtkBox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="margin-bottom">20</property>
+                    <property name="orientation">vertical</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Stock Symbol List</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="orientation">vertical</property>
+                        <child>
+                          <object class="GtkLabel" id="ChangeApiInfoStockSymbolUpdateLabel">
+                            <property name="can-focus">False</property>
+                            <property name="ypad">5</property>
+                            <property name="label" translatable="yes">Finished</property>
+                            <attributes>
+                              <attribute name="weight" value="bold"/>
+                              <attribute name="foreground" value="#a5a51d1d2d2d"/>
+                            </attributes>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSpinner" id="ChangeApiInfoStockSymbolUpdateSpinner">
+                            <property name="can-focus">False</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -2295,38 +2311,123 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="ChangeApiInfoStockSymbolUpdateBTN">
+                    <property name="label" translatable="yes">Get Symbols</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="tooltip-text" translatable="yes">Download symbol list from NasdaqTrader.com</property>
+                    <property name="halign">center</property>
+                    <property name="valign">center</property>
+                    <accelerator key="s" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
                     <property name="position">1</property>
                   </packing>
                 </child>
               </object>
               <packing>
-                <property name="left-attach">1</property>
-                <property name="top-attach">0</property>
+                <property name="name">page2</property>
+                <property name="title" translatable="yes">Symbol List</property>
+                <property name="position">2</property>
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="ChangeApiInfoStockSymbolUpdateBTN">
-                <property name="label" translatable="yes">Get Symbols</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">True</property>
-                <property name="tooltip-text" translatable="yes">Download symbol list from NasdaqTrader.com</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
-                <accelerator key="s" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-              </object>
-              <packing>
-                <property name="left-attach">1</property>
-                <property name="top-attach">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkBox">
+              <object class="GtkBox" id="Options">
+                <property name="name">Options</property>
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="margin-top">20</property>
-                <property name="margin-bottom">20</property>
                 <property name="orientation">vertical</property>
+                <child>
+                  <!-- n-columns=2 n-rows=2 -->
+                  <object class="GtkGrid">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="row-spacing">10</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Updates Per Minute</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkComboBoxText" id="ChangeApiInfoUpPerMinComboBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="tooltip-text" translatable="yes">The number of data updates per minute.</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="margin-start">10</property>
+                        <property name="margin-end">10</property>
+                        <property name="hexpand">True</property>
+                        <property name="resize-mode">immediate</property>
+                        <property name="active">0</property>
+                        <property name="popup-fixed-width">False</property>
+                        <items>
+                          <item translatable="yes">0</item>
+                          <item translatable="yes">1</item>
+                          <item translatable="yes">2</item>
+                          <item translatable="yes">3</item>
+                          <item translatable="yes">4</item>
+                          <item translatable="yes">5</item>
+                          <item translatable="yes">6</item>
+                        </items>
+                      </object>
+                      <packing>
+                        <property name="left-attach">0</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Hours of Updates</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">1</property>
+                        <property name="top-attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSpinButton" id="ChangeApiInfoHoursSpinBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="tooltip-text" translatable="yes">The number of hours to run data updates for.</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="hexpand">True</property>
+                        <property name="text" translatable="yes">1</property>
+                        <property name="adjustment">adjustment1</property>
+                        <property name="climb-rate">1</property>
+                        <property name="snap-to-ticks">True</property>
+                        <property name="numeric">True</property>
+                        <property name="wrap">True</property>
+                        <property name="value">1</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">1</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
                 <child>
                   <object class="GtkLabel">
                     <property name="visible">True</property>
@@ -2337,7 +2438,7 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">0</property>
+                    <property name="position">1</property>
                   </packing>
                 </child>
                 <child>
@@ -2350,41 +2451,40 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">1</property>
+                    <property name="position">2</property>
                   </packing>
                 </child>
               </object>
               <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">2</property>
+                <property name="name">page3</property>
+                <property name="title" translatable="yes">Options</property>
+                <property name="position">3</property>
               </packing>
-            </child>
-            <child>
-              <object class="GtkButton" id="ChangeApiInfoOKBTN">
-                <property name="label" translatable="yes">OK</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="can-default">True</property>
-                <property name="has-default">True</property>
-                <property name="receives-default">True</property>
-                <property name="tooltip-text" translatable="yes">Commit Changes</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
-                <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-              </object>
-              <packing>
-                <property name="left-attach">2</property>
-                <property name="top-attach">2</property>
-              </packing>
-            </child>
-            <child>
-              <placeholder/>
             </child>
           </object>
           <packing>
-            <property name="expand">True</property>
+            <property name="expand">False</property>
             <property name="fill">True</property>
             <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="ChangeApiInfoOKBTN">
+            <property name="label" translatable="yes">OK</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="can-default">True</property>
+            <property name="has-default">True</property>
+            <property name="receives-default">True</property>
+            <property name="tooltip-text" translatable="yes">Commit Changes</property>
+            <property name="halign">center</property>
+            <property name="valign">center</property>
+            <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
           </packing>
         </child>
       </object>

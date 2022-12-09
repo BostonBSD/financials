@@ -60,7 +60,7 @@ static double Stake (const unsigned int *shares, const double *price) {
 static char *DoubToStr (const double *num) 
 /* Take in a double pointer [the datatype is double] and convert to a monetary format string. */
 {    
-    size_t len = strlen("###,###,###,###,###.###") + 1;
+    size_t len = strlen("###,###,###,###,###,###.###") + 1;
     char* str = (char*) malloc( len ); 
 
     /* The C.UTF-8 locale does not have a monetary 
@@ -68,6 +68,10 @@ static char *DoubToStr (const double *num)
     */
     setlocale(LC_ALL, LOCALE);  
     strfmon(str, len, "%(.3n", *num);
+
+    /* Trying not to waste memory. */
+    char* tmp = realloc( str, strlen ( str ) + 1 );
+    str = tmp;
 
     return str;
 }

@@ -61,7 +61,7 @@ void UpperCaseStr(char*);
 void Chomp(char*);
 
 /* time_funcs */
-void NYTime (int*,int*,int*,int*,int*,int*);
+void NYTime (int*,int*);
 char* MonthNameStr (int);
 char* WeekDayStr (int);
 bool TimeToClose (bool,int*,int*,int*);
