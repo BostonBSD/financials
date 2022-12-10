@@ -32,8 +32,8 @@
     <property name="can-focus">False</property>
     <property name="can-default">True</property>
     <property name="resizable">False</property>
-    <property name="default-width">525</property>
-    <property name="default-height">550</property>
+    <property name="default-width">425</property>
+    <property name="default-height">400</property>
     <property name="destroy-with-parent">True</property>
     <property name="icon">Stocks-icon.png</property>
     <property name="skip-pager-hint">True</property>
@@ -43,43 +43,261 @@
         <property name="can-focus">False</property>
         <property name="margin-start">15</property>
         <property name="margin-end">15</property>
-        <property name="margin-top">25</property>
+        <property name="margin-top">10</property>
         <property name="margin-bottom">25</property>
         <property name="vexpand">True</property>
         <property name="orientation">vertical</property>
+        <property name="spacing">5</property>
         <property name="baseline-position">top</property>
         <child>
-          <object class="GtkScrolledWindow" id="AboutScrolledWindow">
+          <object class="GtkStackSwitcher">
             <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="vexpand">True</property>
-            <property name="shadow-type">in</property>
-            <property name="min-content-width">200</property>
-            <property name="min-content-height">300</property>
-            <child>
-              <object class="GtkViewport">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="vexpand">True</property>
-                <property name="shadow-type">etched-in</property>
-                <child>
-                  <object class="GtkLabel" id="AboutLicenseLabel">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="vexpand">True</property>
-                    <property name="selectable">True</property>
-                    <attributes>
-                      <attribute name="font-desc" value="Roboto 8"/>
-                    </attributes>
-                  </object>
-                </child>
-              </object>
-            </child>
+            <property name="can-focus">False</property>
+            <property name="halign">center</property>
+            <property name="margin-bottom">10</property>
+            <property name="homogeneous">True</property>
+            <property name="stack">AboutStack</property>
           </object>
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
             <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkImage">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="pixbuf">Stocks-icon-128.png</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">Financials</property>
+            <property name="selectable">True</property>
+            <attributes>
+              <attribute name="weight" value="ultrabold"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkStack" id="AboutStack">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="hhomogeneous">False</property>
+            <property name="transition-duration">500</property>
+            <property name="transition-type">slide-up-down</property>
+            <property name="interpolate-size">True</property>
+            <child>
+              <object class="GtkBox">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="orientation">vertical</property>
+                <property name="spacing">7</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Alpha 1.0</property>
+                    <property name="selectable">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">A simple financial instrument.</property>
+                    <property name="selectable">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="AboutWebsiteLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Website</property>
+                    <property name="selectable">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Copyright © 2022 BostonBSD</property>
+                    <property name="selectable">True</property>
+                    <attributes>
+                      <attribute name="font-desc" value="Sans 8"/>
+                      <attribute name="style" value="normal"/>
+                      <attribute name="weight" value="semilight"/>
+                      <attribute name="variant" value="petite-caps"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">CSV parser Copyright © 2015--2021 Samuel Alexander</property>
+                    <property name="selectable">True</property>
+                    <attributes>
+                      <attribute name="font-desc" value="Sans 8"/>
+                      <attribute name="style" value="normal"/>
+                      <attribute name="weight" value="semilight"/>
+                      <attribute name="variant" value="normal"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">4</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="AboutTrendsIconLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Trends icon designed by Freepik from Flaticon</property>
+                    <property name="selectable">True</property>
+                    <attributes>
+                      <attribute name="font-desc" value="Sans 8"/>
+                      <attribute name="style" value="normal"/>
+                      <attribute name="weight" value="semilight"/>
+                      <attribute name="variant" value="normal"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">5</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">This program comes with no warranty of any sort.</property>
+                    <property name="selectable">True</property>
+                    <attributes>
+                      <attribute name="font-desc" value="Sans 8"/>
+                      <attribute name="style" value="normal"/>
+                      <attribute name="weight" value="semilight"/>
+                      <attribute name="variant" value="normal"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">6</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="name">page1</property>
+                <property name="title" translatable="yes">About</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow" id="AboutScrolledWindow">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="vexpand">True</property>
+                <property name="shadow-type">in</property>
+                <property name="min-content-width">200</property>
+                <property name="min-content-height">180</property>
+                <child>
+                  <object class="GtkViewport">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="vexpand">True</property>
+                    <property name="shadow-type">etched-in</property>
+                    <child>
+                      <object class="GtkLabel" id="AboutLicenseLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="vexpand">True</property>
+                        <property name="label" translatable="yes">Copyright (c) 2022 BostonBSD. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+    (1) Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+
+    (2) Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in
+    the documentation and/or other materials provided with the
+    distribution.
+
+    (3)The name of the author may not be used to
+    endorse or promote products derived from this software without
+    specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.</property>
+                        <property name="selectable">True</property>
+                        <attributes>
+                          <attribute name="font-desc" value="Sans 7"/>
+                          <attribute name="style" value="normal"/>
+                          <attribute name="weight" value="semilight"/>
+                          <attribute name="variant" value="normal"/>
+                        </attributes>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="name">page0</property>
+                <property name="title" translatable="yes">License</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">3</property>
           </packing>
         </child>
       </object>
@@ -89,6 +307,7 @@
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="title" translatable="yes">About</property>
+        <property name="has-subtitle">False</property>
         <property name="show-close-button">True</property>
         <child>
           <object class="GtkMenuButton">
@@ -1884,8 +2103,8 @@
                 <property name="valign">end</property>
                 <property name="margin-top">5</property>
                 <property name="margin-bottom">20</property>
-                <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                 <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
               </object>
               <packing>
                 <property name="left-attach">0</property>
@@ -2098,6 +2317,7 @@
                         <property name="margin-start">5</property>
                         <property name="margin-end">5</property>
                         <property name="margin-bottom">5</property>
+                        <property name="xalign">0.5</property>
                         <property name="input-purpose">alpha</property>
                       </object>
                       <packing>
@@ -2130,6 +2350,7 @@
                         <property name="margin-start">5</property>
                         <property name="margin-end">5</property>
                         <property name="margin-bottom">5</property>
+                        <property name="xalign">0.5</property>
                         <property name="input-purpose">alpha</property>
                       </object>
                       <packing>
@@ -2190,6 +2411,7 @@
                         <property name="margin-start">5</property>
                         <property name="margin-end">5</property>
                         <property name="margin-bottom">5</property>
+                        <property name="xalign">0.5</property>
                         <property name="input-purpose">alpha</property>
                       </object>
                       <packing>
@@ -2222,6 +2444,7 @@
                         <property name="margin-start">5</property>
                         <property name="margin-end">5</property>
                         <property name="margin-bottom">5</property>
+                        <property name="xalign">0.5</property>
                         <property name="input-purpose">alpha</property>
                       </object>
                       <packing>
