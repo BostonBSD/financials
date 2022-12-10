@@ -155,7 +155,7 @@
                       <attribute name="font-desc" value="Sans 8"/>
                       <attribute name="style" value="normal"/>
                       <attribute name="weight" value="semilight"/>
-                      <attribute name="variant" value="petite-caps"/>
+                      <attribute name="variant" value="normal"/>
                     </attributes>
                   </object>
                   <packing>
@@ -223,7 +223,7 @@
                 </child>
               </object>
               <packing>
-                <property name="name">page1</property>
+                <property name="name">page0</property>
                 <property name="title" translatable="yes">About</property>
               </packing>
             </child>
@@ -288,7 +288,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                 </child>
               </object>
               <packing>
-                <property name="name">page0</property>
+                <property name="name">page1</property>
                 <property name="title" translatable="yes">License</property>
                 <property name="position">1</property>
               </packing>

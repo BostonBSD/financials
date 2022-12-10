@@ -672,8 +672,12 @@ int AboutShowHide ()
 
     if ( visible ){
         gtk_widget_set_visible ( window, false );
+        GtkWidget* stack = GTK_WIDGET ( gtk_builder_get_object (builder, "AboutStack") );
+        gtk_stack_set_visible_child_name ( GTK_STACK ( stack ), "page0"  );
     } else {
         gtk_widget_set_visible ( window, true );
+        GtkWidget* stack = GTK_WIDGET ( gtk_builder_get_object (builder, "AboutStack") );
+        gtk_stack_set_visible_child_name ( GTK_STACK ( stack ), "page0"  );
 
         window = GTK_WIDGET ( gtk_builder_get_object (builder, "AboutScrolledWindow") );
         gtk_scrolled_window_set_vadjustment (GTK_SCROLLED_WINDOW( window ), NULL);

@@ -136,12 +136,12 @@ static void about_set_label ()
     /* Set the About window labels. */
     const gchar *text ="<a href=\"https://github.com/BostonBSD/finnhub.io-stock-ticker\">Website</a>";
     GtkWidget *label = GTK_WIDGET ( gtk_builder_get_object (builder, "AboutWebsiteLabel") );
-    gtk_label_set_markup (GTK_LABEL (label), text);
+    gtk_label_set_markup ( GTK_LABEL ( label ), text);
 
     text ="<a href=\"https://www.flaticon.com/free-icons/trends\">Trends icon</a> "
     "designed by Freepik from <a href=\"https://media.flaticon.com/license/license.pdf\">Flaticon</a>";
     label = GTK_WIDGET ( gtk_builder_get_object (builder, "AboutTrendsIconLabel") );
-    gtk_label_set_markup (GTK_LABEL (label), text);
+    gtk_label_set_markup ( GTK_LABEL ( label ), text);
 }
 
 static void gui_signal_connect ( void *data )
