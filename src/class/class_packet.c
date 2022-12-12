@@ -86,8 +86,8 @@ static int perform_multicurl_request ( portfolio_packet *pkg ){
     meta* Met = pkg->GetMetaClass ();
     int return_code = 0;
     short num_metals = 2;
-    if( *M->Platinum->ounce_f > 0 ) num_metals++;
-    if( *M->Palladium->ounce_f > 0 ) num_metals++;
+    if( M->Platinum->ounce_f > 0 ) num_metals++;
+    if( M->Palladium->ounce_f > 0 ) num_metals++;
 
     /* Perform the cURL requests simultaneously using multi-cURL. */
     /* Four Indices plus Two Metals plus Number of Equities */
@@ -154,9 +154,8 @@ static void ExtractData () {
 static bool IsFetchingData () {
     portfolio_packet *pkg = packet;
     meta *D = pkg->GetMetaClass ();
-    bool return_value = *D->fetching_data_bool;
     
-    return return_value;
+    return D->fetching_data_bool;
 }
 
 static void SetFetchingData ( bool data ) {
@@ -164,7 +163,24 @@ static void SetFetchingData ( bool data ) {
 
     portfolio_packet *pkg = packet;
     meta *D = pkg->GetMetaClass ();
-    *D->fetching_data_bool = data;
+    D->fetching_data_bool = data;
+
+    pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] ); 
+}
+
+static bool IsDefaultView () {
+    portfolio_packet *pkg = packet;
+    meta *D = pkg->GetMetaClass ();
+    
+    return D->main_win_default_view_bool;
+}
+
+static void SetDefaultView ( bool data ) {
+    pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
+
+    portfolio_packet *pkg = packet;
+    meta *D = pkg->GetMetaClass ();
+    D->main_win_default_view_bool = data;
 
     pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] ); 
 }
@@ -173,26 +189,20 @@ static bool IsCurlCanceled () {
 
     portfolio_packet *pkg = packet;
     meta *D = pkg->GetMetaClass ();
-    bool return_value = *D->multicurl_cancel_bool;
 
-    return return_value;
+    return D->multicurl_cancel_bool;
 }
 
 static void SetCurlCanceled ( bool data ) {
-
     portfolio_packet *pkg = packet;
     meta *D = pkg->GetMetaClass ();
-    *D->multicurl_cancel_bool = data;
-
+    D->multicurl_cancel_bool = data;
 }
 
 static bool IsHoliday () {
-
     portfolio_packet *pkg = packet;
     meta *D = pkg->GetMetaClass ();
-    bool return_value = *D->holiday_bool;
-
-    return return_value;
+    return D->holiday_bool;
 }
 
 static struct tm SetHoliday () {
@@ -201,7 +211,7 @@ static struct tm SetHoliday () {
     portfolio_packet *pkg = packet;
     meta *D = pkg->GetMetaClass ();
     struct tm NY_Time = NYTimeComponents ();
-    *D->holiday_bool = CheckHoliday ( NY_Time );
+    D->holiday_bool = CheckHoliday ( NY_Time );
 
     pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
     return NY_Time; 
@@ -212,7 +222,7 @@ static double GetHoursOfUpdates () {
 
     portfolio_packet *pkg = packet;
     meta *D = pkg->GetMetaClass ();
-    double return_value = *D->updates_hours_f;
+    double return_value = D->updates_hours_f;
 
     pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] ); 
     return return_value;
@@ -223,7 +233,7 @@ static double GetUpdatesPerMinute () {
 
     portfolio_packet *pkg = packet;
     meta *D = pkg->GetMetaClass ();
-    double return_value = *D->updates_per_min_f;
+    double return_value = D->updates_per_min_f;
 
     pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] ); 
     return return_value;
@@ -250,8 +260,8 @@ static void remove_main_curl_handles ( portfolio_packet *pkg )
     /* Bullion Multicurl Operation */
     curl_multi_remove_handle( pkg->multicurl_main_hnd, M->Gold->YAHOO_hnd );
     curl_multi_remove_handle( pkg->multicurl_main_hnd, M->Silver->YAHOO_hnd );
-    if( *M->Platinum->ounce_f > 0 ) curl_multi_remove_handle( pkg->multicurl_main_hnd, M->Platinum->YAHOO_hnd );
-    if( *M->Palladium->ounce_f > 0 ) curl_multi_remove_handle( pkg->multicurl_main_hnd, M->Palladium->YAHOO_hnd );
+    if( M->Platinum->ounce_f > 0 ) curl_multi_remove_handle( pkg->multicurl_main_hnd, M->Platinum->YAHOO_hnd );
+    if( M->Palladium->ounce_f > 0 ) curl_multi_remove_handle( pkg->multicurl_main_hnd, M->Palladium->YAHOO_hnd );
 
     /* Indices Multicurl Operation */
     curl_multi_remove_handle( pkg->multicurl_main_hnd, Met->index_dow_hnd );
@@ -289,9 +299,6 @@ static void SetWindowDataSql () {
     SqliteAddRSIWindowSize ( W->rsi_width, W->rsi_height, D );
     SqliteAddRSIWindowPos ( W->rsi_x_pos, W->rsi_y_pos, D );
 
-    /* Save the Expander Bar Position. */
-    SqliteAddExpanderBarExpanded ( *D->index_bar_expanded_bool, D );
-
     pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
 }
 
@@ -327,13 +334,25 @@ static void SetSymNameMap ( void *data ) {
 static bool IsClockDisplayed () {
     portfolio_packet *pkg = packet;
     meta *D = pkg->GetMetaClass ();    
-    return *D->clocks_displayed_bool;
+    return D->clocks_displayed_bool;
 }
 
 static void SetClockDisplayed ( bool data ) {
     portfolio_packet *pkg = packet;
     meta *D = pkg->GetMetaClass ();
-    *D->clocks_displayed_bool = data;
+    D->clocks_displayed_bool = data;
+}
+
+static bool IsIndicesDisplayed () {
+    portfolio_packet *pkg = packet;
+    meta *D = pkg->GetMetaClass ();    
+    return D->index_bar_revealed_bool;
+}
+
+static void SetIndicesDisplayed ( bool data ) {
+    portfolio_packet *pkg = packet;
+    meta *D = pkg->GetMetaClass ();
+    D->index_bar_revealed_bool = data;
 }
 
 /* Class Init Functions */
@@ -356,6 +375,8 @@ portfolio_packet *class_init_portfolio_packet ()
     new_class->ExtractData = ExtractData;
     new_class->IsFetchingData = IsFetchingData;
     new_class->SetFetchingData = SetFetchingData;
+    new_class->IsDefaultView = IsDefaultView;
+    new_class->SetDefaultView = SetDefaultView;
     new_class->StopMultiCurl = StopMultiCurl;
     new_class->IsCurlCanceled = IsCurlCanceled;
     new_class->SetCurlCanceled = SetCurlCanceled;
@@ -373,6 +394,8 @@ portfolio_packet *class_init_portfolio_packet ()
     new_class->SetSymNameMap = SetSymNameMap;
     new_class->IsClockDisplayed = IsClockDisplayed;
     new_class->SetClockDisplayed = SetClockDisplayed;
+    new_class->IsIndicesDisplayed = IsIndicesDisplayed;
+    new_class->SetIndicesDisplayed = SetIndicesDisplayed;
 
     /* Initialize the main and rsi window size and locations */
     new_class->window_struct->main_height = 0;

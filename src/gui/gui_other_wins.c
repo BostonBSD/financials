@@ -45,6 +45,54 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/mutex.h"
 #include "../include/multicurl.h"
 
+int PrefShowHide (void *data)
+{
+    /* Unpack the package */
+    portfolio_packet *package = (portfolio_packet*)data;
+    meta *D = package->GetMetaClass ();
+
+    /* get the GObject and cast as a GtkWidget */
+    GtkWidget* window = GTK_WIDGET ( gtk_builder_get_object (builder, "PreferencesWindow") );
+    gboolean visible = gtk_widget_is_visible ( window );
+
+    if ( visible ){
+        gtk_widget_set_visible ( window, false );
+    } else {
+        GtkWidget* Switch = GTK_WIDGET ( gtk_builder_get_object (builder, "PrefShowClocksSwitch") );
+        gtk_switch_set_active ( GTK_SWITCH( Switch ), D->clocks_displayed_bool );
+
+        Switch = GTK_WIDGET ( gtk_builder_get_object (builder, "PrefShowIndicesSwitch") );
+        gtk_switch_set_active ( GTK_SWITCH( Switch ), D->index_bar_revealed_bool );
+
+        GtkWidget* ComboBox = GTK_WIDGET ( gtk_builder_get_object (builder, "PrefUpPerMinComboBox") );
+        gtk_combo_box_set_active ( GTK_COMBO_BOX( ComboBox ), (int)D->updates_per_min_f);
+
+        GtkWidget* SpinBox = GTK_WIDGET ( gtk_builder_get_object (builder, "PrefHoursSpinBox") );
+        GtkAdjustment* Adjustment = gtk_spin_button_get_adjustment ( GTK_SPIN_BUTTON ( SpinBox ) );
+        gtk_adjustment_set_value ( Adjustment, D->updates_hours_f );
+        g_object_set ( G_OBJECT ( SpinBox ), "activates-default", TRUE, NULL );
+
+        gtk_widget_set_visible ( window, true );
+    }
+    return 0;
+}
+
+int PrefSymBtnStart ()
+{
+    GtkWidget* button = GTK_WIDGET ( gtk_builder_get_object (builder, "PrefStockSymbolUpdateBTN") );
+    gtk_widget_set_sensitive ( button, false );
+
+    return 0;
+}
+
+int PrefSymBtnStop ()
+{
+    GtkWidget* button = GTK_WIDGET ( gtk_builder_get_object (builder, "PrefStockSymbolUpdateBTN") );
+    gtk_widget_set_sensitive ( button, true );
+
+    return 0;
+}
+
 int APIShowHide (void *data)
 {
     /* Unpack the package */
@@ -58,11 +106,8 @@ int APIShowHide (void *data)
     if ( visible ){
         gtk_widget_set_visible ( window, false );
     } else {
-        GtkWidget* stack = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeAPIInfoStack") );
-        gtk_stack_set_visible_child_name ( GTK_STACK ( stack ), "page0"  );
-
-        GtkWidget* Switch = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoShowClocksSwitch") );
-        gtk_switch_set_active ( GTK_SWITCH( Switch ), *D->clocks_displayed_bool );
+        GtkWidget* notebook = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeAPINotebook") );
+        gtk_notebook_set_current_page ( GTK_NOTEBOOK ( notebook ), 0 );
 
         GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoEquityUrlEntryBox") );
         gtk_entry_set_text ( GTK_ENTRY( EntryBox ), D->stock_url_ch );
@@ -80,19 +125,6 @@ int APIShowHide (void *data)
         EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoNYSESymbolsUrlEntryBox") );
         gtk_entry_set_text ( GTK_ENTRY( EntryBox ), D->NYSE_Symbol_url_ch );
         g_object_set ( G_OBJECT ( EntryBox ), "activates-default", TRUE, NULL );
-
-        GtkWidget* ComboBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoUpPerMinComboBox") );
-        gtk_combo_box_set_active ( GTK_COMBO_BOX( ComboBox ), (int)*D->updates_per_min_f);
-
-        GtkWidget* SpinBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoHoursSpinBox") );
-        GtkAdjustment* Adjustment = gtk_spin_button_get_adjustment ( GTK_SPIN_BUTTON ( SpinBox ) );
-        gtk_adjustment_set_value ( Adjustment, *D->updates_hours_f );
-        g_object_set ( G_OBJECT ( SpinBox ), "activates-default", TRUE, NULL );
-
-        GtkWidget* label = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoStockSymbolUpdateLabel") );
-        gtk_widget_set_visible ( label, false );
-        label = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoStockSymbolUpdateSpinner") );
-        gtk_widget_set_visible ( label, false );
 
         gtk_widget_set_visible ( window, true );
     }
@@ -154,45 +186,6 @@ int APIOk (void *data)
     free( new );
     free( cur );
 
-    GtkWidget* ComboBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoUpPerMinComboBox") );
-    new = strdup( gtk_combo_box_text_get_active_text ( GTK_COMBO_BOX_TEXT ( ComboBox ) ) );
-    float new_f = strtod( new, NULL );
-    float cur_f = *D->updates_per_min_f;
-
-    if( new_f != cur_f ){
-        SqliteAddAPIData("Updates_Per_Min", new, D);
-        *D->updates_per_min_f = (double)new_f;
-    }
-    free( new );
-
-    GtkWidget* SpinBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoHoursSpinBox") );
-    GtkAdjustment* Adjustment = gtk_spin_button_get_adjustment ( GTK_SPIN_BUTTON ( SpinBox ) );
-    new_f = (float)gtk_adjustment_get_value ( Adjustment );
-    cur_f = *D->updates_hours_f;
-
-    if( new_f != cur_f ){
-        new = (char*)malloc( 10 );
-        snprintf(new, 10, "%f", new_f);
-        SqliteAddAPIData("Updates_Hours", new, D);
-        free( new );
-        *D->updates_hours_f = (double)new_f;
-    }
-
-    GtkWidget* Switch = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoShowClocksSwitch") );
-    bool switch_set = gtk_switch_get_active ( GTK_SWITCH( Switch ) );
-
-    if( switch_set != *D->clocks_displayed_bool ){
-        if ( switch_set ) {
-            SqliteAddAPIData("Clocks_Displayed", "true", D);
-        } else {
-            SqliteAddAPIData("Clocks_Displayed", "false", D);
-        }
-        package->SetClockDisplayed ( switch_set );
-        gdk_threads_add_idle ( MainDisplayClocks, package );
-        gdk_threads_add_idle ( MainDisplayTime, NULL );
-        gdk_threads_add_idle ( MainDisplayTimeRemaining, package );
-    }
-
     /* Generate the Equity Request URLs. */
     F->GenerateURL ( package );
     return 0;
@@ -213,13 +206,8 @@ int APICursorMove ()
     EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoNYSESymbolsUrlEntryBox") );
     char* NYSE_URL = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
 
-    EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoHoursSpinBox") );
-    char* Updates_Hours = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
-
     bool check = CheckValidString( Equity_URL ) & CheckValidString( URL_KEY );
     check = check & CheckValidString( Nasdaq_URL ) & CheckValidString( NYSE_URL );
-    check = check & CheckValidString( Updates_Hours );
-    check = check & ( strtod( Updates_Hours, NULL ) <= 7 ) & CheckIfStringDoublePositiveNumber( Updates_Hours );
 
     if ( check ){
         gtk_widget_set_sensitive ( Button, true );
@@ -231,39 +219,6 @@ int APICursorMove ()
     free ( URL_KEY );
     free ( Nasdaq_URL );
     free ( NYSE_URL );
-    free ( Updates_Hours );
-    return 0;
-}
-
-int APIStartSpinner ()
-{
-    GtkWidget* label = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoStockSymbolUpdateSpinner") );
-    gtk_widget_set_visible ( label, true );
-    gtk_spinner_start ( GTK_SPINNER ( label ) );
-
-    label = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoStockSymbolUpdateLabel") );
-    gtk_widget_set_visible ( label, false );
-
-    GtkWidget* button = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoStockSymbolUpdateBTN") );
-    gtk_widget_set_sensitive ( button, false );
-    gtk_button_set_label ( GTK_BUTTON ( button ), "Please Wait..." );
-
-    return 0;
-}
-
-int APIStopSpinner ()
-{
-    GtkWidget* label = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoStockSymbolUpdateSpinner") );
-    gtk_widget_set_visible ( label, false );
-    gtk_spinner_stop ( GTK_SPINNER ( label ) );
-
-    label = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoStockSymbolUpdateLabel") );
-    gtk_widget_set_visible ( label, true );
-
-    GtkWidget* button = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoStockSymbolUpdateBTN") );
-    gtk_widget_set_sensitive ( button, true );
-    gtk_button_set_label ( GTK_BUTTON ( button ), "Get Symbols" );
-
     return 0;
 }
 
@@ -417,8 +372,8 @@ static void *fetch_data_for_new_bullion ( void *data )
     portfolio_packet *pkg = (portfolio_packet*)data;
     metal *M = pkg->GetMetalClass ();
     short num_metals = 2;
-    if( *M->Platinum->ounce_f > 0 ) num_metals++;
-    if( *M->Palladium->ounce_f > 0 ) num_metals++;
+    if( M->Platinum->ounce_f > 0 ) num_metals++;
+    if( M->Palladium->ounce_f > 0 ) num_metals++;
 
     pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
 
@@ -539,7 +494,7 @@ int BullionOk (void *data)
     bool new_entry = new_gold || new_silver || new_platinum || new_palladium;
     /* Fetch the data in a separate thread */
     pthread_t thread_id;
-    if ( new_entry && package->IsFetchingData () ) pthread_create ( &thread_id, NULL, fetch_data_for_new_bullion, package );
+    if ( new_entry && !package->IsDefaultView () ) pthread_create ( &thread_id, NULL, fetch_data_for_new_bullion, package );
 
     return 0;
 }
@@ -668,19 +623,18 @@ int AboutShowHide ()
 {
     /* get the GObject and cast as a GtkWidget */
     GtkWidget* window = GTK_WIDGET ( gtk_builder_get_object (builder, "AboutWindow") );
+    GtkWidget* stack = GTK_WIDGET ( gtk_builder_get_object (builder, "AboutStack") );
     gboolean visible = gtk_widget_is_visible ( window );
 
     if ( visible ){
         gtk_widget_set_visible ( window, false );
-        GtkWidget* stack = GTK_WIDGET ( gtk_builder_get_object (builder, "AboutStack") );
         gtk_stack_set_visible_child_name ( GTK_STACK ( stack ), "page0"  );
     } else {
         gtk_widget_set_visible ( window, true );
-        GtkWidget* stack = GTK_WIDGET ( gtk_builder_get_object (builder, "AboutStack") );
         gtk_stack_set_visible_child_name ( GTK_STACK ( stack ), "page0"  );
 
         window = GTK_WIDGET ( gtk_builder_get_object (builder, "AboutScrolledWindow") );
-        gtk_scrolled_window_set_vadjustment (GTK_SCROLLED_WINDOW( window ), NULL);
+        gtk_scrolled_window_set_vadjustment (GTK_SCROLLED_WINDOW( window ), NULL);        
     }
     return 0;
 }

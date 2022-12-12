@@ -76,18 +76,20 @@ static void shortcuts_set_treeview (){
     gtk_list_store_append( store, &iter );
     gtk_list_store_set( store, &iter, 0, "      Edit", 1, "Ctrl - E", -1 );
     gtk_list_store_append( store, &iter );
-    gtk_list_store_set( store, &iter, 0, "      API", 1, "Ctrl - P", -1 );
-    gtk_list_store_append( store, &iter );
     gtk_list_store_set( store, &iter, 0, "      Securities", 1, "Ctrl - S", -1 );
     gtk_list_store_append( store, &iter );
     gtk_list_store_set( store, &iter, 0, "      Bullion", 1, "Ctrl - B", -1 );
     gtk_list_store_append( store, &iter );
     gtk_list_store_set( store, &iter, 0, "      Cash", 1, "Ctrl - C", -1 );
     gtk_list_store_append( store, &iter );
+    gtk_list_store_set( store, &iter, 0, "      API", 1, "Ctrl - I", -1 );
+    gtk_list_store_append( store, &iter );
+    gtk_list_store_set( store, &iter, 0, "      Preferences", 1, "Ctrl - P", -1 );
+    gtk_list_store_append( store, &iter );
     gtk_list_store_append( store, &iter );
     gtk_list_store_set( store, &iter, 0, "      Help", 1, "Ctrl - H", -1 );
     gtk_list_store_append( store, &iter );
-    gtk_list_store_set( store, &iter, 0, "      Keyboard Shortcuts", 1, "Ctrl - K", -1 );
+    gtk_list_store_set( store, &iter, 0, "      Hotkeys", 1, "Ctrl - K", -1 );
     gtk_list_store_append( store, &iter );
     gtk_list_store_set( store, &iter, 0, "      About", 1, "Ctrl - A", -1 );
     gtk_list_store_append( store, &iter );
@@ -102,7 +104,7 @@ static void shortcuts_set_treeview (){
     gtk_list_store_set( store, &iter, 0, "      Get Data", 1, "Ctrl - D", -1 );
     gtk_list_store_append( store, &iter );
     gtk_list_store_append( store, &iter );
-    gtk_list_store_set( store, &iter, 0, "API Window", -1 );
+    gtk_list_store_set( store, &iter, 0, "Preferences Window", -1 );
     gtk_list_store_append( store, &iter );
     gtk_list_store_set( store, &iter, 0, "      Get Symbols", 1, "Ctrl - S", -1 );
     gtk_list_store_append( store, &iter );
@@ -144,6 +146,28 @@ static void about_set_label ()
     gtk_label_set_markup ( GTK_LABEL ( label ), text);
 }
 
+static void clock_display (void *data)
+/* Set the initial display of the clocks.
+   We don't want the revealer animation on startup
+   if the clocks aren't displayed. */
+{
+    portfolio_packet *pkg = (portfolio_packet*)data;
+
+    GtkWidget* revealer = GTK_WIDGET ( gtk_builder_get_object (builder, "MainClockRevealer") );
+
+    if ( pkg->IsClockDisplayed () == false ){
+        /* Revealer animation set to 0 milliseconds */
+        gtk_revealer_set_transition_duration ( GTK_REVEALER ( revealer ), 0 );
+        /* Hide the clocks */
+        gtk_revealer_set_reveal_child (GTK_REVEALER ( revealer ), false );
+        /* Revealer animation set to 500 milliseconds */
+        gtk_revealer_set_transition_duration ( GTK_REVEALER ( revealer ), 500 ); 
+
+        /* Make sure there's data in the clock label. */
+        MainDisplayTime ();     
+    }    
+}
+
 static void gui_signal_connect ( void *data )
 /* Connect GUI index signals to the signal handlers. */
 {
@@ -163,9 +187,6 @@ static void gui_signal_connect ( void *data )
     gtk_window_resize ( GTK_WINDOW ( window ), W->main_width, W->main_height );
     gtk_window_move ( GTK_WINDOW ( window ), W->main_x_pos, W->main_y_pos );
 
-    button = gtk_builder_get_object (builder, "IndicesExpander");
-    g_signal_connect ( button, "activate", G_CALLBACK ( GUICallbackHandler_expander_bar ), NULL );
-
     button = gtk_builder_get_object (builder, "FetchDataBTN");
     g_signal_connect ( button, "clicked", G_CALLBACK ( GUICallbackHandler ), (void *)MAIN_FETCH_BTN );
     gtk_widget_grab_focus ( GTK_WIDGET ( button ) );
@@ -181,13 +202,13 @@ static void gui_signal_connect ( void *data )
     g_signal_connect ( button, "activate", G_CALLBACK ( GUICallbackHandler ), (void *)EQUITY_TOGGLE_BTN );
 
     window = gtk_builder_get_object (builder, "AddRemoveSecurity");
-    g_signal_connect( window, "delete_event", G_CALLBACK( gtk_widget_hide_on_delete ), NULL);
+    g_signal_connect( window, "delete_event", G_CALLBACK( GUICallbackHandler_hide_window_on_delete ), (void *)EQUITY_TOGGLE_BTN );
 
     button = gtk_builder_get_object (builder, "AddRemoveSecurityOkBTN");
     g_signal_connect ( button, "clicked", G_CALLBACK ( GUICallbackHandler ), (void *)EQUITY_OK_BTN );
 
-    button = gtk_builder_get_object (builder, "AddRemoveSecuritySwitch");
-    g_signal_connect ( button, "state-set", G_CALLBACK ( GUICallbackHandler_add_rem_switch ), (void *)EQUITY_SWITCH );
+    button = gtk_builder_get_object (builder, "AddRemoveSecurityStack");
+    g_signal_connect ( button, "notify::visible-child", G_CALLBACK ( GUICallbackHandler_add_rem_stack ), NULL );
 
     button = gtk_builder_get_object (builder, "AddRemoveSecurityComboBox");
     g_signal_connect ( button, "changed", G_CALLBACK ( GUICallbackHandler ), (void *)EQUITY_COMBO_BOX );
@@ -206,7 +227,7 @@ static void gui_signal_connect ( void *data )
     g_signal_connect ( button, "activate", G_CALLBACK ( GUICallbackHandler ), (void *)ABOUT_TOGGLE_BTN );
 
     window = gtk_builder_get_object (builder, "AboutWindow");
-    g_signal_connect( window, "delete_event", G_CALLBACK( gtk_widget_hide_on_delete ), NULL);
+    g_signal_connect( window, "delete_event", G_CALLBACK( GUICallbackHandler_hide_window_on_delete ), (void *)ABOUT_TOGGLE_BTN );
 
 
     button = gtk_builder_get_object (builder, "MainHelpMenuKeyboardShortcuts");
@@ -216,7 +237,7 @@ static void gui_signal_connect ( void *data )
     g_signal_connect ( button, "activate", G_CALLBACK ( GUICallbackHandler ), (void *)SHORTCUT_TOGGLE_BTN );
 
     window = gtk_builder_get_object (builder, "ShortcutWindow");
-    g_signal_connect( window, "delete_event", G_CALLBACK( gtk_widget_hide_on_delete ), NULL);
+    g_signal_connect( window, "delete_event", G_CALLBACK( GUICallbackHandler_hide_window_on_delete ), (void *)SHORTCUT_TOGGLE_BTN );
 
 
     button = gtk_builder_get_object (builder, "MainEditMenuBullion");
@@ -226,7 +247,7 @@ static void gui_signal_connect ( void *data )
     g_signal_connect ( button, "activate", G_CALLBACK ( GUICallbackHandler ), (void *)BUL_TOGGLE_BTN );
 
     window = gtk_builder_get_object (builder, "AddRemoveBullionWindow");
-    g_signal_connect( window, "delete_event", G_CALLBACK( gtk_widget_hide_on_delete ), NULL);
+    g_signal_connect( window, "delete_event", G_CALLBACK( GUICallbackHandler_hide_window_on_delete ), (void *)BUL_TOGGLE_BTN );
 
     button = gtk_builder_get_object (builder, "AddRemoveBullionOKBTN");
     g_signal_connect ( button, "clicked", G_CALLBACK ( GUICallbackHandler ), (void *)BUL_OK_BTN );
@@ -267,7 +288,7 @@ static void gui_signal_connect ( void *data )
     g_signal_connect ( button, "activate", G_CALLBACK ( GUICallbackHandler ), (void *)CASH_TOGGLE_BTN );
 
     window = gtk_builder_get_object (builder, "AddRemoveCashWindow");
-    g_signal_connect( window, "delete_event", G_CALLBACK( gtk_widget_hide_on_delete ), NULL);
+    g_signal_connect( window, "delete_event", G_CALLBACK( GUICallbackHandler_hide_window_on_delete ), (void *)CASH_TOGGLE_BTN );
 
     button = gtk_builder_get_object (builder, "AddRemoveCashOKBTN");
     g_signal_connect ( button, "clicked", G_CALLBACK ( GUICallbackHandler ), (void *)CASH_OK_BTN );
@@ -277,6 +298,31 @@ static void gui_signal_connect ( void *data )
     g_signal_connect ( button, "changed", G_CALLBACK ( GUICallbackHandler ), (void *)CASH_CURSOR_MOVE );
 
 
+    button = gtk_builder_get_object (builder, "MainEditMenuPreferences");
+    g_signal_connect ( button, "activate", G_CALLBACK ( GUICallbackHandler ), (void *)PREF_TOGGLE_BTN );
+
+    button = gtk_builder_get_object (builder, "PreferencesMenuClose");
+    g_signal_connect ( button, "activate", G_CALLBACK ( GUICallbackHandler ), (void *)PREF_TOGGLE_BTN );
+
+    window = gtk_builder_get_object (builder, "PreferencesWindow");
+    g_signal_connect( window, "delete_event", G_CALLBACK( GUICallbackHandler_hide_window_on_delete ), (void *)PREF_TOGGLE_BTN );
+
+    button = gtk_builder_get_object (builder, "PrefStockSymbolUpdateBTN");
+    g_signal_connect ( button, "clicked", G_CALLBACK ( GUICallbackHandler ), (void *)PREF_SYMBOL_UPDATE_BTN );
+
+    button = gtk_builder_get_object (builder, "PrefHoursSpinBox");
+    g_signal_connect ( button, "changed", G_CALLBACK ( GUICallbackHandler_pref_hours_spinbutton ), NULL );
+
+    button = gtk_builder_get_object (builder, "PrefShowClocksSwitch");
+    g_signal_connect ( button, "state-set", G_CALLBACK ( GUICallbackHandler_pref_clock_switch ), NULL );
+
+    button = gtk_builder_get_object (builder, "PrefShowIndicesSwitch");
+    g_signal_connect ( button, "state-set", G_CALLBACK ( GUICallbackHandler_pref_indices_switch ), NULL );
+
+    button = gtk_builder_get_object (builder, "PrefUpPerMinComboBox");
+    g_signal_connect ( button, "changed", G_CALLBACK ( GUICallbackHandler_pref_up_min_combobox ), NULL );
+
+
     button = gtk_builder_get_object (builder, "MainEditMenuAPI");
     g_signal_connect ( button, "activate", G_CALLBACK ( GUICallbackHandler ), (void *)API_TOGGLE_BTN );
 
@@ -284,14 +330,11 @@ static void gui_signal_connect ( void *data )
     g_signal_connect ( button, "activate", G_CALLBACK ( GUICallbackHandler ), (void *)API_TOGGLE_BTN );
 
     window = gtk_builder_get_object (builder, "ChangeApiInfoWindow");
-    g_signal_connect( window, "delete_event", G_CALLBACK( gtk_widget_hide_on_delete ), NULL);
+    g_signal_connect( window, "delete_event", G_CALLBACK( GUICallbackHandler_hide_window_on_delete ), (void *)API_TOGGLE_BTN );
 
     button = gtk_builder_get_object (builder, "ChangeApiInfoOKBTN");
     g_signal_connect ( button, "clicked", G_CALLBACK ( GUICallbackHandler ), (void *)API_OK_BTN );
     gtk_widget_set_sensitive ( GTK_WIDGET ( button ) , false );
-
-    button = gtk_builder_get_object (builder, "ChangeApiInfoStockSymbolUpdateBTN");
-    g_signal_connect ( button, "clicked", G_CALLBACK ( GUICallbackHandler ), (void *)API_SYMBOL_UPDATE_BTN );
 
     button = gtk_builder_get_object (builder, "ChangeApiInfoEquityUrlEntryBox");
     g_signal_connect ( button, "changed", G_CALLBACK ( GUICallbackHandler ), (void *)API_CURSOR_MOVE );
@@ -305,15 +348,12 @@ static void gui_signal_connect ( void *data )
     button = gtk_builder_get_object (builder, "ChangeApiInfoNYSESymbolsUrlEntryBox");
     g_signal_connect ( button, "changed", G_CALLBACK ( GUICallbackHandler ), (void *)API_CURSOR_MOVE );
 
-    button = gtk_builder_get_object (builder, "ChangeApiInfoHoursSpinBox");
-    g_signal_connect ( button, "changed", G_CALLBACK ( GUICallbackHandler ), (void *)API_CURSOR_MOVE );
-
 
     button = gtk_builder_get_object (builder, "MainFileMenuRSI");
     g_signal_connect ( button, "activate", G_CALLBACK ( GUICallbackHandler ), (void *)RSI_TOGGLE_BTN );
 
     window = gtk_builder_get_object (builder, "ViewRSIWindow");
-    g_signal_connect( window, "delete_event", G_CALLBACK( GUICallbackHandler_hide_rsi_on_delete ), NULL);
+    g_signal_connect( window, "delete_event", G_CALLBACK( GUICallbackHandler_hide_window_on_delete ), (void *)RSI_TOGGLE_BTN );
     g_signal_connect ( window, "configure-event", G_CALLBACK ( GUICallbackHandler_window_data ), (void *)GUI_RSI_WINDOW );
     gtk_window_resize ( GTK_WINDOW ( window ), W->rsi_width, W->rsi_height );
     gtk_window_move ( GTK_WINDOW ( window ), W->rsi_x_pos, W->rsi_y_pos );
@@ -392,7 +432,7 @@ void GuiStart (void *data)
     about_set_label ();
 
     /* Set whether the clocks are displayed or not. */
-    MainDisplayClocks ( data );
+    clock_display ( data );
 
     /* Connect callback functions to corresponding GUI signals. */
     gui_signal_connect ( data );

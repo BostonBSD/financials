@@ -60,53 +60,161 @@ void GUICallbackHandler (GtkWidget *widget, void *data)
     pthread_create( &thread_id, NULL, GUIThreadHandler, data );
 }
 
-void GUICallbackHandler_add_rem_switch (GtkSwitch *widget, bool state, void *data)
-/* The "state-set" signal handler requires three parameters:
-
-"gboolean user_function (GtkSwitch *widget, gboolean state, gpointer user_data)"
-
-This prevents this signal from being handled by the general GUICallbackHandler
-function, which takes two parameters. */
-{   
-    /* The Gtk3.0 callback function prototype includes a state and 
-       widget parameter, which we do not use, the following two 
-       statements prevent a compiler warning/error. */
-    if( !( widget ) ) return;
-    if ( state == false && state == true ) return;
-
-    /* Initiate a thread */
-        
-    /* Threads will prevent the program from blocking the Gtk loop. 
-    (we could also use gthreads). */
-    
-    pthread_t thread_id;
-    /* Create a thread, pass the func and widget signal to it. */
-    pthread_create( &thread_id, NULL, GUIThreadHandler, data );
-}
-
-gboolean GUICallbackHandler_hide_rsi_on_delete (GtkWidget *window, GdkEvent *event, void *data)
+void GUICallbackHandler_add_rem_stack (GObject *gobject, GParamSpec *pspec, void *data)
 {
-    if( !( event ) ) return gtk_widget_hide_on_delete ( window );
-    RSITreeViewClear ();
-    RSIShowHide ( packet );
-    return gtk_widget_hide_on_delete ( window );
+    GtkStack * stack = GTK_STACK ( gobject );
+    char *name = strdup ( gtk_stack_get_visible_child_name ( stack ) );
+    
+    GtkWidget* ComboBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecurityComboBox") );
+    GtkWidget* EntryBoxSymbol = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecuritySymbolEntryBox") );
+    GtkWidget* EntryBoxShares = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecuritySharesEntryBox") );
+    GtkWidget* Button = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecurityOkBTN") );
+
+    if ( strcasecmp ( name, "add" ) == 0 ) {
+        gtk_combo_box_set_button_sensitivity (GTK_COMBO_BOX ( ComboBox ), GTK_SENSITIVITY_OFF);
+        gtk_combo_box_set_active (GTK_COMBO_BOX ( ComboBox ), 0 );
+        gtk_widget_set_sensitive ( EntryBoxSymbol, true );
+        gtk_widget_set_sensitive ( EntryBoxShares, true );
+        gtk_widget_set_sensitive ( Button, false );
+
+        /* Reset EntryBoxes */
+        gtk_entry_set_text ( GTK_ENTRY( EntryBoxSymbol ), "" );
+        gtk_entry_set_text ( GTK_ENTRY( EntryBoxShares ), "" );
+    } else {
+        gtk_combo_box_set_button_sensitivity (GTK_COMBO_BOX ( ComboBox ), GTK_SENSITIVITY_AUTO);
+        gtk_widget_set_sensitive ( EntryBoxSymbol, false );
+        gtk_widget_set_sensitive ( EntryBoxShares, false );
+        gtk_widget_set_sensitive ( Button, false );
+
+        /* Reset EntryBoxes */
+        gtk_entry_set_text ( GTK_ENTRY( EntryBoxSymbol ), "" );
+        gtk_entry_set_text ( GTK_ENTRY( EntryBoxShares ), "" );
+    }
+    free ( name );
 }
 
-gboolean GUICallbackHandler_expander_bar (GtkWidget *expander, void *data)
+gboolean GUICallbackHandler_pref_clock_switch (GtkSwitch *Switch, bool state, void *data)
 {
     meta *D = packet->GetMetaClass ();
-    
-    /* The expansion appears to be the state prior to the signal, so we invert the state */
-    if ( gtk_expander_get_expanded ( GTK_EXPANDER ( expander ) ) ){
-        *D->index_bar_expanded_bool = false;
+
+    /* Visually, the underlying state is represented by the trough color of the switch, 
+       while the “active” property is represented by the position of the switch. */
+
+    packet->SetClockDisplayed ( state );
+
+    if ( state ) {
+        SqliteAddAPIData("Clocks_Displayed", "true", D);
+        MainDisplayClocks ( packet );
+        MainDisplayTime ();
+        MainDisplayTimeRemaining ( packet );
     } else {
-        *D->index_bar_expanded_bool = true;
+        SqliteAddAPIData("Clocks_Displayed", "false", D);
+        MainDisplayClocks ( packet );
     }
 
-    /* TRUE to stop other handlers from being invoked for the event. 
-       FALSE to propagate the event further. 
-    */
+    /* Return false to keep the state and active properties in sync. */
     return false;
+}
+
+gboolean GUICallbackHandler_pref_indices_switch (GtkSwitch *Switch, bool state, void *data)
+{
+    meta *D = packet->GetMetaClass ();
+
+    /* Visually, the underlying state is represented by the trough color of the switch, 
+       while the “active” property is represented by the position of the switch. */
+
+    if( state != packet->IsIndicesDisplayed () ){
+        if ( state ) {
+            SqliteAddAPIData("Indices_Displayed", "true", D);
+        } else {
+            SqliteAddAPIData("Indices_Displayed", "false", D);
+        }
+        packet->SetIndicesDisplayed ( state );
+
+        if ( !packet->IsDefaultView () ){
+            /* If we are not displaying the default view, reveal the indices bar */
+            GtkWidget* revealer = GTK_WIDGET ( gtk_builder_get_object (builder, "MainIndicesRevealer") );
+            gtk_revealer_set_reveal_child ( GTK_REVEALER ( revealer ), D->index_bar_revealed_bool );
+        }
+    }
+
+    /* Return false to keep the state and active properties in sync. */
+    return false;
+}
+
+void GUICallbackHandler_pref_up_min_combobox ( GtkComboBox *ComboBox )
+{
+    meta *D = packet->GetMetaClass ();
+
+    char* new = strdup( gtk_combo_box_text_get_active_text ( GTK_COMBO_BOX_TEXT ( ComboBox ) ) );
+    float new_f = strtod( new, NULL );
+    float cur_f = (float)D->updates_per_min_f;
+
+    if( new_f != cur_f ){
+        SqliteAddAPIData("Updates_Per_Min", new, D);
+        D->updates_per_min_f = (double)new_f;
+    }
+    free( new );
+}
+
+void GUICallbackHandler_pref_hours_spinbutton ( GtkEditable *spin_button )
+{
+    meta *D = packet->GetMetaClass ();
+    char* Updates_Hours = strdup( gtk_entry_get_text ( GTK_ENTRY( spin_button ) ) );
+
+    bool check = ( strtod( Updates_Hours, NULL ) <= 7 ) & CheckIfStringDoublePositiveNumber( Updates_Hours );
+    check = check & ( strlen ( Updates_Hours ) != 0 );
+
+    if ( !check ){
+        return;
+    }    
+
+    double new_f = strtod( Updates_Hours, NULL );
+    double cur_f = D->updates_hours_f;
+    free ( Updates_Hours );    
+
+    if( new_f != cur_f ){
+        char *new = (char*)malloc( 10 );
+        snprintf(new, 10, "%lf", new_f);
+        SqliteAddAPIData("Updates_Hours", new, D);
+        free( new );
+        D->updates_hours_f = (double)new_f;
+    }
+}
+
+gboolean GUICallbackHandler_hide_window_on_delete (GtkWidget *window, GdkEvent *event, void *data)
+{
+    if( !( event ) ) return gtk_widget_hide_on_delete ( window );
+    uintptr_t index_signal = (uintptr_t)data;
+
+    switch ( index_signal ){
+        case ABOUT_TOGGLE_BTN:
+            AboutShowHide ();
+            break;
+        case SHORTCUT_TOGGLE_BTN:
+            ShortcutShowHide ();
+            break;
+        case EQUITY_TOGGLE_BTN:
+            AddRemShowHide ( packet );
+            break;
+        case CASH_TOGGLE_BTN:
+            CashShowHide ( packet );
+            break;
+        case BUL_TOGGLE_BTN:
+            BullionShowHide ( packet );
+            break;
+        case API_TOGGLE_BTN:
+            APIShowHide ( packet );
+            break;
+        case PREF_TOGGLE_BTN:
+            PrefShowHide ( packet );
+            break;
+        case RSI_TOGGLE_BTN:
+            RSITreeViewClear ();
+            RSIShowHide ( packet );
+            break;
+    }
+    return gtk_widget_hide_on_delete ( window );
 }
 
 gboolean GUICallbackHandler_window_data (GtkWidget *window, GdkEvent *event, void *data)
@@ -251,13 +359,13 @@ static void view_popup_menu_onDeleteBullion (GtkWidget *menuitem, void *userdata
 
     pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
 
-    if( pkg->IsFetchingData () == false ) {
-        gdk_threads_add_idle ( MainDefaultTreeview, packet );
+    if( pkg->IsDefaultView () ) {
+        MainDefaultTreeview ( packet );
     } else {
         pkg->Calculate ();
         pkg->ToStrings ();
         /* Set Gtk treeview. */
-        gdk_threads_add_idle ( MainPrimaryTreeview, packet );
+        MainPrimaryTreeview ( packet );
     }
 }
 
@@ -278,13 +386,13 @@ static void view_popup_menu_onDeleteAllBullion (GtkWidget *menuitem)
 
     pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
 
-    if( pkg->IsFetchingData () == false ) {
-        gdk_threads_add_idle ( MainDefaultTreeview, packet );
+    if( pkg->IsDefaultView () ) {
+        MainDefaultTreeview ( packet );
     } else {
         pkg->Calculate ();
         pkg->ToStrings ();
         /* Set Gtk treeview. */
-        gdk_threads_add_idle ( MainPrimaryTreeview, packet );
+        MainPrimaryTreeview ( packet );
     }
 }
 
@@ -305,13 +413,13 @@ static void view_popup_menu_onDeleteEquity (GtkWidget *menuitem, void *userdata)
 
     pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
 
-    if( pkg->IsFetchingData () == false ) {
-        gdk_threads_add_idle ( MainDefaultTreeview, packet );
+    if( pkg->IsDefaultView () ) {
+        MainDefaultTreeview ( packet );
     } else {
         pkg->Calculate ();
         pkg->ToStrings ();
         /* Set Gtk treeview. */
-        gdk_threads_add_idle ( MainPrimaryTreeview, packet );
+        MainPrimaryTreeview ( packet );
     }
 }
 
@@ -332,13 +440,13 @@ static void view_popup_menu_onDeleteAllEquity (GtkWidget *menuitem)
 
     pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
 
-    if( pkg->IsFetchingData () == false ) {
-        gdk_threads_add_idle ( MainDefaultTreeview, packet );
+    if( pkg->IsDefaultView () ) {
+        MainDefaultTreeview ( packet );
     } else {
         pkg->Calculate ();
         pkg->ToStrings ();
         /* Set Gtk treeview. */
-        gdk_threads_add_idle ( MainPrimaryTreeview, packet );
+        MainPrimaryTreeview ( packet );
     }
 }
 
@@ -348,15 +456,15 @@ static void view_popup_menu_onAddRow (GtkWidget *menuitem, void *userdata)
     char *type = (char*) userdata;
 
     if ( strcmp( type, "equity" ) == 0 ){
-        gdk_threads_add_idle( AddRemShowHide, packet );
-    } else if ( strcmp( type, "equity_total" ) == 0 ) {
-        gdk_threads_add_idle( AddRemShowHide, packet );
-    } else if ( strcmp( type, "bullion" ) == 0 ) {
-        gdk_threads_add_idle( BullionShowHide, packet );
-    } else if ( strcmp( type, "bullion_total" ) == 0 ) {
-        gdk_threads_add_idle( BullionShowHide, packet );
-    } else if ( strcmp( type, "cash" ) == 0 ) {
-        gdk_threads_add_idle( CashShowHide, packet );
+        AddRemShowHide ( packet );
+    } else if ( strcmp ( type, "equity_total" ) == 0 ) {
+        AddRemShowHide ( packet );
+    } else if ( strcmp ( type, "bullion" ) == 0 ) {
+        BullionShowHide ( packet );
+    } else if ( strcmp ( type, "bullion_total" ) == 0 ) {
+        BullionShowHide ( packet );
+    } else if ( strcmp ( type, "cash" ) == 0 ) {
+        CashShowHide ( packet );
     }
 }
 

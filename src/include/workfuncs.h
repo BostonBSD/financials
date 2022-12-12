@@ -64,13 +64,14 @@ void Chomp(char*);
 void NYTime (int*,int*);
 char* MonthNameStr (int);
 char* WeekDayStr (int);
-bool TimeToClose (bool,int*,int*,int*);
+bool TimeToClose (int*,int*,int*);
 unsigned int SecondsToOpen ();
 struct tm NYTimeComponents();
 char* WhichHoliday (struct tm);
 bool CheckHoliday (struct tm);
 unsigned int ClockSleepSeconds ();
 unsigned long ClockSleepMicroSeconds ();
+bool MarketOpen () ;
 
 /* working_functions */
 MemType* FetchRSIData (const char*,portfolio_packet*);

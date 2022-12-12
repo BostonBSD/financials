@@ -53,32 +53,51 @@ POSSIBILITY OF SUCH DAMAGE.
 static equity_folder *Folder;  /* A class handle to an array of stock class objects, can change dynamically. */    
 
 /* Class Method (also called Function) Definitions */
-static double Stake (const unsigned int *shares, const double *price) {
-    return ( (double)(*shares) * (*price) );
+static double Stake (const unsigned int shares, const double price) {
+    return ( (double)shares * price );
 }
 
-static char *DoubToStr (const double *num) 
-/* Take in a double pointer [the datatype is double] and convert to a monetary format string. */
+static void DoubToStr (char **str, const double num) 
+/* Take in a string buffer and a double, 
+   convert to monetary format string. */
 {    
     size_t len = strlen("###,###,###,###,###,###.###") + 1;
-    char* str = (char*) malloc( len ); 
+    /* Increase the string length */
+    char* tmp = realloc ( str[0], len );
+    str[0] = tmp;
 
     /* The C.UTF-8 locale does not have a monetary 
        format and is the default in C. 
     */
-    setlocale(LC_ALL, LOCALE);  
-    strfmon(str, len, "%(.3n", *num);
+    setlocale(LC_ALL, LOCALE); 
+
+    /* Set the string value. */ 
+    strfmon(str[0], len, "%(.3n", num);
 
     /* Trying not to waste memory. */
-    char* tmp = realloc( str, strlen ( str ) + 1 );
-    str = tmp;
+    tmp = realloc( str[0], strlen ( str[0] ) + 1 );
+    str[0] = tmp;
+}
 
-    return str;
+static void DoubToPerStr (char **str, const double num) 
+/* Take in a string buffer and a double, 
+   convert to percent string, grouping according to locale. */
+{    
+    size_t len = strlen("########.###%") + 1;
+    /* Increase the string length */
+    char* tmp = realloc ( str[0], len );
+    str[0] = tmp;
+    
+    setlocale(LC_NUMERIC, LOCALE);
+    snprintf( str[0], len, "%'.3lf%%", num );
+
+    /* Trying not to waste memory. */
+    tmp = realloc( str[0], strlen ( str[0] ) + 1 );
+    str[0] = tmp;
 }
 
 static double StrToDoub (const char *str) {
-    char *newstr = (char*) malloc( strlen( str )+1 );
-    strcpy( newstr, str );
+    char *newstr = strdup ( str );
 
     FormatStr( newstr );
     double num = strtod( newstr, NULL );
@@ -90,35 +109,24 @@ static double StrToDoub (const char *str) {
 
 static void convert_equity_to_strings (stock *S){
     /* Convert the double values into string values. */
-    free( S->current_price_stock_ch );
-    S->current_price_stock_ch = S->DoubToStr( S->current_price_stock_f );
+    S->DoubToStr( &S->current_price_stock_ch, S->current_price_stock_f );
     
-    free( S->high_stock_ch );
-    S->high_stock_ch = S->DoubToStr( S->high_stock_f ); 
+    S->DoubToStr( &S->high_stock_ch, S->high_stock_f ); 
     
-    free( S->low_stock_ch );
-    S->low_stock_ch = S->DoubToStr( S->low_stock_f ); 
+    S->DoubToStr( &S->low_stock_ch, S->low_stock_f ); 
     
-    free( S->opening_stock_ch );
-    S->opening_stock_ch = S->DoubToStr( S->opening_stock_f ); 
+    S->DoubToStr( &S->opening_stock_ch, S->opening_stock_f ); 
     
-    free( S->prev_closing_stock_ch );
-    S->prev_closing_stock_ch = S->DoubToStr( S->prev_closing_stock_f ); 
+    S->DoubToStr( &S->prev_closing_stock_ch, S->prev_closing_stock_f ); 
     
-    free( S->change_share_ch );
-    S->change_share_ch = S->DoubToStr( S->change_share_f );
+    S->DoubToStr( &S->change_share_ch, S->change_share_f );
 
-    free( S->change_value_ch );
-    S->change_value_ch = S->DoubToStr( S->change_value_f );
+    S->DoubToStr( &S->change_value_ch, S->change_value_f );
     
-    free( S->change_percent_ch );
-    size_t len = strlen("###.###%%") + 1;
-    S->change_percent_ch = (char*) malloc ( len );
-    snprintf( S->change_percent_ch, len, "%.3lf%%", *S->change_percent_f );
+    S->DoubToPerStr( &S->change_percent_ch, S->change_percent_f );
 
     /* The total current investment in this equity. */
-    free( S->current_investment_stock_ch );
-    S->current_investment_stock_ch = S->DoubToStr( S->current_investment_stock_f );
+    S->DoubToStr( &S->current_investment_stock_ch, S->current_investment_stock_f );
 }
 
 static void ToStrings (){
@@ -129,52 +137,47 @@ static void ToStrings (){
     }
 
     /* The total equity portfolio value. */
-    free( F->stock_port_value_ch );
-    F->stock_port_value_ch = F->DoubToStr( F->stock_port_value_f );
+    F->DoubToStr( &F->stock_port_value_ch, F->stock_port_value_f );
 
     /* The equity portfolio's change in value. */
-    free( F->stock_port_value_chg_ch );
-    F->stock_port_value_chg_ch = F->DoubToStr( F->stock_port_value_chg_f );
+    F->DoubToStr( &F->stock_port_value_chg_ch, F->stock_port_value_chg_f );
 
     /* The change in total investment in equity as a percentage. */
-    free( F->stock_port_value_p_chg_ch );
-    size_t len = strlen("###.###%%") + 1;
-    F->stock_port_value_p_chg_ch = (char*) malloc ( len );
-    snprintf( F->stock_port_value_p_chg_ch, len, "%.3lf%%", *F->stock_port_value_p_chg_f );
+    F->DoubToPerStr( &F->stock_port_value_p_chg_ch, F->stock_port_value_p_chg_f );
 }
 
 static void equity_calculations (stock *S){
     /* Calculate the stock holdings change. */ 
-    if( *S->num_shares_stock_int > 0 ){
-        *S->change_value_f = *S->change_share_f * (double)*S->num_shares_stock_int;
+    if( S->num_shares_stock_int > 0 ){
+        S->change_value_f = S->change_share_f * (double)S->num_shares_stock_int;
     } else {
-        *S->change_value_f = 0.0f;
+        S->change_value_f = 0.0f;
     }
 
     /* The total current investment in this equity. */
-    *S->current_investment_stock_f = S->Stake( S->num_shares_stock_int, S->current_price_stock_f );
+    S->current_investment_stock_f = S->Stake( S->num_shares_stock_int, S->current_price_stock_f );
 }
 
 static void Calculate (){
     equity_folder* F = Folder;
 
     /* Equity Calculations. */
-    *F->stock_port_value_f = 0.0f;
-    *F->stock_port_value_chg_f = 0.0f;
+    F->stock_port_value_f = 0.0f;
+    F->stock_port_value_chg_f = 0.0f;
 
     for (unsigned short g = 0; g < F->size; g++){
         equity_calculations ( F->Equity[ g ] );
 
         /* Add the equity investment to the total equity value. */
-        *F->stock_port_value_f += *F->Equity[ g ]->current_investment_stock_f;
+        F->stock_port_value_f += F->Equity[ g ]->current_investment_stock_f;
 
         /* Add the equity's change in value to the equity portfolio's change in value. */
-        *F->stock_port_value_chg_f += *F->Equity[ g ]->change_value_f;
+        F->stock_port_value_chg_f += F->Equity[ g ]->change_value_f;
     }
 
     /* The change in total investment in equity as a percentage. */
-    double prev_total = *F->stock_port_value_f - *F->stock_port_value_chg_f;
-    *F->stock_port_value_p_chg_f = CalcGain ( *F->stock_port_value_f, prev_total );
+    double prev_total = F->stock_port_value_f - F->stock_port_value_chg_f;
+    F->stock_port_value_p_chg_f = CalcGain ( F->stock_port_value_f, prev_total );
 }
 
 static void GenerateURL ( void *data ){
@@ -285,7 +288,7 @@ static void AddStock ( char *symbol, char *shares )
     F->Equity[ F->size ]->symbol_stock_ch = strdup ( symbol ? symbol : "NULL" );
 
     /* Add The Shares To the Folder */
-    *F->Equity[ F->size ]->num_shares_stock_int = (unsigned int)strtol( shares ? shares : "0", NULL, 10 );
+    F->Equity[ F->size ]->num_shares_stock_int = (unsigned int)strtol( shares ? shares : "0", NULL, 10 );
     F->size++;
 
     pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
@@ -330,19 +333,19 @@ static void ExtractData () {
     { 
         if ( F->Equity[ c ]->JSON.memory ){
             /* Extract double values from JSON data using JSON-glib */
-            JsonExtractEquity( F->Equity[ c ]->JSON.memory, F->Equity[ c ]->current_price_stock_f, F->Equity[ c ]->high_stock_f, F->Equity[ c ]->low_stock_f, F->Equity[ c ]->opening_stock_f, F->Equity[ c ]->prev_closing_stock_f, F->Equity[ c ]->change_share_f, F->Equity[ c ]->change_percent_f);
+            JsonExtractEquity( F->Equity[ c ]->JSON.memory, &F->Equity[ c ]->current_price_stock_f, &F->Equity[ c ]->high_stock_f, &F->Equity[ c ]->low_stock_f, &F->Equity[ c ]->opening_stock_f, &F->Equity[ c ]->prev_closing_stock_f, &F->Equity[ c ]->change_share_f, &F->Equity[ c ]->change_percent_f );
 
             /* Free memory. */
             free( F->Equity[ c ]->JSON.memory );
             F->Equity[ c ]->JSON.memory = NULL;  
         }else{
-            *F->Equity[ c ]->current_price_stock_f = 0.0;
-            *F->Equity[ c ]->high_stock_f = 0.0;
-            *F->Equity[ c ]->low_stock_f = 0.0;
-            *F->Equity[ c ]->opening_stock_f = 0.0;
-            *F->Equity[ c ]->prev_closing_stock_f = 0.0;
-            *F->Equity[ c ]->change_share_f = 0.0;
-            *F->Equity[ c ]->change_percent_f = 0.0;
+            F->Equity[ c ]->current_price_stock_f = 0.0;
+            F->Equity[ c ]->high_stock_f = 0.0;
+            F->Equity[ c ]->low_stock_f = 0.0;
+            F->Equity[ c ]->opening_stock_f = 0.0;
+            F->Equity[ c ]->prev_closing_stock_f = 0.0;
+            F->Equity[ c ]->change_share_f = 0.0;
+            F->Equity[ c ]->change_percent_f = 0.0;
         }
     }
 }
@@ -378,32 +381,18 @@ stock *class_init_equity ()
     stock* new_class = (stock*) malloc( sizeof(*new_class) );
 	
     /* Allocate Memory For Variables */
-    new_class->num_shares_stock_int = (unsigned int*) malloc( sizeof(unsigned int) );
-
-    new_class->current_price_stock_f = (double*) malloc( sizeof(double) );
-    new_class->high_stock_f = (double*) malloc( sizeof(double) );
-    new_class->low_stock_f = (double*) malloc( sizeof(double) );
-    new_class->opening_stock_f = (double*) malloc( sizeof(double) );
-    new_class->prev_closing_stock_f = (double*) malloc( sizeof(double) );
-    new_class->change_share_f = (double*) malloc( sizeof(double) );
-    new_class->change_value_f = (double*) malloc( sizeof(double) );
-    new_class->change_percent_f = (double*) malloc( sizeof(double) );
-
-	new_class->current_investment_stock_f = (double*) malloc( sizeof(double) );
-
-    /* Initialize Variables */
-    *new_class->num_shares_stock_int = 0;
+    new_class->num_shares_stock_int = 0;
     
-    *new_class->current_price_stock_f = 0.0f;
-    *new_class->high_stock_f = 0.0f;
-    *new_class->low_stock_f = 0.0f;
-    *new_class->opening_stock_f = 0.0f;
-    *new_class->prev_closing_stock_f = 0.0f;
-    *new_class->change_share_f = 0.0f;
-    *new_class->change_value_f = 0.0f;
-    *new_class->change_percent_f = 0.0f;
+    new_class->current_price_stock_f = 0.0f;
+    new_class->high_stock_f = 0.0f;
+    new_class->low_stock_f = 0.0f;
+    new_class->opening_stock_f = 0.0f;
+    new_class->prev_closing_stock_f = 0.0f;
+    new_class->change_share_f = 0.0f;
+    new_class->change_value_f = 0.0f;
+    new_class->change_percent_f = 0.0f;
 
-	*new_class->current_investment_stock_f = 0.0f;  
+	new_class->current_investment_stock_f = 0.0f;  
     
     new_class->current_price_stock_ch = strdup( "$0.00" );
     new_class->high_stock_ch = strdup( "$0.00" );
@@ -425,6 +414,7 @@ stock *class_init_equity ()
     /* Connect Function Pointers To Function Definitions */
     new_class->Stake = Stake;
     new_class->DoubToStr = DoubToStr;
+    new_class->DoubToPerStr = DoubToPerStr;
     new_class->StrToDoub = StrToDoub;
 
     /* Return Our Initialized Class */
@@ -440,24 +430,20 @@ equity_folder *class_init_equity_folder ()
     new_class->Equity = NULL;
     new_class->size = 0;
 
-    /* Allocate Memory For Variables */
-    new_class->stock_port_value_f = (double*) malloc( sizeof(double) );
-    new_class->stock_port_value_chg_f = (double*) malloc( sizeof(double) );
-    new_class->stock_port_value_p_chg_f = (double*) malloc( sizeof(double) );
-
     /* Initialize Variables */
     new_class->stock_port_value_ch = strdup( "$0.00" );   
     new_class->stock_port_value_chg_ch = strdup( "$0.00" ); 
     new_class->stock_port_value_p_chg_ch = strdup( "000.000%" );
 
-    *new_class->stock_port_value_f = 0.0f;
-    *new_class->stock_port_value_chg_f = 0.0f;
-    *new_class->stock_port_value_p_chg_f = 0.0f;
+    new_class->stock_port_value_f = 0.0f;
+    new_class->stock_port_value_chg_f = 0.0f;
+    new_class->stock_port_value_p_chg_f = 0.0f;
 
     /* Connect Function Pointers To Function Definitions */
     /* The functions do not need to have the same name as the pointer,
        but it is easier to follow this way. */
     new_class->DoubToStr = DoubToStr;
+    new_class->DoubToPerStr = DoubToPerStr;
     new_class->ToStrings = ToStrings;
     new_class->Calculate = Calculate;
     new_class->GenerateURL = GenerateURL;
@@ -479,48 +465,6 @@ equity_folder *class_init_equity_folder ()
 void class_destruct_equity (stock *stock_class)
 { 
     /* Free Memory From Variables */
-    if ( stock_class->num_shares_stock_int ) {
-        free( stock_class->num_shares_stock_int );
-        stock_class->num_shares_stock_int = NULL;
-    }
-    
-    if ( stock_class->current_price_stock_f ) { 
-        free( stock_class->current_price_stock_f ); 
-        stock_class->current_price_stock_f = NULL;
-    }
-    if ( stock_class->high_stock_f ) { 
-        free( stock_class->high_stock_f ); 
-        stock_class->high_stock_f = NULL;
-    }
-    if ( stock_class->low_stock_f ) { 
-        free( stock_class->low_stock_f ); 
-        stock_class->low_stock_f = NULL;
-    }
-    if ( stock_class->opening_stock_f ) { 
-        free( stock_class->opening_stock_f ); 
-        stock_class->opening_stock_f = NULL;
-    }
-    if ( stock_class->prev_closing_stock_f ) { 
-        free( stock_class->prev_closing_stock_f ); 
-        stock_class->prev_closing_stock_f = NULL;
-    }
-    if ( stock_class->change_share_f ) { 
-        free( stock_class->change_share_f ); 
-        stock_class->change_share_f = NULL;
-    }
-    if ( stock_class->change_value_f ) { 
-        free( stock_class->change_value_f ); 
-        stock_class->change_value_f = NULL;
-    }
-    if ( stock_class->change_percent_f ) { 
-        free( stock_class->change_percent_f ); 
-        stock_class->change_percent_f = NULL;
-    }
-
-	if ( stock_class->current_investment_stock_f ) {
-        free( stock_class->current_investment_stock_f ); 
-        stock_class->current_investment_stock_f = NULL;
-    }
 
 	if ( stock_class->current_price_stock_ch ) {
         free( stock_class->current_price_stock_ch );
@@ -597,14 +541,9 @@ void class_destruct_equity_folder (equity_folder *F)
     }
 
     /* Free Memory From Variables */
-    if ( F->stock_port_value_f ) free( F->stock_port_value_f );
-    if ( F->stock_port_value_chg_f ) free( F->stock_port_value_chg_f );
-    if ( F->stock_port_value_p_chg_f ) free( F->stock_port_value_p_chg_f );
-
     if ( F->stock_port_value_ch ) free( F->stock_port_value_ch );      
     if ( F->stock_port_value_chg_ch ) free( F->stock_port_value_chg_ch );
     if ( F->stock_port_value_p_chg_ch ) free( F->stock_port_value_p_chg_ch ); 
 
     if ( F ) free( F );
-
 }

@@ -30,9 +30,10 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <unistd.h>     /* usleep() */
+#include <stdbool.h>
 #include <time.h>       /* localtime_r(), mktime(), time(), difftime(), struct tm */
 #include <math.h>
-#include <stdbool.h>
 
 #include <sys/time.h>   /* gettimeofday(), struct timeval */
 
@@ -70,77 +71,6 @@ unsigned int ClockSleepSeconds (){
 
     localtime_r( &currenttime, &tm_struct );
     return ( 60 - tm_struct.tm_sec );
-}
-
-char* MonthNameStr ( int month ){
-    enum { JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV };
-
-    switch ( month ){
-        case JAN:
-            return "January";
-            break;
-        case FEB:
-            return "February";
-            break;
-        case MAR:
-            return "March";
-            break;
-        case APR:
-            return "April";
-            break;
-        case MAY:
-            return "May";
-            break;
-        case JUN:
-            return "June";
-            break;
-        case JUL:
-            return "July";
-            break;
-        case AUG:
-            return "August";
-            break;
-        case SEP:
-            return "September";
-            break;
-        case OCT:
-            return "October";
-            break;
-        case NOV:
-            return "November";
-            break;
-        default: /* DEC */
-            return "December";
-            break;
-    }
-}
-
-char* WeekDayStr ( int weekday ){
-    enum { SUN, MON, TUES, WEDS, THURS, FRI };
-
-    switch ( weekday ){
-        case SUN:
-            return "Sunday";
-            break;
-        case MON:
-            return "Monday";
-            break;
-        case TUES:
-            return "Tuesday";
-            break;
-        case WEDS:
-            return "Wednesday";
-            break;
-        case THURS:
-            return "Thursday";
-            break;
-        case FRI:
-            return "Friday";
-            break;
-        default: /* SAT */
-            return "Saturday";
-            break;
-    }
 }
 
 void NYTime ( int *ny_h, int *ny_m ) {
@@ -303,7 +233,7 @@ bool CheckHoliday (struct tm NY_tz){
     return false;
 }
 
-bool TimeToClose ( bool holiday, int *h_r, int *m_r, int *s_r ) {
+bool TimeToClose ( int *h_r, int *m_r, int *s_r ) {
     /* The NYSE/NASDAQ Markets are open from 09:30 to 16:00 EST. */
     struct tm NY_tz;
     bool closed;
@@ -326,7 +256,7 @@ bool TimeToClose ( bool holiday, int *h_r, int *m_r, int *s_r ) {
     hour_closed_black_friday_NY = CLOSING_HOUR_BLACK_FRIDAY;
     
     /* Closed */
-    if( holiday || hour < hour_open_NY || ( hour == hour_open_NY && min < OPEN_MINUTE ) || hour >= hour_closed_NY || weekday % 6 == 0 ){
+    if( CheckHoliday ( NY_tz ) || hour < hour_open_NY || ( hour == hour_open_NY && min < OPEN_MINUTE ) || hour >= hour_closed_NY || weekday % 6 == 0 ){
         *h_r = 0;
         *m_r = 0;
         *s_r = 0;
@@ -518,26 +448,19 @@ static void date_adjustment ( struct tm *NY_tz )
     return;
 }
 
-unsigned int SecondsToOpen () {
-    /* The seconds until the NYSE/NASDAQ markets open. */
+bool MarketOpen () 
+/* This function is faster if all we need to know 
+   is whether the market is open or closed. */
+{
     struct tm NY_tz;
-    time_t currenttime, futuretime;
-    unsigned int diff;
-
-    /* Get the localtime in NY from Epoch seconds 
-       We need to do this to account for DST changes when
-       determining the future Epoch time. 
-    */
 
     NY_tz = NYTimeComponents ();    
 
     int hour = (NY_tz.tm_hour)%24;
     int min = NY_tz.tm_min;
     int weekday = NY_tz.tm_wday;
-    int hour_open_NY, hour_closed_NY;
-
-    hour_open_NY = OPEN_HOUR;
-    hour_closed_NY = CLOSING_HOUR;
+    int hour_open_NY = OPEN_HOUR;
+    int hour_closed_NY = CLOSING_HOUR;
 
     /* If today isn't Sat or Sun */
     /* 6 % 6 == 0, 0 % 6 == 0 */
@@ -547,10 +470,29 @@ unsigned int SecondsToOpen () {
             /* If today is not a holiday */
             if ( !CheckHoliday ( NY_tz ) ) {
                 /* The market is open */
-                return 0;
+                return true;
             }
         }
     }
+
+    /* The market is closed */
+    return false;
+}
+
+unsigned int SecondsToOpen () {
+    /* The seconds until the NYSE/NASDAQ markets open. */
+    struct tm NY_tz;
+    time_t currenttime, futuretime;
+    unsigned int diff;    
+
+    /* If the market is open; zero seconds to open. */
+    if ( MarketOpen() ) return 0;
+
+    /* Get the localtime in NY from Epoch seconds 
+       We need to do this to account for DST changes when
+       determining the future Epoch time. 
+    */
+    NY_tz = NYTimeComponents ();    
     
     /* Find when the market opens */
     date_adjustment ( &NY_tz );
@@ -558,6 +500,9 @@ unsigned int SecondsToOpen () {
     /* The future NY EST/EDST date to time in Epoch seconds. */
     /* Takes into account daylight-savings time. */
     futuretime = mktime( &NY_tz );
+
+    /* Sleep until the end of the current second. */
+    usleep( ClockSleepMicroSeconds () );
 
     /* The current time in Epoch seconds */
     time( &currenttime );

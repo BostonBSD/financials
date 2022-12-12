@@ -51,8 +51,6 @@ void SqliteAddMainWindowPos (int,int,meta*);
 void SqliteAddRSIWindowSize (int,int,meta*);
 void SqliteAddRSIWindowPos (int,int,meta*);
 
-void SqliteAddExpanderBarExpanded (bool,meta*);
-
 symbol_name_map *SqliteGetSymbolNameMap (meta*);
 void SqliteAddMap (symbol_name_map*,meta*);
 

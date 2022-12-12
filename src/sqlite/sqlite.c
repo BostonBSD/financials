@@ -65,11 +65,10 @@ static int cash_callback (void *data, int argc, char **argv, char **ColName) {
 
     meta *mdata = (meta*)data;
 
-    *mdata->cash_f = mdata->StrToDoub( argv[1] ? argv[1] : "0" );
-    free( mdata->cash_ch );
+    mdata->cash_f = mdata->StrToDoub( argv[1] ? argv[1] : "0" );
 
     /* To make sure it's formatted correctly. */
-    mdata->cash_ch = mdata->DoubToStr( mdata->cash_f );
+    mdata->DoubToStr( &mdata->cash_ch, mdata->cash_f );
 
     pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
     return 0;
@@ -88,63 +87,35 @@ static int bullion_callback (void *data, int argc, char **argv, char **ColName) 
     metal *m = (metal*)data;
 
     if( strcasecmp( argv[1], "gold" ) == 0 ){
-        *m->Gold->ounce_f = m->Gold->StrToDoub ( argv[2] ? argv[2] : "0" );
-
-        free( m->Gold->ounce_ch );
-        m->Gold->ounce_ch = strdup ( argv[2] ? argv[2] : "0" );
-        /* To make sure it's formatted correctly. */
-        FormatStr( m->Gold->ounce_ch );
+        m->Gold->ounce_f = m->Gold->StrToDoub ( argv[2] ? argv[2] : "0" );
+        m->Gold->DoubToNumStr( &m->Gold->ounce_ch, m->Gold->ounce_f );
         
-        *m->Gold->premium_f = m->Gold->StrToDoub ( argv[3] ? argv[3] : "0" );
-
-        free( m->Gold->premium_ch );
-        /* To make sure it's formatted correctly. */
-        m->Gold->premium_ch = m->Gold->DoubToStr( m->Gold->premium_f );
+        m->Gold->premium_f = m->Gold->StrToDoub ( argv[3] ? argv[3] : "0" );
+        m->Gold->DoubToStr( &m->Gold->premium_ch, m->Gold->premium_f );
     }
 
     if( strcasecmp( argv[1], "silver" ) == 0 ){
-        *m->Silver->ounce_f = m->Silver->StrToDoub ( argv[2] ? argv[2] : "0" );
-
-        free( m->Silver->ounce_ch );
-        m->Silver->ounce_ch = strdup ( argv[2] ? argv[2] : "0" );
-        /* To make sure it's formatted correctly. */
-        FormatStr( m->Silver->ounce_ch );
+        m->Silver->ounce_f = m->Silver->StrToDoub ( argv[2] ? argv[2] : "0" );
+        m->Silver->DoubToNumStr( &m->Silver->ounce_ch, m->Silver->ounce_f );
         
-        *m->Silver->premium_f = m->Silver->StrToDoub ( argv[3] ? argv[3] : "0" );
-
-        free( m->Silver->premium_ch );
-        /* To make sure it's formatted correctly. */
-        m->Silver->premium_ch = m->Silver->DoubToStr( m->Silver->premium_f );
+        m->Silver->premium_f = m->Silver->StrToDoub ( argv[3] ? argv[3] : "0" );
+        m->Silver->DoubToStr( &m->Silver->premium_ch, m->Silver->premium_f );
     }
 
     if( strcasecmp( argv[1], "platinum" ) == 0 ){
-        *m->Platinum->ounce_f = m->Platinum->StrToDoub ( argv[2] ? argv[2] : "0" );
-
-        free( m->Platinum->ounce_ch );
-        m->Platinum->ounce_ch = strdup ( argv[2] ? argv[2] : "0" );
-        /* To make sure it's formatted correctly. */
-        FormatStr( m->Platinum->ounce_ch );
+        m->Platinum->ounce_f = m->Platinum->StrToDoub ( argv[2] ? argv[2] : "0" );
+        m->Platinum->DoubToNumStr( &m->Platinum->ounce_ch, m->Platinum->ounce_f );
         
-        *m->Platinum->premium_f = m->Platinum->StrToDoub ( argv[3] ? argv[3] : "0" );
-
-        free( m->Platinum->premium_ch );
-        /* To make sure it's formatted correctly. */
-        m->Platinum->premium_ch = m->Platinum->DoubToStr( m->Platinum->premium_f );
+        m->Platinum->premium_f = m->Platinum->StrToDoub ( argv[3] ? argv[3] : "0" );
+        m->Platinum->DoubToStr( &m->Platinum->premium_ch, m->Platinum->premium_f );
     }
 
     if( strcasecmp( argv[1], "palladium" ) == 0 ){
-        *m->Palladium->ounce_f = m->Palladium->StrToDoub ( argv[2] ? argv[2] : "0" );
-
-        free( m->Palladium->ounce_ch );
-        m->Palladium->ounce_ch = strdup ( argv[2] ? argv[2] : "0" );
-        /* To make sure it's formatted correctly. */
-        FormatStr( m->Palladium->ounce_ch );
+        m->Palladium->ounce_f = m->Palladium->StrToDoub ( argv[2] ? argv[2] : "0" );
+        m->Palladium->DoubToNumStr( &m->Palladium->ounce_ch, m->Palladium->ounce_f );
         
-        *m->Palladium->premium_f = m->Palladium->StrToDoub ( argv[3] ? argv[3] : "0" );
-
-        free( m->Palladium->premium_ch );
-        /* To make sure it's formatted correctly. */
-        m->Palladium->premium_ch = m->Palladium->DoubToStr( m->Palladium->premium_f );
+        m->Palladium->premium_f = m->Palladium->StrToDoub ( argv[3] ? argv[3] : "0" );
+        m->Palladium->DoubToStr( &m->Palladium->premium_ch, m->Palladium->premium_f );
     }
 
     pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
@@ -182,18 +153,26 @@ static int api_callback (void *data, int argc, char **argv, char **ColName) {
     }
 
     if ( strcasecmp( argv[1], "Updates_Per_Min") == 0 ){
-        *mdata->updates_per_min_f = strtod( argv[2] ? argv[2] : "6", NULL );
+        mdata->updates_per_min_f = strtod( argv[2] ? argv[2] : "6", NULL );
     }
 
     if ( strcasecmp( argv[1], "Updates_Hours") == 0 ){
-        *mdata->updates_hours_f = strtod( argv[2] ? argv[2] : "1", NULL );
+        mdata->updates_hours_f = strtod( argv[2] ? argv[2] : "1", NULL );
     }
 
     if ( strcasecmp( argv[1], "Clocks_Displayed") == 0 ){
         if ( strcasecmp( argv[2] ? argv[2] : "true", "true" ) == 0 ){
-            *mdata->clocks_displayed_bool = true;
+            mdata->clocks_displayed_bool = true;
         } else {
-            *mdata->clocks_displayed_bool = false;
+            mdata->clocks_displayed_bool = false;
+        }
+    }
+
+    if ( strcasecmp( argv[1], "Indices_Displayed") == 0 ){
+        if ( strcasecmp( argv[2] ? argv[2] : "true", "true" ) == 0 ){
+            mdata->index_bar_revealed_bool = true;
+        } else {
+            mdata->index_bar_revealed_bool = false;
         }
     }
 
@@ -270,26 +249,6 @@ static int rsi_wndwpos_callback (void *data, int argc, char **argv, char **ColNa
     return 0;
 }
 
-static int index_bar_expanded_callback (void *data, int argc, char **argv, char **ColName) {
-    pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
-
-    /* argv[0] is Id, argv[1] is Expanded */
-    if ( argc != 2 ) return 1;
-    if ( strcmp( ColName[0], "Id") != 0 ) return 1;
-    if ( strcmp( ColName[1], "Expanded") != 0 ) return 1;
-
-    meta *mdata = (meta*)data;
-
-    if ( strcasecmp( "true", argv[1] ? argv[1] : "true" ) == 0 ){
-        *mdata->index_bar_expanded_bool = true;
-    } else {
-        *mdata->index_bar_expanded_bool = false;
-    }
-
-    pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
-    return 0;
-}
-
 static int symbol_name_callback (void *data, int argc, char **argv, char **ColName) {
     /* argv[0] is Id, argv[1] is symbol, argv[2] is name */
     if ( argc != 3 ) return 1;
@@ -319,6 +278,8 @@ void SqliteProcessing ( portfolio_packet *pkg ){
     char    *err_msg = 0;
     sqlite3 *db;
 
+    pthread_mutex_lock( &mutex_working [ SYMBOL_NAME_MAP_SQLITE_MUTEX ] ); 
+
     /* Open the sqlite symbol-name database file. */
     if ( sqlite3_open( D->sqlite_symbol_name_db_path_ch, &db) != SQLITE_OK ) error_msg( db );
 
@@ -328,6 +289,9 @@ void SqliteProcessing ( portfolio_packet *pkg ){
 
     /* Close the sqlite symbol-name database file. */
     sqlite3_close( db );
+    
+    pthread_mutex_unlock( &mutex_working [ SYMBOL_NAME_MAP_SQLITE_MUTEX ] ); 
+    pthread_mutex_lock( &mutex_working [ SQLITE_MUTEX ] );
 
     /* Open the regular config sqlite database file. */
     if ( sqlite3_open( D->sqlite_db_path_ch, &db) != SQLITE_OK ) error_msg( db );
@@ -364,10 +328,6 @@ void SqliteProcessing ( portfolio_packet *pkg ){
     sql_cmd = "CREATE TABLE IF NOT EXISTS rsiwindowpos(Id INTEGER PRIMARY KEY, X TEXT NOT NULL, Y TEXT NOT NULL);";
     if ( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK ) error_msg( db );
 
-    /* Create the indexbarexpander table if it doesn't already exist. */
-    sql_cmd = "CREATE TABLE IF NOT EXISTS indexbarexpander(Id INTEGER PRIMARY KEY, Expanded TEXT NOT NULL);";
-    if ( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK ) error_msg( db );
-
     /* Reset Equity Folder */
     F->Reset ();
 
@@ -396,9 +356,6 @@ void SqliteProcessing ( portfolio_packet *pkg ){
     sql_cmd = "SELECT * FROM rsiwindowpos;";
     if ( sqlite3_exec(db, sql_cmd, rsi_wndwpos_callback, W, &err_msg) != SQLITE_OK ) error_msg( db );
 
-    sql_cmd = "SELECT * FROM indexbarexpander;";
-    if ( sqlite3_exec(db, sql_cmd, index_bar_expanded_callback, D, &err_msg) != SQLITE_OK ) error_msg( db );
-
     if( W->main_width == 0 || W->main_height == 0 ){
         /* The Original Production Size, if never run before */
         W->main_width = 900;
@@ -424,6 +381,8 @@ void SqliteProcessing ( portfolio_packet *pkg ){
     /* Close the sqlite database file. */
     sqlite3_close( db );
 
+    pthread_mutex_unlock( &mutex_working [ SQLITE_MUTEX ] );
+
     /* Sort the equity folder. */
     F->Sort ();
 
@@ -432,6 +391,8 @@ void SqliteProcessing ( portfolio_packet *pkg ){
 }
 
 void SqliteAddEquity (char *symbol, char *shares, meta *D){
+    pthread_mutex_lock( &mutex_working [ SQLITE_MUTEX ] );
+
     size_t  len;
     char    *err_msg = 0;
     sqlite3 *db;
@@ -454,9 +415,13 @@ void SqliteAddEquity (char *symbol, char *shares, meta *D){
 
     /* Close the sqlite database file. */
     sqlite3_close( db );
+
+    pthread_mutex_unlock( &mutex_working [ SQLITE_MUTEX ] );
 }
 
 void SqliteAddBullion (char *metal_name, char *ounces, char *premium, metal *M, meta *D){
+    pthread_mutex_lock( &mutex_working [ SQLITE_MUTEX ] );
+
     size_t  len;
     char    *err_msg = 0;
     sqlite3 *db;
@@ -482,9 +447,13 @@ void SqliteAddBullion (char *metal_name, char *ounces, char *premium, metal *M, 
 
     /* Close the sqlite database file. */
     sqlite3_close( db );
+
+    pthread_mutex_unlock( &mutex_working [ SQLITE_MUTEX ] );
 }
 
 void SqliteAddCash (char *value, meta *D){
+    pthread_mutex_lock( &mutex_working [ SQLITE_MUTEX ] );
+
     size_t  len;
     char    *err_msg = 0;
     sqlite3 *db;
@@ -507,9 +476,13 @@ void SqliteAddCash (char *value, meta *D){
 
     /* Close the sqlite database file. */
     sqlite3_close( db );
+
+    pthread_mutex_unlock( &mutex_working [ SQLITE_MUTEX ] );
 }
 
 void SqliteAddAPIData (char *keyword, char *data, meta *D){
+    pthread_mutex_lock( &mutex_working [ SQLITE_MUTEX ] );
+
     size_t  len;
     char    *err_msg = 0;
     sqlite3 *db;
@@ -532,9 +505,13 @@ void SqliteAddAPIData (char *keyword, char *data, meta *D){
 
     /* Close the sqlite database file. */
     sqlite3_close( db );
+
+    pthread_mutex_unlock( &mutex_working [ SQLITE_MUTEX ] );
 }
 
 void SqliteRemoveEquity (char *symbol, meta *D){
+    pthread_mutex_lock( &mutex_working [ SQLITE_MUTEX ] );
+
     size_t  len;
     char    *err_msg = 0;
     sqlite3 *db;
@@ -551,9 +528,13 @@ void SqliteRemoveEquity (char *symbol, meta *D){
 
     /* Close the sqlite database file. */
     sqlite3_close ( db );
+
+    pthread_mutex_unlock( &mutex_working [ SQLITE_MUTEX ] );
 }
 
 void SqliteRemoveAllEquity (meta *D){
+    pthread_mutex_lock( &mutex_working [ SQLITE_MUTEX ] );
+
     char    *err_msg = 0;
     sqlite3 *db;
 
@@ -568,9 +549,13 @@ void SqliteRemoveAllEquity (meta *D){
 
     /* Close the sqlite database file. */
     sqlite3_close( db );
+
+    pthread_mutex_unlock( &mutex_working [ SQLITE_MUTEX ] );
 }
 
 void SqliteAddMainWindowSize (int width, int height, meta *D){
+    pthread_mutex_lock( &mutex_working [ SQLITE_MUTEX ] );
+
     size_t  len;
     char    *err_msg = 0;
     sqlite3 *db;
@@ -589,9 +574,13 @@ void SqliteAddMainWindowSize (int width, int height, meta *D){
 
     /* Close the sqlite database file. */
     sqlite3_close( db );
+
+    pthread_mutex_unlock( &mutex_working [ SQLITE_MUTEX ] );
 }
 
 void SqliteAddMainWindowPos (int x, int y, meta *D){
+    pthread_mutex_lock( &mutex_working [ SQLITE_MUTEX ] );
+
     size_t  len;
     char    *err_msg = 0;
     sqlite3 *db;
@@ -610,9 +599,13 @@ void SqliteAddMainWindowPos (int x, int y, meta *D){
 
     /* Close the sqlite database file. */
     sqlite3_close( db );
+
+    pthread_mutex_unlock( &mutex_working [ SQLITE_MUTEX ] );
 }
 
 void SqliteAddRSIWindowSize (int width, int height, meta *D){
+    pthread_mutex_lock( &mutex_working [ SQLITE_MUTEX ] );
+
     size_t  len;
     char    *err_msg = 0;
     sqlite3 *db;
@@ -631,9 +624,13 @@ void SqliteAddRSIWindowSize (int width, int height, meta *D){
 
     /* Close the sqlite database file. */
     sqlite3_close( db );
+
+    pthread_mutex_unlock( &mutex_working [ SQLITE_MUTEX ] );
 }
 
 void SqliteAddRSIWindowPos (int x, int y, meta *D){
+    pthread_mutex_lock( &mutex_working [ SQLITE_MUTEX ] );
+
     size_t  len;
     char    *err_msg = 0;
     sqlite3 *db;
@@ -652,36 +649,13 @@ void SqliteAddRSIWindowPos (int x, int y, meta *D){
 
     /* Close the sqlite database file. */
     sqlite3_close( db );
-}
 
-void SqliteAddExpanderBarExpanded (bool val, meta *D){
-    size_t  len;
-    char    *err_msg = 0, *value;
-    sqlite3 *db;
-
-    if( val == true ){
-        value = "true";
-    } else {
-        value = "false";
-    }
-
-    /* Open the sqlite database file. */
-    if ( sqlite3_open( D->sqlite_db_path_ch, &db) != SQLITE_OK ) error_msg( db );
-
-    /* Delete entry if already exists, then insert entry. */
-    if ( sqlite3_exec(db, "DELETE FROM indexbarexpander WHERE Id = 1;", 0, 0, &err_msg) != SQLITE_OK ) error_msg( db );
-
-    len = strlen("INSERT INTO indexbarexpander VALUES(1, '');") + strlen( value ) + 1;
-    char *sql_cmd = (char*) malloc( len );
-    snprintf( sql_cmd, len, "INSERT INTO indexbarexpander VALUES(1, '%s');", value );
-    if ( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK ) error_msg( db );
-    free( sql_cmd );
-
-    /* Close the sqlite database file. */
-    sqlite3_close( db );
+    pthread_mutex_unlock( &mutex_working [ SQLITE_MUTEX ] );
 }
 
 symbol_name_map *SqliteGetSymbolNameMap (meta *D){
+    pthread_mutex_lock( &mutex_working [ SYMBOL_NAME_MAP_SQLITE_MUTEX ] );
+
     char    *err_msg = 0;
     sqlite3 *db;
     symbol_name_map *sn_map = (symbol_name_map*) malloc ( sizeof(*sn_map) );
@@ -700,8 +674,10 @@ symbol_name_map *SqliteGetSymbolNameMap (meta *D){
     if ( sn_map->size == 0 ){
         free ( sn_map->sn_container_arr );
         free ( sn_map );
+        pthread_mutex_unlock( &mutex_working [ SYMBOL_NAME_MAP_SQLITE_MUTEX ] );
         return NULL;
     } else {
+        pthread_mutex_unlock( &mutex_working [ SYMBOL_NAME_MAP_SQLITE_MUTEX ] );
         return sn_map;
     }
 }

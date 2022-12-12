@@ -92,7 +92,6 @@ void *GUIThreadHandler (void *data){
        thread [same index signal] to terminate, before running. */
     sem_wait( &semaphore[ index_signal ] );
 
-    unsigned int seconds_to_open;
     double loop_val, diff, seconds_per_iteration;
     time_t current_time, end_time;
     time_t start_curl, end_curl; 
@@ -154,7 +153,7 @@ void *GUIThreadHandler (void *data){
                 gdk_threads_add_idle ( MainPrimaryTreeview, packet );
            
                 /* If hours to update is zero, loop canceled, or the market is closed; only loop once. */
-                if( loop_val == 1.0f || !packet->IsFetchingData () || packet->SecondsToOpen () ) {
+                if( loop_val == 1.0f || !packet->IsFetchingData () || !MarketOpen () ) {
                     break;
                 }
 
@@ -194,11 +193,6 @@ void *GUIThreadHandler (void *data){
             gdk_threads_add_idle ( AddRemOk, packet );           
 
             break;
-
-        case EQUITY_SWITCH:
-            gdk_threads_add_idle( AddRemSwitchChange, NULL );
-            break;
-
         case EQUITY_COMBO_BOX:
             gdk_threads_add_idle( AddRemComBoxChange, NULL );
             break;
@@ -219,7 +213,7 @@ void *GUIThreadHandler (void *data){
             pthread_mutex_unlock ( &mutex_working[ FETCH_DATA_MUTEX ] );
 
             gdk_threads_add_idle ( BullionShowHide, packet );
-            if( packet->IsFetchingData () == false ) {
+            if( packet->IsFetchingData () == false && packet->IsDefaultView () ) {
                 gdk_threads_add_idle ( MainDefaultTreeview, packet );
             } else {
                 packet->Calculate ();
@@ -249,7 +243,7 @@ void *GUIThreadHandler (void *data){
             pthread_mutex_unlock ( &mutex_working[ FETCH_DATA_MUTEX ] );
 
             gdk_threads_add_idle ( CashShowHide, packet );
-            if( packet->IsFetchingData () == false ) {
+            if( packet->IsFetchingData () == false && packet->IsDefaultView () ) {
                 gdk_threads_add_idle ( MainDefaultTreeview, packet );
             } else {
                 packet->Calculate ();
@@ -276,15 +270,20 @@ void *GUIThreadHandler (void *data){
 
             gdk_threads_add_idle ( APIShowHide, packet );
             break;
-
-        case API_SYMBOL_UPDATE_BTN:
+        case API_CURSOR_MOVE:
+            gdk_threads_add_idle( APICursorMove, NULL );
+            break;
+        case PREF_TOGGLE_BTN:
+            gdk_threads_add_idle ( PrefShowHide, packet );
+            break;
+        case PREF_SYMBOL_UPDATE_BTN:
             pthread_mutex_lock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
 
-            gdk_threads_add_idle( APIStartSpinner, NULL );
+            gdk_threads_add_idle( PrefSymBtnStart, NULL );
             sym_map = packet->GetSymNameMap ();
             sym_map = SymNameFetchUpdate ( packet, sym_map );
             packet->SetSymNameMap( sym_map );
-            gdk_threads_add_idle( APIStopSpinner, NULL );
+            gdk_threads_add_idle( PrefSymBtnStop, NULL );
 
             if ( packet->IsCurlCanceled () ) {
                 pthread_mutex_unlock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
@@ -300,11 +299,6 @@ void *GUIThreadHandler (void *data){
             pthread_mutex_unlock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
 
             break;
-
-        case API_CURSOR_MOVE:
-            gdk_threads_add_idle( APICursorMove, NULL );
-            break;
-
         case RSI_TOGGLE_BTN:
             gdk_threads_add_idle( RSITreeViewClear, NULL );
             gdk_threads_add_idle( RSIShowHide, packet );
@@ -402,23 +396,20 @@ void *GUIThreadHandler (void *data){
             }
             break;
         case MAIN_TIME_CLOSE_INDICATOR: 
-            packet->SetHoliday ();         
-            seconds_to_open = packet->SecondsToOpen ();
+            packet->SetHoliday ();
             while ( 1 )
-            {
-                if ( seconds_to_open == 0 ){
+            {          
+                /* MarketOpen () will take into account holidays, 
+                   including the black friday early close. */  
+                if ( MarketOpen () ){
                     gdk_threads_add_idle ( MainDisplayTimeRemaining, packet );
                     usleep( (useconds_t)ClockSleepMicroSeconds () );
-                    
-                } else {
+                } else { 
                     packet->SetHoliday ();
                     gdk_threads_add_idle ( MainDisplayTimeRemaining, packet );
-                    sleep( seconds_to_open );
+                    sleep( packet->SecondsToOpen () );
                     packet->SetHoliday ();
-                } 
-                /* SecondsToOpen () will take into account holidays, 
-                   including the black friday early close. */
-                seconds_to_open = packet->SecondsToOpen ();             
+                }           
             }
             break;
 
@@ -451,7 +442,6 @@ void *GUIThreadHandler (void *data){
             pthread_mutex_unlock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
             pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
             break;
-
         default:
             break;
     }

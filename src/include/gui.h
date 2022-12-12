@@ -51,18 +51,18 @@ int MainDisplayClocks (void*);
 
 /* gui_equity */
 int AddRemShowHide (void*);
-int AddRemSwitchChange ();
 int AddRemOk (void*);
 int AddRemComBoxChange ();
 int AddRemCursorMove ();
 int AddRemCompletionSet (void*);
 
 /* gui_other_wins */
+int PrefShowHide (void*);
+int PrefSymBtnStart ();
+int PrefSymBtnStop ();
 int APIShowHide (void*);
 int APIOk (void*);
 int APICursorMove ();
-int APIStartSpinner ();
-int APIStopSpinner ();
 int BullionComBoxChange ();
 int BullionShowHide (void*);
 int BullionOk (void*);
@@ -83,10 +83,13 @@ int RSISetSNLabel (void*);
 int RSIGetSymbol (char**);
 
 /* GUI Callback Functions */
-void GUICallbackHandler_add_rem_switch (GtkSwitch*,bool,void*);
 void GUICallbackHandler (GtkWidget*,void*);
-gboolean GUICallbackHandler_hide_rsi_on_delete (GtkWidget*,GdkEvent*,void*);
-gboolean GUICallbackHandler_expander_bar (GtkWidget*,void*);
+void GUICallbackHandler_add_rem_stack (GObject*,GParamSpec*,void*);
+gboolean GUICallbackHandler_pref_clock_switch (GtkSwitch*,bool,void*);
+gboolean GUICallbackHandler_pref_indices_switch (GtkSwitch*,bool,void*);
+void GUICallbackHandler_pref_up_min_combobox (GtkComboBox*);
+void GUICallbackHandler_pref_hours_spinbutton (GtkEditable*);
+gboolean GUICallbackHandler_hide_window_on_delete (GtkWidget*,GdkEvent*,void*);
 gboolean GUICallbackHandler_window_data (GtkWidget*,GdkEvent*,void*);
 gboolean GUICallbackHandler_select_comp (GtkEntryCompletion*,GtkTreeModel*,GtkTreeIter*);
 gboolean GUICallbackHandler_cursor_comp (GtkEntryCompletion*,GtkTreeModel*,GtkTreeIter*);

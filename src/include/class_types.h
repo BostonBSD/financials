@@ -42,10 +42,10 @@ POSSIBILITY OF SUCH DAMAGE.
 
 /* Method prototypes used by these classes
    Define the function pointer type here. */
-typedef double sub_func_a_t (const unsigned int*,const double*);
-typedef double sub_func_b_t (const double*,const double*,const double*);
-typedef double sub_func_c_t (const double*,const double*,const double*,const double*);
-typedef char* sub_func_d_t (const double*);
+typedef double sub_func_a_t (const unsigned int,const double);
+typedef double sub_func_b_t (const double,const double,const double);
+typedef double sub_func_c_t (const double,const double,const double,const double);
+typedef void sub_func_d_t (char**,const double);
 typedef double sub_func_e_t (const char*);
 typedef void* sub_func_f_t ();
 typedef void sub_func_g_t ();
@@ -62,20 +62,18 @@ typedef void sub_func_p_t (char*,char*);
 /* class type definitions (emulated class definitions; C doesn't really have class types) */
 typedef struct {
     /* Data Variables */
-    char* url_ch;
+	double spot_price_f;
+    double premium_f;
+    double port_value_f;
+    double ounce_f;
 
-	double* spot_price_f;
-    double* premium_f;
-    double* port_value_f;
-    double* ounce_f;
-
-    double* high_metal_f; 
-	double* low_metal_f;
-    double* prev_closing_metal_f;
-    double* change_ounce_f;
-    double* change_value_f;
-    double* change_percent_f;
-    double* change_percent_raw_f;          
+    double high_metal_f; 
+	double low_metal_f;
+    double prev_closing_metal_f;
+    double change_ounce_f;
+    double change_value_f;
+    double change_percent_f;
+    double change_percent_raw_f;          
 
     char* spot_price_ch;            
     char* premium_ch; 
@@ -90,6 +88,8 @@ typedef struct {
     char* change_percent_ch;
     char* change_percent_raw_ch;           /* The gain not including premium values. */
 
+    char* url_ch;
+
     CURL* YAHOO_hnd;                        /* Bullion cURL Easy Handle. */
     MemType CURLDATA;
 
@@ -99,24 +99,26 @@ typedef struct {
     */
     sub_func_b_t* Stake;
     sub_func_d_t* DoubToStr;
+    sub_func_d_t* DoubToPerStr;
+    sub_func_d_t* DoubToNumStr;
     sub_func_e_t* StrToDoub;
     
 } bullion;
 
 typedef struct {
     /* Data Variables */
-	unsigned int* num_shares_stock_int;     /* Cannot hold more than 4294967295 shares of stock on most 64-bit machines */        
+	unsigned int num_shares_stock_int;     /* Cannot hold more than 4294967295 shares of stock on most 64-bit machines */        
 
-    double* current_price_stock_f;
-    double* high_stock_f; 
-	double* low_stock_f;
-    double* opening_stock_f; 
-    double* prev_closing_stock_f;
-    double* change_share_f;
-    double* change_value_f;
-    double* change_percent_f;
+    double current_price_stock_f;
+    double high_stock_f; 
+	double low_stock_f;
+    double opening_stock_f; 
+    double prev_closing_stock_f;
+    double change_share_f;
+    double change_value_f;
+    double change_percent_f;
 
-	double* current_investment_stock_f;    
+	double current_investment_stock_f;    
 
     char* current_price_stock_ch;
     char* high_stock_ch; 
@@ -141,36 +143,37 @@ typedef struct {
     */
     sub_func_a_t* Stake;
     sub_func_d_t* DoubToStr;
+    sub_func_d_t* DoubToPerStr;
     sub_func_e_t* StrToDoub;
 
 } stock;
 
 typedef struct {
     /* Data Variables */
-    double* cash_f;
+    double cash_f;
     
-    double* portfolio_port_value_f;
-    double* portfolio_port_value_chg_f;
-    double* portfolio_port_value_p_chg_f;
+    double portfolio_port_value_f;
+    double portfolio_port_value_chg_f;
+    double portfolio_port_value_p_chg_f;
 
-    double* index_dow_value_f;
-    double* index_dow_value_chg_f;
-    double* index_dow_value_p_chg_f;
+    double index_dow_value_f;
+    double index_dow_value_chg_f;
+    double index_dow_value_p_chg_f;
 
-    double* index_nasdaq_value_f;
-    double* index_nasdaq_value_chg_f;
-    double* index_nasdaq_value_p_chg_f;
+    double index_nasdaq_value_f;
+    double index_nasdaq_value_chg_f;
+    double index_nasdaq_value_p_chg_f;
 
-    double* index_sp_value_f;
-    double* index_sp_value_chg_f;
-    double* index_sp_value_p_chg_f;
+    double index_sp_value_f;
+    double index_sp_value_chg_f;
+    double index_sp_value_p_chg_f;
 
-    double* crypto_bitcoin_value_f;
-    double* crypto_bitcoin_value_chg_f;
-    double* crypto_bitcoin_value_p_chg_f;
+    double crypto_bitcoin_value_f;
+    double crypto_bitcoin_value_chg_f;
+    double crypto_bitcoin_value_p_chg_f;
     
-    double* updates_per_min_f;
-    double* updates_hours_f;
+    double updates_per_min_f;
+    double updates_hours_f;
 
     char* stock_url_ch;                        /* First component of the stock request URL */
 	char* curl_key_ch;                         /* Last component of the stock request URL */
@@ -202,11 +205,13 @@ typedef struct {
     char* sqlite_db_path_ch;                /* Path to the sqlite db file */
     char* sqlite_symbol_name_db_path_ch;    /* Path to the sqlite symbol-name db file */
 
-    bool* fetching_data_bool;               /* Indicates a fetch operation in progress. */
-    bool* holiday_bool;                     /* Indicates if today is a holiday. */
-    bool* multicurl_cancel_bool;            /* Indicates if we should cancel the multicurl request. */
-    bool* index_bar_expanded_bool;          /* Indicates if the indices bar is expanded or not. */
-    bool* clocks_displayed_bool;          /* Indicates if the clocks are displayed or not. */
+    bool fetching_data_bool;               /* Indicates a fetch operation in progress. */
+    bool holiday_bool;                     /* Indicates if today is a holiday. */
+    bool multicurl_cancel_bool;            /* Indicates if we should cancel the multicurl request. */
+    bool index_bar_revealed_bool;          /* Indicates if the indices bar is revealed or not. */
+    bool clocks_displayed_bool;            /* Indicates if the clocks are displayed or not. */
+    bool main_win_default_view_bool;       /* Indicates if the main window treeview is displaying 
+                                              the default or the primary view. Default is true. */
 
     CURL* rsi_hnd;                          /* RSI Data cURL Easy Handle. */
     CURL* NASDAQ_completion_hnd;            /* RSI NASDAQ Symbol list cURL Easy Handle. */
@@ -231,6 +236,7 @@ typedef struct {
     */
     sub_func_b_t* EntireStake;
     sub_func_d_t* DoubToStr;
+    sub_func_d_t* DoubToPerStr;
     sub_func_e_t* StrToDoub;
     sub_func_g_t* ToStringsPortfolio;
     sub_func_o_t* CalculatePortfolio;
@@ -249,10 +255,10 @@ typedef struct {
     bullion* Palladium;
 
     /* Data Variables */
-    double* bullion_port_value_f;
-    double* bullion_port_value_chg_f;
-    double* bullion_port_value_p_chg_f;
-    double* gold_silver_ratio_f;
+    double bullion_port_value_f;
+    double bullion_port_value_chg_f;
+    double bullion_port_value_p_chg_f;
+    double gold_silver_ratio_f;
 
     char* bullion_port_value_ch;            /* Total value of bullion holdings */
     char* bullion_port_value_chg_ch;        /* Total value of bullion holdings change */
@@ -262,6 +268,8 @@ typedef struct {
     /* Methods or Functions */
     sub_func_c_t* BullionStake;
     sub_func_d_t* DoubToStr;
+    sub_func_d_t* DoubToPerStr;
+    sub_func_d_t* DoubToNumStr;
     sub_func_g_t* ToStrings;
     sub_func_g_t* Calculate;
     sub_func_n_t* SetUpCurl;
@@ -273,9 +281,9 @@ typedef struct {
 	stock** Equity;                          /* Stock Double Pointer Array */
 
     /* Data Variables */
-    double* stock_port_value_f;
-    double* stock_port_value_chg_f;
-    double* stock_port_value_p_chg_f;
+    double stock_port_value_f;
+    double stock_port_value_chg_f;
+    double stock_port_value_p_chg_f;
 
     char* stock_port_value_ch;              /* Total value of equity holdings */
     char* stock_port_value_chg_ch;          /* Total value of equity holdings change */
@@ -285,6 +293,7 @@ typedef struct {
 
     /* Methods or Functions */
     sub_func_d_t* DoubToStr;
+    sub_func_d_t* DoubToPerStr;
     sub_func_g_t* ToStrings;
     sub_func_g_t* Calculate;
     sub_func_o_t* GenerateURL;
@@ -327,6 +336,8 @@ typedef struct {
   sub_func_g_t* ExtractData;
   sub_func_i_t* IsFetchingData;
   sub_func_j_t* SetFetchingData;
+  sub_func_i_t* IsDefaultView;
+  sub_func_j_t* SetDefaultView;
   sub_func_g_t* StopMultiCurl;
   sub_func_i_t* IsCurlCanceled;
   sub_func_j_t* SetCurlCanceled;
@@ -344,6 +355,8 @@ typedef struct {
   sub_func_m_t* SecondsToOpen;
   sub_func_i_t* IsClockDisplayed;
   sub_func_j_t* SetClockDisplayed;
+  sub_func_i_t* IsIndicesDisplayed;
+  sub_func_j_t* SetIndicesDisplayed;
 
 } portfolio_packet;
 

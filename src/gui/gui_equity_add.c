@@ -158,54 +158,22 @@ int AddRemComBoxChange ()
     GtkWidget* ComboBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecurityComboBox") );
     int index = gtk_combo_box_get_active ( GTK_COMBO_BOX ( ComboBox ) );
 
-    GtkWidget* Switch = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecuritySwitch") );
-    gboolean SwitchSet = gtk_switch_get_active ( GTK_SWITCH( Switch ) );
+    GtkWidget* stack = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecurityStack") );
+    char *name = strdup ( gtk_stack_get_visible_child_name ( GTK_STACK ( stack ) ) );
 
     GtkWidget* Button = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecurityOkBTN") );
 
-    if(SwitchSet == false) {
+    if( strcasecmp ( name, "add" ) == 0 ) {
+        free ( name );
         return 0;
     }
+    free ( name );
 
     if( index != 0 ){
         gtk_widget_set_sensitive ( Button, true );
     } else {
         gtk_widget_set_sensitive ( Button, false );
     }
-    return 0;
-}
-
-int AddRemSwitchChange ()
-{
-    GtkWidget* ComboBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecurityComboBox") );
-    GtkWidget* Switch = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecuritySwitch") );
-    gboolean SwitchSet = gtk_switch_get_active ( GTK_SWITCH( Switch ) );
-
-    GtkWidget* EntryBoxSymbol = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecuritySymbolEntryBox") );
-    GtkWidget* EntryBoxShares = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecuritySharesEntryBox") );
-    GtkWidget* Button = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecurityOkBTN") );
-
-    if ( SwitchSet == false ) {
-        gtk_combo_box_set_button_sensitivity (GTK_COMBO_BOX ( ComboBox ), GTK_SENSITIVITY_OFF);
-        gtk_combo_box_set_active (GTK_COMBO_BOX ( ComboBox ), 0 );
-        gtk_widget_set_sensitive ( EntryBoxSymbol, true );
-        gtk_widget_set_sensitive ( EntryBoxShares, true );
-        gtk_widget_set_sensitive ( Button, false );
-
-        /* Reset EntryBoxes */
-        gtk_entry_set_text ( GTK_ENTRY( EntryBoxSymbol ), "" );
-        gtk_entry_set_text ( GTK_ENTRY( EntryBoxShares ), "" );
-    } else {
-        gtk_combo_box_set_button_sensitivity (GTK_COMBO_BOX ( ComboBox ), GTK_SENSITIVITY_AUTO);
-        gtk_widget_set_sensitive ( EntryBoxSymbol, false );
-        gtk_widget_set_sensitive ( EntryBoxShares, false );
-        gtk_widget_set_sensitive ( Button, false );
-
-        /* Reset EntryBoxes */
-        gtk_entry_set_text ( GTK_ENTRY( EntryBoxSymbol ), "" );
-        gtk_entry_set_text ( GTK_ENTRY( EntryBoxShares ), "" );
-    }
-
     return 0;
 }
 
@@ -220,7 +188,7 @@ static void *fetch_data_for_new_stock ( void *data )
     SetUpCurlHandle ( F->Equity[ F->size - 1 ]->easy_hnd, pkg->multicurl_main_hnd, F->Equity[ F->size - 1 ]->curl_url_stock_ch, &F->Equity[ F->size - 1 ]->JSON );
     PerformMultiCurl ( pkg->multicurl_main_hnd, 1.0f );
     /* Extract double values from JSON data using JSON-glib */
-    JsonExtractEquity( F->Equity[ F->size - 1 ]->JSON.memory, F->Equity[ F->size - 1 ]->current_price_stock_f, F->Equity[ F->size - 1 ]->high_stock_f, F->Equity[ F->size - 1 ]->low_stock_f, F->Equity[ F->size - 1 ]->opening_stock_f, F->Equity[ F->size - 1 ]->prev_closing_stock_f, F->Equity[ F->size - 1 ]->change_share_f, F->Equity[ F->size - 1 ]->change_percent_f);
+    JsonExtractEquity( F->Equity[ F->size - 1 ]->JSON.memory, &F->Equity[ F->size - 1 ]->current_price_stock_f, &F->Equity[ F->size - 1 ]->high_stock_f, &F->Equity[ F->size - 1 ]->low_stock_f, &F->Equity[ F->size - 1 ]->opening_stock_f, &F->Equity[ F->size - 1 ]->prev_closing_stock_f, &F->Equity[ F->size - 1 ]->change_share_f, &F->Equity[ F->size - 1 ]->change_percent_f );
 
     /* Free memory. */
     free( F->Equity[ F->size - 1 ]->JSON.memory );
@@ -252,7 +220,7 @@ static void add_equity_to_folder ( char *symbol, char *shares, portfolio_packet 
     /* Generate the Equity Request URLs. */
     F->GenerateURL ( pkg );
 
-    if( pkg->IsFetchingData () ){
+    if( !pkg->IsDefaultView () ){
         /* Fetch the data in a separate thread */
         pthread_t thread_id;
         pthread_create( &thread_id, NULL, fetch_data_for_new_stock, pkg ); 
@@ -304,7 +272,7 @@ static int remove_security_ok ( void *data )
         pkg->Calculate ();
         pkg->ToStrings ();
     
-        if( pkg->IsFetchingData () ) {    
+        if( !pkg->IsDefaultView () ) {    
             /* Update the main window treeview. */
             MainPrimaryTreeview ( data );
         }
@@ -320,7 +288,7 @@ static int remove_security_ok ( void *data )
         pkg->Calculate ();
         pkg->ToStrings ();
     
-        if( pkg->IsFetchingData () ) {    
+        if( !pkg->IsDefaultView () ) {    
             /* Update the main window treeview. */
             MainPrimaryTreeview ( data );
         }
@@ -337,16 +305,17 @@ int AddRemOk ( void *data )
         FETCH_DATA_BTN signal is run in parallel with this thread. */
     pthread_mutex_lock( &mutex_working[ FETCH_DATA_MUTEX ] );
 
-    GtkWidget* Switch = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecuritySwitch") );
-    gboolean SwitchSet = gtk_switch_get_active ( GTK_SWITCH( Switch ) );
+    GtkWidget* stack = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecurityStack") );
+    char *name = strdup ( gtk_stack_get_visible_child_name ( GTK_STACK ( stack ) ) );
 
-    if ( SwitchSet == false ) {
+    if ( strcasecmp ( name, "add" ) == 0 ) {
         add_security_ok ( data );
     } else {
         remove_security_ok ( data );
     }
+    free ( name );
     
-    if( package->IsFetchingData () == false ) {
+    if( package->IsDefaultView () ) {
         MainDefaultTreeview ( data );
     }
 
@@ -364,17 +333,18 @@ int AddRemShowHide ( void *data )
     GtkWidget* window = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecurity") );
     gboolean visible = gtk_widget_is_visible ( window );
 
-    GtkWidget* EntryBox, *Switch;    
-    Switch = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecuritySwitch") );
+    GtkWidget* stack = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecurityStack") );
     GtkWidget* ComboBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecurityComboBox") );
     GtkWidget* Button = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecurityOkBTN") );
 
     if (visible == false){
-        gtk_switch_set_active (GTK_SWITCH( Switch ), false);
+        gtk_stack_set_visible_child_name ( GTK_STACK ( stack ), "add" );
+
+        /* Set the OK button sensitivity to false. */
         gtk_widget_set_sensitive ( Button, false );
 
         /* Reset EntryBoxes */
-        EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecuritySymbolEntryBox") );
+        GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecuritySymbolEntryBox") );
         gtk_entry_set_text ( GTK_ENTRY( EntryBox ), "" );
         gtk_widget_grab_focus ( EntryBox );
 
@@ -397,6 +367,8 @@ int AddRemShowHide ( void *data )
         gtk_combo_box_set_active ( GTK_COMBO_BOX ( ComboBox ), 0 );
 
         gtk_widget_set_visible ( window, true );
+
+
     } else {
         gtk_widget_set_visible ( window, false );
     }
