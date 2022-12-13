@@ -101,17 +101,34 @@ static void DoubToPerStr (char **str, const double num)
     str[0] = tmp;
 }
 
-static void DoubToNumStr (char **str, const double num) 
-/* Take in a string buffer and a double, 
-   convert to a number string, grouping according to locale. */
+static void DoubToNumStr (char **str, const double num, const short digits_right) 
+/* Take in a string buffer, a double, and the number of digits 
+   to the right of the decimal point, convert to a number string, 
+   grouping the digits according to the locale [dec points or commas]. */
 {    
-    size_t len = strlen("########.###") + 1;
+    size_t len = strlen("###,###,###,###,###,###.###") + 1;
     /* Increase the string length */
     char* tmp = realloc ( str[0], len );
     str[0] = tmp;
 
     setlocale(LC_NUMERIC, LOCALE);
-    snprintf( str[0], len, "%'.2lf", num );
+    switch ( digits_right ){
+        case 0:
+            snprintf( str[0], len, "%'.0lf", num );
+            break;
+        case 1:
+            snprintf( str[0], len, "%'.1lf", num );
+            break;
+        case 2:
+            snprintf( str[0], len, "%'.2lf", num );
+            break;
+        case 3:
+            snprintf( str[0], len, "%'.3lf", num );
+            break;
+        default:
+            snprintf( str[0], len, "%'.4lf", num );
+            break;
+    }
 
     /* Trying not to waste memory. */
     tmp = realloc( str[0], strlen ( str[0] ) + 1 );
@@ -172,7 +189,7 @@ static void ToStrings () {
     M->DoubToPerStr( &M->bullion_port_value_p_chg_ch, M->bullion_port_value_p_chg_f );
 
     /* The Gold to Silver Ratio */
-    M->DoubToNumStr( &M->gold_silver_ratio_ch, M->gold_silver_ratio_f );
+    M->DoubToNumStr( &M->gold_silver_ratio_ch, M->gold_silver_ratio_f, 2 );
 }
 
 static void bullion_calculations (bullion *B){

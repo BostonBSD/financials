@@ -58,6 +58,7 @@ typedef unsigned int sub_func_m_t ();
 typedef int sub_func_n_t (void*);
 typedef void sub_func_o_t (void*);
 typedef void sub_func_p_t (char*,char*);
+typedef void sub_func_q_t (char**,const double,short);
 
 /* class type definitions (emulated class definitions; C doesn't really have class types) */
 typedef struct {
@@ -100,7 +101,7 @@ typedef struct {
     sub_func_b_t* Stake;
     sub_func_d_t* DoubToStr;
     sub_func_d_t* DoubToPerStr;
-    sub_func_d_t* DoubToNumStr;
+    sub_func_q_t* DoubToNumStr;
     sub_func_e_t* StrToDoub;
     
 } bullion;
@@ -269,7 +270,7 @@ typedef struct {
     sub_func_c_t* BullionStake;
     sub_func_d_t* DoubToStr;
     sub_func_d_t* DoubToPerStr;
-    sub_func_d_t* DoubToNumStr;
+    sub_func_q_t* DoubToNumStr;
     sub_func_g_t* ToStrings;
     sub_func_g_t* Calculate;
     sub_func_n_t* SetUpCurl;

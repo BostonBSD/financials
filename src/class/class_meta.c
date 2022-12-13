@@ -104,7 +104,7 @@ static void double_to_num_str (char **str, const double num)
 /* Take in a string buffer and a double, 
    convert to a number string, grouping according to locale. */
 {    
-    size_t len = strlen("########.###") + 1;
+    size_t len = strlen("###,###,###,###,###,###.###") + 1;
     /* Increase the string length */
     char* tmp = realloc ( str[0], len );
     str[0] = tmp;

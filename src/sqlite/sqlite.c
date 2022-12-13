@@ -88,7 +88,7 @@ static int bullion_callback (void *data, int argc, char **argv, char **ColName) 
 
     if( strcasecmp( argv[1], "gold" ) == 0 ){
         m->Gold->ounce_f = m->Gold->StrToDoub ( argv[2] ? argv[2] : "0" );
-        m->Gold->DoubToNumStr( &m->Gold->ounce_ch, m->Gold->ounce_f );
+        m->Gold->DoubToNumStr( &m->Gold->ounce_ch, m->Gold->ounce_f, 4 );
         
         m->Gold->premium_f = m->Gold->StrToDoub ( argv[3] ? argv[3] : "0" );
         m->Gold->DoubToStr( &m->Gold->premium_ch, m->Gold->premium_f );
@@ -96,7 +96,7 @@ static int bullion_callback (void *data, int argc, char **argv, char **ColName) 
 
     if( strcasecmp( argv[1], "silver" ) == 0 ){
         m->Silver->ounce_f = m->Silver->StrToDoub ( argv[2] ? argv[2] : "0" );
-        m->Silver->DoubToNumStr( &m->Silver->ounce_ch, m->Silver->ounce_f );
+        m->Silver->DoubToNumStr( &m->Silver->ounce_ch, m->Silver->ounce_f, 4 );
         
         m->Silver->premium_f = m->Silver->StrToDoub ( argv[3] ? argv[3] : "0" );
         m->Silver->DoubToStr( &m->Silver->premium_ch, m->Silver->premium_f );
@@ -104,7 +104,7 @@ static int bullion_callback (void *data, int argc, char **argv, char **ColName) 
 
     if( strcasecmp( argv[1], "platinum" ) == 0 ){
         m->Platinum->ounce_f = m->Platinum->StrToDoub ( argv[2] ? argv[2] : "0" );
-        m->Platinum->DoubToNumStr( &m->Platinum->ounce_ch, m->Platinum->ounce_f );
+        m->Platinum->DoubToNumStr( &m->Platinum->ounce_ch, m->Platinum->ounce_f, 4 );
         
         m->Platinum->premium_f = m->Platinum->StrToDoub ( argv[3] ? argv[3] : "0" );
         m->Platinum->DoubToStr( &m->Platinum->premium_ch, m->Platinum->premium_f );
@@ -112,7 +112,7 @@ static int bullion_callback (void *data, int argc, char **argv, char **ColName) 
 
     if( strcasecmp( argv[1], "palladium" ) == 0 ){
         m->Palladium->ounce_f = m->Palladium->StrToDoub ( argv[2] ? argv[2] : "0" );
-        m->Palladium->DoubToNumStr( &m->Palladium->ounce_ch, m->Palladium->ounce_f );
+        m->Palladium->DoubToNumStr( &m->Palladium->ounce_ch, m->Palladium->ounce_f, 4 );
         
         m->Palladium->premium_f = m->Palladium->StrToDoub ( argv[3] ? argv[3] : "0" );
         m->Palladium->DoubToStr( &m->Palladium->premium_ch, m->Palladium->premium_f );
