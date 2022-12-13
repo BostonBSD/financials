@@ -66,7 +66,7 @@ char *GetSecurityName (const char *s, const symbol_name_map *sn_map)
     if ( item ){
         /* The item pointer is not freed. It points to an item in the 
            sn_container_arr array and not a duplicate. */
-        return strdup( item[ 0 ]->security_name );
+        return strdup ( item[ 0 ]->security_name );
     } else {
         return NULL;
     }

@@ -52,7 +52,7 @@ int MainDisplayClocks (void*);
 /* gui_equity */
 int AddRemShowHide (void*);
 int AddRemOk (void*);
-int AddRemComBoxChange ();
+int AddRemComBoxChange (void*);
 int AddRemCursorMove ();
 int AddRemCompletionSet (void*);
 

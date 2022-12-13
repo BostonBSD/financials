@@ -68,7 +68,7 @@ static int cash_callback (void *data, int argc, char **argv, char **ColName) {
     mdata->cash_f = mdata->StrToDoub( argv[1] ? argv[1] : "0" );
 
     /* To make sure it's formatted correctly. */
-    mdata->DoubToStr( &mdata->cash_ch, mdata->cash_f );
+    mdata->DoubToStr( &mdata->cash_ch, mdata->cash_f, 3 );
 
     pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
     return 0;

@@ -194,7 +194,7 @@ void *GUIThreadHandler (void *data){
 
             break;
         case EQUITY_COMBO_BOX:
-            gdk_threads_add_idle( AddRemComBoxChange, NULL );
+            gdk_threads_add_idle( AddRemComBoxChange, packet );
             break;
 
         case EQUITY_CURSOR_MOVE:
@@ -329,7 +329,7 @@ void *GUIThreadHandler (void *data){
             free ( symbol );
 
             /* Set the security name label, this function runs inside the Gtk Loop. 
-               And will free the sec_name string. */
+               The sec_name string is freed in RSISetSNLabel */
             gdk_threads_add_idle ( RSISetSNLabel, sec_name );
 
             /* Set and display the RSI treeview model.
@@ -422,7 +422,7 @@ void *GUIThreadHandler (void *data){
                MAIN_FETCH_BTN signal is run concurrently with this thread. */
             pthread_mutex_lock( &mutex_working[ FETCH_DATA_MUTEX ] );
 
-             /* Save the Window Size, Location, and Expander Bar setting. */
+            /* Save the Window Size and Location. */
             packet->SetWindowDataSql ();
 
             /* Hide the windows. Prevents them from hanging open if a db write is in progress. */

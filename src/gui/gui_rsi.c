@@ -275,12 +275,9 @@ int RSISetSNLabel (void *data){
 
     GtkWidget* Label = GTK_WIDGET ( gtk_builder_get_object (builder, "ViewRSIStockSymbolLabel") );
 
-    if ( sec_name ){
-        gtk_label_set_text ( GTK_LABEL ( Label ), sec_name );
-        free ( sec_name );
-    } else {
-        gtk_label_set_text ( GTK_LABEL ( Label ), "Unknown Security Name" );
-    }
+    gtk_label_set_text ( GTK_LABEL ( Label ), sec_name ? sec_name : "" );
+    if ( sec_name ) free ( sec_name );
+
     return 0;
 }
 

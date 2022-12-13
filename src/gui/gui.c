@@ -160,8 +160,8 @@ static void clock_display (void *data)
         gtk_revealer_set_transition_duration ( GTK_REVEALER ( revealer ), 0 );
         /* Hide the clocks */
         gtk_revealer_set_reveal_child (GTK_REVEALER ( revealer ), false );
-        /* Revealer animation set to 500 milliseconds */
-        gtk_revealer_set_transition_duration ( GTK_REVEALER ( revealer ), 500 ); 
+        /* Revealer animation set to 300 milliseconds */
+        gtk_revealer_set_transition_duration ( GTK_REVEALER ( revealer ), 300 ); 
 
         /* Make sure there's data in the clock label. */
         MainDisplayTime ();     

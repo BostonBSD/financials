@@ -47,13 +47,37 @@
                 <property name="margin-top">5</property>
                 <property name="margin-bottom">5</property>
                 <property name="orientation">vertical</property>
-                <property name="spacing">5</property>
+                <property name="spacing">10</property>
+                <child type="center">
+                  <object class="GtkEntry" id="ChangeApiInfoUrlKeyEntryBox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="tooltip-text" translatable="yes">Append "&amp;token=" before your finnhub.io key.
+
+"&amp;token=&lt;YOUR ACCOUNT KEY&gt;"</property>
+                    <property name="valign">center</property>
+                    <property name="margin-start">5</property>
+                    <property name="margin-end">5</property>
+                    <property name="margin-bottom">5</property>
+                    <property name="xalign">0.5</property>
+                    <property name="placeholder-text" translatable="yes">&amp;token=&lt;YOUR ACCOUNT KEY&gt;</property>
+                    <property name="input-purpose">alpha</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">4</property>
+                  </packing>
+                </child>
                 <child>
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="label" translatable="yes">Finnhub.io request url</property>
                     <property name="justify">center</property>
+                    <attributes>
+                      <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                    </attributes>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -83,11 +107,9 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel">
+                  <object class="GtkSeparator">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Finnhub.io key</property>
-                    <property name="justify">center</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -96,19 +118,14 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry" id="ChangeApiInfoUrlKeyEntryBox">
+                  <object class="GtkLabel">
                     <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="tooltip-text" translatable="yes">Append "&amp;token=" before your finnhub.io key.
-
-"&amp;token=&lt;YOUR ACCOUNT KEY&gt;"</property>
-                    <property name="valign">center</property>
-                    <property name="margin-start">5</property>
-                    <property name="margin-end">5</property>
-                    <property name="margin-bottom">5</property>
-                    <property name="xalign">0.5</property>
-                    <property name="placeholder-text" translatable="yes">&amp;token=&lt;YOUR ACCOUNT KEY&gt;</property>
-                    <property name="input-purpose">alpha</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Finnhub.io key</property>
+                    <property name="justify">center</property>
+                    <attributes>
+                      <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                    </attributes>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -123,6 +140,9 @@
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="label" translatable="yes">Equity API</property>
+                <attributes>
+                  <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                </attributes>
               </object>
               <packing>
                 <property name="tab-fill">False</property>
@@ -137,13 +157,37 @@
                 <property name="margin-top">5</property>
                 <property name="margin-bottom">5</property>
                 <property name="orientation">vertical</property>
-                <property name="spacing">5</property>
+                <property name="spacing">10</property>
+                <child type="center">
+                  <object class="GtkEntry" id="ChangeApiInfoNYSESymbolsUrlEntryBox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="tooltip-text" translatable="yes">The NYSE and other listed symbols url
+
+"http://www.nasdaqtrader.com/dynamic/SymDir/otherlisted.txt"</property>
+                    <property name="valign">center</property>
+                    <property name="margin-start">5</property>
+                    <property name="margin-end">5</property>
+                    <property name="margin-bottom">5</property>
+                    <property name="xalign">0.5</property>
+                    <property name="placeholder-text" translatable="yes">http://www.nasdaqtrader.com/dynamic/SymDir/otherlisted.txt</property>
+                    <property name="input-purpose">alpha</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">4</property>
+                  </packing>
+                </child>
                 <child>
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="label" translatable="yes">Nasdaq symbol url</property>
                     <property name="justify">center</property>
+                    <attributes>
+                      <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                    </attributes>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -173,11 +217,9 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel">
+                  <object class="GtkSeparator">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">NYSE and other listed symbols url</property>
-                    <property name="justify">center</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -186,19 +228,14 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry" id="ChangeApiInfoNYSESymbolsUrlEntryBox">
+                  <object class="GtkLabel">
                     <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="tooltip-text" translatable="yes">The NYSE and other listed symbols url
-
-"http://www.nasdaqtrader.com/dynamic/SymDir/otherlisted.txt"</property>
-                    <property name="valign">center</property>
-                    <property name="margin-start">5</property>
-                    <property name="margin-end">5</property>
-                    <property name="margin-bottom">5</property>
-                    <property name="xalign">0.5</property>
-                    <property name="placeholder-text" translatable="yes">http://www.nasdaqtrader.com/dynamic/SymDir/otherlisted.txt</property>
-                    <property name="input-purpose">alpha</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">NYSE and other listed symbols url</property>
+                    <property name="justify">center</property>
+                    <attributes>
+                      <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                    </attributes>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -216,6 +253,9 @@
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="label" translatable="yes">Symbol Urls</property>
+                <attributes>
+                  <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                </attributes>
               </object>
               <packing>
                 <property name="position">1</property>
@@ -231,7 +271,6 @@
         </child>
         <child>
           <object class="GtkButton" id="ChangeApiInfoOKBTN">
-            <property name="label" translatable="yes">OK</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="can-default">True</property>
@@ -240,6 +279,16 @@
             <property name="tooltip-text" translatable="yes">Commit Changes</property>
             <property name="halign">center</property>
             <property name="valign">center</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">OK</property>
+                <attributes>
+                  <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                </attributes>
+              </object>
+            </child>
             <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
           </object>
           <packing>
@@ -254,8 +303,17 @@
       <object class="GtkHeaderBar">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="title" translatable="yes">API</property>
         <property name="show-close-button">True</property>
+        <child type="title">
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">API</property>
+            <attributes>
+              <attribute name="font-desc" value="Oxygen-Sans 11"/>
+            </attributes>
+          </object>
+        </child>
         <child>
           <object class="GtkMenuButton">
             <property name="visible">True</property>
@@ -323,9 +381,11 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="label" translatable="yes">Financials</property>
+            <property name="justify">center</property>
             <property name="selectable">True</property>
             <attributes>
-              <attribute name="weight" value="ultrabold"/>
+              <attribute name="font-desc" value="Oxygen-Sans Bold 12"/>
+              <attribute name="weight" value="heavy"/>
             </attributes>
           </object>
           <packing>
@@ -353,6 +413,10 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="label" translatable="yes">Alpha 1.0</property>
+                    <property name="justify">center</property>
+                    <attributes>
+                      <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                    </attributes>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -365,6 +429,10 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="label" translatable="yes">A simple financial instrument.</property>
+                    <property name="justify">center</property>
+                    <attributes>
+                      <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                    </attributes>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -377,6 +445,10 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="label" translatable="yes">Website</property>
+                    <property name="justify">center</property>
+                    <attributes>
+                      <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                    </attributes>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -389,6 +461,7 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="label" translatable="yes">Copyright © 2022 BostonBSD</property>
+                    <property name="justify">center</property>
                     <property name="selectable">True</property>
                     <attributes>
                       <attribute name="font-desc" value="Sans 8"/>
@@ -408,6 +481,7 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="label" translatable="yes">CSV parser Copyright © 2015--2021 Samuel Alexander</property>
+                    <property name="justify">center</property>
                     <property name="selectable">True</property>
                     <attributes>
                       <attribute name="font-desc" value="Sans 8"/>
@@ -427,6 +501,7 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="label" translatable="yes">Trends icon designed by Freepik from Flaticon</property>
+                    <property name="justify">center</property>
                     <property name="selectable">True</property>
                     <attributes>
                       <attribute name="font-desc" value="Sans 8"/>
@@ -446,6 +521,7 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="label" translatable="yes">This program comes with no warranty of any sort.</property>
+                    <property name="justify">center</property>
                     <property name="selectable">True</property>
                     <attributes>
                       <attribute name="font-desc" value="Sans 8"/>
@@ -516,7 +592,7 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.</property>
                         <property name="selectable">True</property>
                         <attributes>
-                          <attribute name="font-desc" value="Sans 7"/>
+                          <attribute name="font-desc" value="Oxygen-Sans 7"/>
                           <attribute name="style" value="normal"/>
                           <attribute name="weight" value="semilight"/>
                           <attribute name="variant" value="normal"/>
@@ -637,6 +713,9 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Ounces</property>
                         <property name="justify">center</property>
+                        <attributes>
+                          <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                        </attributes>
                       </object>
                       <packing>
                         <property name="left-attach">0</property>
@@ -665,6 +744,9 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Premium</property>
                         <property name="justify">center</property>
+                        <attributes>
+                          <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                        </attributes>
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
@@ -695,6 +777,9 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                     <property name="can-focus">False</property>
                     <property name="margin-start">10</property>
                     <property name="label" translatable="yes">Gold</property>
+                    <attributes>
+                      <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                    </attributes>
                   </object>
                 </child>
               </object>
@@ -725,6 +810,9 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Ounces</property>
                         <property name="justify">center</property>
+                        <attributes>
+                          <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                        </attributes>
                       </object>
                       <packing>
                         <property name="left-attach">0</property>
@@ -737,6 +825,9 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Premium</property>
                         <property name="justify">center</property>
+                        <attributes>
+                          <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                        </attributes>
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
@@ -783,6 +874,9 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                     <property name="can-focus">False</property>
                     <property name="margin-start">10</property>
                     <property name="label" translatable="yes">Silver</property>
+                    <attributes>
+                      <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                    </attributes>
                   </object>
                 </child>
               </object>
@@ -813,6 +907,9 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Ounces</property>
                         <property name="justify">center</property>
+                        <attributes>
+                          <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                        </attributes>
                       </object>
                       <packing>
                         <property name="left-attach">0</property>
@@ -825,6 +922,9 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Premium</property>
                         <property name="justify">center</property>
+                        <attributes>
+                          <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                        </attributes>
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
@@ -871,6 +971,9 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                     <property name="can-focus">False</property>
                     <property name="margin-start">10</property>
                     <property name="label" translatable="yes">Platinum</property>
+                    <attributes>
+                      <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                    </attributes>
                   </object>
                 </child>
               </object>
@@ -901,6 +1004,9 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Ounces</property>
                         <property name="justify">center</property>
+                        <attributes>
+                          <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                        </attributes>
                       </object>
                       <packing>
                         <property name="left-attach">0</property>
@@ -913,6 +1019,9 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Premium</property>
                         <property name="justify">center</property>
+                        <attributes>
+                          <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                        </attributes>
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
@@ -959,6 +1068,9 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                     <property name="can-focus">False</property>
                     <property name="margin-start">10</property>
                     <property name="label" translatable="yes">Palladium</property>
+                    <attributes>
+                      <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                    </attributes>
                   </object>
                 </child>
               </object>
@@ -996,7 +1108,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                 </child>
                 <child>
                   <object class="GtkButton" id="AddRemoveBullionOKBTN">
-                    <property name="label" translatable="yes">OK</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="can-default">True</property>
@@ -1005,6 +1116,16 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                     <property name="tooltip-text" translatable="yes">Commit Changes</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">OK</property>
+                        <attributes>
+                          <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                        </attributes>
+                      </object>
+                    </child>
                     <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                   </object>
                   <packing>
@@ -1034,8 +1155,17 @@ POSSIBILITY OF SUCH DAMAGE.</property>
       <object class="GtkHeaderBar">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="title" translatable="yes">Bullion</property>
         <property name="show-close-button">True</property>
+        <child type="title">
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">Bullion</property>
+            <attributes>
+              <attribute name="font-desc" value="Oxygen-Sans 11"/>
+            </attributes>
+          </object>
+        </child>
         <child>
           <object class="GtkMenuButton">
             <property name="visible">True</property>
@@ -1139,7 +1269,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
             <property name="column-homogeneous">True</property>
             <child>
               <object class="GtkButton" id="AddRemoveCashOKBTN">
-                <property name="label" translatable="yes">OK</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="can-default">True</property>
@@ -1148,6 +1277,16 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                 <property name="tooltip-text" translatable="yes">Commit Changes</property>
                 <property name="halign">center</property>
                 <property name="valign">center</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">OK</property>
+                    <attributes>
+                      <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                    </attributes>
+                  </object>
+                </child>
                 <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
               </object>
               <packing>
@@ -1174,8 +1313,17 @@ POSSIBILITY OF SUCH DAMAGE.</property>
       <object class="GtkHeaderBar">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="title" translatable="yes">Cash</property>
         <property name="show-close-button">True</property>
+        <child type="title">
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">Cash</property>
+            <attributes>
+              <attribute name="font-desc" value="Oxygen-Sans 11"/>
+            </attributes>
+          </object>
+        </child>
         <child>
           <object class="GtkMenuButton">
             <property name="visible">True</property>
@@ -1336,7 +1484,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                         <property name="margin-start">10</property>
                         <property name="margin-end">10</property>
                         <property name="transition-type">slide-up</property>
-                        <property name="transition-duration">500</property>
+                        <property name="transition-duration">300</property>
                         <property name="reveal-child">True</property>
                         <child>
                           <!-- n-columns=3 n-rows=1 -->
@@ -1489,7 +1637,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                         <property name="margin-end">10</property>
                         <property name="margin-top">20</property>
                         <property name="transition-type">slide-up</property>
-                        <property name="transition-duration">500</property>
+                        <property name="transition-duration">300</property>
                         <child>
                           <object class="GtkScrolledWindow">
                             <property name="visible">True</property>
@@ -1886,7 +2034,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                         <property name="can-focus">False</property>
                         <property name="halign">center</property>
                         <property name="pulse-step">0.20</property>
-                        <property name="text" translatable="yes">Financials</property>
+                        <property name="text" translatable="yes">Financial Client</property>
                         <property name="show-text">True</property>
                       </object>
                       <packing>
@@ -1896,7 +2044,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                     </child>
                     <child>
                       <object class="GtkButton" id="FetchDataBTN">
-                        <property name="label" translatable="yes">Get Data</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
@@ -1904,6 +2051,17 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                         <property name="halign">center</property>
                         <property name="valign">end</property>
                         <property name="margin-top">20</property>
+                        <child>
+                          <object class="GtkLabel" id="FetchDataBtnLabel">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="label" translatable="yes">Get Data</property>
+                            <property name="justify">center</property>
+                            <attributes>
+                              <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                            </attributes>
+                          </object>
+                        </child>
                         <accelerator key="d" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                       </object>
                       <packing>
@@ -1939,8 +2097,17 @@ POSSIBILITY OF SUCH DAMAGE.</property>
       <object class="GtkHeaderBar" id="MainHeaderBar">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="title" translatable="yes">Financials</property>
         <property name="show-close-button">True</property>
+        <child type="title">
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">Financials</property>
+            <attributes>
+              <attribute name="font-desc" value="Oxygen-Sans 11"/>
+            </attributes>
+          </object>
+        </child>
         <child>
           <object class="GtkMenuButton" id="MainFileMenuBTN">
             <property name="visible">True</property>
@@ -2066,7 +2233,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <attributes>
-                          <attribute name="font-desc" value="Oxygen-Sans Bold 10"/>
+                          <attribute name="font-desc" value="Oxygen-Sans 12"/>
                           <attribute name="style" value="normal"/>
                           <attribute name="weight" value="normal"/>
                           <attribute name="variant" value="normal"/>
@@ -2168,7 +2335,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                     </child>
                     <child>
                       <object class="GtkButton" id="ViewRSIFetchDataBTN">
-                        <property name="label" translatable="yes">Get Data</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="can-default">True</property>
@@ -2177,7 +2343,21 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                         <property name="tooltip-text" translatable="yes">Download data from Yahoo! Finance</property>
                         <property name="halign">center</property>
                         <property name="valign">end</property>
-                        <property name="margin-top">10</property>
+                        <property name="margin-top">20</property>
+                        <child>
+                          <object class="GtkLabel" id="ViewRSIFetchDataBtnLabel">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="label" translatable="yes">Get Data</property>
+                            <property name="justify">center</property>
+                            <attributes>
+                              <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                              <attribute name="style" value="normal"/>
+                              <attribute name="weight" value="normal"/>
+                              <attribute name="variant" value="normal"/>
+                            </attributes>
+                          </object>
+                        </child>
                         <accelerator key="d" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                       </object>
                       <packing>
@@ -2281,6 +2461,9 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="label" translatable="yes">Symbol</property>
+                    <attributes>
+                      <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                    </attributes>
                   </object>
                   <packing>
                     <property name="left-attach">0</property>
@@ -2309,6 +2492,9 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="label" translatable="yes">Shares</property>
+                    <attributes>
+                      <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                    </attributes>
                   </object>
                   <packing>
                     <property name="left-attach">0</property>
@@ -2340,19 +2526,51 @@ POSSIBILITY OF SUCH DAMAGE.</property>
               </packing>
             </child>
             <child>
-              <object class="GtkComboBoxText" id="AddRemoveSecurityComboBox">
+              <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="tooltip-text" translatable="yes">Select a table.</property>
-                <property name="halign">center</property>
                 <property name="valign">center</property>
-                <property name="margin-start">10</property>
-                <property name="margin-end">10</property>
-                <property name="active">0</property>
-                <property name="button-sensitivity">on</property>
-                <items>
-                  <item translatable="yes">Select a security for removal</item>
-                </items>
+                <property name="margin-bottom">40</property>
+                <property name="orientation">vertical</property>
+                <property name="spacing">60</property>
+                <child>
+                  <object class="GtkLabel" id="AddRemoveSecurityLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <attributes>
+                      <attribute name="font-desc" value="Oxygen-Sans 12"/>
+                      <attribute name="style" value="normal"/>
+                      <attribute name="weight" value="normal"/>
+                      <attribute name="variant" value="normal"/>
+                      <attribute name="foreground" value="#09023610962f"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkComboBoxText" id="AddRemoveSecurityComboBox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="tooltip-text" translatable="yes">Select a table.</property>
+                    <property name="halign">center</property>
+                    <property name="valign">center</property>
+                    <property name="active">0</property>
+                    <property name="button-sensitivity">on</property>
+                    <property name="popup-fixed-width">False</property>
+                    <items>
+                      <item translatable="yes">Select a security for removal</item>
+                    </items>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
               </object>
               <packing>
                 <property name="name">remove</property>
@@ -2369,7 +2587,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
         </child>
         <child>
           <object class="GtkButton" id="AddRemoveSecurityOkBTN">
-            <property name="label" translatable="yes">OK</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="can-default">True</property>
@@ -2380,8 +2597,18 @@ POSSIBILITY OF SUCH DAMAGE.</property>
             <property name="valign">end</property>
             <property name="margin-top">5</property>
             <property name="margin-bottom">20</property>
-            <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">OK</property>
+                <attributes>
+                  <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                </attributes>
+              </object>
+            </child>
             <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+            <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -2483,8 +2710,17 @@ POSSIBILITY OF SUCH DAMAGE.</property>
       <object class="GtkHeaderBar">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="title" translatable="yes">Hotkeys</property>
         <property name="show-close-button">True</property>
+        <child type="title">
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">Hotkeys</property>
+            <attributes>
+              <attribute name="font-desc" value="Oxygen-Sans 11"/>
+            </attributes>
+          </object>
+        </child>
         <child>
           <object class="GtkMenuButton">
             <property name="visible">True</property>
@@ -2512,7 +2748,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
     <property name="can-focus">False</property>
     <property name="can-default">True</property>
     <property name="resizable">False</property>
-    <property name="default-width">450</property>
+    <property name="default-width">425</property>
     <property name="default-height">425</property>
     <property name="destroy-with-parent">True</property>
     <property name="icon">Stocks-icon.png</property>
@@ -2530,6 +2766,9 @@ POSSIBILITY OF SUCH DAMAGE.</property>
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="label" translatable="yes">Updates Per Minute</property>
+            <attributes>
+              <attribute name="font-desc" value="Oxygen-Sans 11"/>
+            </attributes>
           </object>
           <packing>
             <property name="left-attach">0</property>
@@ -2591,6 +2830,9 @@ POSSIBILITY OF SUCH DAMAGE.</property>
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="label" translatable="yes">Hours of Updates</property>
+            <attributes>
+              <attribute name="font-desc" value="Oxygen-Sans 11"/>
+            </attributes>
           </object>
           <packing>
             <property name="left-attach">0</property>
@@ -2602,6 +2844,9 @@ POSSIBILITY OF SUCH DAMAGE.</property>
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="label" translatable="yes">Show Clocks</property>
+            <attributes>
+              <attribute name="font-desc" value="Oxygen-Sans 11"/>
+            </attributes>
           </object>
           <packing>
             <property name="left-attach">0</property>
@@ -2625,6 +2870,9 @@ POSSIBILITY OF SUCH DAMAGE.</property>
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="label" translatable="yes">Show Indices</property>
+            <attributes>
+              <attribute name="font-desc" value="Oxygen-Sans 11"/>
+            </attributes>
           </object>
           <packing>
             <property name="left-attach">0</property>
@@ -2648,6 +2896,9 @@ POSSIBILITY OF SUCH DAMAGE.</property>
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="label" translatable="yes">Stock Symbol List</property>
+            <attributes>
+              <attribute name="font-desc" value="Oxygen-Sans 11"/>
+            </attributes>
           </object>
           <packing>
             <property name="left-attach">0</property>
@@ -2656,7 +2907,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
         </child>
         <child>
           <object class="GtkButton" id="PrefStockSymbolUpdateBTN">
-            <property name="label" translatable="yes">Get Symbols</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">False</property>
@@ -2664,6 +2914,16 @@ POSSIBILITY OF SUCH DAMAGE.</property>
             <property name="halign">center</property>
             <property name="hexpand">True</property>
             <property name="vexpand">True</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Get Symbols</property>
+                <attributes>
+                  <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                </attributes>
+              </object>
+            </child>
             <accelerator key="s" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
           </object>
           <packing>
@@ -2677,8 +2937,17 @@ POSSIBILITY OF SUCH DAMAGE.</property>
       <object class="GtkHeaderBar">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="title" translatable="yes">Preferences</property>
         <property name="show-close-button">True</property>
+        <child type="title">
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">Preferences</property>
+            <attributes>
+              <attribute name="font-desc" value="Oxygen-Sans 11"/>
+            </attributes>
+          </object>
+        </child>
         <child>
           <object class="GtkMenuButton">
             <property name="visible">True</property>

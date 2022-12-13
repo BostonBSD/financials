@@ -61,9 +61,10 @@ static double EntireStake (const double bullion, const double equity, const doub
     return ( bullion + equity + cash );
 }
 
-static void DoubToStr (char **str, const double num) 
-/* Take in a string buffer and a double, 
-   convert to monetary format string. */
+static void DoubToStr (char **str, const double num, const short digits_right) 
+/* Take in a string buffer, a double, and the number of digits 
+   to the right of the decimal point, convert to a monetary format string, 
+   grouping the digits according to the locale [dec points or commas]. */
 {    
     size_t len = strlen("###,###,###,###,###,###.###") + 1;
     /* Increase the string length */
@@ -76,16 +77,30 @@ static void DoubToStr (char **str, const double num)
     setlocale(LC_ALL, LOCALE); 
 
     /* Set the string value. */ 
-    strfmon(str[0], len, "%(.3n", num);
+    switch ( digits_right ){
+        case 0:
+            strfmon(str[0], len, "%(.0n", num);
+            break;
+        case 1:
+            strfmon(str[0], len, "%(.1n", num);
+            break;
+        case 2:
+            strfmon(str[0], len, "%(.2n", num);
+            break;
+        default:
+            strfmon(str[0], len, "%(.3n", num);
+            break;
+    }
 
     /* Trying not to waste memory. */
     tmp = realloc( str[0], strlen ( str[0] ) + 1 );
     str[0] = tmp;
 }
 
-static void DoubToPerStr (char **str, const double num) 
-/* Take in a string buffer and a double, 
-   convert to percent string, grouping according to locale. */
+static void DoubToPerStr (char **str, const double num, const short digits_right) 
+/* Take in a string buffer, a double, and the number of digits 
+   to the right of the decimal point, convert to a percent string, 
+   grouping the digits according to the locale [dec points or commas]. */
 {    
     size_t len = strlen("########.###%") + 1;
     /* Increase the string length */
@@ -93,7 +108,20 @@ static void DoubToPerStr (char **str, const double num)
     str[0] = tmp;
     
     setlocale(LC_NUMERIC, LOCALE);
-    snprintf( str[0], len, "%'.3lf%%", num );
+    switch ( digits_right ){
+        case 0:
+            snprintf( str[0], len, "%'.0lf%%", num );
+            break;
+        case 1:
+            snprintf( str[0], len, "%'.1lf%%", num );
+            break;
+        case 2:
+            snprintf( str[0], len, "%'.2lf%%", num );
+            break;
+        default:
+            snprintf( str[0], len, "%'.3lf%%", num );
+            break;
+    }
 
     /* Trying not to waste memory. */
     tmp = realloc( str[0], strlen ( str[0] ) + 1 );
@@ -132,13 +160,13 @@ static void ToStringsPortfolio () {
     meta* Met = MetaData;
 
     /* The total portfolio value. */
-    Met->DoubToStr( &Met->portfolio_port_value_ch, Met->portfolio_port_value_f );
+    Met->DoubToStr( &Met->portfolio_port_value_ch, Met->portfolio_port_value_f, 3 );
 
     /* The change in total portfolio value. */
-    Met->DoubToStr( &Met->portfolio_port_value_chg_ch, Met->portfolio_port_value_chg_f );
+    Met->DoubToStr( &Met->portfolio_port_value_chg_ch, Met->portfolio_port_value_chg_f, 3 );
 
     /* The change in total portfolio value as a percentage. */
-    Met->DoubToPerStr( &Met->portfolio_port_value_p_chg_ch, Met->portfolio_port_value_p_chg_f );
+    Met->DoubToPerStr( &Met->portfolio_port_value_p_chg_ch, Met->portfolio_port_value_p_chg_f, 3 );
 }
 
 static void CalculatePortfolio ( void *data ) {
@@ -343,19 +371,19 @@ static void ToStringsIndices () {
 
     double_to_num_str ( &Met->index_dow_value_ch, Met->index_dow_value_f );
     double_to_num_str ( &Met->index_dow_value_chg_ch, Met->index_dow_value_chg_f );
-    Met->DoubToPerStr( &Met->index_dow_value_p_chg_ch, Met->index_dow_value_p_chg_f );
+    Met->DoubToPerStr( &Met->index_dow_value_p_chg_ch, Met->index_dow_value_p_chg_f, 2 );
 
     double_to_num_str ( &Met->index_nasdaq_value_ch, Met->index_nasdaq_value_f );
     double_to_num_str ( &Met->index_nasdaq_value_chg_ch, Met->index_nasdaq_value_chg_f );
-    Met->DoubToPerStr( &Met->index_nasdaq_value_p_chg_ch, Met->index_nasdaq_value_p_chg_f );
+    Met->DoubToPerStr( &Met->index_nasdaq_value_p_chg_ch, Met->index_nasdaq_value_p_chg_f, 2 );
 
     double_to_num_str ( &Met->index_sp_value_ch, Met->index_sp_value_f );
     double_to_num_str ( &Met->index_sp_value_chg_ch, Met->index_sp_value_chg_f );
-    Met->DoubToPerStr( &Met->index_sp_value_p_chg_ch, Met->index_sp_value_p_chg_f );
+    Met->DoubToPerStr( &Met->index_sp_value_p_chg_ch, Met->index_sp_value_p_chg_f, 2 );
 
-    Met->DoubToStr ( &Met->crypto_bitcoin_value_ch, Met->crypto_bitcoin_value_f );
-    Met->DoubToStr ( &Met->crypto_bitcoin_value_chg_ch, Met->crypto_bitcoin_value_chg_f );
-    Met->DoubToPerStr( &Met->crypto_bitcoin_value_p_chg_ch, Met->crypto_bitcoin_value_p_chg_f );
+    Met->DoubToStr ( &Met->crypto_bitcoin_value_ch, Met->crypto_bitcoin_value_f, 2 );
+    Met->DoubToStr ( &Met->crypto_bitcoin_value_chg_ch, Met->crypto_bitcoin_value_chg_f, 2 );
+    Met->DoubToPerStr( &Met->crypto_bitcoin_value_p_chg_ch, Met->crypto_bitcoin_value_p_chg_f, 2 );
 }
 
 /* Class Init Functions */

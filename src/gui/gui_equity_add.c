@@ -153,26 +153,43 @@ int AddRemCursorMove ()
     return 0;
 }
 
-int AddRemComBoxChange ()
+static void remove_dash (char *s)
+/* Locate first dash character '-' in a string, 
+   replace prior space with NULL character.
+   If the string pointer is NULL or the first 
+   character is a dash; do nothing */
 {
+    if (s == NULL || s[0] == '-') return;
+	char *ch = strchr( s, (int)'-' );
+    if ( ch != NULL ) ch[-1] = 0;
+}
+
+int AddRemComBoxChange (void *data)
+{
+    portfolio_packet *pkg = (portfolio_packet*)data;
+    symbol_name_map *sn_map = pkg->GetSymNameMap ();
+
     GtkWidget* ComboBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecurityComboBox") );
-    int index = gtk_combo_box_get_active ( GTK_COMBO_BOX ( ComboBox ) );
+    gint index = gtk_combo_box_get_active ( GTK_COMBO_BOX ( ComboBox ) );
 
-    GtkWidget* stack = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecurityStack") );
-    char *name = strdup ( gtk_stack_get_visible_child_name ( GTK_STACK ( stack ) ) );
+    GtkWidget* button = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecurityOkBTN") );
+    GtkWidget* label = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecurityLabel") );
 
-    GtkWidget* Button = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecurityOkBTN") );
-
-    if( strcasecmp ( name, "add" ) == 0 ) {
-        free ( name );
-        return 0;
-    }
-    free ( name );
+    gtk_label_set_label ( GTK_LABEL ( label ), "" );
 
     if( index != 0 ){
-        gtk_widget_set_sensitive ( Button, true );
+        gchar* symbol = gtk_combo_box_text_get_active_text ( GTK_COMBO_BOX_TEXT ( ComboBox ) );
+        char* name = GetSecurityName ( symbol, sn_map );
+
+        remove_dash ( name );
+        gtk_label_set_label ( GTK_LABEL ( label ), name ? name : "" );
+        g_free( symbol );
+        if ( name ) free ( name );
+
+        gtk_widget_set_sensitive ( button, true );
     } else {
-        gtk_widget_set_sensitive ( Button, false );
+        gtk_label_set_label ( GTK_LABEL ( label ), "" );
+        gtk_widget_set_sensitive ( button, false );
     }
     return 0;
 }
@@ -262,7 +279,7 @@ static int remove_security_ok ( void *data )
     meta *D = pkg->GetMetaClass ();
 
     GtkWidget* ComboBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecurityComboBox") );
-    int index = gtk_combo_box_get_active ( GTK_COMBO_BOX ( ComboBox ) );
+    gint index = gtk_combo_box_get_active ( GTK_COMBO_BOX ( ComboBox ) );
     if( index == 0 ) return 0;
     if( index == 1) {     
         SqliteRemoveAllEquity( D );
@@ -277,10 +294,10 @@ static int remove_security_ok ( void *data )
             MainPrimaryTreeview ( data );
         }
     } else {
-        char* symbol = gtk_combo_box_text_get_active_text ( GTK_COMBO_BOX_TEXT ( ComboBox ) );
+        gchar* symbol = gtk_combo_box_text_get_active_text ( GTK_COMBO_BOX_TEXT ( ComboBox ) );
         SqliteRemoveEquity( symbol, D );
         F->RemoveStock ( symbol );
-        free( symbol );
+        g_free( symbol );
 
         /* Sort the equity folder, the following three statements lock the CLASS_MEMBER_MUTEX */
         F->Sort (); /* The new stock is in alphabetical order within the array. */
@@ -306,14 +323,13 @@ int AddRemOk ( void *data )
     pthread_mutex_lock( &mutex_working[ FETCH_DATA_MUTEX ] );
 
     GtkWidget* stack = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecurityStack") );
-    char *name = strdup ( gtk_stack_get_visible_child_name ( GTK_STACK ( stack ) ) );
+    const gchar *name = gtk_stack_get_visible_child_name ( GTK_STACK ( stack ) );
 
     if ( strcasecmp ( name, "add" ) == 0 ) {
         add_security_ok ( data );
     } else {
         remove_security_ok ( data );
     }
-    free ( name );
     
     if( package->IsDefaultView () ) {
         MainDefaultTreeview ( data );

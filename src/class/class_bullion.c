@@ -84,9 +84,10 @@ static void DoubToStr (char **str, const double num)
     str[0] = tmp;
 }
 
-static void DoubToPerStr (char **str, const double num) 
-/* Take in a string buffer and a double, 
-   convert to percent string, grouping according to locale. */
+static void DoubToPerStr (char **str, const double num, const short digits_right) 
+/* Take in a string buffer, a double, and the number of digits 
+   to the right of the decimal point, convert to a percent string, 
+   grouping the digits according to the locale [dec points or commas]. */
 {    
     size_t len = strlen("########.###%") + 1;
     /* Increase the string length */
@@ -94,7 +95,20 @@ static void DoubToPerStr (char **str, const double num)
     str[0] = tmp;
     
     setlocale(LC_NUMERIC, LOCALE);
-    snprintf( str[0], len, "%'.3lf%%", num );
+    switch ( digits_right ){
+        case 0:
+            snprintf( str[0], len, "%'.0lf%%", num );
+            break;
+        case 1:
+            snprintf( str[0], len, "%'.1lf%%", num );
+            break;
+        case 2:
+            snprintf( str[0], len, "%'.2lf%%", num );
+            break;
+        default:
+            snprintf( str[0], len, "%'.3lf%%", num );
+            break;
+    }
 
     /* Trying not to waste memory. */
     tmp = realloc( str[0], strlen ( str[0] ) + 1 );
@@ -166,10 +180,10 @@ static void convert_bullion_to_strings (bullion *B){
     B->DoubToStr( &B->change_value_ch, B->change_value_f );
 
     /* The change in total investment in this metal as a percentage. */
-    B->DoubToPerStr( &B->change_percent_ch, B->change_percent_f );
+    B->DoubToPerStr( &B->change_percent_ch, B->change_percent_f, 3 );
 
     /* The raw change in bullion as a percentage. */
-    B->DoubToPerStr( &B->change_percent_raw_ch, B->change_percent_raw_f );
+    B->DoubToPerStr( &B->change_percent_raw_ch, B->change_percent_raw_f, 2 );
 }
 
 static void ToStrings () {
@@ -186,7 +200,7 @@ static void ToStrings () {
     M->DoubToStr( &M->bullion_port_value_chg_ch, M->bullion_port_value_chg_f );
 
     /* The change in total investment in bullion as a percentage. */
-    M->DoubToPerStr( &M->bullion_port_value_p_chg_ch, M->bullion_port_value_p_chg_f );
+    M->DoubToPerStr( &M->bullion_port_value_p_chg_ch, M->bullion_port_value_p_chg_f, 3 );
 
     /* The Gold to Silver Ratio */
     M->DoubToNumStr( &M->gold_silver_ratio_ch, M->gold_silver_ratio_f, 2 );

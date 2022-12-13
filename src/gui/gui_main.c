@@ -32,6 +32,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <locale.h>
 
 #include <glib-object.h>
 #include <gtk/gtk.h>
@@ -42,15 +43,16 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/class.h"               /* class_destruct_portfolio_packet(), portfolio_packet, 
                                                 equity_folder, metal, meta  */
 #include "../include/workfuncs.h"
+#include "../include/macros.h"
 
 int MainFetchBTNLabel (void *data){
     portfolio_packet *pkg = (portfolio_packet*)data;
-    GtkWidget *Button = GTK_WIDGET ( gtk_builder_get_object (builder, "FetchDataBTN") );
+    GtkWidget *label = GTK_WIDGET ( gtk_builder_get_object (builder, "FetchDataBtnLabel") );
     
     if( pkg->IsFetchingData () == true ){
-        gtk_button_set_label ( GTK_BUTTON ( Button ), "Stop Updates" );
+        gtk_label_set_label ( GTK_LABEL ( label ), "Stop Updates" );
     } else {
-        gtk_button_set_label ( GTK_BUTTON ( Button ), "Get Data" );
+        gtk_label_set_label ( GTK_LABEL ( label ), "Get Data" );
     }
     
     return 0;
@@ -72,9 +74,6 @@ void MainProgBar (double *fraction) {
 }
 
 static int main_tree_view_clr (){
-    GtkWidget* ProgressBar = GTK_WIDGET ( gtk_builder_get_object (builder, "ProgressBar") );
-    gtk_progress_bar_set_text ( GTK_PROGRESS_BAR( ProgressBar ), "Financial Client" );
-
     /* Clear the main window's GtkTreeView. */
     GtkWidget* list = GTK_WIDGET ( gtk_builder_get_object (builder, "TreeView") );
     GtkTreeViewColumn *column;
@@ -174,7 +173,7 @@ static GtkListStore * main_primary_store (void *data){
 
     GtkListStore *store = NULL;
     GtkTreeIter iter;
-    char shares[13];
+    char shares[15];
 
     /* Set up the storage container with the number of columns and column type */
     store = gtk_list_store_new( GUI_N_COLUMNS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING );
@@ -247,7 +246,8 @@ static GtkListStore * main_primary_store (void *data){
 
         unsigned short c = 0;
         while( c < F->size ){
-            snprintf( shares, 13, "%u",F->Equity[ c ]->num_shares_stock_int );
+            setlocale(LC_NUMERIC, LOCALE);
+            snprintf( shares, 15, "%'u",F->Equity[ c ]->num_shares_stock_int );
             gtk_list_store_append ( store, &iter );
             if( F->Equity[ c ]->change_value_f == 0 ) {
                 gtk_list_store_set ( store, &iter, GUI_TYPE, "equity", GUI_SYMBOL, F->Equity[ c ]->symbol_stock_ch, GUI_SHARES_OUNCES, shares, GUI_PREMIUM, F->Equity[ c ]->current_price_stock_ch, GUI_PRICE, F->Equity[ c ]->high_stock_ch, GUI_TOTAL, F->Equity[ c ]->low_stock_ch, GUI_EXTRA_ONE, F->Equity[ c ]->opening_stock_ch, GUI_EXTRA_TWO, F->Equity[ c ]->prev_closing_stock_ch, GUI_EXTRA_THREE, F->Equity[ c ]->change_share_ch, GUI_EXTRA_FOUR, F->Equity[ c ]->change_value_ch, GUI_EXTRA_FIVE, F->Equity[ c ]->current_investment_stock_ch, GUI_EXTRA_SIX, F->Equity[ c ]->change_percent_ch, -1 );
@@ -329,7 +329,7 @@ static GtkListStore * main_default_store (void *data){
 
     GtkListStore *store = NULL;
     GtkTreeIter iter;
-    char shares[13], *stock_name = NULL;
+    char shares[15], *stock_name = NULL;
 
     /* Set up the storage container with the number of columns and column type */
     store = gtk_list_store_new( GUI_N_COLUMNS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING );
@@ -377,12 +377,13 @@ static GtkListStore * main_default_store (void *data){
 
         unsigned short c = 0;
         while(c < F->size){
-            snprintf( shares, 13, "%u",F->Equity[ c ]->num_shares_stock_int );
+            setlocale(LC_NUMERIC, LOCALE);
+            snprintf( shares, 15, "%'u",F->Equity[ c ]->num_shares_stock_int );
             gtk_list_store_append ( store, &iter );
             if( sn_map ){
                 stock_name = GetSecurityName( F->Equity[ c ]->symbol_stock_ch, sn_map );
                 gtk_list_store_set ( store, &iter, GUI_TYPE, "equity", GUI_SYMBOL, F->Equity[ c ]->symbol_stock_ch, GUI_SHARES_OUNCES, shares, GUI_PREMIUM, stock_name ? stock_name : "", -1 );
-                if( stock_name ) free ( stock_name );
+                if ( stock_name ) free ( stock_name );
             } else {
                 gtk_list_store_set ( store, &iter, GUI_TYPE, "equity", GUI_SYMBOL, F->Equity[ c ]->symbol_stock_ch, GUI_SHARES_OUNCES, shares, -1 );
             }

@@ -296,7 +296,7 @@ int BullionShowHide (void *data)
         GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionGoldOuncesEntryBox") );
         char *temp = strdup( M->Gold->ounce_ch );
         FormatStr( temp );
-        gtk_entry_set_text ( GTK_ENTRY( EntryBox ), M->Gold->ounce_ch );
+        gtk_entry_set_text ( GTK_ENTRY( EntryBox ), temp );
         free( temp );
         gtk_widget_grab_focus ( EntryBox );
         g_object_set ( G_OBJECT ( EntryBox ), "activates-default", TRUE, NULL );
@@ -552,6 +552,8 @@ int BullionCursorMove ()
     free ( Palladium_Premium );
     return 0;
 }
+
+
 
 int CashShowHide (void *data)
 {
