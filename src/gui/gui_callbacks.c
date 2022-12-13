@@ -122,21 +122,18 @@ gboolean GUICallbackHandler_pref_indices_switch (GtkSwitch *Switch, bool state, 
 
     /* Visually, the underlying state is represented by the trough color of the switch, 
        while the “active” property is represented by the position of the switch. */
-
-    if( state != packet->IsIndicesDisplayed () ){
-        if ( state ) {
-            SqliteAddAPIData("Indices_Displayed", "true", D);
-        } else {
-            SqliteAddAPIData("Indices_Displayed", "false", D);
-        }
-        packet->SetIndicesDisplayed ( state );
-
-        if ( !packet->IsDefaultView () ){
-            /* If we are not displaying the default view, reveal the indices bar */
-            GtkWidget* revealer = GTK_WIDGET ( gtk_builder_get_object (builder, "MainIndicesRevealer") );
-            gtk_revealer_set_reveal_child ( GTK_REVEALER ( revealer ), D->index_bar_revealed_bool );
-        }
+    if ( state ) {
+        SqliteAddAPIData("Indices_Displayed", "true", D);
+    } else {
+        SqliteAddAPIData("Indices_Displayed", "false", D);
     }
+    packet->SetIndicesDisplayed ( state );
+
+    if ( !packet->IsDefaultView () ){
+        /* If we are not displaying the default view, reveal/hide the indices bar */
+        GtkWidget* revealer = GTK_WIDGET ( gtk_builder_get_object (builder, "MainIndicesRevealer") );
+        gtk_revealer_set_reveal_child ( GTK_REVEALER ( revealer ), packet->IsIndicesDisplayed () );
+    } /* The default view always hides the indices bar, no need for an else statement here. */
 
     /* Return false to keep the state and active properties in sync. */
     return false;

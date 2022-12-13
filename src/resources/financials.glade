@@ -353,7 +353,6 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="label" translatable="yes">Alpha 1.0</property>
-                    <property name="selectable">True</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -366,7 +365,6 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="label" translatable="yes">A simple financial instrument.</property>
-                    <property name="selectable">True</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -379,7 +377,6 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="label" translatable="yes">Website</property>
-                    <property name="selectable">True</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -2383,8 +2380,8 @@ POSSIBILITY OF SUCH DAMAGE.</property>
             <property name="valign">end</property>
             <property name="margin-top">5</property>
             <property name="margin-bottom">20</property>
-            <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
             <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+            <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
           </object>
           <packing>
             <property name="expand">False</property>

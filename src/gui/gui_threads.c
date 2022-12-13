@@ -213,7 +213,7 @@ void *GUIThreadHandler (void *data){
             pthread_mutex_unlock ( &mutex_working[ FETCH_DATA_MUTEX ] );
 
             gdk_threads_add_idle ( BullionShowHide, packet );
-            if( packet->IsFetchingData () == false && packet->IsDefaultView () ) {
+            if( packet->IsDefaultView () ) {
                 gdk_threads_add_idle ( MainDefaultTreeview, packet );
             } else {
                 packet->Calculate ();
@@ -243,7 +243,7 @@ void *GUIThreadHandler (void *data){
             pthread_mutex_unlock ( &mutex_working[ FETCH_DATA_MUTEX ] );
 
             gdk_threads_add_idle ( CashShowHide, packet );
-            if( packet->IsFetchingData () == false && packet->IsDefaultView () ) {
+            if( packet->IsDefaultView () ) {
                 gdk_threads_add_idle ( MainDefaultTreeview, packet );
             } else {
                 packet->Calculate ();

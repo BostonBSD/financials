@@ -57,7 +57,6 @@ char *GetSecurityName (const char *s, const symbol_name_map *sn_map)
     symbol_to_security_name_container **item = NULL;
     if ( sn_map == NULL ) return NULL;
 
-
     /* The second parameter is the same type as the return value. A double pointer to a struct. */
     /* It's basically searching through an array of pointer addresses, the compare function dereferences
        the pointer address to get the string we are comparing against. */
