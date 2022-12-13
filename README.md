@@ -47,7 +47,7 @@ Some additional features could include cryptocurrency, api selection
 
 It might be useful to create a watch list that displays a list of stocks and their stats [one per row], the current RSI, whether it is an upward or downward trend, and an indicator string, updating maybe every 4 or 5 seconds [save the historical data on the first fetch operation].  
 
-An RSS news reader that displays any current pertinent news in a plaintext format for listed stocks [Nasdaq RSS Feeds looks like a promising news source. GMarkup and Libxml2 look like a useful library].
+An RSS news reader that displays any current pertinent news in a plaintext format for listed stocks [Nasdaq RSS Feeds looks like a promising news source. GMarkup and Libxml2 look like useful libraries].
 
 Conversion to Gtk4 after an XML file creation application is developed [they aren't developing glade any longer].
 
