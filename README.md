@@ -47,11 +47,13 @@ Some additional features could include cryptocurrency, api selection
 
 It might be useful to create a watch list that displays a list of stocks and their stats [one per row], the current RSI, whether it is an upward or downward trend, and an indicator string, updating maybe every 4 or 5 seconds [save the historical data on the first fetch operation].  
 
-An RSS news reader that displays any current pertinent news in a plaintext format for listed stocks [Nasdaq RSS Feeds looks like a promising news source].
+An RSS news reader that displays any current pertinent news in a plaintext format for listed stocks [Nasdaq RSS Feeds looks like a promising news source. GMarkup looks like a useful library].
 
 Conversion to Gtk4 after an XML file creation application is developed [they aren't developing glade any longer].
 
 Other pattern indicators such as Williams %R, MACD, the moving average crossover, Commodity Channel Index, stochastic oscillator, etc.
+
+Migration to more Gnomish datatypes and style, etc.  I started this project to learn C [coming from a C++ background] and Gtk, now that we're entering beta mode, it's time to make it more canonical.
 
 ----------------------------------------------------------
 
