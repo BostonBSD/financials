@@ -174,6 +174,7 @@ static GtkListStore * main_primary_store (void *data){
     GtkListStore *store = NULL;
     GtkTreeIter iter;
     char shares[15];
+    bool no_assets = true;
 
     /* Set up the storage container with the number of columns and column type */
     store = gtk_list_store_new( GUI_N_COLUMNS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING );
@@ -234,6 +235,8 @@ static GtkListStore * main_primary_store (void *data){
         }
         gtk_list_store_append ( store, &iter );
         gtk_list_store_set ( store, &iter, GUI_TYPE, "blank_space_primary", GUI_SYMBOL, "_______", -1 );
+
+        no_assets = false;
     }
 
     if( F->size > 0 ){
@@ -260,6 +263,8 @@ static GtkListStore * main_primary_store (void *data){
         }
         gtk_list_store_append ( store, &iter );
         gtk_list_store_set ( store, &iter, GUI_TYPE, "blank_space_primary", GUI_SYMBOL, "_______", -1 );
+
+        no_assets = false;
     }
 
     if( D->cash_f > 0 || M->bullion_port_value_f > 0 || F->stock_port_value_f > 0 ){
@@ -270,6 +275,8 @@ static GtkListStore * main_primary_store (void *data){
     if( D->cash_f > 0 ){
         gtk_list_store_append ( store, &iter );
         gtk_list_store_set ( store, &iter, GUI_TYPE, "cash", GUI_SYMBOL, "Cash", GUI_SHARES_OUNCES, D->cash_ch,-1 );
+
+        no_assets = false;
     }
 
     if( M->bullion_port_value_f > 0 ){
@@ -307,7 +314,9 @@ static GtkListStore * main_primary_store (void *data){
         }
         gtk_list_store_append ( store, &iter );
         gtk_list_store_set ( store, &iter, GUI_TYPE, "blank_space_primary", GUI_SYMBOL, "_______", -1 );
-    } else {
+    } 
+
+    if ( no_assets ) {
         gtk_list_store_append ( store, &iter );
         gtk_list_store_set ( store, &iter, GUI_TYPE, "blank_space_primary", GUI_SYMBOL, "Portfolio has no assets.", -1 );
     }
