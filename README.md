@@ -53,7 +53,7 @@ Conversion to Gtk4 after an XML file creation application is developed [they are
 
 Other pattern indicators such as Williams %R, MACD, the moving average crossover, Commodity Channel Index, stochastic oscillator, etc.
 
-In the distant future, or perhaps not at all, we could try to implement linear and probabilistic optimization for equity decision making.
+In the distant future, or perhaps not at all, we could try to implement linear and probabilistic optimization for equity decision making [the lpsolve library looks promising].
 
 Migration to more Gnomish datatypes and style, etc.  I started this project to learn C [coming from a C++ background] and Gtk, now that we're entering beta mode, it's time to make it more canonical.
 
