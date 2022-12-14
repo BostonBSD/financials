@@ -55,7 +55,7 @@ Other pattern indicators such as Williams %R, MACD, the moving average crossover
 
 In the distant future, or perhaps not at all, we could try to implement linear and probabilistic optimization for equity decision making [the lpsolve library and the GNU Linear Programming Kit look promising].
 
-Migration to more Gnomish datatypes and style, etc.  I started this project to learn C [coming from a C++ background] and Gtk, now that we're entering beta mode, it's time to make it more canonical.
+Migration to more Gnomish datatypes and style, etc.  I started this project to learn C [coming from a C++ background] and Gtk, now that we're entering beta mode, it's time to make it more canonical.  I can also relicense my code under the GPL if anyone would like to fork this project.
 
 ----------------------------------------------------------
 
