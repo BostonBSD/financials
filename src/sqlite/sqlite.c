@@ -390,7 +390,7 @@ void SqliteProcessing ( portfolio_packet *pkg ){
     F->GenerateURL ( pkg );
 }
 
-void SqliteAddEquity (char *symbol, char *shares, meta *D){
+void SqliteAddEquity (const char *symbol, const char *shares, meta *D){
     pthread_mutex_lock( &mutex_working [ SQLITE_MUTEX ] );
 
     size_t  len;
@@ -405,10 +405,10 @@ void SqliteAddEquity (char *symbol, char *shares, meta *D){
     char *sql_cmd = (char*) malloc( len );
     snprintf( sql_cmd, len, "DELETE FROM equity WHERE Symbol = '%s';", symbol );
     if ( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK ) error_msg( db );
-    free( sql_cmd );
 
     len = strlen("INSERT INTO equity VALUES(null, '', '');") + strlen( symbol ) + strlen( shares ) + 1;
-    sql_cmd = (char*) malloc( len );
+    char *tmp = realloc ( sql_cmd, len );
+    sql_cmd = tmp;
     snprintf( sql_cmd, len, "INSERT INTO equity VALUES(null, '%s', '%s');", symbol, shares );
     if ( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK ) error_msg( db );
     free( sql_cmd );
@@ -419,7 +419,7 @@ void SqliteAddEquity (char *symbol, char *shares, meta *D){
     pthread_mutex_unlock( &mutex_working [ SQLITE_MUTEX ] );
 }
 
-void SqliteAddBullion (char *metal_name, char *ounces, char *premium, metal *M, meta *D){
+void SqliteAddBullion (const char *metal_name, const char *ounces, const char *premium, metal *M, meta *D){
     pthread_mutex_lock( &mutex_working [ SQLITE_MUTEX ] );
 
     size_t  len;
@@ -434,9 +434,10 @@ void SqliteAddBullion (char *metal_name, char *ounces, char *premium, metal *M, 
     char *sql_cmd = (char*) malloc( len );
     snprintf( sql_cmd, len, "DELETE FROM bullion WHERE Metal = '%s';", metal_name);
     if ( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK ) error_msg( db );
-    free( sql_cmd );
+    
     len = strlen("INSERT INTO bullion VALUES(null, '', '', '');") + strlen( metal_name ) + strlen( ounces ) + strlen( premium ) + 1;
-    sql_cmd = (char*) malloc( len );
+    char *tmp = realloc ( sql_cmd, len );
+    sql_cmd = tmp;
     snprintf( sql_cmd, len, "INSERT INTO bullion VALUES(null, '%s', '%s', '%s');", metal_name, ounces, premium );
     if ( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK ) error_msg( db );
     free( sql_cmd );
@@ -451,7 +452,7 @@ void SqliteAddBullion (char *metal_name, char *ounces, char *premium, metal *M, 
     pthread_mutex_unlock( &mutex_working [ SQLITE_MUTEX ] );
 }
 
-void SqliteAddCash (char *value, meta *D){
+void SqliteAddCash (const char *value, meta *D){
     pthread_mutex_lock( &mutex_working [ SQLITE_MUTEX ] );
 
     size_t  len;
@@ -480,7 +481,7 @@ void SqliteAddCash (char *value, meta *D){
     pthread_mutex_unlock( &mutex_working [ SQLITE_MUTEX ] );
 }
 
-void SqliteAddAPIData (char *keyword, char *data, meta *D){
+void SqliteAddAPIData (const char *keyword, const char *data, meta *D){
     pthread_mutex_lock( &mutex_working [ SQLITE_MUTEX ] );
 
     size_t  len;
@@ -495,10 +496,10 @@ void SqliteAddAPIData (char *keyword, char *data, meta *D){
     char *sql_cmd = (char*) malloc( len );
     snprintf( sql_cmd, len, "DELETE FROM apidata WHERE Keyword = '%s';", keyword);
     if ( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK ) error_msg( db );
-    free( sql_cmd );
 
     len = strlen("INSERT INTO apidata VALUES(null, '', '');") + strlen( keyword ) + strlen( data ) + 1;
-    sql_cmd = (char*) malloc( len );
+    char *tmp = realloc( sql_cmd, len );
+    sql_cmd = tmp;
     snprintf( sql_cmd, len, "INSERT INTO apidata VALUES(null, '%s', '%s');", keyword, data );
     if ( sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK ) error_msg( db );
     free( sql_cmd );
@@ -509,7 +510,7 @@ void SqliteAddAPIData (char *keyword, char *data, meta *D){
     pthread_mutex_unlock( &mutex_working [ SQLITE_MUTEX ] );
 }
 
-void SqliteRemoveEquity (char *symbol, meta *D){
+void SqliteRemoveEquity (const char *symbol, meta *D){
     pthread_mutex_lock( &mutex_working [ SQLITE_MUTEX ] );
 
     size_t  len;
@@ -674,12 +675,11 @@ symbol_name_map *SqliteGetSymbolNameMap (meta *D){
     if ( sn_map->size == 0 ){
         free ( sn_map->sn_container_arr );
         free ( sn_map );
-        pthread_mutex_unlock( &mutex_working [ SYMBOL_NAME_MAP_SQLITE_MUTEX ] );
-        return NULL;
-    } else {
-        pthread_mutex_unlock( &mutex_working [ SYMBOL_NAME_MAP_SQLITE_MUTEX ] );
-        return sn_map;
+        sn_map = NULL;
     }
+    
+    pthread_mutex_unlock( &mutex_working [ SYMBOL_NAME_MAP_SQLITE_MUTEX ] );
+    return sn_map;
 }
 
 static void escape_apostrophy ( char **s )

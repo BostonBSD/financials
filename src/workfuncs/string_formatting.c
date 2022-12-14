@@ -31,6 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 #include <stdbool.h>
@@ -95,7 +96,21 @@ bool CheckIfStringLongPositiveNumber (const char *string)
 	return true;
 }
 
-void FormatStr (char *s)
+void CopyString (char **dst, const char *src)
+/* Take in a string buffer, resize it to fit the src
+   Copy the src to the *dst.  If either src or dst is NULL 
+   do nothing. If *dst = NULL, allocate memory for the buffer. */
+{
+    if ( !dst || !src ) return;
+    if ( dst[0] == NULL ) dst[0] = malloc (1);
+
+    size_t len = strlen ( src ) + 1;
+    char *tmp = realloc ( dst[0], len );
+    dst[0] = tmp;
+    snprintf( dst[0], len, "%s", src );
+}
+
+void ToNumStr (char *s)
 /* Remove all dollar signs '$' and commas ',' from a string */
 {
     /* Read character by character until the null character is reached. */

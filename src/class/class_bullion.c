@@ -47,11 +47,11 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/macros.h"
 #include "../include/mutex.h"
 
-/* The static local-global variable 'Precious' is always accessed via these functions. */
+/* The static local-global variable 'MetalClassObject' is always accessed via these functions. */
 /* This is an ad-hoc way of self referencing a class. 
    It prevents multiple instances of the metal class. */
 
-static metal *Precious;        /* A class handle to the bullion class object pointers. */
+static metal *MetalClassObject;        /* A class handle to the bullion class object pointers. */
 
 /* Class Method (also called Function) Definitions */
 static double Stake (const double ounces, const double prem, const double price) {
@@ -152,7 +152,7 @@ static void DoubToNumStr (char **str, const double num, const short digits_right
 static double StrToDoub (const char *str) {
     char *newstr = strdup ( str );
 
-    FormatStr( newstr );
+    ToNumStr( newstr );
     double num = strtod( newstr, NULL );
 
     free( newstr );
@@ -187,7 +187,7 @@ static void convert_bullion_to_strings (bullion *B){
 }
 
 static void ToStrings () {
-    metal *M = Precious;
+    metal *M = MetalClassObject;
     convert_bullion_to_strings ( M->Gold );
     convert_bullion_to_strings ( M->Silver );
     if( M->Platinum->ounce_f > 0 ) convert_bullion_to_strings ( M->Platinum );
@@ -237,7 +237,7 @@ static void bullion_calculations (bullion *B){
 }
 
 static void Calculate (){
-    metal* M = Precious;
+    metal* M = MetalClassObject;
 
     bullion_calculations ( M->Gold );
     bullion_calculations ( M->Silver );
@@ -272,15 +272,15 @@ static void create_bullion_url ( bullion *B, const char *symbol_ch ){
        This compensates for weekends and holidays and ensures enough data. */
     start_time = end_time - ( 86400 * 7 );
 
-    if( B->url_ch ) free( B->url_ch );
     len = strlen( symbol_ch ) + strlen( YAHOO_URL_START ) + strlen( YAHOO_URL_MIDDLE_ONE ) + strlen( YAHOO_URL_MIDDLE_TWO ) + strlen( YAHOO_URL_END ) + 25;
-    B->url_ch = malloc ( len );
+    char *tmp = realloc( B->url_ch, len );
+    B->url_ch = tmp;
     snprintf( B->url_ch, len, YAHOO_URL_START"%s"YAHOO_URL_MIDDLE_ONE"%d"YAHOO_URL_MIDDLE_TWO"%d"YAHOO_URL_END, symbol_ch, (int)start_time, (int)end_time );
 }
 
 static int SetUpCurl ( void *data ){
     portfolio_packet *pkg = (portfolio_packet*)data;
-    metal *M = Precious;
+    metal *M = MetalClassObject;
 
     create_bullion_url ( M->Gold, "GC=F" );
     create_bullion_url ( M->Silver, "SI=F" );
@@ -350,7 +350,7 @@ static void extract_bullion_data (bullion *B) {
 }
 
 static void ExtractData () {
-    metal *M = Precious;
+    metal *M = MetalClassObject;
 
     extract_bullion_data ( M->Gold );
     extract_bullion_data ( M->Silver );
@@ -440,7 +440,7 @@ metal *class_init_metal ()
     new_class->ExtractData = ExtractData;
 
     /* Set the local global variable so we can self-reference this class. */
-    Precious = new_class;
+    MetalClassObject = new_class;
 
     /* Return Our Initialized Class */
     return new_class; 

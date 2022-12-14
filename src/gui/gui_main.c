@@ -431,7 +431,7 @@ static void show_indices_labels (void *data){
     portfolio_packet *package = (portfolio_packet*)data;
     meta *D = package->GetMetaClass ();
 
-    /* Set Expander Bar */
+    /* Set Revealer Bar */
     GtkWidget* revealer = GTK_WIDGET ( gtk_builder_get_object (builder, "MainIndicesRevealer") );
     gtk_revealer_set_reveal_child (GTK_REVEALER ( revealer ), D->index_bar_revealed_bool );
 }
@@ -441,10 +441,10 @@ static void set_indices_labels (void *data){
     portfolio_packet *package = (portfolio_packet*)data;
     meta *D = package->GetMetaClass ();
     metal *M = package->GetMetalClass ();
-    const char *red_format = "<span foreground=\"black\">%s\n</span><span foreground=\"darkred\" size=\"small\">%s, %s</span>";
-    const char *green_format = "<span foreground=\"black\">%s\n</span><span foreground=\"darkgreen\" size=\"small\">%s, %s</span>";
-    const char *format;
-    char *markup;
+    const gchar *red_format = "<span foreground=\"black\">%s\n</span><span foreground=\"darkred\" size=\"small\">%s, %s</span>";
+    const gchar *green_format = "<span foreground=\"black\">%s\n</span><span foreground=\"darkgreen\" size=\"small\">%s, %s</span>";
+    const gchar *format;
+    gchar *markup;
 
     if ( D->index_dow_value_chg_f >= 0 ) {
         format = green_format;

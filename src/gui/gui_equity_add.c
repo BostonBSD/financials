@@ -48,15 +48,14 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/workfuncs.h"
 #include "../include/mutex.h"
 
-static GtkListStore * addrem_completion_set_store (void *data){
-    symbol_name_map *sn_map = ( symbol_name_map* ) data;
+static GtkListStore * addrem_completion_set_store ( symbol_name_map *sn_map ){
     GtkListStore *store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
     GtkTreeIter iter;
 
-    char item[35];
+    gchar item[35];
     /* Populate the GtkListStore with the string of stock symbols in column 0, stock names in column 1, 
        and symbols & names in column 2. */
-    for ( int i=0; i < sn_map->size; i++ ){
+    for ( gint i=0; i < sn_map->size; i++ ){
         snprintf(item, 35, "%s - %s", sn_map->sn_container_arr[ i ]->symbol, sn_map->sn_container_arr[ i ]->security_name );
 
         gtk_list_store_append( store, &iter );
@@ -76,8 +75,7 @@ static gboolean addrem_completion_match (GtkEntryCompletion *completion, const g
     gchar *item_symb, *item_name;
     /* We are finding matches based off of column 0 and 1, however, 
        we display column 2 in our 3 column model */
-    gtk_tree_model_get ( model, iter, 0, &item_symb, -1 );
-    gtk_tree_model_get ( model, iter, 1, &item_name, -1 );
+    gtk_tree_model_get ( model, iter, 0, &item_symb, 1, &item_name, -1 );
     gboolean ans = false, symbol_match = true, name_match = true;
 
     int N = 0;
@@ -100,11 +98,14 @@ static gboolean addrem_completion_match (GtkEntryCompletion *completion, const g
 
 int AddRemCompletionSet (void *data){
     pthread_mutex_lock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
-    if( data == NULL ) return 0;
+    if( data == NULL ) {
+        pthread_mutex_unlock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
+        return 0;
+    }
 
     GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecuritySymbolEntryBox") );
     GtkEntryCompletion *completion = gtk_entry_completion_new();
-    GtkListStore *store = addrem_completion_set_store ( data );
+    GtkListStore *store = addrem_completion_set_store ( (symbol_name_map*)data );
 
     gtk_entry_completion_set_model(completion, GTK_TREE_MODEL( store ));
     g_object_unref( G_OBJECT( store ) );
@@ -139,8 +140,8 @@ int AddRemCursorMove ()
     GtkWidget* EntryBoxSymbol = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecuritySymbolEntryBox") );
     GtkWidget* EntryBoxShares = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecuritySharesEntryBox") );
 
-    char* symbol = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBoxSymbol ) ) );
-    char* shares = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBoxShares ) ) );
+    const gchar* symbol = gtk_entry_get_text ( GTK_ENTRY( EntryBoxSymbol ) );
+    const gchar* shares = gtk_entry_get_text ( GTK_ENTRY( EntryBoxShares ) );
 
     if ( CheckValidString( symbol ) && CheckValidString( shares ) && CheckIfStringLongPositiveNumber( shares ) ){
         gtk_widget_set_sensitive ( Button, true );
@@ -148,8 +149,6 @@ int AddRemCursorMove ()
         gtk_widget_set_sensitive ( Button, false );
     }
 
-    free ( symbol );
-    free ( shares );
     return 0;
 }
 
@@ -247,31 +246,29 @@ static void add_equity_to_folder ( char *symbol, char *shares, portfolio_packet 
     }  
 }
 
-static int add_security_ok ( void *data )
+static void add_security_ok ( void *data )
 {
     /* Unpack the package */
     portfolio_packet *package = (portfolio_packet*)data;
     meta *D = package->GetMetaClass ();
 
     GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecuritySymbolEntryBox") );
-    char* symbol = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
+    gchar* symbol = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
 
     EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecuritySharesEntryBox") );
-    char* shares = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
+    gchar* shares = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
 
     UpperCaseStr( symbol );
-    FormatStr( shares );
+    ToNumStr( shares );
         
     SqliteAddEquity( symbol, shares, D );
     add_equity_to_folder ( symbol, shares, package );
 
-    free( symbol );
-    free( shares );
-
-    return 0;
+    g_free( symbol );
+    g_free( shares );
 }
 
-static int remove_security_ok ( void *data )
+static void remove_security_ok ( void *data )
 {
     /* Unpack the package */
     portfolio_packet *pkg = (portfolio_packet*)data;
@@ -280,7 +277,7 @@ static int remove_security_ok ( void *data )
 
     GtkWidget* ComboBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecurityComboBox") );
     gint index = gtk_combo_box_get_active ( GTK_COMBO_BOX ( ComboBox ) );
-    if( index == 0 ) return 0;
+    if( index == 0 ) return;
     if( index == 1) {     
         SqliteRemoveAllEquity( D );
         /* Reset Equity Folder */
@@ -310,7 +307,6 @@ static int remove_security_ok ( void *data )
             MainPrimaryTreeview ( data );
         }
     }
-    return 0;
 }
 
 int AddRemOk ( void *data )

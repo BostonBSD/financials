@@ -43,11 +43,6 @@ typedef struct {                    /* A handle to the symbol-name mapping array
   int size;
 } symbol_name_map;
 
-typedef struct {                    /* A container to hold the type of row and symbol, on a right click */
-  char* type;
-  char* symbol;
-} right_click_container;
-
 /* Window Signals */
 enum {
   GUI_MAIN_WINDOW,

@@ -50,11 +50,11 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/macros.h"
 #include "../include/mutex.h"
 
-/* The static local-global variable 'MetaData' is always accessed via these functions. */
+/* The static local-global variable 'MetaClassObject' is always accessed via these functions. */
 /* This is an ad-hoc way of self referencing a class. 
    It prevents multiple instances of the meta class. */
    
-static meta *MetaData;         /* A class object pointer called MetaData. */
+static meta *MetaClassObject;         /* A class object pointer called MetaClassObject. */
 
 /* Class Method (also called Function) Definitions */
 static double EntireStake (const double bullion, const double equity, const double cash) {
@@ -148,7 +148,7 @@ static void double_to_num_str (char **str, const double num)
 static double StrToDoub (const char *str) {
     char *newstr = strdup ( str );
 
-    FormatStr( newstr );
+    ToNumStr( newstr );
     double num = strtod( newstr, NULL );
 
     free( newstr );
@@ -157,7 +157,7 @@ static double StrToDoub (const char *str) {
 }
 
 static void ToStringsPortfolio () {
-    meta* Met = MetaData;
+    meta* Met = MetaClassObject;
 
     /* The total portfolio value. */
     Met->DoubToStr( &Met->portfolio_port_value_ch, Met->portfolio_port_value_f, 3 );
@@ -171,7 +171,7 @@ static void ToStringsPortfolio () {
 
 static void CalculatePortfolio ( void *data ) {
     portfolio_packet *pkg = (portfolio_packet*)data;
-    meta* Met = MetaData;
+    meta* Met = MetaClassObject;
     metal* M = pkg->GetMetalClass ();
     equity_folder* F = pkg->GetEquityFolderClass ();
 
@@ -189,7 +189,7 @@ static void CalculatePortfolio ( void *data ) {
 }
 
 static void StopRSICurl () {
-    meta *Met = MetaData;
+    meta *Met = MetaClassObject;
 
     curl_multi_wakeup( Met->multicurl_rsi_hnd );
     pthread_mutex_lock( &mutex_working[ MULTICURL_NO_PROG_MUTEX ] );
@@ -200,7 +200,7 @@ static void StopRSICurl () {
 }
 
 static void StopSNMapCurl () {
-    meta *Met = MetaData;
+    meta *Met = MetaClassObject;
 
     curl_multi_wakeup( Met->multicurl_cmpltn_hnd );
     pthread_mutex_lock( &mutex_working[ MULTICURL_NO_PROG_MUTEX ] );
@@ -220,15 +220,15 @@ static void create_index_url ( char **url_ch, const char *symbol_ch ){
        This compensates for weekends and holidays and ensures enough data. */
     start_time = end_time - ( 86400 * 4 );
 
-    if( url_ch[0] ) free( url_ch[0] );
     len = strlen( symbol_ch ) + strlen( YAHOO_URL_START ) + strlen( YAHOO_URL_MIDDLE_ONE ) + strlen( YAHOO_URL_MIDDLE_TWO ) + strlen( YAHOO_URL_END ) + 25;
-    url_ch[0] = malloc ( len );
+    char *tmp = realloc( url_ch[0], len );
+    url_ch[0] = tmp;
     snprintf( url_ch[0], len, YAHOO_URL_START"%s"YAHOO_URL_MIDDLE_ONE"%d"YAHOO_URL_MIDDLE_TWO"%d"YAHOO_URL_END, symbol_ch, (int)start_time, (int)end_time );
 }
 
 static int SetUpCurlIndicesData ( void *data ){
     portfolio_packet *pkg = (portfolio_packet*)data;
-    meta *Met = MetaData;
+    meta *Met = MetaClassObject;
     char *dow_url_ch = NULL, *nasdaq_url_ch = NULL, *sp_url_ch = NULL, *bitcoin_url_ch = NULL;
 
     create_index_url ( &dow_url_ch, "^dji" );
@@ -250,7 +250,7 @@ static int SetUpCurlIndicesData ( void *data ){
 }
 
 static void extract_index_data (char *index, MemType *Data) {
-    meta *Met = MetaData;
+    meta *Met = MetaClassObject;
 
     if ( Data->memory == NULL ){
         if( strcmp(index, "dow") == 0 ){
@@ -358,7 +358,7 @@ static void extract_index_data (char *index, MemType *Data) {
 }
 
 static void ExtractIndicesData () {
-    meta *Met = MetaData;
+    meta *Met = MetaClassObject;
 
     extract_index_data ( "dow", &Met->INDEX_DOW_CURLDATA );
     extract_index_data ( "nasdaq", &Met->INDEX_NASDAQ_CURLDATA );
@@ -367,7 +367,7 @@ static void ExtractIndicesData () {
 }
 
 static void ToStringsIndices () {
-    meta *Met = MetaData;
+    meta *Met = MetaClassObject;
 
     double_to_num_str ( &Met->index_dow_value_ch, Met->index_dow_value_f );
     double_to_num_str ( &Met->index_dow_value_chg_ch, Met->index_dow_value_chg_f );
@@ -488,7 +488,7 @@ meta *class_init_meta_data ()
     new_class->ToStringsIndices = ToStringsIndices;
 
     /* Set the local global variable so we can self-reference this class. */
-    MetaData = new_class;
+    MetaClassObject = new_class;
 
     /* Return Our Initialized Class */
     return new_class; 

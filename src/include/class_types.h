@@ -57,8 +57,9 @@ typedef struct tm sub_func_l_t ();
 typedef unsigned int sub_func_m_t ();
 typedef int sub_func_n_t (void*);
 typedef void sub_func_o_t (void*);
-typedef void sub_func_p_t (char*,char*);
+typedef void sub_func_p_t (const char*,const char*);
 typedef void sub_func_q_t (char**,const double,const short);
+typedef void sub_func_r_t (const char*);
 
 /* class type definitions (emulated class definitions; C doesn't really have class types) */
 typedef struct {
@@ -303,7 +304,7 @@ typedef struct {
     sub_func_p_t* AddStock;
     sub_func_g_t* Sort;
     sub_func_g_t* Reset;
-    sub_func_o_t* RemoveStock;
+    sub_func_r_t* RemoveStock;
 } equity_folder;
 
 typedef struct {
@@ -320,9 +321,9 @@ typedef struct {
 /* A handle to our three primary classes and the window_data struct for passing through threads */
 typedef struct {
   /* handles to each of our three classes and the window_data struct */
-  metal* metal_chest;
-  equity_folder* securities_folder;
-  meta* portfolio_meta_info;
+  metal* metal_class;
+  equity_folder* equity_folder_class;
+  meta* meta_class;
   window_data* window_struct;                          /* A struct that holds the size and position of 
                                                           the main and rsi windows. */
   symbol_name_map* sym_map;                            /* The symbol to name mapping struct */

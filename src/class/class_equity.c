@@ -46,18 +46,18 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/macros.h"
 #include "../include/mutex.h"
 
-/* The static local-global variable 'Folder' is always accessed via these functions. */
+/* The static local-global variable 'FolderClassObject' is always accessed via these functions. */
 /* This is an ad-hoc way of self referencing a class. 
    It prevents multiple instances of the equity_folder class. */
    
-static equity_folder *Folder;  /* A class handle to an array of stock class objects, can change dynamically. */    
+static equity_folder *FolderClassObject;  /* A class handle to an array of stock class objects, can change dynamically. */    
 
 /* Class Method (also called Function) Definitions */
-static double Stake (const unsigned int shares, const double price) {
+static double Stake ( const unsigned int shares, const double price ) {
     return ( (double)shares * price );
 }
 
-static void DoubToStr (char **str, const double num) 
+static void DoubToStr ( char **str, const double num ) 
 /* Take in a string buffer and a double, 
    convert to monetary format string. */
 {    
@@ -79,7 +79,7 @@ static void DoubToStr (char **str, const double num)
     str[0] = tmp;
 }
 
-static void DoubToPerStr (char **str, const double num) 
+static void DoubToPerStr ( char **str, const double num ) 
 /* Take in a string buffer and a double, 
    convert to percent string, grouping according to locale. */
 {    
@@ -96,10 +96,10 @@ static void DoubToPerStr (char **str, const double num)
     str[0] = tmp;
 }
 
-static double StrToDoub (const char *str) {
+static double StrToDoub ( const char *str ) {
     char *newstr = strdup ( str );
 
-    FormatStr( newstr );
+    ToNumStr( newstr );
     double num = strtod( newstr, NULL );
 
     free( newstr );
@@ -130,7 +130,7 @@ static void convert_equity_to_strings (stock *S){
 }
 
 static void ToStrings (){
-    equity_folder *F = Folder;
+    equity_folder *F = FolderClassObject;
 
     for(unsigned short g = 0; g < F->size; g++){
         convert_equity_to_strings ( F->Equity[ g ] );
@@ -159,7 +159,7 @@ static void equity_calculations (stock *S){
 }
 
 static void Calculate (){
-    equity_folder* F = Folder;
+    equity_folder* F = FolderClassObject;
 
     /* Equity Calculations. */
     F->stock_port_value_f = 0.0f;
@@ -184,7 +184,7 @@ static void GenerateURL ( void *data ){
     pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
 
     portfolio_packet *pkg = (portfolio_packet*)data;
-    equity_folder *F = Folder;
+    equity_folder *F = FolderClassObject;
     meta *Met = pkg->GetMetaClass ();
 
     size_t len;
@@ -192,10 +192,10 @@ static void GenerateURL ( void *data ){
     /* Cycle through the list of equities. */
     for( unsigned short c = 0; c < F->size; c++ ) { 
         /* Generate the request URL for this equity. */
-        free( F->Equity[ c ]->curl_url_stock_ch );
-
         len = strlen(Met->stock_url_ch) + strlen(F->Equity[ c ]->symbol_stock_ch) + strlen(Met->curl_key_ch)+1;
-        F->Equity[ c ]->curl_url_stock_ch = (char*) malloc( len );
+        char *tmp = realloc ( F->Equity[ c ]->curl_url_stock_ch, len );
+
+        F->Equity[ c ]->curl_url_stock_ch = tmp;
         snprintf( F->Equity[ c ]->curl_url_stock_ch, len, "%s%s%s", Met->stock_url_ch, F->Equity[ c ]->symbol_stock_ch, Met->curl_key_ch );
     }
 
@@ -204,7 +204,7 @@ static void GenerateURL ( void *data ){
 
 static int SetUpCurl ( void *data ){
     portfolio_packet *pkg = (portfolio_packet*)data;
-    equity_folder *F = Folder;
+    equity_folder *F = FolderClassObject;
 
     /* Cycle through the list of equities. */
     for( unsigned short c = 0; c < F->size; c++ ) {       
@@ -219,7 +219,7 @@ static int SetUpCurl ( void *data ){
 static void Reset () {
     pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
 
-    equity_folder *F = Folder;
+    equity_folder *F = FolderClassObject;
 
     if (F->size == 0){
         /*
@@ -262,47 +262,46 @@ static void Reset () {
     pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
 }
 
-static void AddStock ( char *symbol, char *shares )
+static void AddStock ( const char *symbol, const char *shares )
 /* Adds a new stock object to our folder, 
    increments size. */
 {
     pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
 
-    equity_folder *F = Folder;
+    equity_folder *F = FolderClassObject;
 
     /* realloc will free memory if assigned a smaller new value. */
-    stock** tmp = (stock**) realloc( F->Equity, (F->size + 1) * sizeof(stock*) );              
+    stock** tmp_array = (stock**) realloc( F->Equity, (F->size + 1) * sizeof(stock*) );              
 
-    if (tmp == NULL){
+    if (tmp_array == NULL){
         printf("Not Enough Memory, realloc returned NULL.\n");
         exit(EXIT_FAILURE);
     }
                 
-    F->Equity = tmp;
+    F->Equity = tmp_array;
 
     /* class_init_equity returns an object pointer. */
     F->Equity[ F->size ] = class_init_equity ();
 
-    /* Add The Stock Symbol To the Folder */
-    free( F->Equity[ F->size ]->symbol_stock_ch ); 
-    F->Equity[ F->size ]->symbol_stock_ch = strdup ( symbol ? symbol : "NULL" );
+    /* Add The Stock Symbol To the stock object */
+    CopyString( &F->Equity[ F->size ]->symbol_stock_ch, symbol );
 
-    /* Add The Shares To the Folder */
+    /* Add The Shares To the stock object */
     F->Equity[ F->size ]->num_shares_stock_int = (unsigned int)strtol( shares ? shares : "0", NULL, 10 );
     F->size++;
 
     pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
 }
 
-static void RemoveStock ( void *data ) 
+static void RemoveStock ( const char *s ) 
 /* Removes a stock object from our folder, 
    decrements size. If the stock isn't found 
-   the size doesn't change. */
+   the size doesn't change.  Locate stock by the
+   symbol string. */
 {
     pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
 
-    char* s = (char*)data;
-    equity_folder *F = Folder;
+    equity_folder *F = FolderClassObject;
     stock** tmp;
 
     unsigned short j, i = 0;
@@ -326,7 +325,7 @@ static void RemoveStock ( void *data )
 }
 
 static void ExtractData () {
-    equity_folder *F = Folder;
+    equity_folder *F = FolderClassObject;
 
     for( unsigned short c = 0; c < F->size; c++ ) 
     /* Extract current price from JSON data for each Symbol. */
@@ -368,7 +367,7 @@ static void Sort () {
     pthread_mutex_lock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
 
     /* Sort the equity folder in alphabetically ascending order. */
-    equity_folder *F = Folder;
+    equity_folder *F = FolderClassObject;
     qsort(&F->Equity[0], (size_t)F->size, sizeof(stock*), alpha_asc);
 
     pthread_mutex_unlock( &mutex_working [ CLASS_MEMBER_MUTEX ] );
@@ -455,7 +454,7 @@ equity_folder *class_init_equity_folder ()
     new_class->RemoveStock = RemoveStock;
 
     /* Set the local global variable so we can self-reference this class. */
-    Folder = new_class;
+    FolderClassObject = new_class;
 
     /* Return Our Initialized Class */
     return new_class; 

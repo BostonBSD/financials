@@ -52,15 +52,14 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/macros.h"
 #include "../include/mutex.h"
 
-static GtkListStore * rsi_completion_set_store (void *data){
-    symbol_name_map *sn_map = ( symbol_name_map* ) data;
+static GtkListStore * rsi_completion_set_store (symbol_name_map *sn_map){
     GtkListStore *store = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
     GtkTreeIter iter;
 
-    char item[35];
+    gchar item[35];
     /* Populate the GtkListStore with the string of stock symbols in column 0, stock names in column 1, 
        and symbols & names in column 2. */
-    for ( int i=0; i < sn_map->size; i++ ){
+    for ( gint i=0; i < sn_map->size; i++ ){
         snprintf(item, 35, "%s - %s", sn_map->sn_container_arr[ i ]->symbol, sn_map->sn_container_arr[ i ]->security_name );
 
         gtk_list_store_append( store, &iter );
@@ -80,8 +79,7 @@ static gboolean rsi_completion_match (GtkEntryCompletion *completion, const gcha
     gchar *item_symb, *item_name;
     /* We are finding matches based off of column 0 and 1, however, 
        we display column 2 in our 3 column model */
-    gtk_tree_model_get ( model, iter, 0, &item_symb, -1 );
-    gtk_tree_model_get ( model, iter, 1, &item_name, -1 );
+    gtk_tree_model_get ( model, iter, 0, &item_symb, 1, &item_name, -1 );
     gboolean ans = false, symbol_match = true, name_match = true;
 
     int N = 0;
@@ -104,11 +102,14 @@ static gboolean rsi_completion_match (GtkEntryCompletion *completion, const gcha
 
 int RSICompletionSet (void *data){
     pthread_mutex_lock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
-    if( data == NULL ) return 0;
+    if( data == NULL ) {
+        pthread_mutex_unlock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
+        return 0;
+    }
 
     GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ViewRSISymbolEntryBox") );
     GtkEntryCompletion *completion = gtk_entry_completion_new();
-    GtkListStore *store = rsi_completion_set_store( data );
+    GtkListStore *store = rsi_completion_set_store( (symbol_name_map*)data );
 
     gtk_entry_completion_set_model(completion, GTK_TREE_MODEL( store ));
     g_object_unref( G_OBJECT( store ) );
@@ -178,15 +179,14 @@ int RSIShowHide (void *data)
 int RSICursorMove (){
     GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ViewRSISymbolEntryBox") );
     GtkWidget* Button = GTK_WIDGET ( gtk_builder_get_object (builder, "ViewRSIFetchDataBTN") );
-    char* s = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
+    const gchar* s = gtk_entry_get_text ( GTK_ENTRY( EntryBox ) );
 
     if( CheckValidString ( s ) ){
         gtk_widget_set_sensitive ( Button, true );
     } else {
         gtk_widget_set_sensitive ( Button, false );
     }
-
-    free( s );    
+  
     return 0;
 }
 
@@ -205,7 +205,7 @@ int RSITreeViewClear (){
     return 0;
 }
 
-static int rsi_set_columns ()
+static void rsi_set_columns ()
 {
     GtkCellRenderer *renderer;
     GtkTreeViewColumn *column;
@@ -265,18 +265,16 @@ static int rsi_set_columns ()
     column = gtk_tree_view_column_new_with_attributes("Indicator", renderer, "text", RSI_INDICATOR, "foreground", RSI_FOREGROUND_COLOR, NULL);
     gtk_tree_view_column_set_resizable (column, true);
     gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
-
-    return 0;
 }
 
 int RSISetSNLabel (void *data){
-    char* sec_name;
-    data ? (sec_name = (char*)data) : (sec_name = NULL);
+    gchar* sec_name;
+    data ? (sec_name = (gchar*)data) : (sec_name = NULL);
 
     GtkWidget* Label = GTK_WIDGET ( gtk_builder_get_object (builder, "ViewRSIStockSymbolLabel") );
 
     gtk_label_set_text ( GTK_LABEL ( Label ), sec_name ? sec_name : "" );
-    if ( sec_name ) free ( sec_name );
+    if ( sec_name ) g_free ( sec_name );
 
     return 0;
 }

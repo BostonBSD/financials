@@ -63,7 +63,7 @@ void GUICallbackHandler (GtkWidget *widget, void *data)
 void GUICallbackHandler_add_rem_stack (GObject *gobject, GParamSpec *pspec, void *data)
 {
     GtkStack * stack = GTK_STACK ( gobject );
-    char *name = strdup ( gtk_stack_get_visible_child_name ( stack ) );
+    const gchar *name = gtk_stack_get_visible_child_name ( stack );
     
     GtkWidget* ComboBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecurityComboBox") );
     GtkWidget* EntryBoxSymbol = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveSecuritySymbolEntryBox") );
@@ -90,7 +90,6 @@ void GUICallbackHandler_add_rem_stack (GObject *gobject, GParamSpec *pspec, void
         gtk_entry_set_text ( GTK_ENTRY( EntryBoxSymbol ), "" );
         gtk_entry_set_text ( GTK_ENTRY( EntryBoxShares ), "" );
     }
-    free ( name );
 }
 
 gboolean GUICallbackHandler_pref_clock_switch (GtkSwitch *Switch, bool state, void *data)
@@ -143,13 +142,12 @@ void GUICallbackHandler_pref_up_min_combobox ( GtkComboBox *ComboBox )
 {
     meta *D = packet->GetMetaClass ();
 
-    char* new = strdup( gtk_combo_box_text_get_active_text ( GTK_COMBO_BOX_TEXT ( ComboBox ) ) );
-    float new_f = strtod( new, NULL );
-    float cur_f = (float)D->updates_per_min_f;
+    gchar* new = gtk_combo_box_text_get_active_text ( GTK_COMBO_BOX_TEXT ( ComboBox ) );
+    double new_f = strtod( new, NULL );
 
-    if( new_f != cur_f ){
+    if( new_f != D->updates_per_min_f ){
         SqliteAddAPIData("Updates_Per_Min", new, D);
-        D->updates_per_min_f = (double)new_f;
+        D->updates_per_min_f = new_f;
     }
     free( new );
 }
@@ -157,25 +155,17 @@ void GUICallbackHandler_pref_up_min_combobox ( GtkComboBox *ComboBox )
 void GUICallbackHandler_pref_hours_spinbutton ( GtkEditable *spin_button )
 {
     meta *D = packet->GetMetaClass ();
-    char* Updates_Hours = strdup( gtk_entry_get_text ( GTK_ENTRY( spin_button ) ) );
+    const gchar* new = gtk_entry_get_text ( GTK_ENTRY( spin_button ) );
 
-    bool check = ( strtod( Updates_Hours, NULL ) <= 7 ) & CheckIfStringDoublePositiveNumber( Updates_Hours );
-    check = check & ( strlen ( Updates_Hours ) != 0 );
+    gboolean check = ( strtod( new, NULL ) <= 7 ) & CheckIfStringDoublePositiveNumber( new );
+    check = check & ( strlen ( new ) != 0 );
+    if ( !check ) return;
 
-    if ( !check ){
-        return;
-    }    
+    double new_f = strtod( new, NULL ); 
 
-    double new_f = strtod( Updates_Hours, NULL );
-    double cur_f = D->updates_hours_f;
-    free ( Updates_Hours );    
-
-    if( new_f != cur_f ){
-        char *new = (char*)malloc( 10 );
-        snprintf(new, 10, "%lf", new_f);
+    if( new_f != D->updates_hours_f ){
         SqliteAddAPIData("Updates_Hours", new, D);
-        free( new );
-        D->updates_hours_f = (double)new_f;
+        D->updates_hours_f = new_f;
     }
 }
 
@@ -272,8 +262,8 @@ gboolean GUICallbackHandler_select_comp (GtkEntryCompletion *completion, GtkTree
        to change widgets here without using a "gdk_threads_add_idle" wrapper
        function. */
     gtk_entry_set_text ( GTK_ENTRY( EntryBox ), item );
-    int pos = strlen( item );
-    free( item );
+    gint pos = strlen( item );
+    g_free( item );
 
     /* move the cursor to the end of the string */
     gtk_editable_set_position ( GTK_EDITABLE( EntryBox ), pos );
@@ -299,8 +289,8 @@ gboolean GUICallbackHandler_cursor_comp (GtkEntryCompletion *completion, GtkTree
        to change widgets here without using a "gdk_threads_add_idle" wrapper
        function. */
     gtk_entry_set_text ( GTK_ENTRY( EntryBox ), item );
-    int pos = strlen( item );
-    free( item );
+    gint pos = strlen( item );
+    g_free( item );
 
     /* move the cursor to the end of the string */
     gtk_editable_set_position ( GTK_EDITABLE( EntryBox ), pos );
@@ -340,9 +330,7 @@ static void view_popup_menu_onViewSummary (GtkWidget *menuitem)
 static void view_popup_menu_onDeleteBullion (GtkWidget *menuitem, void *userdata)
 {
     if (menuitem == NULL) return;
-    char *symbol = (char*) userdata;
-    char *metal_name = strdup ( symbol );
-    LowerCaseStr ( metal_name );    
+    const gchar *metal_name = (gchar*) userdata;  
 
     portfolio_packet *pkg = packet;
     metal *M = pkg->GetMetalClass ();
@@ -352,7 +340,6 @@ static void view_popup_menu_onDeleteBullion (GtkWidget *menuitem, void *userdata
     pthread_mutex_lock( &mutex_working[ FETCH_DATA_MUTEX ] );
 
     SqliteAddBullion ( metal_name, "0","0", M, D );
-    free ( metal_name );
 
     pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
 
@@ -396,7 +383,7 @@ static void view_popup_menu_onDeleteAllBullion (GtkWidget *menuitem)
 static void view_popup_menu_onDeleteEquity (GtkWidget *menuitem, void *userdata)
 {
     if (menuitem == NULL) return;
-    char *symbol = (char*) userdata;
+    const gchar *symbol = (gchar*) userdata;
 
     portfolio_packet *pkg = packet;
     equity_folder *F = pkg->GetEquityFolderClass ();
@@ -465,13 +452,18 @@ static void view_popup_menu_onAddRow (GtkWidget *menuitem, void *userdata)
     }
 }
 
+typedef struct {                    /* A container to hold the type of row and symbol, on a right click */
+  gchar* type;
+  gchar* symbol;
+} right_click_container;
+
 gboolean view_onButtonPressed (GtkWidget *treeview, GdkEventButton *event)
 {
     GtkTreeModel *model;
     GtkTreeIter iter;
     GtkWidget *menu, *menuitem;
-    char *type = NULL;
-    char *symbol = NULL;
+    gchar *type = NULL;
+    gchar *symbol = NULL;
 
     /* single click with the right mouse button */
     if ( event->type == GDK_BUTTON_PRESS  &&  event->button == 3 )
@@ -488,51 +480,55 @@ gboolean view_onButtonPressed (GtkWidget *treeview, GdkEventButton *event)
             if (gtk_tree_selection_get_selected( selection, &model, &iter ) )
             {
                 gtk_tree_model_get ( model, &iter, GUI_TYPE, &type, GUI_SYMBOL, &symbol, -1 );
-                if ( !type || !symbol ) return GDK_EVENT_STOP;
+                if ( !type || !symbol ) {
+                    if ( !symbol ) { 
+                        g_free ( type );
+                        return GDK_EVENT_STOP; 
+                    }
+                     
+                    if ( !type ) { 
+                        g_free ( symbol );
+                        return GDK_EVENT_STOP; 
+                    }
+                }                
 
-                int eq_flag = strcmp( type, "equity" );
-                int eq_tot_flag = strcmp( type, "equity_total" );
-                int bu_flag = strcmp( type, "bullion" );
-                int bu_tot_flag = strcmp( type, "bullion_total" );
-                int ca_flag = strcmp( type, "cash" );
-                int bs_d_flag = strcmp( type, "blank_space_default" );
-                int bs_p_flag = strcmp( type, "blank_space_primary" );
+                gboolean eq_flag = ( strcmp( type, "equity" ) == 0 );
+                gboolean eq_tot_flag = ( strcmp( type, "equity_total" ) == 0 );
+                gboolean bu_flag = ( strcmp( type, "bullion" ) == 0 );
+                gboolean bu_tot_flag = ( strcmp( type, "bullion_total" ) == 0 );
+                gboolean ca_flag = ( strcmp( type, "cash" ) == 0 );
+                gboolean bs_d_flag = ( strcmp( type, "blank_space_default" ) == 0 );
+                gboolean bs_p_flag = ( strcmp( type, "blank_space_primary" ) == 0 );
 
                 /* Some of the menu signal connections need the type and symbol strings.
-                   We make the container static and free it on subsequent clicks, which keeps the
-                   strings available to the signal connections. */
-                static right_click_container *my_data = NULL;
-                if ( my_data ){
-                    free( my_data->type );
-                    free( my_data->symbol );
-                    free( my_data );
-                }
-                my_data = ( right_click_container* ) malloc ( sizeof( right_click_container ) );
-                my_data->type = strdup( type );
-                my_data->symbol = strdup( symbol );
+                   We make the container static and free the members on subsequent clicks, 
+                   which keeps the strings available to the signal connections. */
+                static right_click_container my_data = { NULL, NULL };
+                if( my_data.type ) g_free( my_data.type );
+                if( my_data.symbol ) g_free( my_data.symbol );
 
-                free( type );
-                free( symbol );
+                my_data.type = type;
+                my_data.symbol = symbol;
 
-                if( eq_flag == 0 )
+                if( eq_flag )
                 /* If the type is an equity enable row deletion. */
                 {  
                     menu = gtk_menu_new();
                     menuitem = gtk_menu_item_new_with_label("View RSI Data");
-                    g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onViewRSIData ), my_data->symbol);
+                    g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onViewRSIData ), my_data.symbol);
                     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
                     g_object_ref_sink( G_OBJECT ( menuitem ) );
 
                     menuitem = gtk_menu_item_new_with_label("Edit Equity");
-                    g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onAddRow ), my_data->type);
+                    g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onAddRow ), my_data.type);
                     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
                     g_object_ref_sink( G_OBJECT ( menuitem ) );
 
-                    size_t len = strlen("Delete ") + strlen( my_data->symbol ) + 1;
+                    size_t len = strlen("Delete ") + strlen( my_data.symbol ) + 1;
                     char *menu_label = (char*)malloc( len );
-                    snprintf(menu_label, len, "Delete %s", my_data->symbol );
+                    snprintf(menu_label, len, "Delete %s", my_data.symbol );
                     menuitem = gtk_menu_item_new_with_label( menu_label );
-                    g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onDeleteEquity ), my_data->symbol);
+                    g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onDeleteEquity ), my_data.symbol);
                     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
                     free ( menu_label );
                     g_object_ref_sink( G_OBJECT ( menuitem ) );
@@ -547,11 +543,11 @@ gboolean view_onButtonPressed (GtkWidget *treeview, GdkEventButton *event)
                     
                     g_object_ref_sink( G_OBJECT ( menu ) );
 
-                } else if ( eq_tot_flag == 0 ) 
+                } else if ( eq_tot_flag ) 
                 {
                     menu = gtk_menu_new();
                     menuitem = gtk_menu_item_new_with_label("Edit Equity");
-                    g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onAddRow ), my_data->type);
+                    g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onAddRow ), my_data.type);
                     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
                     g_object_ref_sink( G_OBJECT ( menuitem ) );
 
@@ -565,31 +561,31 @@ gboolean view_onButtonPressed (GtkWidget *treeview, GdkEventButton *event)
 
                     g_object_ref_sink( G_OBJECT ( menu ) );
 
-                } else if ( (bu_flag == 0) || (bu_tot_flag == 0) || (ca_flag == 0) ) 
+                } else if ( bu_flag || bu_tot_flag || ca_flag ) 
                 {
-                    if (bu_flag == 0 || bu_tot_flag == 0){
+                    if ( bu_flag || bu_tot_flag ){
                         menuitem = gtk_menu_item_new_with_label("Edit Bullion");
                     } else {
                         menuitem = gtk_menu_item_new_with_label("Edit Cash");
                     }
 
                     menu = gtk_menu_new();
-                    g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onAddRow ), my_data->type);
+                    g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onAddRow ), my_data.type);
                     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
                     g_object_ref_sink( G_OBJECT ( menuitem ) );
 
-                    if (bu_flag == 0){
-                        size_t len = strlen("Delete ") + strlen( my_data->symbol ) + 1;
+                    if ( bu_flag ){
+                        size_t len = strlen("Delete ") + strlen( my_data.symbol ) + 1;
                         char *menu_label = (char*)malloc( len );
-                        snprintf(menu_label, len, "Delete %s", my_data->symbol );
+                        snprintf(menu_label, len, "Delete %s", my_data.symbol );
                         menuitem = gtk_menu_item_new_with_label( menu_label );
-                        g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onDeleteBullion ), my_data->symbol);
+                        g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onDeleteBullion ), my_data.symbol);
                         gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
                         free ( menu_label );
                         g_object_ref_sink( G_OBJECT ( menuitem ) );
                     }
 
-                    if (bu_flag == 0 || bu_tot_flag == 0){
+                    if ( bu_flag || bu_tot_flag ){
                         menuitem = gtk_menu_item_new_with_label("Delete All Bullion");
                         g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onDeleteAllBullion ), NULL);
                         gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
@@ -601,10 +597,10 @@ gboolean view_onButtonPressed (GtkWidget *treeview, GdkEventButton *event)
 
                     g_object_ref_sink( G_OBJECT ( menu ) );
 
-                } else if ( bs_d_flag == 0 || bs_p_flag == 0 ){
+                } else if ( bs_d_flag || bs_p_flag ){
                     menu = gtk_menu_new();
 
-                    if ( bs_p_flag == 0 ) {
+                    if ( bs_p_flag ) {
                         menuitem = gtk_menu_item_new_with_label("View Summary");
                         g_signal_connect(menuitem, "activate", G_CALLBACK( view_popup_menu_onViewSummary ), NULL);
                         gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);

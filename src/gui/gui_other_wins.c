@@ -139,52 +139,36 @@ int APIOk (void *data)
     meta *D = package->GetMetaClass ();
 
     GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoEquityUrlEntryBox") );
-    char* new = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
-    char* cur = strdup( D->stock_url_ch );
+    const gchar* new = gtk_entry_get_text ( GTK_ENTRY( EntryBox ) );
 
-    if( ( strcmp( cur, new ) != 0) ){
+    if( ( strcmp( D->stock_url_ch, new ) != 0) ){
         SqliteAddAPIData("Stock_URL", new, D);
-        free ( D->stock_url_ch );
-        D->stock_url_ch = strdup ( new );
+        CopyString ( &D->stock_url_ch, new );
     }
-    free( new );
-    free( cur );
 
     EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoUrlKeyEntryBox") );
-    new = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
-    cur = strdup( D->curl_key_ch );
-
-    if( ( strcmp( cur, new ) != 0) ){
+    new = gtk_entry_get_text ( GTK_ENTRY( EntryBox ) );
+    
+    if( ( strcmp( D->curl_key_ch, new ) != 0) ){
         SqliteAddAPIData("URL_KEY", new, D);
-        free ( D->curl_key_ch );
-        D->curl_key_ch = strdup ( new );
+        CopyString ( &D->curl_key_ch, new );
     }
-    free( new );
-    free( cur );
 
     EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoNasdaqSymbolsUrlEntryBox") );
-    new = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
-    cur = strdup( D->Nasdaq_Symbol_url_ch );
+    new = gtk_entry_get_text ( GTK_ENTRY( EntryBox ) );
 
-    if( ( strcmp( cur, new ) != 0) ){
+    if( ( strcmp( D->Nasdaq_Symbol_url_ch, new ) != 0) ){
         SqliteAddAPIData("Nasdaq_Symbol_URL", new, D);
-        free ( D->Nasdaq_Symbol_url_ch );
-        D->Nasdaq_Symbol_url_ch = strdup ( new );
+        CopyString ( &D->Nasdaq_Symbol_url_ch, new );
     }
-    free( new );
-    free( cur );
 
     EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoNYSESymbolsUrlEntryBox") );
-    new = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
-    cur = strdup( D->NYSE_Symbol_url_ch );
+    new = gtk_entry_get_text ( GTK_ENTRY( EntryBox ) );
 
-    if( ( strcmp( cur, new ) != 0) ){
+    if( ( strcmp( D->NYSE_Symbol_url_ch, new ) != 0) ){
         SqliteAddAPIData("NYSE_Symbol_URL", new, D);
-        free ( D->NYSE_Symbol_url_ch );
-        D->NYSE_Symbol_url_ch = strdup ( new );
+        CopyString ( &D->NYSE_Symbol_url_ch, new );
     }
-    free( new );
-    free( cur );
 
     /* Generate the Equity Request URLs. */
     F->GenerateURL ( package );
@@ -195,18 +179,18 @@ int APICursorMove ()
 {
     GtkWidget* Button = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoOKBTN") );
     GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoEquityUrlEntryBox") );
-    char* Equity_URL = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
+    const gchar* Equity_URL = gtk_entry_get_text ( GTK_ENTRY( EntryBox ) );
 
     EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoUrlKeyEntryBox") );
-    char* URL_KEY = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
+    const gchar* URL_KEY = gtk_entry_get_text ( GTK_ENTRY( EntryBox ) );
 
     EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoNasdaqSymbolsUrlEntryBox") );
-    char* Nasdaq_URL = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
+    const gchar* Nasdaq_URL = gtk_entry_get_text ( GTK_ENTRY( EntryBox ) );
 
     EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "ChangeApiInfoNYSESymbolsUrlEntryBox") );
-    char* NYSE_URL = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
+    const gchar* NYSE_URL = gtk_entry_get_text ( GTK_ENTRY( EntryBox ) );
 
-    bool check = CheckValidString( Equity_URL ) & CheckValidString( URL_KEY );
+    gboolean check = CheckValidString( Equity_URL ) & CheckValidString( URL_KEY );
     check = check & CheckValidString( Nasdaq_URL ) & CheckValidString( NYSE_URL );
 
     if ( check ){
@@ -215,64 +199,48 @@ int APICursorMove ()
         gtk_widget_set_sensitive ( Button, false );
     }
 
-    free ( Equity_URL );
-    free ( URL_KEY );
-    free ( Nasdaq_URL );
-    free ( NYSE_URL );
     return 0;
 }
 
 int BullionComBoxChange ()
 {
     GtkWidget* ComboBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionComboBox") );
-    short index = gtk_combo_box_get_active ( GTK_COMBO_BOX ( ComboBox ) );
-    GtkWidget* frame;
+    gint index = gtk_combo_box_get_active ( GTK_COMBO_BOX ( ComboBox ) );
+    GtkWidget* gold_frame = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionGoldFrame") );
+    GtkWidget* silver_frame = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionSilverFrame") );
+    GtkWidget* platinum_frame = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionPlatinumFrame") );
+    GtkWidget* palladium_frame = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionPalladiumFrame") );
+
     enum { GOLD, SILVER, PLATINUM };
 
     switch ( index )
     {
         case GOLD:
-            frame = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionGoldFrame") );
-            gtk_widget_set_visible ( frame, true );
-            frame = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionSilverFrame") );
-            gtk_widget_set_visible ( frame, false );
-            frame = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionPlatinumFrame") );
-            gtk_widget_set_visible ( frame, false );
-            frame = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionPalladiumFrame") );
-            gtk_widget_set_visible ( frame, false );
+            gtk_widget_set_visible ( gold_frame, true );
+            gtk_widget_set_visible ( silver_frame, false );
+            gtk_widget_set_visible ( platinum_frame, false );
+            gtk_widget_set_visible ( palladium_frame, false );
 
             break;
         case SILVER:
-            frame = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionGoldFrame") );
-            gtk_widget_set_visible ( frame, false );
-            frame = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionSilverFrame") );
-            gtk_widget_set_visible ( frame, true );
-            frame = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionPlatinumFrame") );
-            gtk_widget_set_visible ( frame, false );
-            frame = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionPalladiumFrame") );
-            gtk_widget_set_visible ( frame, false );
+            gtk_widget_set_visible ( gold_frame, false );
+            gtk_widget_set_visible ( silver_frame, true );
+            gtk_widget_set_visible ( platinum_frame, false );
+            gtk_widget_set_visible ( palladium_frame, false );
 
             break;
         case PLATINUM:
-            frame = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionGoldFrame") );
-            gtk_widget_set_visible ( frame, false );
-            frame = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionSilverFrame") );
-            gtk_widget_set_visible ( frame, false );
-            frame = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionPlatinumFrame") );
-            gtk_widget_set_visible ( frame, true );
-            frame = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionPalladiumFrame") );
-            gtk_widget_set_visible ( frame, false );
+            gtk_widget_set_visible ( gold_frame, false );
+            gtk_widget_set_visible ( silver_frame, false );
+            gtk_widget_set_visible ( platinum_frame, true );
+            gtk_widget_set_visible ( palladium_frame, false );
 
             break;
         default: /* PALLADIUM */
-            frame = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionGoldFrame") );
-            gtk_widget_set_visible ( frame, false );
-            frame = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionSilverFrame") );
-            gtk_widget_set_visible ( frame, false );
-            frame = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionPlatinumFrame") );
-            gtk_widget_set_visible ( frame, false );
-            frame = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionPalladiumFrame") );
-            gtk_widget_set_visible ( frame, true );
+            gtk_widget_set_visible ( gold_frame, false );
+            gtk_widget_set_visible ( silver_frame, false );
+            gtk_widget_set_visible ( platinum_frame, false );
+            gtk_widget_set_visible ( palladium_frame, true );
 
             break;
     }
@@ -284,6 +252,7 @@ int BullionShowHide (void *data)
     /* Unpack the package */
     portfolio_packet *package = (portfolio_packet*)data;
     metal *M = package->GetMetalClass ();
+    char *temp = NULL;
 
     /* get the GObject and cast as a GtkWidget */
     GtkWidget* window = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionWindow") );
@@ -294,61 +263,55 @@ int BullionShowHide (void *data)
     } else {
         /* Reset EntryBoxes */
         GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionGoldOuncesEntryBox") );
-        char *temp = strdup( M->Gold->ounce_ch );
-        FormatStr( temp );
+        CopyString ( &temp, M->Gold->ounce_ch );
+        ToNumStr( temp );
         gtk_entry_set_text ( GTK_ENTRY( EntryBox ), temp );
-        free( temp );
         gtk_widget_grab_focus ( EntryBox );
         g_object_set ( G_OBJECT ( EntryBox ), "activates-default", TRUE, NULL );
 
         EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionGoldPremiumEntryBox") );
-        temp = strdup( M->Gold->premium_ch );
-        FormatStr( temp );
+        CopyString ( &temp, M->Gold->premium_ch );
+        ToNumStr( temp );
         gtk_entry_set_text ( GTK_ENTRY( EntryBox ), temp );
-        free( temp );
         g_object_set ( G_OBJECT ( EntryBox ), "activates-default", TRUE, NULL );
 
         EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionSilverOuncesEntryBox") );
-        temp = strdup( M->Silver->ounce_ch );
-        FormatStr( temp );
+        CopyString ( &temp, M->Silver->ounce_ch );
+        ToNumStr( temp );
         gtk_entry_set_text ( GTK_ENTRY( EntryBox ), temp );
-        free( temp );
         g_object_set ( G_OBJECT ( EntryBox ), "activates-default", TRUE, NULL );
 
         EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionSilverPremiumEntryBox") );
-        temp = strdup( M->Silver->premium_ch );
-        FormatStr( temp );
+        CopyString ( &temp, M->Silver->premium_ch );
+        ToNumStr( temp );
         gtk_entry_set_text ( GTK_ENTRY( EntryBox ), temp );
-        free( temp );
         g_object_set ( G_OBJECT ( EntryBox ), "activates-default", TRUE, NULL );
 
         EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionPlatinumOuncesEntryBox") );
-        temp = strdup( M->Platinum->ounce_ch );
-        FormatStr( temp );
+        CopyString ( &temp, M->Platinum->ounce_ch );
+        ToNumStr( temp );
         gtk_entry_set_text ( GTK_ENTRY( EntryBox ), temp );
-        free( temp );
         g_object_set ( G_OBJECT ( EntryBox ), "activates-default", TRUE, NULL );
 
         EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionPlatinumPremiumEntryBox") );
-        temp = strdup( M->Platinum->premium_ch );
-        FormatStr( temp );
+        CopyString ( &temp, M->Platinum->premium_ch );
+        ToNumStr( temp );
         gtk_entry_set_text ( GTK_ENTRY( EntryBox ), temp );
-        free( temp );
         g_object_set ( G_OBJECT ( EntryBox ), "activates-default", TRUE, NULL );
 
         EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionPalladiumOuncesEntryBox") );
-        temp = strdup( M->Palladium->ounce_ch );
-        FormatStr( temp );
+        CopyString ( &temp, M->Palladium->ounce_ch );
+        ToNumStr( temp );
         gtk_entry_set_text ( GTK_ENTRY( EntryBox ), temp );
-        free( temp );
         g_object_set ( G_OBJECT ( EntryBox ), "activates-default", TRUE, NULL );
 
         EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionPalladiumPremiumEntryBox") );
-        temp = strdup( M->Palladium->premium_ch );
-        FormatStr( temp );
+        CopyString ( &temp, M->Palladium->premium_ch );
+        ToNumStr( temp );
         gtk_entry_set_text ( GTK_ENTRY( EntryBox ), temp );
-        free( temp );
         g_object_set ( G_OBJECT ( EntryBox ), "activates-default", TRUE, NULL );
+
+        free( temp );
 
         GtkWidget *frame = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionGoldFrame") );
         gtk_widget_set_visible ( frame, true );
@@ -413,85 +376,73 @@ int BullionOk (void *data)
     portfolio_packet *package = (portfolio_packet*)data;
     metal *M = package->GetMetalClass ();
     meta *D = package->GetMetaClass ();
-    bool new_gold = false, new_silver = false, new_platinum = false, new_palladium = false;
+    gboolean new_gold = false, new_silver = false, new_platinum = false, new_palladium = false;
+    gchar *cur_ounces = NULL, *cur_premium = NULL;
 
     GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionGoldOuncesEntryBox") );
-    char* new_ounces = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
-    char* cur_ounces = strdup( M->Gold->ounce_ch );
-    FormatStr( cur_ounces );
+    const gchar* new_ounces = gtk_entry_get_text ( GTK_ENTRY( EntryBox ) );
     EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionGoldPremiumEntryBox") );
-    char* new_premium = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
-    char* cur_premium = strdup( M->Gold->premium_ch );
-    FormatStr( cur_premium );
+    const gchar* new_premium = gtk_entry_get_text ( GTK_ENTRY( EntryBox ) );
+
+    CopyString ( &cur_ounces, M->Gold->ounce_ch );
+    CopyString ( &cur_premium, M->Gold->premium_ch );
+    ToNumStr( cur_ounces );
+    ToNumStr( cur_premium );
 
     if( (strcmp(cur_ounces, new_ounces) != 0) || (strcmp(cur_premium, new_premium) != 0) ){
         SqliteAddBullion("gold", new_ounces, new_premium, M, D);
         new_gold = true;
     }
 
-    free( new_ounces );
-    free( cur_ounces );
-    free( new_premium );
-    free( cur_premium );
-
     EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionSilverOuncesEntryBox") );
-    new_ounces = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
-    cur_ounces = strdup( M->Silver->ounce_ch );
-    FormatStr( cur_ounces );
+    new_ounces = gtk_entry_get_text ( GTK_ENTRY( EntryBox ) );
     EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionSilverPremiumEntryBox") );
-    new_premium = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
-    cur_premium = strdup( M->Silver->premium_ch );
-    FormatStr( cur_premium );
+    new_premium = gtk_entry_get_text ( GTK_ENTRY( EntryBox ) );
+
+    CopyString ( &cur_ounces, M->Silver->ounce_ch );
+    CopyString ( &cur_premium, M->Silver->premium_ch );
+    ToNumStr( cur_ounces );
+    ToNumStr( cur_premium );
 
     if( (strcmp(cur_ounces, new_ounces) != 0) || (strcmp(cur_premium, new_premium) != 0) ){
         SqliteAddBullion("silver", new_ounces, new_premium, M, D);
         new_silver = true;
     }
 
-    free( new_ounces );
-    free( cur_ounces );
-    free( new_premium );
-    free( cur_premium );
-
     EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionPlatinumOuncesEntryBox") );
-    new_ounces = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
-    cur_ounces = strdup( M->Platinum->ounce_ch );
-    FormatStr( cur_ounces );
+    new_ounces = gtk_entry_get_text ( GTK_ENTRY( EntryBox ) );
     EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionPlatinumPremiumEntryBox") );
-    new_premium = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
-    cur_premium = strdup( M->Platinum->premium_ch );
-    FormatStr( cur_premium );
+    new_premium = gtk_entry_get_text ( GTK_ENTRY( EntryBox ) );
+
+    CopyString ( &cur_ounces, M->Platinum->ounce_ch );
+    CopyString ( &cur_premium, M->Platinum->premium_ch );
+    ToNumStr( cur_ounces );
+    ToNumStr( cur_premium );
 
     if( (strcmp(cur_ounces, new_ounces) != 0) || (strcmp(cur_premium, new_premium) != 0) ){
         SqliteAddBullion("platinum", new_ounces, new_premium, M, D);
         new_platinum = true;
     }
 
-    free( new_ounces );
-    free( cur_ounces );
-    free( new_premium );
-    free( cur_premium );
-
     EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionPalladiumOuncesEntryBox") );
-    new_ounces = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
-    cur_ounces = strdup( M->Palladium->ounce_ch );
-    FormatStr( cur_ounces );
+    new_ounces = gtk_entry_get_text ( GTK_ENTRY( EntryBox ) );
     EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionPalladiumPremiumEntryBox") );
-    new_premium = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
-    cur_premium = strdup( M->Palladium->premium_ch );
-    FormatStr( cur_premium );
+    new_premium = gtk_entry_get_text ( GTK_ENTRY( EntryBox ) );
+
+    CopyString ( &cur_ounces, M->Palladium->ounce_ch );
+    CopyString ( &cur_premium, M->Palladium->premium_ch );
+    ToNumStr( cur_ounces );
+    ToNumStr( cur_premium );
 
     if( (strcmp(cur_ounces, new_ounces) != 0) || (strcmp(cur_premium, new_premium) != 0) ){
         SqliteAddBullion("palladium", new_ounces, new_premium, M, D);
         new_palladium = true;
     }
 
-    free( new_ounces );
-    free( cur_ounces );
-    free( new_premium );
-    free( cur_premium );
+    g_free( cur_ounces );
+    g_free( cur_premium );
 
-    bool new_entry = new_gold || new_silver || new_platinum || new_palladium;
+    gboolean new_entry = new_gold || new_silver || new_platinum || new_palladium;
     /* Fetch the data in a separate thread */
     pthread_t thread_id;
     if ( new_entry && !package->IsDefaultView () ) pthread_create ( &thread_id, NULL, fetch_data_for_new_bullion, package );
@@ -503,35 +454,35 @@ int BullionCursorMove ()
 {
     GtkWidget* Button = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionOKBTN") );
     GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionGoldOuncesEntryBox") );
-    char* Gold_Ounces = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
+    const gchar* Gold_Ounces = gtk_entry_get_text ( GTK_ENTRY( EntryBox ) );
 
     EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionGoldPremiumEntryBox") );
-    char* Gold_Premium = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
+    const gchar* Gold_Premium = gtk_entry_get_text ( GTK_ENTRY( EntryBox ) );
 
     EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionSilverOuncesEntryBox") );
-    char* Silver_Ounces = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
+    const gchar* Silver_Ounces = gtk_entry_get_text ( GTK_ENTRY( EntryBox ) );
 
     EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionSilverPremiumEntryBox") );
-    char* Silver_Premium = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
+    const gchar* Silver_Premium = gtk_entry_get_text ( GTK_ENTRY( EntryBox ) );
 
     EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionPlatinumOuncesEntryBox") );
-    char* Platinum_Ounces = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
+    const gchar* Platinum_Ounces = gtk_entry_get_text ( GTK_ENTRY( EntryBox ) );
 
     EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionPlatinumPremiumEntryBox") );
-    char* Platinum_Premium = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
+    const gchar* Platinum_Premium = gtk_entry_get_text ( GTK_ENTRY( EntryBox ) );
 
     EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionPalladiumOuncesEntryBox") );
-    char* Palladium_Ounces = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
+    const gchar* Palladium_Ounces = gtk_entry_get_text ( GTK_ENTRY( EntryBox ) );
 
     EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveBullionPalladiumPremiumEntryBox") );
-    char* Palladium_Premium = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
+    const gchar* Palladium_Premium = gtk_entry_get_text ( GTK_ENTRY( EntryBox ) );
 
-    bool valid_num = CheckIfStringDoublePositiveNumber( Gold_Ounces ) & CheckIfStringDoublePositiveNumber( Gold_Premium );
+    gboolean valid_num = CheckIfStringDoublePositiveNumber( Gold_Ounces ) & CheckIfStringDoublePositiveNumber( Gold_Premium );
     valid_num = valid_num & CheckIfStringDoublePositiveNumber( Silver_Ounces ) & CheckIfStringDoublePositiveNumber( Silver_Premium );
     valid_num = valid_num & CheckIfStringDoublePositiveNumber( Platinum_Ounces ) & CheckIfStringDoublePositiveNumber( Platinum_Premium );
     valid_num = valid_num & CheckIfStringDoublePositiveNumber( Palladium_Ounces ) & CheckIfStringDoublePositiveNumber( Palladium_Premium );
     
-    bool valid_string = CheckValidString( Gold_Ounces ) & CheckValidString( Gold_Premium );
+    gboolean valid_string = CheckValidString( Gold_Ounces ) & CheckValidString( Gold_Premium );
     valid_string = valid_string & CheckValidString( Silver_Ounces ) & CheckValidString( Silver_Premium );
     valid_string = valid_string & CheckValidString( Platinum_Ounces ) & CheckValidString( Platinum_Premium );
     valid_string = valid_string & CheckValidString( Palladium_Ounces ) & CheckValidString( Palladium_Premium );
@@ -542,18 +493,8 @@ int BullionCursorMove ()
         gtk_widget_set_sensitive ( Button, false );
     }
 
-    free ( Gold_Ounces );
-    free ( Gold_Premium );
-    free ( Silver_Ounces );
-    free ( Silver_Premium );
-    free ( Platinum_Ounces );
-    free ( Platinum_Premium );
-    free ( Palladium_Ounces );
-    free ( Palladium_Premium );
     return 0;
 }
-
-
 
 int CashShowHide (void *data)
 {
@@ -568,16 +509,16 @@ int CashShowHide (void *data)
     if ( visible ){
         gtk_widget_set_visible ( window, false );
     } else {
-        /* Reset EntryBoxes */
-        GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveCashValueEntryBox") );
+        /* Set SpinButton's Value */
+        GtkWidget* spinbutton = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveCashValueSpinBTN") );
         
-        char *temp = strdup( D->cash_ch );
-        FormatStr( temp );
-        gtk_entry_set_text ( GTK_ENTRY( EntryBox ), temp );
-        free( temp );
-        g_object_set ( G_OBJECT ( EntryBox ), "activates-default", TRUE, NULL );
+        gchar *temp = strdup( D->cash_ch );
+        ToNumStr( temp );
+        gtk_spin_button_set_value ( GTK_SPIN_BUTTON ( spinbutton ), strtod( temp, NULL ) );
+        g_free( temp );
+        g_object_set ( G_OBJECT ( spinbutton ), "activates-default", TRUE, NULL );
 
-        gtk_widget_grab_focus ( EntryBox );
+        gtk_widget_grab_focus ( spinbutton );
         gtk_widget_set_visible ( window, true );
     }
     return 0;
@@ -589,17 +530,16 @@ int CashOk (void *data)
     portfolio_packet *package = (portfolio_packet*)data;
     meta *D = package->GetMetaClass ();
 
-    GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveCashValueEntryBox") );
-    char* new_value = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
-    char* cur_value = strdup( D->cash_ch );
-    FormatStr( cur_value );
+    GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveCashValueSpinBTN") );
+    const gchar* new_value = gtk_entry_get_text ( GTK_ENTRY( EntryBox ) );
+    gchar* cur_value = strdup( D->cash_ch );
+    ToNumStr( cur_value );
 
     if( strcmp(cur_value, new_value) != 0 ){
         SqliteAddCash( new_value, D );
     }
 
-    free( new_value );
-    free( cur_value );
+    g_free( cur_value );
 
     return 0;
 }
@@ -607,9 +547,9 @@ int CashOk (void *data)
 int CashCursorMove ()
 {
     GtkWidget* Button = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveCashOKBTN") );
-    GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveCashValueEntryBox") );
+    GtkWidget* EntryBox = GTK_WIDGET ( gtk_builder_get_object (builder, "AddRemoveCashValueSpinBTN") );
 
-    char* value = strdup( gtk_entry_get_text ( GTK_ENTRY( EntryBox ) ) );
+    const gchar* value = gtk_entry_get_text ( GTK_ENTRY( EntryBox ) );
 
     if ( CheckIfStringDoublePositiveNumber( value ) && CheckValidString( value ) ){
         gtk_widget_set_sensitive ( Button, true );
@@ -617,7 +557,6 @@ int CashCursorMove ()
         gtk_widget_set_sensitive ( Button, false );
     }
 
-    free ( value );
     return 0;
 }
 

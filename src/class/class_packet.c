@@ -307,15 +307,15 @@ static void *GetWindowData () {
 }
 
 static void *GetMetaClass () {
-    return packet->portfolio_meta_info;
+    return packet->meta_class;
 }
 
 static void *GetMetalClass () {
-    return packet->metal_chest;
+    return packet->metal_class;
 }
 
 static void *GetEquityFolderClass () {
-    return packet->securities_folder;
+    return packet->equity_folder_class;
 }
 
 static unsigned int Seconds2Open () {
@@ -362,9 +362,9 @@ portfolio_packet *class_init_portfolio_packet ()
     portfolio_packet* new_class = (portfolio_packet*) malloc( sizeof(*new_class) );    
 
     /* Initialize Variables */
-    new_class->metal_chest = class_init_metal ();
-    new_class->securities_folder = class_init_equity_folder ();
-    new_class->portfolio_meta_info = class_init_meta_data ();
+    new_class->metal_class = class_init_metal ();
+    new_class->equity_folder_class = class_init_equity_folder ();
+    new_class->meta_class = class_init_meta_data ();
     new_class->window_struct = (window_data*) malloc ( sizeof(*new_class->window_struct) );
     new_class->sym_map = NULL;
 
@@ -418,9 +418,9 @@ portfolio_packet *class_init_portfolio_packet ()
 void class_destruct_portfolio_packet (portfolio_packet *pkg)
 { 
     /* Free Memory From Class Member Objects */
-    if ( pkg->securities_folder ) class_destruct_equity_folder ( pkg->securities_folder );
-    if ( pkg->metal_chest ) class_destruct_metal ( pkg->metal_chest );
-    if ( pkg->portfolio_meta_info ) class_destruct_meta_data ( pkg->portfolio_meta_info );
+    if ( pkg->equity_folder_class ) class_destruct_equity_folder ( pkg->equity_folder_class );
+    if ( pkg->metal_class ) class_destruct_metal ( pkg->metal_class );
+    if ( pkg->meta_class ) class_destruct_meta_data ( pkg->meta_class );
     if ( pkg->window_struct ) free ( pkg->window_struct );
 
     /* Free the symbol to security name mapping array. */
