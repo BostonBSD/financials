@@ -412,7 +412,7 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Alpha 1.0</property>
+                    <property name="label" translatable="yes">Alpha 2.0</property>
                     <property name="justify">center</property>
                     <attributes>
                       <attribute name="font-desc" value="Oxygen-Sans 11"/>
@@ -2203,7 +2203,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
     <property name="icon">Stocks-icon.png</property>
     <property name="skip-pager-hint">True</property>
     <child>
-      <!-- n-columns=2 n-rows=5 -->
+      <!-- n-columns=2 n-rows=6 -->
       <object class="GtkGrid">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
@@ -2211,42 +2211,109 @@ POSSIBILITY OF SUCH DAMAGE.</property>
         <property name="row-spacing">35</property>
         <property name="column-homogeneous">True</property>
         <child>
+          <object class="GtkButton" id="PrefStockSymbolUpdateBTN">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="tooltip-text" translatable="yes">Download symbol list from NasdaqTrader.com</property>
+            <property name="halign">center</property>
+            <property name="hexpand">True</property>
+            <property name="vexpand">True</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Get Symbols</property>
+                <attributes>
+                  <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                </attributes>
+              </object>
+            </child>
+            <accelerator key="s" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">5</property>
+          </packing>
+        </child>
+        <child>
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="label" translatable="yes">Updates Per Minute</property>
+            <property name="label" translatable="yes">Stock Symbol List</property>
             <attributes>
               <attribute name="font-desc" value="Oxygen-Sans 11"/>
             </attributes>
           </object>
           <packing>
             <property name="left-attach">0</property>
-            <property name="top-attach">0</property>
+            <property name="top-attach">5</property>
           </packing>
         </child>
         <child>
-          <object class="GtkComboBoxText" id="PrefUpPerMinComboBox">
+          <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">The number of data updates per minute.</property>
+            <property name="label" translatable="yes">Show Indices</property>
+            <attributes>
+              <attribute name="font-desc" value="Oxygen-Sans 11"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">4</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSwitch" id="PrefShowIndicesSwitch">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
             <property name="halign">center</property>
-            <property name="valign">center</property>
-            <property name="resize-mode">immediate</property>
-            <property name="active">0</property>
-            <property name="popup-fixed-width">False</property>
-            <items>
-              <item translatable="yes">0</item>
-              <item translatable="yes">1</item>
-              <item translatable="yes">2</item>
-              <item translatable="yes">3</item>
-              <item translatable="yes">4</item>
-              <item translatable="yes">5</item>
-              <item translatable="yes">6</item>
-            </items>
+            <property name="active">True</property>
           </object>
           <packing>
             <property name="left-attach">1</property>
-            <property name="top-attach">0</property>
+            <property name="top-attach">4</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSwitch" id="PrefShowClocksSwitch">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="halign">center</property>
+            <property name="active">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">Show Clocks</property>
+            <attributes>
+              <attribute name="font-desc" value="Oxygen-Sans 11"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">Hours of Updates</property>
+            <attributes>
+              <attribute name="font-desc" value="Oxygen-Sans 11"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">2</property>
           </packing>
         </child>
         <child>
@@ -2271,6 +2338,31 @@ POSSIBILITY OF SUCH DAMAGE.</property>
           </object>
           <packing>
             <property name="left-attach">1</property>
+            <property name="top-attach">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkComboBoxText" id="PrefUpPerMinComboBox">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="tooltip-text" translatable="yes">The number of data updates per minute.</property>
+            <property name="halign">center</property>
+            <property name="valign">center</property>
+            <property name="resize-mode">immediate</property>
+            <property name="active">0</property>
+            <property name="popup-fixed-width">False</property>
+            <items>
+              <item translatable="yes">0</item>
+              <item translatable="yes">1</item>
+              <item translatable="yes">2</item>
+              <item translatable="yes">3</item>
+              <item translatable="yes">4</item>
+              <item translatable="yes">5</item>
+              <item translatable="yes">6</item>
+            </items>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
             <property name="top-attach">1</property>
           </packing>
         </child>
@@ -2278,7 +2370,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="label" translatable="yes">Hours of Updates</property>
+            <property name="label" translatable="yes">Updates Per Minute</property>
             <attributes>
               <attribute name="font-desc" value="Oxygen-Sans 11"/>
             </attributes>
@@ -2292,92 +2384,34 @@ POSSIBILITY OF SUCH DAMAGE.</property>
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="label" translatable="yes">Show Clocks</property>
+            <property name="label" translatable="yes">Decimal Places</property>
             <attributes>
               <attribute name="font-desc" value="Oxygen-Sans 11"/>
             </attributes>
           </object>
           <packing>
             <property name="left-attach">0</property>
-            <property name="top-attach">2</property>
+            <property name="top-attach">0</property>
           </packing>
         </child>
         <child>
-          <object class="GtkSwitch" id="PrefShowClocksSwitch">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="halign">center</property>
-            <property name="active">True</property>
-          </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">2</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel">
+          <object class="GtkComboBoxText" id="PrefDecPlacesComboBox">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="label" translatable="yes">Show Indices</property>
-            <attributes>
-              <attribute name="font-desc" value="Oxygen-Sans 11"/>
-            </attributes>
-          </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">3</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkSwitch" id="PrefShowIndicesSwitch">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
+            <property name="tooltip-text" translatable="yes">The number of data updates per minute.</property>
             <property name="halign">center</property>
-            <property name="active">True</property>
+            <property name="valign">center</property>
+            <property name="resize-mode">immediate</property>
+            <property name="active">0</property>
+            <property name="popup-fixed-width">False</property>
+            <items>
+              <item translatable="yes">2</item>
+              <item translatable="yes">3</item>
+            </items>
           </object>
           <packing>
             <property name="left-attach">1</property>
-            <property name="top-attach">3</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="label" translatable="yes">Stock Symbol List</property>
-            <attributes>
-              <attribute name="font-desc" value="Oxygen-Sans 11"/>
-            </attributes>
-          </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">4</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkButton" id="PrefStockSymbolUpdateBTN">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">False</property>
-            <property name="tooltip-text" translatable="yes">Download symbol list from NasdaqTrader.com</property>
-            <property name="halign">center</property>
-            <property name="hexpand">True</property>
-            <property name="vexpand">True</property>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Get Symbols</property>
-                <attributes>
-                  <attribute name="font-desc" value="Oxygen-Sans 11"/>
-                </attributes>
-              </object>
-            </child>
-            <accelerator key="s" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-          </object>
-          <packing>
-            <property name="left-attach">1</property>
-            <property name="top-attach">4</property>
+            <property name="top-attach">0</property>
           </packing>
         </child>
       </object>
@@ -2897,7 +2931,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
     <property name="can-default">True</property>
     <property name="resizable">False</property>
     <property name="default-width">280</property>
-    <property name="default-height">775</property>
+    <property name="default-height">820</property>
     <property name="destroy-with-parent">True</property>
     <property name="icon">Stocks-icon.png</property>
     <property name="skip-pager-hint">True</property>

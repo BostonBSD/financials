@@ -32,70 +32,74 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef GUI_HEADER_H
 #define GUI_HEADER_H
 
-#include <gtk/gtk.h>  /* gboolean, GtkSwitch, GtkWidget, GdkEvent, GtkEntryCompletion,
+#include <gtk/gtk.h> /* gboolean, GtkSwitch, GtkWidget, GdkEvent, GtkEntryCompletion,
                          GtkTreeModel, GtkTreeIter, GdkEventButton */
-#include <stdbool.h>  /* bool */
+#include <stdbool.h> /* bool */
 
 /* gui */
-void GuiStart (void*);
+void GuiStart(void *);
 
 /* gui_main */
-int MainPrimaryTreeview (void*);
-int MainDefaultTreeview (void*);
-int MainFetchBTNLabel (void*);
-int MainDisplayTime ();
-int MainDisplayTimeRemaining (void*);
-void MainProgBar (double*);
-int MainHideWindow ();
-int MainDisplayClocks (void*);
+int MainPrimaryTreeview(void *);
+int MainDefaultTreeview(void *);
+int MainFetchBTNLabel(void *);
+int MainDisplayTime();
+int MainDisplayTimeRemaining(void *);
+void MainProgBar(double *);
+int MainHideWindow();
+int MainDisplayClocks(void *);
 
 /* gui_equity */
-int AddRemShowHide (void*);
-int AddRemOk (void*);
-int AddRemComBoxChange (void*);
-int AddRemCursorMove ();
-int AddRemCompletionSet (void*);
+int AddRemShowHide(void *);
+int AddRemOk(void *);
+int AddRemComBoxChange(void *);
+int AddRemCursorMove();
+int AddRemCompletionSet(void *);
 
 /* gui_other_wins */
-int PrefShowHide (void*);
-int PrefSymBtnStart ();
-int PrefSymBtnStop ();
-int APIShowHide (void*);
-int APIOk (void*);
-int APICursorMove ();
-int BullionComBoxChange ();
-int BullionShowHide (void*);
-int BullionOk (void*);
-int BullionCursorMove ();
-int CashShowHide (void*);
-int CashOk (void*);
-int CashCursorMove ();
-int AboutShowHide ();
-int ShortcutShowHide ();
+int PrefShowHide(void *);
+int PrefSymBtnStart();
+int PrefSymBtnStop();
+int APIShowHide(void *);
+int APIOk(void *);
+int APICursorMove();
+int BullionComBoxChange();
+int BullionShowHide(void *);
+int BullionOk(void *);
+int BullionCursorMove();
+int CashShowHide(void *);
+int CashOk(void *);
+int CashCursorMove();
+int AboutShowHide();
+int ShortcutShowHide();
 
 /* gui_rsi */
-int RSIShowHide (void*);
+int RSIShowHide(void *);
 int RSITreeViewClear();
-int RSIMakeTreeview (void*);
-int RSICursorMove ();
-int RSICompletionSet (void*);
-int RSISetSNLabel (void*);
-int RSIGetSymbol (char**);
+int RSIMakeTreeview(void *);
+int RSICursorMove();
+int RSICompletionSet(void *);
+int RSISetSNLabel(void *);
+int RSIGetSymbol(char **);
 
 /* GUI Callback Functions */
-void GUICallbackHandler (GtkWidget*,void*);
-void GUICallbackHandler_add_rem_stack (GObject*,GParamSpec*,void*);
-gboolean GUICallbackHandler_pref_clock_switch (GtkSwitch*,bool,void*);
-gboolean GUICallbackHandler_pref_indices_switch (GtkSwitch*,bool,void*);
-void GUICallbackHandler_pref_up_min_combobox (GtkComboBox*);
-void GUICallbackHandler_pref_hours_spinbutton (GtkEditable*);
-gboolean GUICallbackHandler_hide_window_on_delete (GtkWidget*,GdkEvent*,void*);
-gboolean GUICallbackHandler_window_data (GtkWidget*,GdkEvent*,void*);
-gboolean GUICallbackHandler_select_comp (GtkEntryCompletion*,GtkTreeModel*,GtkTreeIter*);
-gboolean GUICallbackHandler_cursor_comp (GtkEntryCompletion*,GtkTreeModel*,GtkTreeIter*);
-gboolean view_onButtonPressed (GtkWidget*,GdkEventButton*);
+void GUICallbackHandler(GtkWidget *, void *);
+void GUICallbackHandler_add_rem_stack(GObject *, GParamSpec *, void *);
+gboolean GUICallbackHandler_pref_clock_switch(GtkSwitch *, bool, void *);
+gboolean GUICallbackHandler_pref_indices_switch(GtkSwitch *, bool, void *);
+void GUICallbackHandler_pref_dec_places_combobox(GtkComboBox *);
+void GUICallbackHandler_pref_up_min_combobox(GtkComboBox *);
+void GUICallbackHandler_pref_hours_spinbutton(GtkEditable *);
+gboolean GUICallbackHandler_hide_window_on_delete(GtkWidget *, GdkEvent *,
+                                                  void *);
+gboolean GUICallbackHandler_window_data(GtkWidget *, GdkEvent *, void *);
+gboolean GUICallbackHandler_select_comp(GtkEntryCompletion *, GtkTreeModel *,
+                                        GtkTreeIter *);
+gboolean GUICallbackHandler_cursor_comp(GtkEntryCompletion *, GtkTreeModel *,
+                                        GtkTreeIter *);
+gboolean view_onButtonPressed(GtkWidget *, GdkEventButton *);
 
 /* GUI Thread Handler Function */
-void* GUIThreadHandler(void*);
+void *GUIThreadHandler(void *);
 
-#endif  /* GUI_HEADER_H */
+#endif /* GUI_HEADER_H */

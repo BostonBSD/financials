@@ -34,6 +34,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #define JSON_HEADER_H
 
 /* json */
-void* JsonExtractEquity(char*,double*,double*,double*,double*,double*,double*,double*);
+void *JsonExtractEquity(char *, double *, double *, double *, double *,
+                        double *, double *, double *);
 
 #endif /* JSON_HEADER_H */

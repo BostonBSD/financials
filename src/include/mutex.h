@@ -48,6 +48,6 @@ enum {
 };
 
 /* Globals */
-extern pthread_mutex_t mutex_working[ MUTEX_NUMBER ]; /* A Posix Mutex Array */
+extern pthread_mutex_t mutex_working[MUTEX_NUMBER]; /* A Posix Mutex Array */
 
 #endif /* MUTEX_HEADER_H */

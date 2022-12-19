@@ -32,421 +32,433 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <glib-object.h>
 #include <gtk/gtk.h>
 
-#include "../include/gui_types.h"     /* symbol_name_map, cb_signal, etc */
-#include "../include/gui_globals.h"   /* sem_t semaphore[ SIGNAL_NUM ] */
 #include "../include/gui.h"
+#include "../include/gui_globals.h" /* sem_t semaphore[ SIGNAL_NUM ] */
+#include "../include/gui_types.h"   /* symbol_name_map, cb_signal, etc */
 
 #include "../include/workfuncs.h"
 
-#include "../include/globals.h"       /* portfolio_packet packet */
-#include "../include/mutex.h"         /* pthread_mutex_t mutex_working[ MUTEX_NUMBER ] */
+#include "../include/globals.h" /* portfolio_packet packet */
+#include "../include/mutex.h" /* pthread_mutex_t mutex_working[ MUTEX_NUMBER ] */
 
-static bool check_fetch_data_double_clicked (cb_signal index_signal){
-    /* If MAIN_FETCH_BTN double clicked looping stops, change btn label. */
-    if ( index_signal == MAIN_FETCH_BTN && packet->IsFetchingData () == true ){
-        
-        packet->SetFetchingData ( false );
-        gdk_threads_add_idle ( MainFetchBTNLabel, packet );
-        
-        /* If we are already fetching data, set fetching data to false, change button label and
-           exit this thread. */
-        return true;
-    } else if ( index_signal == MAIN_FETCH_BTN && packet->IsFetchingData () == false ){
+static bool check_fetch_data_double_clicked(cb_signal index_signal) {
+  /* If MAIN_FETCH_BTN double clicked looping stops, change btn label. */
+  if (index_signal == MAIN_FETCH_BTN && packet->IsFetchingData() == true) {
 
-        packet->SetFetchingData ( true );
-        gdk_threads_add_idle ( MainFetchBTNLabel, packet );
+    packet->SetFetchingData(false);
+    gdk_threads_add_idle(MainFetchBTNLabel, packet);
 
-        /* If we are not fetching data, set fetching data to true, change button label and
-           continue this thread. */
-        return false;
+    /* If we are already fetching data, set fetching data to false, change
+       button label and exit this thread. */
+    return true;
+  } else if (index_signal == MAIN_FETCH_BTN &&
+             packet->IsFetchingData() == false) {
 
-    } else {
-        /* Otherwise continue this thread. */
-        return false;
-    }
+    packet->SetFetchingData(true);
+    gdk_threads_add_idle(MainFetchBTNLabel, packet);
+
+    /* If we are not fetching data, set fetching data to true, change button
+       label and continue this thread. */
+    return false;
+
+  } else {
+    /* Otherwise continue this thread. */
+    return false;
+  }
 }
 
-void *GUIThreadHandler (void *data){
-    /* We're using data as a value rather than a pointer here.
-       Memory addresses are the same size as uintptr_t/long.  cb_signal 
-       is an enum/int [a smaller datatype], we can cast uintptr_t/long 
-       to enum/int, but not pointers to enum/int, so we cast void* to a 
-       uintptr_t/long first [because they are the same size], then cast 
-       to enum/int (which we typedefed as cb_signal).
-       
-       The C standard guarantees that you can convert a pointer to 
-       uintptr_t and back again. 
-       
-       We do not need to worry about [large type to small type] truncation 
-       because the data in the void* originally was an enum/int and is 
-       guaranteed to never overflow an enum/int datatype. */
-    cb_signal index_signal = (cb_signal)((uintptr_t)data);
-    
-    /* If MAIN_FETCH_BTN double clicked looping stops, change btn label. */
-    /* This has to be outside the semaphore block otherwise the second thread, same signal,
-       would never reach it. */
-    if ( check_fetch_data_double_clicked ( index_signal ) ) return NULL;
+void *GUIThreadHandler(void *data) {
+  /* We're using data as a value rather than a pointer here.
+     Memory addresses are the same size as uintptr_t/long.  cb_signal
+     is an enum/int [a smaller datatype], we can cast uintptr_t/long
+     to enum/int, but not pointers to enum/int, so we cast void* to a
+     uintptr_t/long first [because they are the same size], then cast
+     to enum/int (which we typedefed as cb_signal).
 
-    /* This semaphore will prevent double clicking from corrupting data. 
-       New threads, with the same index signal, have to wait for the previous
-       thread [same index signal] to terminate, before running. */
-    sem_wait( &semaphore[ index_signal ] );
+     The C standard guarantees that you can convert a pointer to
+     uintptr_t and back again.
 
-    double loop_val, diff, seconds_per_iteration;
-    time_t current_time, end_time;
-    time_t start_curl, end_curl; 
-    MemType *RSIOutput = NULL;
-    char *sec_name, *symbol;
-    symbol_name_map *sym_map = NULL;
+     We do not need to worry about [large type to small type] truncation
+     because the data in the void* originally was an enum/int and is
+     guaranteed to never overflow an enum/int datatype. */
+  cb_signal index_signal = (cb_signal)((uintptr_t)data);
 
-    switch ( index_signal )
-    {
-        case MAIN_FETCH_BTN:
-            /* The number of seconds between data fetch operations. */
-            if( packet->GetUpdatesPerMinute () <= 0.0f ){
-                seconds_per_iteration = 0.0f;
-            } else {
-                seconds_per_iteration = 60.0f / packet->GetUpdatesPerMinute ();
-            }
+  /* If MAIN_FETCH_BTN double clicked looping stops, change btn label. */
+  /* This has to be outside the semaphore block otherwise the second thread,
+     same signal, would never reach it. */
+  if (check_fetch_data_double_clicked(index_signal))
+    return NULL;
 
-            /* Because loop_val is not always evenly divisible by the
-               seconds_per_iteration value, our loop will finish in an 
-               approximate length of time plus the slack seconds. */
+  /* This semaphore will prevent double clicking from corrupting data.
+     New threads, with the same index signal, have to wait for the previous
+     thread [same index signal] to terminate, before running. */
+  sem_wait(&semaphore[index_signal]);
 
-            /* The number of seconds to keep looping. */
-            loop_val = 3600 * packet->GetHoursOfUpdates ();
-            /* If the hours to run is zero, run one loop iteration. */
-            if( loop_val == 0.0f ) loop_val = 1.0f;
+  double loop_val, diff, seconds_per_iteration;
+  time_t current_time, end_time;
+  time_t start_curl, end_curl;
+  MemType *RSIOutput = NULL;
+  char *sec_name, *symbol;
+  symbol_name_map *sym_map = NULL;
 
-            time( &current_time );
-            end_time = current_time + (time_t)loop_val;
-            
-            while( current_time < end_time && packet->IsFetchingData () ){
-                /* This mutex prevents the program from crashing if an
-                   MAIN_EXIT, EQUITY_OK_BTN, 
-                   BUL_OK_BTN, CASH_OK_BTN, 
-                   or API_OK_BTN signal is run concurrently with 
-                   this thread. */
-
-                time( &start_curl );
-                pthread_mutex_lock( &mutex_working[ FETCH_DATA_MUTEX ] );     
-                
-                if ( packet->IsCurlCanceled () ){
-                    pthread_mutex_unlock ( &mutex_working[ FETCH_DATA_MUTEX ] );
-                    break;
-                }
-                
-                packet->GetData ();
-
-                if ( packet->IsCurlCanceled () ){
-                    pthread_mutex_unlock ( &mutex_working[ FETCH_DATA_MUTEX ] );
-                    break;
-                }
-
-                packet->ExtractData ();
-                packet->Calculate ();
-                packet->ToStrings ();
-
-                pthread_mutex_unlock ( &mutex_working[ FETCH_DATA_MUTEX ] );
-
-                /* Set Gtk treeview. */
-                gdk_threads_add_idle ( MainPrimaryTreeview, packet );
-           
-                /* If hours to update is zero, loop canceled, or the market is closed; only loop once. */
-                if( loop_val == 1.0f || !packet->IsFetchingData () || !MarketOpen () ) {
-                    break;
-                }
-
-                /* Find out how long cURL processing took. */
-                time( &end_curl );
-                diff = difftime( end_curl, start_curl );                
-
-                /* Wait this many seconds, accounts for cURL processing time. 
-                   We have double to int casting truncation here. */
-                if( diff < seconds_per_iteration ){
-                    sleep( (unsigned int)( seconds_per_iteration - diff ) );
-                } else if ( seconds_per_iteration == 0 ) {
-                    /* Continuous updating for an unlimited number of API calls 
-                       per minute [subscription accounts]. */
-                    sleep ( 1 );
-                }
-
-                /* Find the current epoch time. */
-                time( &current_time );
-            }
-            packet->SetFetchingData ( false );
-            gdk_threads_add_idle ( MainFetchBTNLabel, packet );
-            break;
-
-        case ABOUT_TOGGLE_BTN:
-            gdk_threads_add_idle( AboutShowHide, NULL );
-            break;
-
-        case EQUITY_TOGGLE_BTN:
-            gdk_threads_add_idle ( AddRemShowHide, packet );
-            break;
-
-        case EQUITY_OK_BTN: 
-            gdk_threads_add_idle ( AddRemShowHide, packet );            
-
-            /* The Mutex block is within this function. */
-            gdk_threads_add_idle ( AddRemOk, packet );           
-
-            break;
-        case EQUITY_COMBO_BOX:
-            gdk_threads_add_idle( AddRemComBoxChange, packet );
-            break;
-
-        case EQUITY_CURSOR_MOVE:
-            gdk_threads_add_idle( AddRemCursorMove, NULL );
-            break;
-
-        case BUL_TOGGLE_BTN:
-            gdk_threads_add_idle( BullionShowHide, packet );
-            break;
-
-        case BUL_OK_BTN:
-            pthread_mutex_lock ( &mutex_working[ FETCH_DATA_MUTEX ] ); 
-
-            BullionOk ( packet );
-
-            pthread_mutex_unlock ( &mutex_working[ FETCH_DATA_MUTEX ] );
-
-            gdk_threads_add_idle ( BullionShowHide, packet );
-            if( packet->IsDefaultView () ) {
-                gdk_threads_add_idle ( MainDefaultTreeview, packet );
-            } else {
-                packet->Calculate ();
-                packet->ToStrings ();
-                /* Set Gtk treeview. */
-                gdk_threads_add_idle ( MainPrimaryTreeview, packet );
-            }
-            break;
-
-        case BUL_COMBO_BOX:
-            gdk_threads_add_idle( BullionComBoxChange, NULL );
-            break;
-
-        case BUL_CURSOR_MOVE:
-            gdk_threads_add_idle( BullionCursorMove, NULL );
-            break;
-
-        case CASH_TOGGLE_BTN:
-            gdk_threads_add_idle ( CashShowHide, packet );
-            break;
-
-        case CASH_OK_BTN:
-            pthread_mutex_lock ( &mutex_working[ FETCH_DATA_MUTEX ] );
-
-            CashOk ( packet );
-
-            pthread_mutex_unlock ( &mutex_working[ FETCH_DATA_MUTEX ] );
-
-            gdk_threads_add_idle ( CashShowHide, packet );
-            if( packet->IsDefaultView () ) {
-                gdk_threads_add_idle ( MainDefaultTreeview, packet );
-            } else {
-                packet->Calculate ();
-                packet->ToStrings ();
-                /* Set Gtk treeview. */
-                gdk_threads_add_idle ( MainPrimaryTreeview, packet );
-            }
-            break;
-
-        case CASH_CURSOR_MOVE:
-            gdk_threads_add_idle( CashCursorMove, NULL );
-            break;
-
-        case API_TOGGLE_BTN:
-            gdk_threads_add_idle ( APIShowHide, packet );
-            break;
-
-        case API_OK_BTN:
-            pthread_mutex_lock ( &mutex_working[ FETCH_DATA_MUTEX ] );
-            
-            APIOk ( packet );
-
-            pthread_mutex_unlock ( &mutex_working[ FETCH_DATA_MUTEX ] );
-
-            gdk_threads_add_idle ( APIShowHide, packet );
-            break;
-        case API_CURSOR_MOVE:
-            gdk_threads_add_idle( APICursorMove, NULL );
-            break;
-        case PREF_TOGGLE_BTN:
-            gdk_threads_add_idle ( PrefShowHide, packet );
-            break;
-        case PREF_SYMBOL_UPDATE_BTN:
-            pthread_mutex_lock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
-
-            gdk_threads_add_idle( PrefSymBtnStart, NULL );
-            sym_map = packet->GetSymNameMap ();
-            sym_map = SymNameFetchUpdate ( packet, sym_map );
-            packet->SetSymNameMap( sym_map );
-            gdk_threads_add_idle( PrefSymBtnStop, NULL );
-
-            if ( packet->IsCurlCanceled () ) {
-                pthread_mutex_unlock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
-                break;
-            }
-
-            /* gdk_threads_add_idle is non-blocking, we need the mutex
-               in the RSICompletionSet and AddRemCompletionSet functions. */
-            if( sym_map ) {
-                gdk_threads_add_idle( RSICompletionSet, sym_map );
-                gdk_threads_add_idle( AddRemCompletionSet, sym_map );
-            }
-            pthread_mutex_unlock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
-
-            break;
-        case RSI_TOGGLE_BTN:
-            gdk_threads_add_idle( RSITreeViewClear, NULL );
-            gdk_threads_add_idle( RSIShowHide, packet );
-            break;
-        case RSI_FETCH_BTN:
-            /* Get the symbol string and perform multicurl,
-               doesn't block the gui main loop. 
-               */
-            RSIGetSymbol( &symbol );
-            RSIOutput = FetchRSIData ( symbol, packet );
-            if ( packet->IsCurlCanceled () ){ 
-                free( symbol );
-                if( RSIOutput ) { 
-                    free ( RSIOutput->memory ); 
-                    free ( RSIOutput ); 
-                }
-                break;
-            }
-
-            /* Clear the current TreeView model */ 
-            gdk_threads_add_idle ( RSITreeViewClear, NULL );
-
-            /* Get the security name from the symbol map. */ 
-            pthread_mutex_lock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
-            sym_map = packet->GetSymNameMap ();
-            sec_name = GetSecurityName ( symbol, sym_map );
-            pthread_mutex_unlock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
-            free ( symbol );
-
-            /* Set the security name label, this function runs inside the Gtk Loop. 
-               The sec_name string is freed in RSISetSNLabel */
-            gdk_threads_add_idle ( RSISetSNLabel, sec_name );
-
-            /* Set and display the RSI treeview model.
-               This function frees RSIOutput */
-            /* gdk_threads_add_idle doesn't block this thread, we cannot free 
-               RSIOutput here */
-            gdk_threads_add_idle ( RSIMakeTreeview, RSIOutput );
-            
-            break;
-        case RSI_CURSOR_MOVE:
-            gdk_threads_add_idle ( RSICursorMove, NULL );
-            break;
-        case COMPLETION:
-            /* Fetch the stock symbols and names [from a local Db] outside the Gtk
-               main loop, then create a GtkListStore and set it into
-               a GtkEntryCompletion widget. */
-
-            /* This mutex prevents the program from crashing if an
-               MAIN_EXIT signal is run concurrently with this thread.
-
-               This signal is only run once at application start.
-            */
-
-            pthread_mutex_lock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
-
-            sym_map = SymNameFetch ( packet );
-            packet->SetSymNameMap( sym_map );
-
-            if ( packet->IsCurlCanceled () ) {
-                pthread_mutex_unlock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
-                break;
-            }
-
-            /* gdk_threads_add_idle is non-blocking, we need the mutex
-               in the RSICompletionSet and AddRemCompletionSet functions. */
-            if( sym_map ) {
-                gdk_threads_add_idle( RSICompletionSet, sym_map );
-                gdk_threads_add_idle( AddRemCompletionSet, sym_map );
-            }
-            pthread_mutex_unlock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
-
-            /* Set the default treeview. */
-            if ( !packet->IsFetchingData () ) gdk_threads_add_idle( MainDefaultTreeview, packet );
-            
-            break;
-        case SHORTCUT_TOGGLE_BTN:
-            gdk_threads_add_idle( ShortcutShowHide, NULL );
-            break;
-        case MAIN_CLOCK:
-            /* 
-               This is a single process multithreaded application. 
-
-               The process is always using New York time.
-            */
-
-            while ( 1 )
-            {
-                if( packet->IsClockDisplayed () ) gdk_threads_add_idle ( MainDisplayTime, NULL );
-                
-                /* Sleep until the end of the current second. */
-                usleep( (useconds_t)ClockSleepMicroSeconds () );
-                /* Sleep until the end of the current minute. */
-                sleep( ClockSleepSeconds () );
-            }
-            break;
-        case MAIN_TIME_CLOSE_INDICATOR: 
-            packet->SetHoliday ();
-            while ( 1 )
-            {          
-                /* MarketOpen () will take into account holidays, 
-                   including the black friday early close. */  
-                if ( MarketOpen () ){
-                    gdk_threads_add_idle ( MainDisplayTimeRemaining, packet );
-                    usleep( (useconds_t)ClockSleepMicroSeconds () );
-                } else { 
-                    packet->SetHoliday ();
-                    gdk_threads_add_idle ( MainDisplayTimeRemaining, packet );
-                    sleep( packet->SecondsToOpen () );
-                    packet->SetHoliday ();
-                }           
-            }
-            break;
-
-        case MAIN_EXIT:
-
-            packet->SetCurlCanceled ( true );
-            packet->StopMultiCurl ();
-
-            /* This mutex prevents the program from crashing if a
-               MAIN_FETCH_BTN signal is run concurrently with this thread. */
-            pthread_mutex_lock( &mutex_working[ FETCH_DATA_MUTEX ] );
-
-            /* Save the Window Size and Location. */
-            packet->SetWindowDataSql ();
-
-            /* Hide the windows. Prevents them from hanging open if a db write is in progress. */
-            gdk_threads_add_idle ( MainHideWindow, NULL );
-
-            /* This mutex prevents the program from crashing if a
-               COMPLETION signal is run concurrently with this thread. */
-            pthread_mutex_lock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] ); 
-
-            /* Hold the application until the Sqlite thread is finished [prevents db write errors]. */
-            pthread_mutex_lock( &mutex_working[ SYMBOL_NAME_MAP_SQLITE_MUTEX ] );          
-
-            /* Exit the GTK main loop. */
-            gtk_main_quit ();
-            
-            pthread_mutex_unlock( &mutex_working[ SYMBOL_NAME_MAP_SQLITE_MUTEX ] );
-            pthread_mutex_unlock( &mutex_working[ SYMBOL_NAME_MAP_MUTEX ] );
-            pthread_mutex_unlock( &mutex_working[ FETCH_DATA_MUTEX ] );
-            break;
-        default:
-            break;
+  switch (index_signal) {
+  case MAIN_FETCH_BTN:
+    /* The number of seconds between data fetch operations. */
+    if (packet->GetUpdatesPerMinute() <= 0.0f) {
+      seconds_per_iteration = 0.0f;
+    } else {
+      seconds_per_iteration = 60.0f / packet->GetUpdatesPerMinute();
     }
 
-    /* Reset the widget signal semaphore. */
-    sem_post( &semaphore[ index_signal ] );
-    return NULL;
+    /* Because loop_val is not always evenly divisible by the
+       seconds_per_iteration value, our loop will finish in an
+       approximate length of time plus the slack seconds. */
+
+    /* The number of seconds to keep looping. */
+    loop_val = 3600 * packet->GetHoursOfUpdates();
+    /* If the hours to run is zero, run one loop iteration. */
+    if (loop_val == 0.0f)
+      loop_val = 1.0f;
+
+    time(&current_time);
+    end_time = current_time + (time_t)loop_val;
+
+    while (current_time < end_time && packet->IsFetchingData()) {
+      /* This mutex prevents the program from crashing if an
+         MAIN_EXIT, EQUITY_OK_BTN,
+         BUL_OK_BTN, CASH_OK_BTN,
+         or API_OK_BTN signal is run concurrently with
+         this thread. */
+
+      time(&start_curl);
+      pthread_mutex_lock(&mutex_working[FETCH_DATA_MUTEX]);
+
+      if (packet->IsCurlCanceled()) {
+        pthread_mutex_unlock(&mutex_working[FETCH_DATA_MUTEX]);
+        break;
+      }
+
+      packet->GetData();
+
+      if (packet->IsCurlCanceled()) {
+        pthread_mutex_unlock(&mutex_working[FETCH_DATA_MUTEX]);
+        break;
+      }
+
+      packet->ExtractData();
+      packet->Calculate();
+      packet->ToStrings();
+
+      pthread_mutex_unlock(&mutex_working[FETCH_DATA_MUTEX]);
+
+      /* Set Gtk treeview. */
+      gdk_threads_add_idle(MainPrimaryTreeview, packet);
+
+      /* If hours to update is zero, loop canceled, or the market is closed;
+       * only loop once. */
+      if (loop_val == 1.0f || !packet->IsFetchingData() || !MarketOpen()) {
+        break;
+      }
+
+      /* Find out how long cURL processing took. */
+      time(&end_curl);
+      diff = difftime(end_curl, start_curl);
+
+      /* Wait this many seconds, accounts for cURL processing time.
+         We have double to int casting truncation here. */
+      if (diff < seconds_per_iteration) {
+        sleep((unsigned int)(seconds_per_iteration - diff));
+      } else if (seconds_per_iteration == 0) {
+        /* Continuous updating for an unlimited number of API calls
+           per minute [subscription accounts]. */
+        sleep(1);
+      }
+
+      /* Find the current epoch time. */
+      time(&current_time);
+    }
+    packet->SetFetchingData(false);
+    gdk_threads_add_idle(MainFetchBTNLabel, packet);
+    break;
+
+  case ABOUT_TOGGLE_BTN:
+    gdk_threads_add_idle(AboutShowHide, NULL);
+    break;
+
+  case EQUITY_TOGGLE_BTN:
+    gdk_threads_add_idle(AddRemShowHide, packet);
+    break;
+
+  case EQUITY_OK_BTN:
+    gdk_threads_add_idle(AddRemShowHide, packet);
+
+    /* The Mutex block is within this function. */
+    gdk_threads_add_idle(AddRemOk, packet);
+
+    break;
+  case EQUITY_COMBO_BOX:
+    gdk_threads_add_idle(AddRemComBoxChange, packet);
+    break;
+
+  case EQUITY_CURSOR_MOVE:
+    gdk_threads_add_idle(AddRemCursorMove, NULL);
+    break;
+
+  case BUL_TOGGLE_BTN:
+    gdk_threads_add_idle(BullionShowHide, packet);
+    break;
+
+  case BUL_OK_BTN:
+    pthread_mutex_lock(&mutex_working[FETCH_DATA_MUTEX]);
+
+    BullionOk(packet);
+
+    pthread_mutex_unlock(&mutex_working[FETCH_DATA_MUTEX]);
+
+    gdk_threads_add_idle(BullionShowHide, packet);
+    if (packet->IsDefaultView()) {
+      gdk_threads_add_idle(MainDefaultTreeview, packet);
+    } else {
+      packet->Calculate();
+      packet->ToStrings();
+      /* Set Gtk treeview. */
+      gdk_threads_add_idle(MainPrimaryTreeview, packet);
+    }
+    break;
+
+  case BUL_COMBO_BOX:
+    gdk_threads_add_idle(BullionComBoxChange, NULL);
+    break;
+
+  case BUL_CURSOR_MOVE:
+    gdk_threads_add_idle(BullionCursorMove, NULL);
+    break;
+
+  case CASH_TOGGLE_BTN:
+    gdk_threads_add_idle(CashShowHide, packet);
+    break;
+
+  case CASH_OK_BTN:
+    pthread_mutex_lock(&mutex_working[FETCH_DATA_MUTEX]);
+
+    CashOk(packet);
+
+    pthread_mutex_unlock(&mutex_working[FETCH_DATA_MUTEX]);
+
+    gdk_threads_add_idle(CashShowHide, packet);
+    if (packet->IsDefaultView()) {
+      gdk_threads_add_idle(MainDefaultTreeview, packet);
+    } else {
+      packet->Calculate();
+      packet->ToStrings();
+      /* Set Gtk treeview. */
+      gdk_threads_add_idle(MainPrimaryTreeview, packet);
+    }
+    break;
+
+  case CASH_CURSOR_MOVE:
+    gdk_threads_add_idle(CashCursorMove, NULL);
+    break;
+
+  case API_TOGGLE_BTN:
+    gdk_threads_add_idle(APIShowHide, packet);
+    break;
+
+  case API_OK_BTN:
+    pthread_mutex_lock(&mutex_working[FETCH_DATA_MUTEX]);
+
+    APIOk(packet);
+
+    pthread_mutex_unlock(&mutex_working[FETCH_DATA_MUTEX]);
+
+    gdk_threads_add_idle(APIShowHide, packet);
+    break;
+  case API_CURSOR_MOVE:
+    gdk_threads_add_idle(APICursorMove, NULL);
+    break;
+  case PREF_TOGGLE_BTN:
+    gdk_threads_add_idle(PrefShowHide, packet);
+    break;
+  case PREF_SYMBOL_UPDATE_BTN:
+    pthread_mutex_lock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
+
+    gdk_threads_add_idle(PrefSymBtnStart, NULL);
+    /* Get the current Symbol-Name map pointer, if any. */
+    sym_map = packet->GetSymNameMap();
+    /* Download the new sym-name map, if downloaded successfully; free the
+       current map, if any exists, set the current map to the new map.
+       Otherwise do nothing.*/
+    sym_map = SymNameFetchUpdate(packet, sym_map);
+    /* Set the packet interface sym_map variable to the new/current sym_map. */
+    packet->SetSymNameMap(sym_map);
+    gdk_threads_add_idle(PrefSymBtnStop, NULL);
+
+    if (packet->IsCurlCanceled()) {
+      pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
+      break;
+    }
+
+    /* gdk_threads_add_idle is non-blocking, we need the mutex
+       in the RSICompletionSet and AddRemCompletionSet functions. */
+    if (sym_map) {
+      gdk_threads_add_idle(RSICompletionSet, sym_map);
+      gdk_threads_add_idle(AddRemCompletionSet, sym_map);
+      if (packet->IsDefaultView())
+        gdk_threads_add_idle(MainDefaultTreeview, packet);
+    }
+    pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
+
+    break;
+  case RSI_TOGGLE_BTN:
+    gdk_threads_add_idle(RSITreeViewClear, NULL);
+    gdk_threads_add_idle(RSIShowHide, packet);
+    break;
+  case RSI_FETCH_BTN:
+    /* Get the symbol string and perform multicurl,
+       doesn't block the gui main loop.
+       */
+    RSIGetSymbol(&symbol);
+    RSIOutput = FetchRSIData(symbol, packet);
+    if (packet->IsCurlCanceled()) {
+      free(symbol);
+      if (RSIOutput) {
+        free(RSIOutput->memory);
+        free(RSIOutput);
+      }
+      break;
+    }
+
+    /* Clear the current TreeView model */
+    gdk_threads_add_idle(RSITreeViewClear, NULL);
+
+    /* Get the security name from the symbol map. */
+    pthread_mutex_lock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
+    sym_map = packet->GetSymNameMap();
+    sec_name = GetSecurityName(symbol, sym_map);
+    pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
+    free(symbol);
+
+    /* Set the security name label, this function runs inside the Gtk Loop.
+       The sec_name string is freed in RSISetSNLabel */
+    gdk_threads_add_idle(RSISetSNLabel, sec_name);
+
+    /* Set and display the RSI treeview model.
+       This function frees RSIOutput */
+    /* gdk_threads_add_idle doesn't block this thread, we cannot free
+       RSIOutput here */
+    gdk_threads_add_idle(RSIMakeTreeview, RSIOutput);
+
+    break;
+  case RSI_CURSOR_MOVE:
+    gdk_threads_add_idle(RSICursorMove, NULL);
+    break;
+  case COMPLETION:
+    /* Fetch the stock symbols and names [from a local Db] outside the Gtk
+       main loop, then create a GtkListStore and set it into
+       a GtkEntryCompletion widget. */
+
+    /* This mutex prevents the program from crashing if an
+       MAIN_EXIT signal is run concurrently with this thread.
+
+       This signal is only run once at application start.
+    */
+
+    pthread_mutex_lock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
+
+    sym_map = SymNameFetch(packet);
+    packet->SetSymNameMap(sym_map);
+
+    if (packet->IsCurlCanceled()) {
+      pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
+      break;
+    }
+
+    /* gdk_threads_add_idle is non-blocking, we need the mutex
+       in the RSICompletionSet and AddRemCompletionSet functions. */
+    if (sym_map) {
+      gdk_threads_add_idle(RSICompletionSet, sym_map);
+      gdk_threads_add_idle(AddRemCompletionSet, sym_map);
+    }
+    pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
+
+    /* Set the default treeview. */
+    if (!packet->IsFetchingData())
+      gdk_threads_add_idle(MainDefaultTreeview, packet);
+
+    break;
+  case SHORTCUT_TOGGLE_BTN:
+    gdk_threads_add_idle(ShortcutShowHide, NULL);
+    break;
+  case MAIN_CLOCK:
+    /*
+       This is a single process multithreaded application.
+
+       The process is always using New York time.
+    */
+
+    while (1) {
+      if (packet->IsClockDisplayed())
+        gdk_threads_add_idle(MainDisplayTime, NULL);
+
+      /* Sleep until the end of the current second. */
+      usleep((useconds_t)ClockSleepMicroSeconds());
+      /* Sleep until the end of the current minute. */
+      sleep(ClockSleepSeconds());
+    }
+    break;
+  case MAIN_TIME_CLOSE_INDICATOR:
+    packet->SetHoliday();
+    while (1) {
+      /* MarketOpen () will take into account holidays,
+         including the black friday early close. */
+      if (MarketOpen()) {
+        gdk_threads_add_idle(MainDisplayTimeRemaining, packet);
+        usleep((useconds_t)ClockSleepMicroSeconds());
+      } else {
+        packet->SetHoliday();
+        gdk_threads_add_idle(MainDisplayTimeRemaining, packet);
+        sleep(packet->SecondsToOpen());
+        packet->SetHoliday();
+      }
+    }
+    break;
+
+  case MAIN_EXIT:
+
+    packet->SetCurlCanceled(true);
+    packet->StopMultiCurl();
+
+    /* This mutex prevents the program from crashing if a
+       MAIN_FETCH_BTN signal is run concurrently with this thread. */
+    pthread_mutex_lock(&mutex_working[FETCH_DATA_MUTEX]);
+
+    /* Save the Window Size and Location. */
+    packet->SetWindowDataSql();
+
+    /* Hide the windows. Prevents them from hanging open if a db write is in
+     * progress. */
+    gdk_threads_add_idle(MainHideWindow, NULL);
+
+    /* This mutex prevents the program from crashing if a
+       COMPLETION signal is run concurrently with this thread. */
+    pthread_mutex_lock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
+
+    /* Hold the application until the Sqlite thread is finished [prevents db
+     * write errors]. */
+    pthread_mutex_lock(&mutex_working[SYMBOL_NAME_MAP_SQLITE_MUTEX]);
+
+    /* Exit the GTK main loop. */
+    gtk_main_quit();
+
+    pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_SQLITE_MUTEX]);
+    pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
+    pthread_mutex_unlock(&mutex_working[FETCH_DATA_MUTEX]);
+    break;
+  default:
+    break;
+  }
+
+  /* Reset the widget signal semaphore. */
+  sem_post(&semaphore[index_signal]);
+  return NULL;
 }

@@ -60,7 +60,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #define NEW_YORK_TIME_ZONE "America/New_York"
 #endif
 
-/* The Yahoo! URL Macros are used by bullion, meta indices, and RSI data fetch functions */
+/* The Yahoo! URL Macros are used by bullion, meta indices, and RSI data fetch
+ * functions */
 #ifndef YAHOO_URL_START
 #define YAHOO_URL_START "https://query1.finance.yahoo.com/v7/finance/download/"
 #endif
@@ -77,17 +78,20 @@ POSSIBILITY OF SUCH DAMAGE.
 #define YAHOO_URL_END "&interval=1d&events=history&includeAdjustedClose=true"
 #endif
 
-/* The symbol URL macros are used by the class_init_meta_data () and api_callback () functions */
+/* The symbol URL macros are used by the ClassInitMeta () and
+ * api_callback () functions */
 #ifndef NASDAQ_SYMBOL_URL
-#define NASDAQ_SYMBOL_URL "http://www.nasdaqtrader.com/dynamic/SymDir/nasdaqlisted.txt"
+#define NASDAQ_SYMBOL_URL                                                      \
+  "http://www.nasdaqtrader.com/dynamic/SymDir/nasdaqlisted.txt"
 #endif
 
 /* Includes other exchanges as well */
 #ifndef NYSE_SYMBOL_URL
-#define NYSE_SYMBOL_URL "http://www.nasdaqtrader.com/dynamic/SymDir/otherlisted.txt"
+#define NYSE_SYMBOL_URL                                                        \
+  "http://www.nasdaqtrader.com/dynamic/SymDir/otherlisted.txt"
 #endif
 
-/* These two macros define initial URL values before the user sets up the 
+/* These two macros define initial URL values before the user sets up the
    application. */
 /* The finnhub.io stock quote URL */
 #ifndef FINNHUB_URL

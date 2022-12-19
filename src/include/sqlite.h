@@ -33,25 +33,26 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef SQLITE_HEADER_H
 #define SQLITE_HEADER_H
 
-#include "gui_types.h"       /* symbol_name_map */
-#include "class_types.h"     /* equity_folder, metal, meta, window_data */
+#include "class_types.h" /* equity_folder, metal, meta, window_data */
+#include "gui_types.h"   /* symbol_name_map */
 
-void SqliteProcessing (portfolio_packet*);
+void SqliteProcessing(portfolio_packet *);
 
-void SqliteAddEquity (const char*,const char*,meta*);
-void SqliteRemoveEquity (const char*,meta*);
-void SqliteRemoveAllEquity (meta*);
+void SqliteAddEquity(const char *, const char *, meta *);
+void SqliteRemoveEquity(const char *, meta *);
+void SqliteRemoveAllEquity(meta *);
 
-void SqliteAddBullion (const char*,const char*,const char*,metal*,meta*);
-void SqliteAddCash (const char*,meta*);
-void SqliteAddAPIData (const char*,const char*,meta*);
+void SqliteAddBullion(const char *, const char *, const char *, metal *,
+                      meta *);
+void SqliteAddCash(const char *, meta *);
+void SqliteAddAPIData(const char *, const char *, meta *);
 
-void SqliteAddMainWindowSize (int,int,meta*);
-void SqliteAddMainWindowPos (int,int,meta*);
-void SqliteAddRSIWindowSize (int,int,meta*);
-void SqliteAddRSIWindowPos (int,int,meta*);
+void SqliteAddMainWindowSize(int, int, meta *);
+void SqliteAddMainWindowPos(int, int, meta *);
+void SqliteAddRSIWindowSize(int, int, meta *);
+void SqliteAddRSIWindowPos(int, int, meta *);
 
-symbol_name_map *SqliteGetSymbolNameMap (meta*);
-void SqliteAddMap (symbol_name_map*,meta*);
+symbol_name_map *SqliteGetSymbolNameMap(meta *);
+void SqliteAddMap(symbol_name_map *, meta *);
 
 #endif /* SQLITE_HEADER_H */

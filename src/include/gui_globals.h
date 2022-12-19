@@ -32,17 +32,16 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef GUI_GLOBALS_HEADER_H
 #define GUI_GLOBALS_HEADER_H
 
-#include <semaphore.h>  /* sem_t */
-#include <gtk/gtk.h>    /* GtkBuilder */
+#include <gtk/gtk.h>   /* GtkBuilder */
+#include <semaphore.h> /* sem_t */
 
-#include "gui_types.h"  /* SIGNAL_NUM */
+#include "gui_types.h" /* SIGNAL_NUM */
 
-/* These globals are only accessible from the gui 
+/* These globals are only accessible from the gui
    source files and financials.c */
 
-
 /* Global Variables */
-extern sem_t semaphore[ SIGNAL_NUM ];                   /* A Posix Semaphore Array */
-extern GtkBuilder* builder;                             /* The Gtk builder object */                     
+extern sem_t semaphore[SIGNAL_NUM]; /* A Posix Semaphore Array */
+extern GtkBuilder *builder;         /* The Gtk builder object */
 
-#endif  /* GUI_GLOBALS_HEADER_H */
+#endif /* GUI_GLOBALS_HEADER_H */

@@ -33,53 +33,89 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef WORKFUNCS_HEADER_H
 #define WORKFUNCS_HEADER_H
 
-#include <stdbool.h>                      /* bool */
+#include <stdbool.h> /* bool */
 
-#include <sys/time.h>                     /* struct tm  */
+#include <sys/time.h> /* struct tm  */
 
-#include "class_types.h"        /* equity_folder, metal, meta, portfolio_packet */
-#include "gui_types.h"          /* symbol_name_map */
-#include "multicurl_types.h"    /* MemType */
+#include "class_types.h"     /* equity_folder, metal, meta, portfolio_packet */
+#include "gui_types.h"       /* symbol_name_map */
+#include "multicurl_types.h" /* MemType */
+
+/* pango_formatting */
+enum {
+  NO_COLOR,
+  BLACK,
+  GREEN,
+  RED,
+  BLUE,
+  BOLD,
+  BOLD_UNDERLINE,
+  GREEN_ITALIC,
+  RED_ITALIC,
+  BLUE_ITALIC,
+  BLACK_ITALIC
+};
+
+enum {
+  NOT_ITALIC,
+  ITALIC,
+};
+
+void DoubToMonStrPango(char **, const double, const unsigned short);
+void DoubToPerStrPango(char **, const double, const unsigned short);
+void DoubToNumStrPango(char **, const double, const unsigned short);
+void StrToStrPango(char **, const char *);
+void DoubToMonStrPangoColor(char **, const double, const unsigned short,
+                            const unsigned int);
+void DoubToPerStrPangoColor(char **, const double, const unsigned short,
+                            unsigned int);
+void StrToStrPangoColor(char **, const char *, const unsigned int);
 
 /* sn_map */
-void AddSymbolToMap (const char*,const char*,symbol_name_map*);
-symbol_name_map* SymNameFetch (portfolio_packet*);
-symbol_name_map* SymNameFetchUpdate (portfolio_packet*,symbol_name_map*);
-char* GetSecurityName (const char*,const symbol_name_map*);
-void SNMapDestruct (symbol_name_map*);
+void AddSymbolToMap(const char *, const char *, symbol_name_map *);
+symbol_name_map *SymNameFetch(portfolio_packet *);
+symbol_name_map *SymNameFetchUpdate(portfolio_packet *, symbol_name_map *);
+char *GetSecurityName(const char *, const symbol_name_map *);
+void SNMapDestruct(symbol_name_map *);
 
 /* string_formatting */
-bool CheckValidString(const char*);
-bool CheckIfStringDoubleNumber(const char*);
-bool CheckIfStringDoublePositiveNumber(const char*);
-bool CheckIfStringLongPositiveNumber(const char*);
-void CopyString (char**,const char*);
-void ToNumStr(char*);
-char* StringToMonetary(const char*);
-char* DoubleToMonetary (const double);
-void LowerCaseStr(char*);
-void UpperCaseStr(char*);
-void Chomp(char*);
+bool CheckValidString(const char *);
+bool CheckIfStringDoubleNumber(const char *);
+bool CheckIfStringDoublePositiveNumber(const char *);
+bool CheckIfStringLongPositiveNumber(const char *);
+void LowerCaseStr(char *);
+void UpperCaseStr(char *);
+void Chomp(char *);
+void CopyString(char **, const char *);
+void ToNumStr(char *);
+size_t LengthMonetary(const double, const unsigned short);
+size_t LengthPercent(const double, const unsigned short);
+size_t LengthNumber(const double, const unsigned short);
+void StringToMonStr(char **, const char *, const unsigned short);
+void DoubleToMonStr(char **, const double, const unsigned short);
+void DoubToPerStr(char **, const double, const unsigned short);
+void DoubToNumStr(char **, const double, const unsigned short);
+double StrToDoub(const char *);
 
 /* time_funcs */
-void NYTime (int*,int*);
-char* MonthNameStr (int);
-char* WeekDayStr (int);
-bool TimeToClose (int*,int*,int*);
-unsigned int SecondsToOpen ();
+void NYTime(int *, int *);
+char *MonthNameStr(int);
+char *WeekDayStr(int);
+bool TimeToClose(int *, int *, int *);
+unsigned int SecondsToOpen();
 struct tm NYTimeComponents();
-char* WhichHoliday (struct tm);
-bool CheckHoliday (struct tm);
-unsigned int ClockSleepSeconds ();
-unsigned long ClockSleepMicroSeconds ();
-bool MarketOpen () ;
+char *WhichHoliday(struct tm);
+bool CheckHoliday(struct tm);
+unsigned int ClockSleepSeconds();
+unsigned long ClockSleepMicroSeconds();
+bool MarketOpen();
 
 /* working_functions */
-MemType* FetchRSIData (const char*,portfolio_packet*);
-double CalcGain (double,double);
-void Summation(double,double*,double*);
-void CalcAvg (double,double*,double*);
-double CalcRsi (double,double);
-char* RsiIndicator( double );
+MemType *FetchRSIData(const char *, portfolio_packet *);
+double CalcGain(double, double);
+void Summation(double, double *, double *);
+void CalcAvg(double, double *, double *);
+double CalcRsi(double, double);
+char *RsiIndicator(double);
 
 #endif /* WORKFUNCS_HEADER_H */

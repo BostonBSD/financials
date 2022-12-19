@@ -33,11 +33,11 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef MULTICURL_HEADER_H
 #define MULTICURL_HEADER_H
 
-#include "multicurl_types.h"    /* MemType, CURL, CURLM */
+#include "multicurl_types.h" /* MemType, CURL, CURLM */
 
 /* Function Prototypes */
-void* SetUpCurlHandle(CURL*,CURLM*,char*,MemType*);
-int PerformMultiCurl (CURLM*,double);
-int PerformMultiCurl_no_prog(CURLM*);
+void *SetUpCurlHandle(CURL *, CURLM *, char *, MemType *);
+int PerformMultiCurl(CURLM *, double);
+int PerformMultiCurl_no_prog(CURLM *);
 
 #endif /* MULTICURL_HEADER_H */

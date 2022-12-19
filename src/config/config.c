@@ -39,85 +39,87 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <dirent.h>
 #include <errno.h>
 
-#include "../include/sqlite.h"
-#include "../include/class_types.h"     /* equity_folder, metal, meta, window_data */
+#include "../include/class_types.h" /* equity_folder, metal, meta, window_data */
 #include "../include/macros.h"
+#include "../include/sqlite.h"
 
-static void config_dir_processing ( const char *home_dir )
+static void config_dir_processing(const char *home_dir)
 /* Check if the "~/.config" and "~/.config/financials" directories exist.
    if they do not exist then create them. */
 {
-    DIR *dp;
-    int status;
+  DIR *dp;
+  int status;
 
-    /* Append the .config directory to the end of home directory path. */
-    size_t  len = strlen(home_dir) + strlen( CONFIG_DIR ) + 1;
-    char *path = (char*) malloc( len );
-    snprintf( path, len, "%s%s", home_dir, CONFIG_DIR );
+  /* Append the .config directory to the end of home directory path. */
+  size_t len = strlen(home_dir) + strlen(CONFIG_DIR) + 1;
+  char *path = (char *)malloc(len);
+  snprintf(path, len, "%s%s", home_dir, CONFIG_DIR);
 
-    errno = 0;
-    if ((dp = opendir( path )) == NULL) {
-        switch (errno) {
-            case EACCES: 
-            	printf("Permission denied\n");
-            	exit( EXIT_FAILURE ); 
-            	break;
-            case ENOENT: 
-            	/* Make a directory with read/write/search permissions for owner and group, 
-		           and with read/search permissions for others. */ 
-            	status = mkdir( path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
-                if( status != 0 ){
-            		printf("Make directory failed: %s\nStatus Code: %d\n", path, status);
-            		exit( EXIT_FAILURE );
-            	}            	
-            	break;
-            case ENOTDIR: 
-            	printf("'%s' is not a directory\n", path );
-            	exit( EXIT_FAILURE ); 
-            	break;
-        }
-    } else { 
-        if (closedir(dp) == -1) perror("closedir");
+  errno = 0;
+  if ((dp = opendir(path)) == NULL) {
+    switch (errno) {
+    case EACCES:
+      printf("Permission denied\n");
+      exit(EXIT_FAILURE);
+      break;
+    case ENOENT:
+      /* Make a directory with read/write/search permissions for owner and
+         group, and with read/search permissions for others. */
+      status = mkdir(path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+      if (status != 0) {
+        printf("Make directory failed: %s\nStatus Code: %d\n", path, status);
+        exit(EXIT_FAILURE);
+      }
+      break;
+    case ENOTDIR:
+      printf("'%s' is not a directory\n", path);
+      exit(EXIT_FAILURE);
+      break;
     }
-    free ( path );
-    
-    /* Append the config file directory to the end of the home directory path. */
-    len = strlen(home_dir) + strlen( CONFIG_FILE_DIR ) + 1;
-    path = (char*) malloc( len );
-    snprintf( path, len, "%s%s", home_dir, CONFIG_FILE_DIR );
-    
-    if ((dp = opendir( path )) == NULL) {
-        switch (errno) {
-            case EACCES: 
-            	printf("Permission denied\n");
-            	exit( EXIT_FAILURE ); 
-            	break;
-            case ENOENT: 
-            	/* Make a directory with read/write/search permissions for owner and group, 
-		           and with read/search permissions for others. */
-		        status = mkdir( path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH );
-            	if( status != 0 ){
-            		printf("Make directory failed: %s\nStatus Code: %d\n", path, status);
-            		exit( EXIT_FAILURE );
-            	}        	
-            	break;
-            case ENOTDIR: 
-            	printf("'%s' is not a directory\n", path );
-            	exit( EXIT_FAILURE ); 
-            	break;
-        }
-    } else { 
-        if (closedir(dp) == -1) perror("closedir");
+  } else {
+    if (closedir(dp) == -1)
+      perror("closedir");
+  }
+  free(path);
+
+  /* Append the config file directory to the end of the home directory path. */
+  len = strlen(home_dir) + strlen(CONFIG_FILE_DIR) + 1;
+  path = (char *)malloc(len);
+  snprintf(path, len, "%s%s", home_dir, CONFIG_FILE_DIR);
+
+  if ((dp = opendir(path)) == NULL) {
+    switch (errno) {
+    case EACCES:
+      printf("Permission denied\n");
+      exit(EXIT_FAILURE);
+      break;
+    case ENOENT:
+      /* Make a directory with read/write/search permissions for owner and
+         group, and with read/search permissions for others. */
+      status = mkdir(path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+      if (status != 0) {
+        printf("Make directory failed: %s\nStatus Code: %d\n", path, status);
+        exit(EXIT_FAILURE);
+      }
+      break;
+    case ENOTDIR:
+      printf("'%s' is not a directory\n", path);
+      exit(EXIT_FAILURE);
+      break;
     }
-    free ( path );
+  } else {
+    if (closedir(dp) == -1)
+      perror("closedir");
+  }
+  free(path);
 }
 
-void ReadConfig ( portfolio_packet *pkg ){
-    meta *D = pkg->GetMetaClass ();
-       
-    /* Make sure the config directory exists. */
-    config_dir_processing ( D->home_dir_ch );
+void ReadConfig(portfolio_packet *pkg) {
+  meta *D = pkg->GetMetaClass();
 
-    /* Process the sqlite db file and populate initial varables. */
-    SqliteProcessing ( pkg );
+  /* Make sure the config directory exists. */
+  config_dir_processing(D->home_dir_ch);
+
+  /* Process the sqlite db file and populate initial varables. */
+  SqliteProcessing(pkg);
 }

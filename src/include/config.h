@@ -33,8 +33,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef CONFIG_HEADER_H
 #define CONFIG_HEADER_H
 
-#include "class_types.h"     /* portfolio_packet */
+#include "class_types.h" /* portfolio_packet */
 
-void ReadConfig(portfolio_packet*);
+void ReadConfig(portfolio_packet *);
 
 #endif /* CONFIG_HEADER_H */
