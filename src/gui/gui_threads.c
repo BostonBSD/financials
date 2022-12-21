@@ -289,9 +289,11 @@ void *GUIThreadHandler(void *data) {
        current map, if any exists, set the current map to the new map.
        Otherwise do nothing.*/
     sym_map = SymNameFetchUpdate(packet, sym_map);
-    /* Set the packet interface sym_map variable to the new/current sym_map. */
-    packet->SetSymNameMap(sym_map);
+    
     gdk_threads_add_idle(PrefSymBtnStop, NULL);
+
+    /* Make sure the security names are set with pango style markups. */
+    packet->SetSecurityNames();
 
     if (packet->IsCurlCanceled()) {
       pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
@@ -367,6 +369,9 @@ void *GUIThreadHandler(void *data) {
 
     sym_map = SymNameFetch(packet);
     packet->SetSymNameMap(sym_map);
+
+    /* Make sure the security names are set with pango style markups. */
+    packet->SetSecurityNames();
 
     if (packet->IsCurlCanceled()) {
       pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);

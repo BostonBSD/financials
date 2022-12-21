@@ -10,4 +10,3 @@ WARN=-Wall
 
 financials: $(SRC)
 	$(CC) -Ofast -s -lm -o ../build/$@ $(SRC) $(LIB_INT_SRC) $(GUI_SRC) $(CLASS_SRC) $(WK_SRC) $(CFLAGS) $(LIBS) $(WARN)
-	

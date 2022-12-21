@@ -216,15 +216,15 @@ int RSICursorMove() {
 
 int RSITreeViewClear() {
   /* Clear the GtkTreeView. */
-  GtkWidget *list =
+  GtkWidget *treeview =
       GTK_WIDGET(gtk_builder_get_object(builder, "ViewRSITreeView"));
   GtkTreeViewColumn *column;
-  gint n = gtk_tree_view_get_n_columns(GTK_TREE_VIEW(list));
+  guint n = gtk_tree_view_get_n_columns(GTK_TREE_VIEW(treeview));
 
-  while (n > 0) {
+  while (n) {
     n--;
-    column = gtk_tree_view_get_column(GTK_TREE_VIEW(list), n);
-    gtk_tree_view_remove_column(GTK_TREE_VIEW(list), column);
+    column = gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), n);
+    gtk_tree_view_remove_column(GTK_TREE_VIEW(treeview), column);
   }
 
   return 0;
@@ -332,12 +332,8 @@ int RSIGetSymbol(char **s)
 /* Get the stock symbol from the EntryBox.
    Must free return value.
 
-   Because we are not setting any widgets, we should not worry about crashing
+   Because we aren't setting any widgets, we shouldn't worry about crashing
    Gtk outside the Gtk Main Loop.
-
-   If there are any problems, FetchRSIData can be placed into the Gtk Main Loop,
-   it will block the Gtk loop, but it won't crash Gtk, put "FetchRSIData ();"
-   into the "RSIMakeTreeview();" function.
 */
 {
   GtkWidget *EntryBox =

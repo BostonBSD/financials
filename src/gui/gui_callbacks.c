@@ -160,6 +160,11 @@ void GUICallbackHandler_pref_dec_places_combobox(GtkComboBox *ComboBox) {
 
   if (new_shrt != D->decimal_places_shrt) {
     SqliteAddAPIData("Decimal_Places", new, D);
+    /* Obviously I shouldn't need three variables to hold the same data.
+       The sqlite callback functions use this variable, but do not
+       have access to all three classes.  I could fix this later, by passing
+       the portfolio_packet class in sqlite rather than one of these nested
+       classes. */
     D->decimal_places_shrt = new_shrt;
     M->decimal_places_shrt = new_shrt;
     F->decimal_places_shrt = new_shrt;

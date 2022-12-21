@@ -272,6 +272,9 @@ static void add_equity_to_folder(char *symbol, const char *shares,
   /* Generate the Equity Request URLs. */
   F->GenerateURL(pkg);
 
+  /* Make sure the security names are set with pango style markups. */
+  pkg->SetSecurityNames();
+
   if (!pkg->IsDefaultView()) {
     /* Fetch the data in a separate thread */
     pthread_t thread_id;

@@ -86,7 +86,7 @@ static void shortcuts_set_treeview() {
 
   /* In order to display a model/store we need to set the TreeView Columns. */
   renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes("Column Header 1", renderer,
+  column = gtk_tree_view_column_new_with_attributes("column_one", renderer,
                                                     "markup", 0, NULL);
   gtk_tree_view_column_set_resizable(column, true);
   gtk_tree_view_column_set_visible(column, true);
@@ -94,7 +94,7 @@ static void shortcuts_set_treeview() {
   gtk_tree_view_append_column(GTK_TREE_VIEW(TreeView), column);
 
   renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes("Column Header 2", renderer,
+  column = gtk_tree_view_column_new_with_attributes("column_two", renderer,
                                                     "markup", 1, NULL);
   gtk_tree_view_column_set_resizable(column, true);
   gtk_tree_view_column_set_visible(column, true);
@@ -469,9 +469,8 @@ static void start_threads() {
 
   /* Set up the RSIView and AddRemSecurity Window's EntryBox Completion Widgets
      This will populate the NYSE and NASDAQ symbol to name mapping, from an
-     sqlite Db, when the application loads.  It will not download anything at
-     application startup. The Db of symbol to name mappings needs to be
-     downloaded manually by the user [in the API window]. */
+     sqlite Db, when the application loads. The Db of symbol to name mappings
+     needs to be downloaded by the user [in the preferences window]. */
   pthread_create(&thread_id, NULL, GUIThreadHandler, (void *)COMPLETION);
 }
 
@@ -507,7 +506,7 @@ void GuiStart(void *data)
     exit(EXIT_FAILURE);
   }
 
-  /* Start the clock threads and download the list of stock symbols */
+  /* Start the clock threads and add the list of stock symbols from sqlite */
   start_threads();
 
   /* Add the keyboard shortcuts to the Keyboard Shortcut window. */

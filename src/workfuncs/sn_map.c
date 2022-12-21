@@ -409,6 +409,9 @@ symbol_name_map *SymNameFetchUpdate(portfolio_packet *pkg,
   symbol_name_map *sn_map_new = symbol_list_fetch(pkg);
 
   if (sn_map_new) {
+    /* Set the packet interface sym_map variable to the new sym_map. */
+    pkg->SetSymNameMap(sn_map_new);
+
     /* Free the current symbol to security name mapping array. */
     if (sn_map) {
       SNMapDestruct(sn_map);

@@ -30,6 +30,7 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -130,6 +131,9 @@ void ToNumStr(char *s)
 /* Remove all dollar signs '$', commas ',', braces '(',
    percent signs '%', '-' negative signs, and '+' plus
    signs from a string. */
+/* This assumes a en_US locale, other locales would need to edit this function
+   or provide their own [other locales use commas and decimals differently,
+   different currency symbol]. */
 {
   /* Read character by character until the null character is reached. */
   for (int i = 0; s[i]; i++) {
@@ -137,11 +141,11 @@ void ToNumStr(char *s)
     if (strchr("$,()%-+", (int)s[i])) {
       /* Read each character thereafter and */
       for (int j = i; s[j]; j++) {
-        /* Shift the array down one character [remove the character] */
+        /* Shift the array to the left one character [remove the character] */
         s[j] = s[j + 1];
       }
       /* Check the new value of this increment [if there were a duplicate
-       * character]. */
+         character]. */
       i--;
     }
   }
@@ -171,76 +175,59 @@ void Chomp(char *s)
 
 enum { MON_STR, PER_STR, NUM_STR };
 
-static double abs_val(const double n) {
+static size_t abs_val(const double n) {
   if (n < 0)
-    return (-1.0f * n);
-  return n;
+    return (size_t)floor((-1.0f * n));
+  return (size_t)floor(n);
 }
 
 static size_t length_string(const double n, const unsigned short dec_pts,
                             const unsigned int type) {
-  size_t len = 0;
-  /* The len value includes space for thousands
-     grouping [usually commas] and a negative sign. */
-  if (abs_val(n) < 10.0f) {
-    len = 2;
-  } else if (abs_val(n) < 100.0f) {
-    len = 3;
-  } else if (abs_val(n) < 1000.0f) {
-    len = 4;
-  } else if (abs_val(n) < 10000.0f) {
-    len = 6;
-  } else if (abs_val(n) < 100000.0f) {
-    len = 7;
-  } else if (abs_val(n) < 1000000.0f) {
-    len = 8;
-  } else if (abs_val(n) < 10000000.0f) {
-    len = 10;
-  } else if (abs_val(n) < 100000000.0f) {
-    len = 11;
-  } else if (abs_val(n) < 1000000000.0f) {
-    len = 12;
-  } else if (abs_val(n) < 10000000000.0f) {
-    len = 14;
-  } else if (abs_val(n) < 100000000000.0f) {
-    len = 15;
-  } else if (abs_val(n) < 1000000000000.0f) {
-    len = 16;
-  } else if (abs_val(n) < 10000000000000.0f) {
-    len = 18;
-  } else if (abs_val(n) < 100000000000000.0f) {
-    len = 19;
-  } else if (abs_val(n) < 1000000000000000.0f) {
-    len = 20;
-  } else if (abs_val(n) < 10000000000000000.0f) {
-    len = 22;
-  } else if (abs_val(n) < 100000000000000000.0f) {
-    len = 23;
-  } else if (abs_val(n) < 1000000000000000000.0f) {
-    len = 24;
-  } else {
-    len = 26;
-  };
+
+  size_t number = abs_val(n);
+  size_t a = 1, b = 1, len = 0, chars = 0;
+  unsigned int neg_sign = 0, commas = 0;
+
+  do {
+    chars++;
+    if (a % (1000 * b) == 0) {
+      b *= 1000;
+      commas++;
+    }
+    a *= 10;
+  } while (number >= a);
 
   switch (type) {
   case MON_STR:
     /* The currency symbol and
-       the negative closing bracket. */
-    len += 2;
+       the negative brackets. */
+    len++;
+    if (n < 0)
+      neg_sign += 2;
     break;
   case PER_STR:
-    /* The percent sign. */
+    /* The percent sign and
+       the negative sign. */
     len++;
+    if (n < 0)
+      neg_sign++;
     break;
-  default:
+  default: /* NUM_STR */
+    /* The negative sign. */
+    if (n < 0)
+      neg_sign++;
     break;
   };
 
-  /* Add one for the decimal point char. */
+  /* The len value includes space for thousands
+     grouping [usually commas] and a negative sign [if needed]. */
+  len += neg_sign + commas + chars;
+
+  /* Add one for the decimal point char [usually a point]. */
   if (dec_pts != 0)
     len += (dec_pts + 1);
 
-  /* The return value not include the null character. */
+  /* The string length not including the null character. */
   return len;
 }
 

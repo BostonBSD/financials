@@ -242,7 +242,7 @@ static void extract_index_data(char *index, MemType *Data) {
   char line[1024];
   char **csv_array;
 
-  /* Yahoo! sometimes updates bullion when the equities markets are closed.
+  /* Yahoo! updates bitcoin when the equities markets are closed.
      The while loop iterates to the end of file to get the latest data. */
   double prev_closing = 0.0f, cur_price = 0.0f;
   while (fgets(line, 1024, fp) != NULL) {
@@ -250,7 +250,7 @@ static void extract_index_data(char *index, MemType *Data) {
     /* Sometimes the API gives us a null value for certain days.
        using the closing price from the day prior gives us a more accurate
        gain value. */
-    if (strstr(line, "null"))
+    if (strstr(line, "null") || strstr(line, "Date"))
       continue;
     Chomp(line);
     csv_array = parse_csv(line);

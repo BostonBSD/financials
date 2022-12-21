@@ -377,9 +377,21 @@ static void Sort() {
   pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
 }
 
+static void remove_dash(char *s)
+/* Locate first dash character '-' in a string,
+   replace prior space with NULL character.
+   If the string pointer is NULL or the first
+   character is a dash; do nothing */
+{
+  if (s == NULL || s[0] == '-')
+    return;
+  char *ch = strchr(s, (int)'-');
+  if (ch != NULL)
+    ch[-1] = 0;
+}
+
 static void SetSecurityNames(void *data) {
   pthread_mutex_lock(&mutex_working[CLASS_MEMBER_MUTEX]);
-  pthread_mutex_lock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
   portfolio_packet *pkg = (portfolio_packet *)data;
   equity_folder *F = pkg->GetEquityFolderClass();
   symbol_name_map *sn_map = pkg->GetSymNameMap();
@@ -387,8 +399,10 @@ static void SetSecurityNames(void *data) {
 
   short g = 0;
   while (g < F->size) {
-    if (sn_map)
+    if (sn_map) {
       security_name = GetSecurityName(F->Equity[g]->symbol_stock_ch, sn_map);
+      remove_dash(security_name);
+    }
 
     if (F->Equity[g]->num_shares_stock_int) {
       StrToStrPangoColor(&F->Equity[g]->security_name_mrkd_ch,
@@ -404,7 +418,6 @@ static void SetSecurityNames(void *data) {
     }
     g++;
   }
-  pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
   pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
 }
 

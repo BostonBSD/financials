@@ -2268,6 +2268,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
           <object class="GtkSwitch" id="PrefShowIndicesSwitch">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
+            <property name="tooltip-text" translatable="yes">Show Indices</property>
             <property name="halign">center</property>
             <property name="active">True</property>
           </object>
@@ -2280,6 +2281,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
           <object class="GtkSwitch" id="PrefShowClocksSwitch">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
+            <property name="tooltip-text" translatable="yes">Show Clocks</property>
             <property name="halign">center</property>
             <property name="active">True</property>
           </object>
@@ -2320,7 +2322,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
           <object class="GtkSpinButton" id="PrefHoursSpinBox">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="tooltip-text" translatable="yes">The number of hours to run data updates for.</property>
+            <property name="tooltip-text" translatable="yes">Hours of Updates</property>
             <property name="halign">center</property>
             <property name="valign">center</property>
             <property name="max-length">1</property>
@@ -2345,7 +2347,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
           <object class="GtkComboBoxText" id="PrefUpPerMinComboBox">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">The number of data updates per minute.</property>
+            <property name="tooltip-text" translatable="yes">Updates Per Minute</property>
             <property name="halign">center</property>
             <property name="valign">center</property>
             <property name="resize-mode">immediate</property>
@@ -2398,7 +2400,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
           <object class="GtkComboBoxText" id="PrefDecPlacesComboBox">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="tooltip-text" translatable="yes">The number of data updates per minute.</property>
+            <property name="tooltip-text" translatable="yes">Decimal Places</property>
             <property name="halign">center</property>
             <property name="valign">center</property>
             <property name="resize-mode">immediate</property>
@@ -2589,7 +2591,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                         <property name="valign">center</property>
                         <property name="max-length">30</property>
                         <property name="xalign">0.5</property>
-                        <property name="placeholder-text" translatable="yes">Enter a Stock Symbol</property>
+                        <property name="placeholder-text" translatable="yes">Symbol</property>
                         <property name="input-purpose">alpha</property>
                       </object>
                       <packing>
@@ -2738,7 +2740,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                   <object class="GtkEntry" id="AddRemoveSecuritySymbolEntryBox">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="tooltip-text" translatable="yes">A stock symbol.</property>
+                    <property name="tooltip-text" translatable="yes">Stock symbol</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="max-length">10</property>
@@ -2769,13 +2771,13 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                   <object class="GtkEntry" id="AddRemoveSecuritySharesEntryBox">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="tooltip-text" translatable="yes">The number of shares in this stock</property>
+                    <property name="tooltip-text" translatable="yes">Number of shares</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="margin-bottom">20</property>
                     <property name="max-length">10</property>
                     <property name="xalign">0.5</property>
-                    <property name="placeholder-text" translatable="yes">number of shares</property>
+                    <property name="placeholder-text" translatable="yes">Number of shares</property>
                     <property name="input-purpose">digits</property>
                   </object>
                   <packing>
@@ -2819,14 +2821,14 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                   <object class="GtkComboBoxText" id="AddRemoveSecurityComboBox">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="tooltip-text" translatable="yes">Select a table.</property>
+                    <property name="tooltip-text" translatable="yes">Select a security</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
                     <property name="active">0</property>
                     <property name="button-sensitivity">on</property>
                     <property name="popup-fixed-width">False</property>
                     <items>
-                      <item translatable="yes">Select a security for removal</item>
+                      <item translatable="yes">Select a security</item>
                     </items>
                   </object>
                   <packing>

@@ -52,14 +52,9 @@ portfolio_packet *packet;
 static void Calculate() {
   pthread_mutex_lock(&mutex_working[CLASS_MEMBER_MUTEX]);
 
-  portfolio_packet *pkg = packet;
-  equity_folder *F = pkg->GetEquityFolderClass();
-  metal *M = pkg->GetMetalClass();
-  meta *D = pkg->GetMetaClass();
-
-  F->Calculate();
-  M->Calculate();
-  D->CalculatePortfolio(pkg);
+  packet->equity_folder_class->Calculate();
+  packet->metal_class->Calculate();
+  packet->meta_class->CalculatePortfolio(packet);
   /* No need to calculate the index data [the gain calculation is performed
    * during extraction] */
 
@@ -69,15 +64,10 @@ static void Calculate() {
 static void ToStrings() {
   pthread_mutex_lock(&mutex_working[CLASS_MEMBER_MUTEX]);
 
-  portfolio_packet *pkg = packet;
-  equity_folder *F = pkg->GetEquityFolderClass();
-  metal *M = pkg->GetMetalClass();
-  meta *D = pkg->GetMetaClass();
-
-  D->ToStringsPortfolio();
-  D->ToStringsIndices();
-  M->ToStrings();
-  F->ToStrings();
+  packet->meta_class->ToStringsPortfolio();
+  packet->meta_class->ToStringsIndices();
+  packet->metal_class->ToStrings();
+  packet->equity_folder_class->ToStrings();
 
   pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
 }
@@ -153,77 +143,49 @@ static int GetData() {
 static void ExtractData() {
   pthread_mutex_lock(&mutex_working[CLASS_MEMBER_MUTEX]);
 
-  portfolio_packet *pkg = packet;
-  equity_folder *F = pkg->GetEquityFolderClass();
-  metal *M = pkg->GetMetalClass();
-  meta *D = pkg->GetMetaClass();
-
-  D->ExtractIndicesData();
-  M->ExtractData();
-  F->ExtractData();
+  packet->meta_class->ExtractIndicesData();
+  packet->metal_class->ExtractData();
+  packet->equity_folder_class->ExtractData();
 
   pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
 }
 
-static bool IsFetchingData() {
-  portfolio_packet *pkg = packet;
-  meta *D = pkg->GetMetaClass();
-
-  return D->fetching_data_bool;
-}
+static bool IsFetchingData() { return packet->meta_class->fetching_data_bool; }
 
 static void SetFetchingData(bool data) {
   pthread_mutex_lock(&mutex_working[CLASS_MEMBER_MUTEX]);
 
-  portfolio_packet *pkg = packet;
-  meta *D = pkg->GetMetaClass();
-  D->fetching_data_bool = data;
+  packet->meta_class->fetching_data_bool = data;
 
   pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
 }
 
 static bool IsDefaultView() {
-  portfolio_packet *pkg = packet;
-  meta *D = pkg->GetMetaClass();
-
-  return D->main_win_default_view_bool;
+  return packet->meta_class->main_win_default_view_bool;
 }
 
 static void SetDefaultView(bool data) {
   pthread_mutex_lock(&mutex_working[CLASS_MEMBER_MUTEX]);
 
-  portfolio_packet *pkg = packet;
-  meta *D = pkg->GetMetaClass();
-  D->main_win_default_view_bool = data;
+  packet->meta_class->main_win_default_view_bool = data;
 
   pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
 }
 
 static bool IsCurlCanceled() {
-
-  portfolio_packet *pkg = packet;
-  meta *D = pkg->GetMetaClass();
-
-  return D->multicurl_cancel_bool;
+  return packet->meta_class->multicurl_cancel_bool;
 }
 
 static void SetCurlCanceled(bool data) {
-  portfolio_packet *pkg = packet;
-  meta *D = pkg->GetMetaClass();
-  D->multicurl_cancel_bool = data;
+  packet->meta_class->multicurl_cancel_bool = data;
 }
 
-static bool IsHoliday() {
-  portfolio_packet *pkg = packet;
-  meta *D = pkg->GetMetaClass();
-  return D->holiday_bool;
-}
+static bool IsHoliday() { return packet->meta_class->holiday_bool; }
 
 static struct tm SetHoliday() {
   pthread_mutex_lock(&mutex_working[CLASS_MEMBER_MUTEX]);
 
-  portfolio_packet *pkg = packet;
-  meta *D = pkg->GetMetaClass();
+  meta *D = packet->GetMetaClass();
   struct tm NY_Time = NYTimeComponents();
   D->holiday_bool = CheckHoliday(NY_Time);
 
@@ -234,8 +196,7 @@ static struct tm SetHoliday() {
 static double GetHoursOfUpdates() {
   pthread_mutex_lock(&mutex_working[CLASS_MEMBER_MUTEX]);
 
-  portfolio_packet *pkg = packet;
-  meta *D = pkg->GetMetaClass();
+  meta *D = packet->GetMetaClass();
   double return_value = D->updates_hours_f;
 
   pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
@@ -245,8 +206,7 @@ static double GetHoursOfUpdates() {
 static double GetUpdatesPerMinute() {
   pthread_mutex_lock(&mutex_working[CLASS_MEMBER_MUTEX]);
 
-  portfolio_packet *pkg = packet;
-  meta *D = pkg->GetMetaClass();
+  meta *D = packet->GetMetaClass();
   double return_value = D->updates_per_min_f;
 
   pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
@@ -288,17 +248,16 @@ static void remove_main_curl_handles(portfolio_packet *pkg)
 }
 
 static void StopMultiCurl() {
-  portfolio_packet *pkg = packet;
-  meta *Met = pkg->GetMetaClass();
+  meta *D = packet->GetMetaClass();
 
   /* Symbol Name Fetch Multicurl Operation */
-  Met->StopSNMapCurl();
+  D->StopSNMapCurl();
 
   /* RSI Data Multicurl Operation */
-  Met->StopRSICurl();
+  D->StopRSICurl();
 
   /* Main Window Data Fetch Multicurl Operation */
-  remove_main_curl_handles(pkg);
+  remove_main_curl_handles(packet);
 }
 
 static void *GetPrimaryHeadings() { return packet->meta_class->pri_h_mkd; }
@@ -308,9 +267,8 @@ static void *GetDefaultHeadings() { return packet->meta_class->def_h_mkd; }
 static void SetWindowDataSql() {
   pthread_mutex_lock(&mutex_working[CLASS_MEMBER_MUTEX]);
 
-  portfolio_packet *pkg = packet;
-  meta *D = pkg->GetMetaClass();
-  window_data *W = pkg->GetWindowData();
+  meta *D = packet->GetMetaClass();
+  window_data *W = packet->GetWindowData();
 
   /* Save the Window Size and Location. */
   SqliteAddMainWindowSize(W->main_width, W->main_height, D);
@@ -334,37 +292,27 @@ static unsigned int Seconds2Open() { return SecondsToOpen(); }
 static void *GetSymNameMap() { return packet->sym_map; }
 
 static void SetSymNameMap(void *data) {
-  symbol_name_map *sn_map = (symbol_name_map *)data;
-  packet->sym_map = sn_map;
+  packet->sym_map = (symbol_name_map *)data;
 }
 
 static bool IsClockDisplayed() {
-  portfolio_packet *pkg = packet;
-  meta *D = pkg->GetMetaClass();
-  return D->clocks_displayed_bool;
+  return packet->meta_class->clocks_displayed_bool;
 }
 
 static void SetClockDisplayed(bool data) {
-  portfolio_packet *pkg = packet;
-  meta *D = pkg->GetMetaClass();
-  D->clocks_displayed_bool = data;
+  packet->meta_class->clocks_displayed_bool = data;
 }
 
 static bool IsIndicesDisplayed() {
-  portfolio_packet *pkg = packet;
-  meta *D = pkg->GetMetaClass();
-  return D->index_bar_revealed_bool;
+  return packet->meta_class->index_bar_revealed_bool;
 }
 
 static void SetIndicesDisplayed(bool data) {
-  portfolio_packet *pkg = packet;
-  meta *D = pkg->GetMetaClass();
-  D->index_bar_revealed_bool = data;
+  packet->meta_class->index_bar_revealed_bool = data;
 }
 
 static void SetSecurityNames() {
-  equity_folder *F = packet->GetEquityFolderClass();
-  F->SetSecurityNames(packet);
+  packet->equity_folder_class->SetSecurityNames(packet);
 }
 
 /* Class Init Functions */

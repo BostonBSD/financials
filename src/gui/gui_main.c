@@ -79,14 +79,14 @@ void MainProgBar(double *fraction) {
 
 static int main_tree_view_clr() {
   /* Clear the main window's GtkTreeView. */
-  GtkWidget *list = GTK_WIDGET(gtk_builder_get_object(builder, "TreeView"));
+  GtkWidget *treeview = GTK_WIDGET(gtk_builder_get_object(builder, "TreeView"));
   GtkTreeViewColumn *column;
-  gint n = gtk_tree_view_get_n_columns(GTK_TREE_VIEW(list));
+  guint n = gtk_tree_view_get_n_columns(GTK_TREE_VIEW(treeview));
 
-  while (n > 0) {
+  while (n) {
     n--;
-    column = gtk_tree_view_get_column(GTK_TREE_VIEW(list), n);
-    gtk_tree_view_remove_column(GTK_TREE_VIEW(list), column);
+    column = gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), n);
+    gtk_tree_view_remove_column(GTK_TREE_VIEW(treeview), column);
   }
 
   return 0;
@@ -112,70 +112,70 @@ static int main_set_columns(int column_type) {
 
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(
-      "Symbol", renderer, "markup", GUI_COLUMN_ONE, NULL);
+      "column_one", renderer, "markup", GUI_COLUMN_ONE, NULL);
   gtk_tree_view_column_set_resizable(column, true);
   gtk_tree_view_column_set_visible(column, true);
   gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(
-      "Shares/Ounces", renderer, "markup", GUI_COLUMN_TWO, NULL);
+      "column_two", renderer, "markup", GUI_COLUMN_TWO, NULL);
   gtk_tree_view_column_set_resizable(column, true);
   gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(
-      "Premium", renderer, "markup", GUI_COLUMN_THREE, NULL);
+      "column_three", renderer, "markup", GUI_COLUMN_THREE, NULL);
   gtk_tree_view_column_set_resizable(column, true);
   gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
   if (column_type == GUI_COLUMN_PRIMARY) {
-    /* if GUI PRIMARY */
+    /* if PRIMARY treeview */
     renderer = gtk_cell_renderer_text_new();
     column = gtk_tree_view_column_new_with_attributes(
-        "Price", renderer, "markup", GUI_COLUMN_FOUR, NULL);
+        "column_four", renderer, "markup", GUI_COLUMN_FOUR, NULL);
     gtk_tree_view_column_set_resizable(column, true);
     gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
     renderer = gtk_cell_renderer_text_new();
     column = gtk_tree_view_column_new_with_attributes(
-        "Total/High", renderer, "markup", GUI_COLUMN_FIVE, NULL);
-    gtk_tree_view_column_set_resizable(column, true);
-    gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
-
-    renderer = gtk_cell_renderer_text_new();
-    column = gtk_tree_view_column_new_with_attributes("Low", renderer, "markup",
-                                                      GUI_COLUMN_SIX, NULL);
+        "column_five", renderer, "markup", GUI_COLUMN_FIVE, NULL);
     gtk_tree_view_column_set_resizable(column, true);
     gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
     renderer = gtk_cell_renderer_text_new();
     column = gtk_tree_view_column_new_with_attributes(
-        "Opening", renderer, "markup", GUI_COLUMN_SEVEN, NULL);
+        "column_six", renderer, "markup", GUI_COLUMN_SIX, NULL);
     gtk_tree_view_column_set_resizable(column, true);
     gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
     renderer = gtk_cell_renderer_text_new();
     column = gtk_tree_view_column_new_with_attributes(
-        "Previous Closing", renderer, "markup", GUI_COLUMN_EIGHT, NULL);
+        "column_seven", renderer, "markup", GUI_COLUMN_SEVEN, NULL);
     gtk_tree_view_column_set_resizable(column, true);
     gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
     renderer = gtk_cell_renderer_text_new();
     column = gtk_tree_view_column_new_with_attributes(
-        "Price Change Value", renderer, "markup", GUI_COLUMN_NINE, NULL);
+        "column_eight", renderer, "markup", GUI_COLUMN_EIGHT, NULL);
     gtk_tree_view_column_set_resizable(column, true);
     gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
     renderer = gtk_cell_renderer_text_new();
     column = gtk_tree_view_column_new_with_attributes(
-        "Price Change Percent", renderer, "markup", GUI_COLUMN_TEN, NULL);
+        "column_nine", renderer, "markup", GUI_COLUMN_NINE, NULL);
     gtk_tree_view_column_set_resizable(column, true);
     gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
     renderer = gtk_cell_renderer_text_new();
     column = gtk_tree_view_column_new_with_attributes(
-        "Price Change Share", renderer, "markup", GUI_COLUMN_ELEVEN, NULL);
+        "column_ten", renderer, "markup", GUI_COLUMN_TEN, NULL);
+    gtk_tree_view_column_set_resizable(column, true);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
+
+    renderer = gtk_cell_renderer_text_new();
+    column = gtk_tree_view_column_new_with_attributes(
+        "column_eleven", renderer, "markup", GUI_COLUMN_ELEVEN, NULL);
     gtk_tree_view_column_set_resizable(column, true);
     gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
   }
@@ -196,11 +196,10 @@ static GtkListStore *main_primary_store(void *data) {
   bool no_assets = true;
 
   /* Set up the storage container with the number of columns and column type */
-  store = gtk_list_store_new(GUI_N_COLUMNS, G_TYPE_STRING, G_TYPE_STRING,
-                             G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-                             G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-                             G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-                             G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+  store = gtk_list_store_new(
+      GUI_N_COLUMNS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 
   /* Add data to the storage container. */
   gtk_list_store_append(store, &iter);
@@ -223,9 +222,10 @@ static GtkListStore *main_primary_store(void *data) {
         pri_h_mkd->chg_ounce, GUI_COLUMN_NINE, pri_h_mkd->gain_sym,
         GUI_COLUMN_TEN, pri_h_mkd->total, GUI_COLUMN_ELEVEN,
         pri_h_mkd->gain_per, -1);
+
     if (M->Gold->ounce_f) {
       gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "Gold",
+      gtk_list_store_set(store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "gold",
                          GUI_COLUMN_ONE, pri_h_mkd->gold, GUI_COLUMN_TWO,
                          M->Gold->ounce_mrkd_ch, GUI_COLUMN_THREE,
                          M->Gold->spot_price_mrkd_ch, GUI_COLUMN_FOUR,
@@ -238,10 +238,11 @@ static GtkListStore *main_primary_store(void *data) {
                          M->Gold->port_value_mrkd_ch, GUI_COLUMN_ELEVEN,
                          M->Gold->change_percent_mrkd_ch, -1);
     }
+
     if (M->Silver->ounce_f) {
       gtk_list_store_append(store, &iter);
       gtk_list_store_set(
-          store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "Silver",
+          store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "silver",
           GUI_COLUMN_ONE, pri_h_mkd->silver, GUI_COLUMN_TWO,
           M->Silver->ounce_mrkd_ch, GUI_COLUMN_THREE,
           M->Silver->spot_price_mrkd_ch, GUI_COLUMN_FOUR,
@@ -258,7 +259,7 @@ static GtkListStore *main_primary_store(void *data) {
     if (M->Platinum->ounce_f) {
       gtk_list_store_append(store, &iter);
       gtk_list_store_set(
-          store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "Platinum",
+          store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "platinum",
           GUI_COLUMN_ONE, pri_h_mkd->platinum, GUI_COLUMN_TWO,
           M->Platinum->ounce_mrkd_ch, GUI_COLUMN_THREE,
           M->Platinum->spot_price_mrkd_ch, GUI_COLUMN_FOUR,
@@ -274,7 +275,7 @@ static GtkListStore *main_primary_store(void *data) {
     if (M->Palladium->ounce_f) {
       gtk_list_store_append(store, &iter);
       gtk_list_store_set(
-          store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "Palladium",
+          store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "palladium",
           GUI_COLUMN_ONE, pri_h_mkd->palladium, GUI_COLUMN_TWO,
           M->Palladium->ounce_mrkd_ch, GUI_COLUMN_THREE,
           M->Palladium->spot_price_mrkd_ch, GUI_COLUMN_FOUR,
@@ -438,21 +439,14 @@ static GtkListStore *main_default_store(void *data) {
   meta *D = package->GetMetaClass();
   default_heading *def_h_mkd = package->GetDefaultHeadings();
 
-  /* Make sure the security names are set with pango style markups. */
-  if (F->size)
-    package->SetSecurityNames();
-
   bool no_assets = true;
 
   GtkListStore *store = NULL;
   GtkTreeIter iter;
 
   /* Set up the storage container with the number of columns and column type */
-  store = gtk_list_store_new(GUI_N_COLUMNS, G_TYPE_STRING, G_TYPE_STRING,
-                             G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-                             G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-                             G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-                             G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+  store = gtk_list_store_new(5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+                             G_TYPE_STRING, G_TYPE_STRING);
 
   /* Add data to the storage container. */
   if (M->Gold->ounce_f || M->Silver->ounce_f || M->Platinum->ounce_f ||
@@ -476,7 +470,7 @@ static GtkListStore *main_default_store(void *data) {
                        -1);
     if (M->Gold->ounce_f) {
       gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "Gold",
+      gtk_list_store_set(store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "gold",
                          GUI_COLUMN_ONE, def_h_mkd->gold, GUI_COLUMN_TWO,
                          M->Gold->ounce_mrkd_ch, GUI_COLUMN_THREE,
                          M->Gold->premium_mrkd_ch, -1);
@@ -484,21 +478,21 @@ static GtkListStore *main_default_store(void *data) {
     if (M->Silver->ounce_f) {
       gtk_list_store_append(store, &iter);
       gtk_list_store_set(store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL,
-                         "Silver", GUI_COLUMN_ONE, def_h_mkd->silver,
+                         "silver", GUI_COLUMN_ONE, def_h_mkd->silver,
                          GUI_COLUMN_TWO, M->Silver->ounce_mrkd_ch,
                          GUI_COLUMN_THREE, M->Silver->premium_mrkd_ch, -1);
     }
     if (M->Platinum->ounce_f) {
       gtk_list_store_append(store, &iter);
       gtk_list_store_set(store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL,
-                         "Platinum", GUI_COLUMN_ONE, def_h_mkd->platinum,
+                         "platinum", GUI_COLUMN_ONE, def_h_mkd->platinum,
                          GUI_COLUMN_TWO, M->Platinum->ounce_mrkd_ch,
                          GUI_COLUMN_THREE, M->Platinum->premium_mrkd_ch, -1);
     }
     if (M->Palladium->ounce_f) {
       gtk_list_store_append(store, &iter);
       gtk_list_store_set(store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL,
-                         "Palladium", GUI_COLUMN_ONE, def_h_mkd->palladium,
+                         "palladium", GUI_COLUMN_ONE, def_h_mkd->palladium,
                          GUI_COLUMN_TWO, M->Palladium->ounce_mrkd_ch,
                          GUI_COLUMN_THREE, M->Palladium->premium_mrkd_ch, -1);
     }
@@ -738,7 +732,7 @@ int MainPrimaryTreeview(void *data) {
   gtk_tree_view_set_model(GTK_TREE_VIEW(list), GTK_TREE_MODEL(store));
   g_object_unref(store);
 
-  /* Set the list header as invisible. */
+  /* Set the header as invisible. */
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(list), FALSE);
 
   /* Remove Grid Lines. */
@@ -774,7 +768,7 @@ int MainDefaultTreeview(void *data) {
   gtk_tree_view_set_model(GTK_TREE_VIEW(list), GTK_TREE_MODEL(store));
   g_object_unref(store);
 
-  /* Set the list header as invisible. */
+  /* Set the header as invisible. */
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(list), FALSE);
 
   /* Remove Grid Lines. */

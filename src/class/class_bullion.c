@@ -161,8 +161,9 @@ static void Calculate() {
 
   bullion_calculations(M->Gold);
   bullion_calculations(M->Silver);
-  /* There's no if statement here, the user might update during a fetch
-   * operation. */
+  /* There's no if statement here.  If the user removes either of the following
+   two metals, we want the port_value_f to be zero (notice that the following
+   statements always account for all metals). */
   bullion_calculations(M->Platinum);
   bullion_calculations(M->Palladium);
 
@@ -271,7 +272,7 @@ static void extract_bullion_data(bullion *B) {
     /* Sometimes the API gives us a null value for certain days.
        using the closing price from the day prior gives us a more accurate
        gain value. */
-    if (strstr(line, "null"))
+    if (strstr(line, "null") || strstr(line, "Date"))
       continue;
     Chomp(line);
     csv_array = parse_csv(line);
@@ -304,7 +305,7 @@ static void ExtractData() {
 }
 
 /* Class Init Functions */
-bullion *class_init_bullion() {
+static bullion *class_init_bullion() {
   /* Allocate Memory For A New Class Object */
   bullion *new_class = (bullion *)malloc(sizeof(*new_class));
 

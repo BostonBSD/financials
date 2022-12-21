@@ -257,9 +257,9 @@ static void double_to_mon_str_pango_color_ext(char **dst, const double num,
    Reallocs memory to fit the output string.
 
    Take care that *dst is not an unallocated ptr address.
-   Set *dst = NULL first.*/
+   Set *dst = NULL first. */
 {
-  if (!dst)
+  if (!dst || digits_right > 3)
     return;
   if (dst[0] == NULL)
     dst[0] = malloc(1);
@@ -324,7 +324,7 @@ static void double_to_mon_str_pango_color_ext(char **dst, const double num,
     break;
   }
 
-  len = strlen(start_tag) + len_monetary + len_end_tag + 1;
+  len = strlen(start_tag) + strlen(end_tag) + 1;
 
   /* Adjust the destination string length */
   char *ptr = realloc(dst[0], len);
@@ -382,7 +382,7 @@ static void double_to_per_str_pango_color_ext(char **dst, const double num,
    Take care that *dst is not an unallocated ptr address.
    Set *dst = NULL first.*/
 {
-  if (!dst)
+  if (!dst || digits_right > 3)
     return;
   if (dst[0] == NULL)
     dst[0] = malloc(1);
