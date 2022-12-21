@@ -38,7 +38,7 @@ POSSIBILITY OF SUCH DAMAGE.
 equity_folder *ClassInitEquityFolder();
 metal *ClassInitMetal();
 meta *ClassInitMeta();
-portfolio_packet *ClassInitPortfolioPacket();
+void ClassInitPortfolioPacket();
 
 /* Class destruct prototypes. */
 void ClassDestructEquityFolder(equity_folder *);

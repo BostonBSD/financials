@@ -48,12 +48,28 @@ typedef int sub_func_c_t();
 typedef bool sub_func_d_t();
 typedef void sub_func_e_t(bool);
 typedef double sub_func_f_t();
-typedef struct tm sub_func_g_t();
-typedef unsigned int sub_func_h_t();
-typedef int sub_func_i_t(void *);
-typedef void sub_func_j_t(void *);
-typedef void sub_func_k_t(const char *, const char *);
-typedef void sub_func_l_t(const char *);
+typedef unsigned int sub_func_g_t();
+typedef int sub_func_h_t(void *);
+typedef void sub_func_i_t(void *);
+typedef void sub_func_j_t(const char *, const char *);
+typedef void sub_func_k_t(const char *);
+
+typedef struct { /* A container to hold the type of row and symbol, on a right
+                    click */
+  char *type;
+  char *symbol;
+} right_click_container;
+
+typedef struct {
+  int main_height;
+  int main_width;
+  int main_x_pos;
+  int main_y_pos;
+  int rsi_height;
+  int rsi_width;
+  int rsi_x_pos;
+  int rsi_y_pos;
+} window_data;
 
 typedef struct {
   char *bullion;
@@ -131,7 +147,7 @@ typedef struct {
   char *change_value_mrkd_ch;
   char *change_percent_mrkd_ch;
 
-  /* Not marked up strings */
+  /* Unmarked strings */
   char *change_percent_raw_ch; /* The gain not including premium values. */
   char *url_ch;
 
@@ -171,7 +187,7 @@ typedef struct {
   char *symbol_stock_mrkd_ch;
   char *num_shares_stock_mrkd_ch;
 
-  /* Not marked up strings */
+  /* Unmarked strings */
   char *symbol_stock_ch;   /* The stock symbol in all caps, it's used to create
                               the stock request URL */
   char *curl_url_stock_ch; /* The assembled request URL, Each stock has it's own
@@ -184,6 +200,11 @@ typedef struct {
 
 typedef struct {
   /* Data Variables */
+  right_click_container rght_clk_data;
+  window_data *window_struct; /* A struct that holds the size and position of
+                                 the main and rsi windows. */
+  symbol_name_map *sym_map;   /* The symbol to name mapping struct */
+
   primary_heading *pri_h_mkd;
   default_heading *def_h_mkd;
 
@@ -214,8 +235,6 @@ typedef struct {
 
   short decimal_places_shrt;
 
-
-
   /* Pango Markup language strings */
   char *cash_mrkd_ch;                 /* Total value of cash */
   char *portfolio_port_value_mrkd_ch; /* Total value of the entire portfolio */
@@ -224,7 +243,7 @@ typedef struct {
   char *portfolio_port_value_p_chg_mrkd_ch; /* Total value of the entire
                                                portfolio percent change */
 
-  /* Not marked up strings */
+  /* Unmarked strings */
   char *stock_url_ch;         /* First component of the stock request URL */
   char *curl_key_ch;          /* Last component of the stock request URL */
   char *Nasdaq_Symbol_url_ch; /* Nasdaq Symbol List URL */
@@ -287,10 +306,10 @@ typedef struct {
      Create a function pointer from the type here.
   */
   sub_func_b_t *ToStringsPortfolio;
-  sub_func_j_t *CalculatePortfolio;
+  sub_func_i_t *CalculatePortfolio;
   sub_func_b_t *StopRSICurl;
   sub_func_b_t *StopSNMapCurl;
-  sub_func_i_t *SetUpCurlIndicesData;
+  sub_func_h_t *SetUpCurlIndicesData;
   sub_func_b_t *ExtractIndicesData;
   sub_func_b_t *ToStringsIndices;
 } meta;
@@ -317,13 +336,13 @@ typedef struct {
   char *bullion_port_value_p_chg_mrkd_ch; /* Total value of bullion holdings
                                              percent change */
 
-  /* Not marked up strings */
+  /* Unmarked strings */
   char *gold_silver_ratio_ch;
 
   /* Methods or Functions */
   sub_func_b_t *ToStrings;
   sub_func_b_t *Calculate;
-  sub_func_i_t *SetUpCurl;
+  sub_func_h_t *SetUpCurl;
   sub_func_b_t *ExtractData;
 } metal;
 
@@ -348,37 +367,22 @@ typedef struct {
   /* Methods or Functions */
   sub_func_b_t *ToStrings;
   sub_func_b_t *Calculate;
-  sub_func_j_t *GenerateURL;
-  sub_func_i_t *SetUpCurl;
+  sub_func_i_t *GenerateURL;
+  sub_func_h_t *SetUpCurl;
   sub_func_b_t *ExtractData;
-  sub_func_k_t *AddStock;
+  sub_func_j_t *AddStock;
   sub_func_b_t *Sort;
   sub_func_b_t *Reset;
-  sub_func_l_t *RemoveStock;
-  sub_func_j_t *SetSecurityNames;
+  sub_func_k_t *RemoveStock;
+  sub_func_i_t *SetSecurityNames;
 } equity_folder;
 
+/* A handle to our three primary classes and some useful functions */
 typedef struct {
-  int main_height;
-  int main_width;
-  int main_x_pos;
-  int main_y_pos;
-  int rsi_height;
-  int rsi_width;
-  int rsi_x_pos;
-  int rsi_y_pos;
-} window_data;
-
-/* A handle to our three primary classes and the window_data struct for passing
- * through threads */
-typedef struct {
-  /* handles to each of our three classes and the window_data struct */
+  /* handles to each of our three classes */
   metal *metal_class;
   equity_folder *equity_folder_class;
   meta *meta_class;
-  window_data *window_struct; /* A struct that holds the size and position of
-                                 the main and rsi windows. */
-  symbol_name_map *sym_map;   /* The symbol to name mapping struct */
 
   /* Main Multicurl Handle for use with data fetch operation */
   CURLM *multicurl_main_hnd;
@@ -398,7 +402,7 @@ typedef struct {
   sub_func_f_t *GetHoursOfUpdates;
   sub_func_f_t *GetUpdatesPerMinute;
   sub_func_d_t *IsHoliday;
-  sub_func_g_t *SetHoliday;
+  sub_func_b_t *SetHoliday;
   sub_func_a_t *GetPrimaryHeadings;
   sub_func_a_t *GetDefaultHeadings;
   sub_func_b_t *SetWindowDataSql;
@@ -406,9 +410,9 @@ typedef struct {
   sub_func_a_t *GetMetaClass;
   sub_func_a_t *GetMetalClass;
   sub_func_a_t *GetSymNameMap;
-  sub_func_j_t *SetSymNameMap;
+  sub_func_i_t *SetSymNameMap;
   sub_func_a_t *GetEquityFolderClass;
-  sub_func_h_t *SecondsToOpen;
+  sub_func_g_t *SecondsToOpen;
   sub_func_d_t *IsClockDisplayed;
   sub_func_e_t *SetClockDisplayed;
   sub_func_d_t *IsIndicesDisplayed;

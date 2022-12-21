@@ -72,7 +72,7 @@ static int cash_callback(void *data, int argc, char **argv, char **ColName) {
 
   meta *mdata = (meta *)data;
 
-  mdata->cash_f = StrToDoub(argv[1] ? argv[1] : "0");
+  mdata->cash_f = StringToDoub(argv[1] ? argv[1] : "0");
   DoubToMonStrPango(&mdata->cash_mrkd_ch, mdata->cash_f,
                     mdata->decimal_places_shrt);
 
@@ -98,37 +98,37 @@ static int bullion_callback(void *data, int argc, char **argv, char **ColName) {
   metal *m = (metal *)data;
 
   if (strcasecmp(argv[1], "gold") == 0) {
-    m->Gold->ounce_f = StrToDoub(argv[2] ? argv[2] : "0");
+    m->Gold->ounce_f = StringToDoub(argv[2] ? argv[2] : "0");
     DoubToNumStrPango(&m->Gold->ounce_mrkd_ch, m->Gold->ounce_f, 4);
 
-    m->Gold->premium_f = StrToDoub(argv[3] ? argv[3] : "0");
+    m->Gold->premium_f = StringToDoub(argv[3] ? argv[3] : "0");
     DoubToMonStrPango(&m->Gold->premium_mrkd_ch, m->Gold->premium_f,
                       m->decimal_places_shrt);
   }
 
   if (strcasecmp(argv[1], "silver") == 0) {
-    m->Silver->ounce_f = StrToDoub(argv[2] ? argv[2] : "0");
+    m->Silver->ounce_f = StringToDoub(argv[2] ? argv[2] : "0");
     DoubToNumStrPango(&m->Silver->ounce_mrkd_ch, m->Silver->ounce_f, 4);
 
-    m->Silver->premium_f = StrToDoub(argv[3] ? argv[3] : "0");
+    m->Silver->premium_f = StringToDoub(argv[3] ? argv[3] : "0");
     DoubToMonStrPango(&m->Silver->premium_mrkd_ch, m->Silver->premium_f,
                       m->decimal_places_shrt);
   }
 
   if (strcasecmp(argv[1], "platinum") == 0) {
-    m->Platinum->ounce_f = StrToDoub(argv[2] ? argv[2] : "0");
+    m->Platinum->ounce_f = StringToDoub(argv[2] ? argv[2] : "0");
     DoubToNumStrPango(&m->Platinum->ounce_mrkd_ch, m->Platinum->ounce_f, 4);
 
-    m->Platinum->premium_f = StrToDoub(argv[3] ? argv[3] : "0");
+    m->Platinum->premium_f = StringToDoub(argv[3] ? argv[3] : "0");
     DoubToMonStrPango(&m->Platinum->premium_mrkd_ch, m->Platinum->premium_f,
                       m->decimal_places_shrt);
   }
 
   if (strcasecmp(argv[1], "palladium") == 0) {
-    m->Palladium->ounce_f = StrToDoub(argv[2] ? argv[2] : "0");
+    m->Palladium->ounce_f = StringToDoub(argv[2] ? argv[2] : "0");
     DoubToNumStrPango(&m->Palladium->ounce_mrkd_ch, m->Palladium->ounce_f, 4);
 
-    m->Palladium->premium_f = StrToDoub(argv[3] ? argv[3] : "0");
+    m->Palladium->premium_f = StringToDoub(argv[3] ? argv[3] : "0");
     DoubToMonStrPango(&m->Palladium->premium_mrkd_ch, m->Palladium->premium_f,
                       m->decimal_places_shrt);
   }

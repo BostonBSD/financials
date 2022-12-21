@@ -87,7 +87,7 @@ static void semaphore_destruct()
 static void class_package_init()
 /* Initialize the class package */
 {
-  packet = ClassInitPortfolioPacket();
+  ClassInitPortfolioPacket();
 }
 
 static void class_package_destruct()

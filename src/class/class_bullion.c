@@ -374,7 +374,7 @@ metal *ClassInitMetal() {
   new_class->SetUpCurl = SetUpCurl;
   new_class->ExtractData = ExtractData;
 
-  /* Set the local global variable so we can self-reference this class. */
+  /* Set the file global variable so we can self-reference this class. */
   MetalClassObject = new_class;
 
   /* Return Our Initialized Class */
@@ -383,7 +383,7 @@ metal *ClassInitMetal() {
 
 /* Class Destruct Functions */
 static void class_destruct_bullion(bullion *bullion_class) {
-  /* Free Memory From Variables */
+  /* Free Memory */
   if (bullion_class->url_ch)
     free(bullion_class->url_ch);
   if (bullion_class->spot_price_mrkd_ch)
@@ -435,7 +435,7 @@ void ClassDestructMetal(metal *metal_handle) {
   if (metal_handle->Palladium)
     class_destruct_bullion(metal_handle->Palladium);
 
-  /* Free Memory From Variables */
+  /* Free Pointer Memory */
   if (metal_handle->bullion_port_value_mrkd_ch)
     free(metal_handle->bullion_port_value_mrkd_ch);
   if (metal_handle->bullion_port_value_chg_mrkd_ch)

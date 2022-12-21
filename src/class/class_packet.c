@@ -84,7 +84,7 @@ static int perform_multicurl_request(portfolio_packet *pkg) {
     num_metals++;
 
   /* Perform the cURL requests simultaneously using multi-cURL. */
-  /* Four Indices plus Two Metals plus Number of Equities */
+  /* Four Indices plus Two-to-Four Metals plus Number of Equities */
   return_code = PerformMultiCurl(pkg->multicurl_main_hnd,
                                  4.0f + (double)num_metals + (double)F->size);
   if (return_code) {
@@ -182,7 +182,7 @@ static void SetCurlCanceled(bool data) {
 
 static bool IsHoliday() { return packet->meta_class->holiday_bool; }
 
-static struct tm SetHoliday() {
+static void SetHoliday() {
   pthread_mutex_lock(&mutex_working[CLASS_MEMBER_MUTEX]);
 
   meta *D = packet->GetMetaClass();
@@ -190,7 +190,6 @@ static struct tm SetHoliday() {
   D->holiday_bool = CheckHoliday(NY_Time);
 
   pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
-  return NY_Time;
 }
 
 static double GetHoursOfUpdates() {
@@ -279,7 +278,7 @@ static void SetWindowDataSql() {
   pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
 }
 
-static void *GetWindowData() { return packet->window_struct; }
+static void *GetWindowData() { return packet->meta_class->window_struct; }
 
 static void *GetMetaClass() { return packet->meta_class; }
 
@@ -289,10 +288,10 @@ static void *GetEquityFolderClass() { return packet->equity_folder_class; }
 
 static unsigned int Seconds2Open() { return SecondsToOpen(); }
 
-static void *GetSymNameMap() { return packet->sym_map; }
+static void *GetSymNameMap() { return packet->meta_class->sym_map; }
 
 static void SetSymNameMap(void *data) {
-  packet->sym_map = (symbol_name_map *)data;
+  packet->meta_class->sym_map = (symbol_name_map *)data;
 }
 
 static bool IsClockDisplayed() {
@@ -316,7 +315,7 @@ static void SetSecurityNames() {
 }
 
 /* Class Init Functions */
-portfolio_packet *ClassInitPortfolioPacket() {
+void ClassInitPortfolioPacket() {
   /* Allocate Memory For A New Class Object */
   portfolio_packet *new_class = (portfolio_packet *)malloc(sizeof(*new_class));
 
@@ -324,9 +323,6 @@ portfolio_packet *ClassInitPortfolioPacket() {
   new_class->metal_class = ClassInitMetal();
   new_class->equity_folder_class = ClassInitEquityFolder();
   new_class->meta_class = ClassInitMeta();
-  new_class->window_struct =
-      (window_data *)malloc(sizeof(*new_class->window_struct));
-  new_class->sym_map = NULL;
 
   /* Connect Function Pointers To Function Definitions */
   new_class->Calculate = Calculate;
@@ -360,21 +356,11 @@ portfolio_packet *ClassInitPortfolioPacket() {
   new_class->SetIndicesDisplayed = SetIndicesDisplayed;
   new_class->SetSecurityNames = SetSecurityNames;
 
-  /* Initialize the main and rsi window size and locations */
-  new_class->window_struct->main_height = 0;
-  new_class->window_struct->main_width = 0;
-  new_class->window_struct->main_x_pos = 0;
-  new_class->window_struct->main_y_pos = 0;
-  new_class->window_struct->rsi_height = 0;
-  new_class->window_struct->rsi_width = 0;
-  new_class->window_struct->rsi_x_pos = 0;
-  new_class->window_struct->rsi_y_pos = 0;
-
   /* General Multicurl Handle for the Main Fetch Operation */
   new_class->multicurl_main_hnd = curl_multi_init();
 
-  /* Return Our Initialized Class */
-  return new_class;
+  /* Set the global variable. */
+  packet = new_class;
 }
 
 /* Class Destruct Functions */
@@ -386,19 +372,6 @@ void ClassDestructPortfolioPacket(portfolio_packet *pkg) {
     ClassDestructMetal(pkg->metal_class);
   if (pkg->meta_class)
     ClassDestructMeta(pkg->meta_class);
-  if (pkg->window_struct)
-    free(pkg->window_struct);
-
-  /* Free the symbol to security name mapping array. */
-  pthread_mutex_lock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
-
-  if (pkg->sym_map) {
-    SNMapDestruct(pkg->sym_map);
-    free(pkg->sym_map);
-    pkg->sym_map = NULL;
-  }
-
-  pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
 
   if (pkg->multicurl_main_hnd)
     curl_multi_cleanup(pkg->multicurl_main_hnd);

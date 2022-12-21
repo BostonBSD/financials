@@ -39,6 +39,10 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #define MAX_WAIT_MSECS 50
 
+
+/* This callback function example can be found here: 
+   https://everything.curl.dev/libcurl/callbacks/write 
+*/
 static size_t write_callback(char *ptr, size_t size, size_t nmemb,
                              void *userdata)
 /* cURL callback function [read in datastream to memory]

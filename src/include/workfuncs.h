@@ -95,7 +95,7 @@ void StringToMonStr(char **, const char *, const unsigned short);
 void DoubleToMonStr(char **, const double, const unsigned short);
 void DoubToPerStr(char **, const double, const unsigned short);
 void DoubToNumStr(char **, const double, const unsigned short);
-double StrToDoub(const char *);
+double StringToDoub(const char *);
 
 /* time_funcs */
 void NYTime(int *, int *);

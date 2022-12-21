@@ -479,6 +479,11 @@ meta *ClassInitMeta() {
   meta *new_class = (meta *)malloc(sizeof(*new_class));
 
   /* Initialize Variables */
+  new_class->rght_clk_data = (right_click_container){NULL};
+
+  new_class->window_struct = (window_data *)malloc(sizeof(*new_class->window_struct));
+  new_class->sym_map = NULL;
+
   new_class->pri_h_mkd = malloc(sizeof *new_class->pri_h_mkd);
   new_class->def_h_mkd = malloc(sizeof *new_class->def_h_mkd);
 
@@ -574,6 +579,16 @@ meta *ClassInitMeta() {
   snprintf(new_class->sqlite_symbol_name_db_path_ch, len, "%s%s", pw->pw_dir,
            SN_DB_FILE);
 
+  /* Initialize the main and rsi window size and locations */
+  new_class->window_struct->main_height = 0;
+  new_class->window_struct->main_width = 0;
+  new_class->window_struct->main_x_pos = 0;
+  new_class->window_struct->main_y_pos = 0;
+  new_class->window_struct->rsi_height = 0;
+  new_class->window_struct->rsi_width = 0;
+  new_class->window_struct->rsi_x_pos = 0;
+  new_class->window_struct->rsi_y_pos = 0;
+
   /* Connect Function Pointers To Function Definitions */
   new_class->ToStringsPortfolio = ToStringsPortfolio;
   new_class->CalculatePortfolio = CalculatePortfolio;
@@ -583,7 +598,7 @@ meta *ClassInitMeta() {
   new_class->ExtractIndicesData = ExtractIndicesData;
   new_class->ToStringsIndices = ToStringsIndices;
 
-  /* Set the local global variable so we can self-reference this class. */
+  /* Set the file global variable so we can self-reference this class. */
   MetaClassObject = new_class;
 
   /* Return Our Initialized Class */
@@ -592,7 +607,27 @@ meta *ClassInitMeta() {
 
 /* Class Destruct Functions */
 void ClassDestructMeta(meta *meta_class) {
-  /* Free Memory From Variables */
+  /* Free Memory */
+  if (meta_class->rght_clk_data.type)
+    free(meta_class->rght_clk_data.type);
+  if (meta_class->rght_clk_data.symbol)
+    free(meta_class->rght_clk_data.symbol);
+  /* rght_clk_data is a variable and not a pointer, do not free */
+
+  if (meta_class->window_struct)
+    free(meta_class->window_struct);
+
+  /* Free the symbol to security name mapping array. */
+  pthread_mutex_lock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
+
+  if (meta_class->sym_map) {
+    SNMapDestruct(meta_class->sym_map);
+    free(meta_class->sym_map);
+    meta_class->sym_map = NULL;
+  }
+
+  pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
+
   if (meta_class->pri_h_mkd)
     free_primary_headings(meta_class->pri_h_mkd);
   if (meta_class->def_h_mkd)

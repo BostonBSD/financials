@@ -239,21 +239,21 @@ static GtkListStore *main_primary_store(void *data) {
                          M->Gold->change_percent_mrkd_ch, -1);
     }
 
-    if (M->Silver->ounce_f) {
+    if (M->Palladium->ounce_f) {
       gtk_list_store_append(store, &iter);
       gtk_list_store_set(
-          store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "silver",
-          GUI_COLUMN_ONE, pri_h_mkd->silver, GUI_COLUMN_TWO,
-          M->Silver->ounce_mrkd_ch, GUI_COLUMN_THREE,
-          M->Silver->spot_price_mrkd_ch, GUI_COLUMN_FOUR,
-          M->Silver->premium_mrkd_ch, GUI_COLUMN_FIVE,
-          M->Silver->high_metal_mrkd_ch, GUI_COLUMN_SIX,
-          M->Silver->low_metal_mrkd_ch, GUI_COLUMN_SEVEN,
-          M->Silver->prev_closing_metal_mrkd_ch, GUI_COLUMN_EIGHT,
-          M->Silver->change_ounce_mrkd_ch, GUI_COLUMN_NINE,
-          M->Silver->change_value_mrkd_ch, GUI_COLUMN_TEN,
-          M->Silver->port_value_mrkd_ch, GUI_COLUMN_ELEVEN,
-          M->Silver->change_percent_mrkd_ch, -1);
+          store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "palladium",
+          GUI_COLUMN_ONE, pri_h_mkd->palladium, GUI_COLUMN_TWO,
+          M->Palladium->ounce_mrkd_ch, GUI_COLUMN_THREE,
+          M->Palladium->spot_price_mrkd_ch, GUI_COLUMN_FOUR,
+          M->Palladium->premium_mrkd_ch, GUI_COLUMN_FIVE,
+          M->Palladium->high_metal_mrkd_ch, GUI_COLUMN_SIX,
+          M->Palladium->low_metal_mrkd_ch, GUI_COLUMN_SEVEN,
+          M->Palladium->prev_closing_metal_mrkd_ch, GUI_COLUMN_EIGHT,
+          M->Palladium->change_ounce_mrkd_ch, GUI_COLUMN_NINE,
+          M->Palladium->change_value_mrkd_ch, GUI_COLUMN_TEN,
+          M->Palladium->port_value_mrkd_ch, GUI_COLUMN_ELEVEN,
+          M->Palladium->change_percent_mrkd_ch, -1);
     }
 
     if (M->Platinum->ounce_f) {
@@ -272,21 +272,22 @@ static GtkListStore *main_primary_store(void *data) {
           M->Platinum->port_value_mrkd_ch, GUI_COLUMN_ELEVEN,
           M->Platinum->change_percent_mrkd_ch, -1);
     }
-    if (M->Palladium->ounce_f) {
+
+    if (M->Silver->ounce_f) {
       gtk_list_store_append(store, &iter);
       gtk_list_store_set(
-          store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "palladium",
-          GUI_COLUMN_ONE, pri_h_mkd->palladium, GUI_COLUMN_TWO,
-          M->Palladium->ounce_mrkd_ch, GUI_COLUMN_THREE,
-          M->Palladium->spot_price_mrkd_ch, GUI_COLUMN_FOUR,
-          M->Palladium->premium_mrkd_ch, GUI_COLUMN_FIVE,
-          M->Palladium->high_metal_mrkd_ch, GUI_COLUMN_SIX,
-          M->Palladium->low_metal_mrkd_ch, GUI_COLUMN_SEVEN,
-          M->Palladium->prev_closing_metal_mrkd_ch, GUI_COLUMN_EIGHT,
-          M->Palladium->change_ounce_mrkd_ch, GUI_COLUMN_NINE,
-          M->Palladium->change_value_mrkd_ch, GUI_COLUMN_TEN,
-          M->Palladium->port_value_mrkd_ch, GUI_COLUMN_ELEVEN,
-          M->Palladium->change_percent_mrkd_ch, -1);
+          store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL, "silver",
+          GUI_COLUMN_ONE, pri_h_mkd->silver, GUI_COLUMN_TWO,
+          M->Silver->ounce_mrkd_ch, GUI_COLUMN_THREE,
+          M->Silver->spot_price_mrkd_ch, GUI_COLUMN_FOUR,
+          M->Silver->premium_mrkd_ch, GUI_COLUMN_FIVE,
+          M->Silver->high_metal_mrkd_ch, GUI_COLUMN_SIX,
+          M->Silver->low_metal_mrkd_ch, GUI_COLUMN_SEVEN,
+          M->Silver->prev_closing_metal_mrkd_ch, GUI_COLUMN_EIGHT,
+          M->Silver->change_ounce_mrkd_ch, GUI_COLUMN_NINE,
+          M->Silver->change_value_mrkd_ch, GUI_COLUMN_TEN,
+          M->Silver->port_value_mrkd_ch, GUI_COLUMN_ELEVEN,
+          M->Silver->change_percent_mrkd_ch, -1);
     }
 
     gtk_list_store_append(store, &iter);
@@ -475,12 +476,12 @@ static GtkListStore *main_default_store(void *data) {
                          M->Gold->ounce_mrkd_ch, GUI_COLUMN_THREE,
                          M->Gold->premium_mrkd_ch, -1);
     }
-    if (M->Silver->ounce_f) {
+    if (M->Palladium->ounce_f) {
       gtk_list_store_append(store, &iter);
       gtk_list_store_set(store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL,
-                         "silver", GUI_COLUMN_ONE, def_h_mkd->silver,
-                         GUI_COLUMN_TWO, M->Silver->ounce_mrkd_ch,
-                         GUI_COLUMN_THREE, M->Silver->premium_mrkd_ch, -1);
+                         "palladium", GUI_COLUMN_ONE, def_h_mkd->palladium,
+                         GUI_COLUMN_TWO, M->Palladium->ounce_mrkd_ch,
+                         GUI_COLUMN_THREE, M->Palladium->premium_mrkd_ch, -1);
     }
     if (M->Platinum->ounce_f) {
       gtk_list_store_append(store, &iter);
@@ -489,12 +490,12 @@ static GtkListStore *main_default_store(void *data) {
                          GUI_COLUMN_TWO, M->Platinum->ounce_mrkd_ch,
                          GUI_COLUMN_THREE, M->Platinum->premium_mrkd_ch, -1);
     }
-    if (M->Palladium->ounce_f) {
+    if (M->Silver->ounce_f) {
       gtk_list_store_append(store, &iter);
       gtk_list_store_set(store, &iter, GUI_TYPE, "bullion", GUI_SYMBOL,
-                         "palladium", GUI_COLUMN_ONE, def_h_mkd->palladium,
-                         GUI_COLUMN_TWO, M->Palladium->ounce_mrkd_ch,
-                         GUI_COLUMN_THREE, M->Palladium->premium_mrkd_ch, -1);
+                         "silver", GUI_COLUMN_ONE, def_h_mkd->silver,
+                         GUI_COLUMN_TWO, M->Silver->ounce_mrkd_ch,
+                         GUI_COLUMN_THREE, M->Silver->premium_mrkd_ch, -1);
     }
     no_assets = false;
   }

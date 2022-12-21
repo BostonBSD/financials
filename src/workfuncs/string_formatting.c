@@ -181,7 +181,7 @@ static size_t abs_val(const double n) {
   return (size_t)floor(n);
 }
 
-static size_t length_string(const double n, const unsigned short dec_pts,
+static size_t length_doub_string(const double n, const unsigned short dec_pts,
                             const unsigned int type) {
 
   size_t number = abs_val(n);
@@ -232,15 +232,15 @@ static size_t length_string(const double n, const unsigned short dec_pts,
 }
 
 size_t LengthMonetary(const double n, const unsigned short dec_pts) {
-  return length_string(n, dec_pts, MON_STR);
+  return length_doub_string(n, dec_pts, MON_STR);
 }
 
 size_t LengthPercent(const double n, const unsigned short dec_pts) {
-  return length_string(n, dec_pts, PER_STR);
+  return length_doub_string(n, dec_pts, PER_STR);
 }
 
 size_t LengthNumber(const double n, const unsigned short dec_pts) {
-  return length_string(n, dec_pts, NUM_STR);
+  return length_doub_string(n, dec_pts, NUM_STR);
 }
 
 void StringToMonStr(char **dst, const char *src,
@@ -301,7 +301,7 @@ void StringToMonStr(char **dst, const char *src,
 
 void DoubleToMonStr(char **dst, const double num,
                     const unsigned short digits_right)
-/* Take in a string buffer and a double,
+/* Take in a string buffer, a double, and a precision variable
    convert to monetary format string.
 
    If *dst = NULL, will allocate memory.
@@ -455,7 +455,12 @@ void DoubToNumStr(char **dst, const double num,
   }
 }
 
-double StrToDoub(const char *str) {
+double StringToDoub(const char *str)
+/* Take in a number string, convert to a double value.
+   The string can be formatted as a monetary string, a percent string,
+   a number formatted string [thousands gouping], or a regular number
+   string [no thousands grouping]. */
+{
   char *newstr = strdup(str);
 
   ToNumStr(newstr);

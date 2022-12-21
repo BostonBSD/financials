@@ -2271,6 +2271,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
             <property name="tooltip-text" translatable="yes">Show Indices</property>
             <property name="halign">center</property>
             <property name="active">True</property>
+            <accelerator key="x" signal="activate" modifiers="GDK_CONTROL_MASK"/>
           </object>
           <packing>
             <property name="left-attach">1</property>
@@ -2284,6 +2285,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
             <property name="tooltip-text" translatable="yes">Show Clocks</property>
             <property name="halign">center</property>
             <property name="active">True</property>
+            <accelerator key="z" signal="activate" modifiers="GDK_CONTROL_MASK"/>
           </object>
           <packing>
             <property name="left-attach">1</property>
@@ -2873,8 +2875,8 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                 </attributes>
               </object>
             </child>
-            <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
             <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+            <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
           </object>
           <packing>
             <property name="expand">False</property>

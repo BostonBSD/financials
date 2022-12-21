@@ -29,6 +29,7 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
 IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
+#include <ctype.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -512,18 +513,13 @@ static void view_popup_menu_onAddRow(GtkWidget *menuitem, void *userdata) {
   }
 }
 
-typedef struct { /* A container to hold the type of row and symbol, on a right
-                    click */
-  gchar *type;
-  gchar *symbol;
-} right_click_container;
-
 gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event) {
   GtkTreeModel *model;
   GtkTreeIter iter;
   GtkWidget *menu, *menuitem;
   gchar *type = NULL;
   gchar *symbol = NULL;
+  meta *D = packet->GetMetaClass();
 
   /* single click with the right mouse button */
   if (event->type == GDK_BUTTON_PRESS && event->button == 3) {
@@ -559,17 +555,19 @@ gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event) {
         gboolean bs_p_flag = (strcmp(type, "blank_space_primary") == 0);
 
         /* Some of the menu signal connections need the type and symbol strings.
-           We make the container static and free the members on subsequent
-           clicks,
-           which keeps the strings available to the signal connections. */
-        static right_click_container my_data = {NULL, NULL};
-        if (my_data.type)
-          g_free(my_data.type);
-        if (my_data.symbol)
-          g_free(my_data.symbol);
+           We store the data in the meta class and free the members on
+           subsequent clicks, which keeps the strings available to the signal
+           connections. */
+        /* The meta class is available globally, in this file, although I think
+         * this method is more obvious.  The data is freed when the meta class
+         * is destructed. */
+        if (D->rght_clk_data.type)
+          free(D->rght_clk_data.type);
+        if (D->rght_clk_data.symbol)
+          free(D->rght_clk_data.symbol);
 
-        my_data.type = type;
-        my_data.symbol = symbol;
+        D->rght_clk_data.type = type;
+        D->rght_clk_data.symbol = symbol;
 
         if (eq_flag)
         /* If the type is an equity enable row deletion. */
@@ -578,23 +576,24 @@ gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event) {
           menuitem = gtk_menu_item_new_with_label("View RSI Data");
           g_signal_connect(menuitem, "activate",
                            G_CALLBACK(view_popup_menu_onViewRSIData),
-                           my_data.symbol);
+                           D->rght_clk_data.symbol);
           gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
           g_object_ref_sink(G_OBJECT(menuitem));
 
           menuitem = gtk_menu_item_new_with_label("Edit Equity");
           g_signal_connect(menuitem, "activate",
-                           G_CALLBACK(view_popup_menu_onAddRow), my_data.type);
+                           G_CALLBACK(view_popup_menu_onAddRow),
+                           D->rght_clk_data.type);
           gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
           g_object_ref_sink(G_OBJECT(menuitem));
 
-          size_t len = strlen("Delete ") + strlen(my_data.symbol) + 1;
+          size_t len = strlen("Delete ") + strlen(D->rght_clk_data.symbol) + 1;
           char *menu_label = (char *)malloc(len);
-          snprintf(menu_label, len, "Delete %s", my_data.symbol);
+          snprintf(menu_label, len, "Delete %s", D->rght_clk_data.symbol);
           menuitem = gtk_menu_item_new_with_label(menu_label);
           g_signal_connect(menuitem, "activate",
                            G_CALLBACK(view_popup_menu_onDeleteEquity),
-                           my_data.symbol);
+                           D->rght_clk_data.symbol);
           gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
           free(menu_label);
           g_object_ref_sink(G_OBJECT(menuitem));
@@ -614,7 +613,8 @@ gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event) {
           menu = gtk_menu_new();
           menuitem = gtk_menu_item_new_with_label("Edit Equity");
           g_signal_connect(menuitem, "activate",
-                           G_CALLBACK(view_popup_menu_onAddRow), my_data.type);
+                           G_CALLBACK(view_popup_menu_onAddRow),
+                           D->rght_clk_data.type);
           gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
           g_object_ref_sink(G_OBJECT(menuitem));
 
@@ -638,18 +638,22 @@ gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event) {
 
           menu = gtk_menu_new();
           g_signal_connect(menuitem, "activate",
-                           G_CALLBACK(view_popup_menu_onAddRow), my_data.type);
+                           G_CALLBACK(view_popup_menu_onAddRow),
+                           D->rght_clk_data.type);
           gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
           g_object_ref_sink(G_OBJECT(menuitem));
 
           if (bu_flag) {
-            size_t len = strlen("Delete ") + strlen(my_data.symbol) + 1;
+            D->rght_clk_data.symbol[0] = toupper(D->rght_clk_data.symbol[0]);
+            size_t len =
+                strlen("Delete ") + strlen(D->rght_clk_data.symbol) + 1;
             char *menu_label = (char *)malloc(len);
-            snprintf(menu_label, len, "Delete %s", my_data.symbol);
+            snprintf(menu_label, len, "Delete %s", D->rght_clk_data.symbol);
+            D->rght_clk_data.symbol[0] = tolower(D->rght_clk_data.symbol[0]);
             menuitem = gtk_menu_item_new_with_label(menu_label);
             g_signal_connect(menuitem, "activate",
                              G_CALLBACK(view_popup_menu_onDeleteBullion),
-                             my_data.symbol);
+                             D->rght_clk_data.symbol);
             gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
             free(menu_label);
             g_object_ref_sink(G_OBJECT(menuitem));

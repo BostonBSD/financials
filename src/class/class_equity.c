@@ -495,7 +495,7 @@ equity_folder *ClassInitEquityFolder() {
   new_class->RemoveStock = RemoveStock;
   new_class->SetSecurityNames = SetSecurityNames;
 
-  /* Set the local global variable so we can self-reference this class. */
+  /* Set the file global variable so we can self-reference this class. */
   FolderClassObject = new_class;
 
   /* Return Our Initialized Class */
@@ -504,7 +504,7 @@ equity_folder *ClassInitEquityFolder() {
 
 /* Class Destruct Functions */
 static void class_destruct_equity(stock *stock_class) {
-  /* Free Memory From Variables */
+  /* Free Memory */
 
   if (stock_class->current_price_stock_mrkd_ch) {
     free(stock_class->current_price_stock_mrkd_ch);
@@ -595,7 +595,7 @@ void ClassDestructEquityFolder(equity_folder *F) {
     F->Equity = NULL;
   }
 
-  /* Free Memory From Variables */
+  /* Free Pointer Memory */
   if (F->stock_port_value_ch)
     free(F->stock_port_value_ch);
   if (F->stock_port_value_chg_ch)
