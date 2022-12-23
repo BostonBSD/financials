@@ -129,7 +129,7 @@ static void StopSNMapCurl() {
 
 static void create_index_url(char **url_ch, const char *symbol_ch) {
   time_t end_time, start_time;
-  size_t len;
+  unsigned short len;
 
   time(&end_time);
   /* The start time needs to be a few days before the current time, so minus

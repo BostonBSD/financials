@@ -60,7 +60,7 @@ static GtkListStore *rsi_completion_set_store(symbol_name_map *sn_map) {
   gchar item[35];
   /* Populate the GtkListStore with the string of stock symbols in column 0,
      stock names in column 1, and symbols & names in column 2. */
-  for (gint i = 0; i < sn_map->size; i++) {
+  for (gushort i = 0; i < sn_map->size; i++) {
     snprintf(item, 35, "%s - %s", sn_map->sn_container_arr[i]->symbol,
              sn_map->sn_container_arr[i]->security_name);
 
@@ -90,7 +90,7 @@ static gboolean rsi_completion_match(GtkEntryCompletion *completion,
   gtk_tree_model_get(model, iter, 0, &item_symb, 1, &item_name, -1);
   gboolean ans = false, symbol_match = true, name_match = true;
 
-  int N = 0;
+  gushort N = 0;
   while (key[N]) {
     /* Only compare new key char if prev char was a match. */
     if (symbol_match)
@@ -219,7 +219,7 @@ int RSITreeViewClear() {
   GtkWidget *treeview =
       GTK_WIDGET(gtk_builder_get_object(builder, "ViewRSITreeView"));
   GtkTreeViewColumn *column;
-  guint n = gtk_tree_view_get_n_columns(GTK_TREE_VIEW(treeview));
+  gushort n = gtk_tree_view_get_n_columns(GTK_TREE_VIEW(treeview));
 
   while (n) {
     n--;
@@ -348,12 +348,12 @@ static void rsi_set_store(GtkListStore *store, void *data) {
   MemType *MyOutputStruct;
   data ? (MyOutputStruct = (MemType *)data) : (MyOutputStruct = NULL);
 
-  double gain, avg_gain = 0, avg_loss = 0, cur_price, prev_price, rsi, change;
-  char *price_ch, *high_ch, *low_ch, *opening_ch, *prev_closing_ch, *change_ch,
+  gdouble gain, avg_gain = 0, avg_loss = 0, cur_price, prev_price, rsi, change;
+  gchar *price_ch, *high_ch, *low_ch, *opening_ch, *prev_closing_ch, *change_ch,
       *indicator_ch;
-  char gain_ch[10], rsi_ch[10], volume_ch[15];
-  long volume;
-  int *new_order = (int *)malloc(1), *tmp;
+  gchar gain_ch[10], rsi_ch[10], volume_ch[15];
+  gulong volume;
+  gint *new_order = (gint *)malloc(1), *tmp;
 
   price_ch = high_ch = low_ch = opening_ch = prev_closing_ch = change_ch = NULL;
 
@@ -373,7 +373,7 @@ static void rsi_set_store(GtkListStore *store, void *data) {
   FILE *fp = fmemopen((void *)MyOutputStruct->memory,
                       strlen(MyOutputStruct->memory) + 1, "r");
 
-  int counter = 0, c = 0;
+  gint counter = 0, c = 0;
   char line[1024];
   char **csv_array;
 
@@ -424,7 +424,8 @@ static void rsi_set_store(GtkListStore *store, void *data) {
     /* We only start adding rows if we have enough data to calculate the RSI,
        which is at least 14 days of data plus the initial closing price. */
     if (counter >= 14) {
-      tmp = (int *)realloc(new_order, sizeof(int) * (c + 1));
+      tmp = (gint *)realloc(new_order,
+                                      sizeof(gint) * (c + 1));
       new_order = tmp;
 
       /* Calculate the running average. */
@@ -440,7 +441,7 @@ static void rsi_set_store(GtkListStore *store, void *data) {
       StringToMonStr(&opening_ch, csv_array[1], 3);
       DoubleToMonStr(&change_ch, change, 3);
 
-      volume = strtol(csv_array[6], NULL, 10);
+      volume = (gulong)strtol(csv_array[6], NULL, 10);
       setlocale(LC_NUMERIC, LOCALE);
       snprintf(gain_ch, 10, "%0.03f%%", gain);
       snprintf(rsi_ch, 10, "%0.03f", rsi);
@@ -493,7 +494,7 @@ static void rsi_set_store(GtkListStore *store, void *data) {
     /* For the zero row, c = 1 after one iteration, so subtract one
        before the next calculation. */
     c -= 1;
-    int b = 0;
+    gint b = 0;
     while (c >= 0) {
       /* new_order [newpos] = oldpos */
       new_order[b] = c;
@@ -503,14 +504,14 @@ static void rsi_set_store(GtkListStore *store, void *data) {
 
     gtk_list_store_reorder(store, new_order);
   }
-  free(new_order);
+  g_free(new_order);
 
-  free(price_ch);
-  free(high_ch);
-  free(low_ch);
-  free(opening_ch);
-  free(change_ch);
-  free(prev_closing_ch);
+  g_free(price_ch);
+  g_free(high_ch);
+  g_free(low_ch);
+  g_free(opening_ch);
+  g_free(change_ch);
+  g_free(prev_closing_ch);
 }
 
 static GtkListStore *rsi_make_store(void *data) {

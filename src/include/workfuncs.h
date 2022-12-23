@@ -107,7 +107,7 @@ struct tm NYTimeComponents();
 char *WhichHoliday(struct tm);
 bool CheckHoliday(struct tm);
 unsigned int ClockSleepSeconds();
-unsigned long ClockSleepMicroSeconds();
+unsigned int ClockSleepMicroSeconds();
 bool MarketOpen();
 
 /* working_functions */

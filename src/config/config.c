@@ -51,7 +51,7 @@ static void config_dir_processing(const char *home_dir)
   int status;
 
   /* Append the .config directory to the end of home directory path. */
-  size_t len = strlen(home_dir) + strlen(CONFIG_DIR) + 1;
+  unsigned short len = strlen(home_dir) + strlen(CONFIG_DIR) + 1;
   char *path = (char *)malloc(len);
   snprintf(path, len, "%s%s", home_dir, CONFIG_DIR);
 

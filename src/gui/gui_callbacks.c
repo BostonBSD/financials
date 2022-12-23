@@ -157,7 +157,7 @@ void GUICallbackHandler_pref_dec_places_combobox(GtkComboBox *ComboBox) {
   equity_folder *F = packet->GetEquityFolderClass();
 
   gchar *new = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(ComboBox));
-  short new_shrt = (short)strtol(new, NULL, 10);
+  unsigned short new_shrt = (unsigned short)strtol(new, NULL, 10);
 
   if (new_shrt != D->decimal_places_shrt) {
     SqliteAddAPIData("Decimal_Places", new, D);

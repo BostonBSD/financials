@@ -47,10 +47,10 @@ void SqliteAddBullion(const char *, const char *, const char *, metal *,
 void SqliteAddCash(const char *, meta *);
 void SqliteAddAPIData(const char *, const char *, meta *);
 
-void SqliteAddMainWindowSize(int, int, meta *);
-void SqliteAddMainWindowPos(int, int, meta *);
-void SqliteAddRSIWindowSize(int, int, meta *);
-void SqliteAddRSIWindowPos(int, int, meta *);
+void SqliteAddMainWindowSize(unsigned short, unsigned short, meta *);
+void SqliteAddMainWindowPos(unsigned short, unsigned short, meta *);
+void SqliteAddRSIWindowSize(unsigned short, unsigned short, meta *);
+void SqliteAddRSIWindowPos(unsigned short, unsigned short, meta *);
 
 symbol_name_map *SqliteGetSymbolNameMap(meta *);
 void SqliteAddMap(symbol_name_map *, meta *);

@@ -81,7 +81,7 @@ static int main_tree_view_clr() {
   /* Clear the main window's GtkTreeView. */
   GtkWidget *treeview = GTK_WIDGET(gtk_builder_get_object(builder, "TreeView"));
   GtkTreeViewColumn *column;
-  guint n = gtk_tree_view_get_n_columns(GTK_TREE_VIEW(treeview));
+  gushort n = gtk_tree_view_get_n_columns(GTK_TREE_VIEW(treeview));
 
   while (n) {
     n--;

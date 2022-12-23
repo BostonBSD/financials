@@ -37,7 +37,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 /* Function Prototypes */
 void *SetUpCurlHandle(CURL *, CURLM *, char *, MemType *);
-int PerformMultiCurl(CURLM *, double);
-int PerformMultiCurl_no_prog(CURLM *);
+unsigned short PerformMultiCurl(CURLM *, double);
+unsigned short PerformMultiCurl_no_prog(CURLM *);
 
 #endif /* MULTICURL_HEADER_H */

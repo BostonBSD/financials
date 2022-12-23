@@ -126,7 +126,7 @@ void *SetUpCurlHandle(CURL *hnd, CURLM *mh, char *url, MemType *output)
   return NULL;
 }
 
-int PerformMultiCurl(CURLM *mh, double size)
+unsigned short PerformMultiCurl(CURLM *mh, double size)
 /* Take in a multi handle pointer and the number of easy handles,
    request data from remote server asynchronously. Update the main
    window progress bar during transfer.
@@ -146,7 +146,7 @@ int PerformMultiCurl(CURLM *mh, double size)
   CURLMcode mc = 0;
   int still_running = 0;
   int msgs_left = 0;
-  int return_value = 0;
+  unsigned short return_value = 0;
   double fraction = 0.0f;
 
   do {
@@ -205,7 +205,7 @@ int PerformMultiCurl(CURLM *mh, double size)
   return return_value;
 }
 
-int PerformMultiCurl_no_prog(CURLM *mh)
+unsigned short PerformMultiCurl_no_prog(CURLM *mh)
 /* Take in a multi handle pointer, request data from remote server
    asynchronously. Doesn't update any gui widgets during transfer.
 
@@ -224,7 +224,7 @@ int PerformMultiCurl_no_prog(CURLM *mh)
   CURLMcode mc = 0;
   int still_running = 0;
   int msgs_left = 0;
-  int return_value = 0;
+  unsigned short return_value = 0;
 
   do {
     int numfds = 0;

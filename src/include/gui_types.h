@@ -40,7 +40,7 @@ typedef struct { /* A mapping between sec symbols and sec names */
 
 typedef struct { /* A handle to the symbol-name mapping array. */
   symbol_to_security_name_container **sn_container_arr;
-  int size;
+  unsigned short size;
 } symbol_name_map;
 
 /* Window Signals */

@@ -194,7 +194,7 @@ static void Calculate() {
 
 static void create_bullion_url(bullion *B, const char *symbol_ch) {
   time_t end_time, start_time;
-  size_t len;
+  unsigned short len;
 
   time(&end_time);
   /* The start time needs to be a week before the current time, so minus seven

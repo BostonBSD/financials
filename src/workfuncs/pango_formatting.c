@@ -39,35 +39,33 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/macros.h"
 #include "../include/workfuncs.h"
 
-#define MARKUP_START_RED                                                       \
-  "<span font_desc='Oxygen-Sans 11' foreground='DarkRed' weight='Medium'>"
-#define MARKUP_START_GREEN                                                     \
-  "<span font_desc='Oxygen-Sans 11' foreground='DarkGreen' weight='Medium'>"
-#define MARKUP_START_RED_ITALIC                                                \
-  "<span font_desc='Oxygen-Sans italic 11' foreground='IndianRed' "            \
-  "weight='Medium'>"
-#define MARKUP_START_GREEN_ITALIC                                              \
-  "<span font_desc='Oxygen-Sans italic 11' foreground='LimeGreen' "            \
-  "weight='Medium'>"
-#define MARKUP_START_BLUE_ITALIC                                               \
-  "<span font_desc='Oxygen-Sans italic 11' foreground='MidnightBlue' "         \
-  "weight='Demi-Bold'>"
-#define MARKUP_START_BLUE                                                      \
-  "<span font_desc='Oxygen-Sans 11' foreground='MidnightBlue' "                \
-  "weight='Demi-Bold'>"
-#define MARKUP_START_BOLD                                                      \
-  "<span font_desc='Oxygen-Sans 11' foreground='Black' weight='Bold'>"
-#define MARKUP_START_BOLD_UNDERLINE                                            \
-  "<span font_desc='Oxygen-Sans 11' foreground='Black' weight='Bold' "         \
-  "underline='single'>"
-#define MARKUP_START                                                           \
-  "<span font_desc='Oxygen-Sans 11' foreground='Black' weight='Medium'>"
-#define MARKUP_START_BLACK                                                     \
-  "<span font_desc='Oxygen-Sans 11' foreground='Black' weight='Medium'>"
-#define MARKUP_START_BLACK_ITAlIC                                              \
-  "<span font_desc='Oxygen-Sans italic 11' foreground='Black' "                \
-  "weight='Medium'>"
-#define MARKUP_END "</span>"
+const char *markup_start =
+    "<span font_desc='Oxygen-Sans 11' foreground='Black' weight='Medium'>";
+const char *markup_start_black =
+    "<span font_desc='Oxygen-Sans 11' foreground='Black' weight='Medium'>";
+const char *markup_start_red =
+    "<span font_desc='Oxygen-Sans 11' foreground='DarkRed' weight='Medium'>";
+const char *markup_start_green =
+    "<span font_desc='Oxygen-Sans 11' foreground='DarkGreen' weight='Medium'>";
+const char *markup_start_blue = "<span font_desc='Oxygen-Sans 11' "
+                                "foreground='MidnightBlue' weight='Demi-Bold'>";
+const char *markup_start_black_italic =
+    "<span font_desc='Oxygen-Sans italic 11' foreground='Black' "
+    "weight='Medium'>";
+const char *markup_start_red_italic = "<span font_desc='Oxygen-Sans italic 11' "
+                                      "foreground='IndianRed' weight='Medium'>";
+const char *markup_start_green_italic =
+    "<span font_desc='Oxygen-Sans italic 11' foreground='LimeGreen' "
+    "weight='Medium'>";
+const char *markup_start_blue_italic =
+    "<span font_desc='Oxygen-Sans italic 11' foreground='MidnightBlue' "
+    "weight='Demi-Bold'>";
+const char *markup_start_bold =
+    "<span font_desc='Oxygen-Sans 11' foreground='Black' weight='Bold'>";
+const char *markup_start_bold_underline =
+    "<span font_desc='Oxygen-Sans 11' foreground='Black' weight='Bold' "
+    "underline='single'>";
+const char *markup_end = "</span>";
 
 void DoubToMonStrPango(char **dst, const double num,
                        const unsigned short digits_right)
@@ -87,7 +85,33 @@ void DoubToMonStrPango(char **dst, const double num,
     dst[0] = malloc(1);
 
   size_t len = LengthMonetary(num, digits_right) + 1;
-  len = len + strlen(MARKUP_START) + strlen(MARKUP_END);
+
+  /* malloc a monetary number string */
+  char *num_ch = malloc(len);
+
+  /* The C.UTF-8 locale does not have a monetary
+     format and is the default in C.
+  */
+  setlocale(LC_ALL, LOCALE);
+
+  /* Set the string value. */
+  switch (digits_right) {
+  case 0:
+    strfmon(num_ch, len, "%(.0n", num);
+    break;
+  case 1:
+    strfmon(num_ch, len, "%(.1n", num);
+    break;
+  case 2:
+    strfmon(num_ch, len, "%(.2n", num);
+    break;
+  default:
+    strfmon(num_ch, len, "%(.3n", num);
+    break;
+  }
+
+  len = strlen(markup_start) + strlen(num_ch) + strlen(markup_end) + 1;
+
   /* Adjust the string length */
   char *tmp = realloc(dst[0], len);
 
@@ -98,26 +122,9 @@ void DoubToMonStrPango(char **dst, const double num,
 
   dst[0] = tmp;
 
-  /* The C.UTF-8 locale does not have a monetary
-     format and is the default in C.
-  */
-  setlocale(LC_ALL, LOCALE);
-
-  /* Set the string value. */
-  switch (digits_right) {
-  case 0:
-    strfmon(dst[0], len, MARKUP_START "%(.0n" MARKUP_END, num);
-    break;
-  case 1:
-    strfmon(dst[0], len, MARKUP_START "%(.1n" MARKUP_END, num);
-    break;
-  case 2:
-    strfmon(dst[0], len, MARKUP_START "%(.2n" MARKUP_END, num);
-    break;
-  default:
-    strfmon(dst[0], len, MARKUP_START "%(.3n" MARKUP_END, num);
-    break;
-  }
+  /* Pango markup the string. */
+  snprintf(dst[0], len, "%s%s%s", markup_start, num_ch, markup_end);
+  free(num_ch);
 }
 
 void DoubToPerStrPango(char **dst, const double num,
@@ -138,7 +145,7 @@ void DoubToPerStrPango(char **dst, const double num,
     dst[0] = malloc(1);
 
   size_t len = LengthPercent(num, digits_right) + 1;
-  len = len + strlen(MARKUP_START) + strlen(MARKUP_END);
+  len += strlen(markup_start) + strlen(markup_end);
   /* Adjust the string length */
   char *tmp = realloc(dst[0], len);
 
@@ -152,16 +159,16 @@ void DoubToPerStrPango(char **dst, const double num,
   setlocale(LC_NUMERIC, LOCALE);
   switch (digits_right) {
   case 0:
-    snprintf(dst[0], len, MARKUP_START "%'.0lf%%" MARKUP_END, num);
+    snprintf(dst[0], len, "%s%'.0lf%%%s", markup_start, num, markup_end);
     break;
   case 1:
-    snprintf(dst[0], len, MARKUP_START "%'.1lf%%" MARKUP_END, num);
+    snprintf(dst[0], len, "%s%'.1lf%%%s", markup_start, num, markup_end);
     break;
   case 2:
-    snprintf(dst[0], len, MARKUP_START "%'.2lf%%" MARKUP_END, num);
+    snprintf(dst[0], len, "%s%'.2lf%%%s", markup_start, num, markup_end);
     break;
   default:
-    snprintf(dst[0], len, MARKUP_START "%'.3lf%%" MARKUP_END, num);
+    snprintf(dst[0], len, "%s%'.3lf%%%s", markup_start, num, markup_end);
     break;
   }
 }
@@ -184,7 +191,7 @@ void DoubToNumStrPango(char **dst, const double num,
     dst[0] = malloc(1);
 
   size_t len = LengthNumber(num, digits_right) + 1;
-  len = len + strlen(MARKUP_START) + strlen(MARKUP_END);
+  len += strlen(markup_start) + strlen(markup_end);
 
   /* Adjust the string length */
   char *tmp = realloc(dst[0], len);
@@ -199,19 +206,19 @@ void DoubToNumStrPango(char **dst, const double num,
   setlocale(LC_NUMERIC, LOCALE);
   switch (digits_right) {
   case 0:
-    snprintf(dst[0], len, MARKUP_START "%'.0lf" MARKUP_END, num);
+    snprintf(dst[0], len, "%s%'.0lf%s", markup_start, num, markup_end);
     break;
   case 1:
-    snprintf(dst[0], len, MARKUP_START "%'.1lf" MARKUP_END, num);
+    snprintf(dst[0], len, "%s%'.1lf%s", markup_start, num, markup_end);
     break;
   case 2:
-    snprintf(dst[0], len, MARKUP_START "%'.2lf" MARKUP_END, num);
+    snprintf(dst[0], len, "%s%'.2lf%s", markup_start, num, markup_end);
     break;
   case 3:
-    snprintf(dst[0], len, MARKUP_START "%'.3lf" MARKUP_END, num);
+    snprintf(dst[0], len, "%s%'.3lf%s", markup_start, num, markup_end);
     break;
   default:
-    snprintf(dst[0], len, MARKUP_START "%'.4lf" MARKUP_END, num);
+    snprintf(dst[0], len, "%s%'.4lf%s", markup_start, num, markup_end);
     break;
   }
 }
@@ -231,7 +238,7 @@ void StrToStrPango(char **dst, const char *src)
     dst[0] = malloc(1);
 
   size_t len = strlen(src) + 1;
-  len = len + strlen(MARKUP_START) + strlen(MARKUP_END);
+  len += strlen(markup_start) + strlen(markup_end);
 
   /* Adjust the string length */
   char *tmp = realloc(dst[0], len);
@@ -243,7 +250,7 @@ void StrToStrPango(char **dst, const char *src)
 
   dst[0] = tmp;
 
-  snprintf(dst[0], len, MARKUP_START "%s" MARKUP_END, src);
+  snprintf(dst[0], len, "%s%s%s", markup_start, src, markup_end);
 }
 
 static void double_to_mon_str_pango_color_ext(char **dst, const double num,
@@ -264,14 +271,10 @@ static void double_to_mon_str_pango_color_ext(char **dst, const double num,
   if (dst[0] == NULL)
     dst[0] = malloc(1);
 
-  size_t len_monetary = LengthMonetary(num, digits_right);
-  size_t len_end_tag = strlen(MARKUP_END);
+  size_t len = LengthMonetary(num, digits_right) + 1;
 
-  const char *start_tag;
-
-  /* Create an end_tag string with the number and end tag */
-  size_t len = len_monetary + len_end_tag + 1;
-  char *end_tag = malloc(len);
+  /* malloc a monetary number string */
+  char *num_ch = malloc(len);
 
   /* The C.UTF-8 locale does not have a monetary
      format and is the default in C.
@@ -281,50 +284,51 @@ static void double_to_mon_str_pango_color_ext(char **dst, const double num,
   /* Set the string value. */
   switch (digits_right) {
   case 0:
-    strfmon(end_tag, len, "%(.0n" MARKUP_END, num);
+    strfmon(num_ch, len, "%(.0n", num);
     break;
   case 1:
-    strfmon(end_tag, len, "%(.1n" MARKUP_END, num);
+    strfmon(num_ch, len, "%(.1n", num);
     break;
   case 2:
-    strfmon(end_tag, len, "%(.2n" MARKUP_END, num);
+    strfmon(num_ch, len, "%(.2n", num);
     break;
   default:
-    strfmon(end_tag, len, "%(.3n" MARKUP_END, num);
+    strfmon(num_ch, len, "%(.3n", num);
     break;
   }
 
-  /* Create the full string concatenating the end tag
+  /* Create the full string concatenating the end tag and the number
      to the start tag. */
+  const char *start_tag = NULL;
 
   switch (color) {
   case NO_COLOR:
-    start_tag = MARKUP_START;
+    start_tag = markup_start;
     break;
   case BLACK:
-    start_tag = MARKUP_START_BLACK;
+    start_tag = markup_start_black;
     break;
   case RED:
-    start_tag = MARKUP_START_RED;
+    start_tag = markup_start_red;
     break;
   case GREEN:
-    start_tag = MARKUP_START_GREEN;
+    start_tag = markup_start_green;
     break;
   case BLUE:
-    start_tag = MARKUP_START_BLUE;
+    start_tag = markup_start_blue;
     break;
   case BLACK_ITALIC:
-    start_tag = MARKUP_START_BLACK_ITAlIC;
+    start_tag = markup_start_black_italic;
     break;
   case RED_ITALIC:
-    start_tag = MARKUP_START_RED_ITALIC;
+    start_tag = markup_start_red_italic;
     break;
   default: /* GREEN_ITALIC */
-    start_tag = MARKUP_START_GREEN_ITALIC;
+    start_tag = markup_start_green_italic;
     break;
   }
 
-  len = strlen(start_tag) + strlen(end_tag) + 1;
+  len = strlen(start_tag) + strlen(num_ch) + strlen(markup_end) + 1;
 
   /* Adjust the destination string length */
   char *ptr = realloc(dst[0], len);
@@ -336,8 +340,8 @@ static void double_to_mon_str_pango_color_ext(char **dst, const double num,
 
   dst[0] = ptr;
 
-  snprintf(dst[0], len, "%s%s", start_tag, end_tag);
-  free(end_tag);
+  snprintf(dst[0], len, "%s%s%s", start_tag, num_ch, markup_end);
+  free(num_ch);
 }
 
 void DoubToMonStrPangoColor(char **dst, const double num,
@@ -391,33 +395,33 @@ static void double_to_per_str_pango_color_ext(char **dst, const double num,
 
   switch (color) {
   case NO_COLOR:
-    start_tag = MARKUP_START;
+    start_tag = markup_start;
     break;
   case BLACK:
-    start_tag = MARKUP_START_BLACK;
+    start_tag = markup_start_black;
     break;
   case RED:
-    start_tag = MARKUP_START_RED;
+    start_tag = markup_start_red;
     break;
   case GREEN:
-    start_tag = MARKUP_START_GREEN;
+    start_tag = markup_start_green;
     break;
   case BLUE:
-    start_tag = MARKUP_START_BLUE;
+    start_tag = markup_start_blue;
     break;
   case BLACK_ITALIC:
-    start_tag = MARKUP_START_BLACK_ITAlIC;
+    start_tag = markup_start_black_italic;
     break;
   case RED_ITALIC:
-    start_tag = MARKUP_START_RED_ITALIC;
+    start_tag = markup_start_red_italic;
     break;
   default: /* GREEN_ITALIC */
-    start_tag = MARKUP_START_GREEN_ITALIC;
+    start_tag = markup_start_green_italic;
     break;
   }
 
   size_t len = strlen(start_tag) + LengthPercent(num, digits_right) +
-               strlen(MARKUP_END) + 1;
+               strlen(markup_end) + 1;
   /* Adjust the string length */
   char *tmp = realloc(dst[0], len);
 
@@ -431,16 +435,16 @@ static void double_to_per_str_pango_color_ext(char **dst, const double num,
   setlocale(LC_NUMERIC, LOCALE);
   switch (digits_right) {
   case 0:
-    snprintf(dst[0], len, "%s%'.0lf%%" MARKUP_END, start_tag, num);
+    snprintf(dst[0], len, "%s%'.0lf%%%s", start_tag, num, markup_end);
     break;
   case 1:
-    snprintf(dst[0], len, "%s%'.1lf%%" MARKUP_END, start_tag, num);
+    snprintf(dst[0], len, "%s%'.1lf%%%s", start_tag, num, markup_end);
     break;
   case 2:
-    snprintf(dst[0], len, "%s%'.2lf%%" MARKUP_END, start_tag, num);
+    snprintf(dst[0], len, "%s%'.2lf%%%s", start_tag, num, markup_end);
     break;
   default:
-    snprintf(dst[0], len, "%s%'.3lf%%" MARKUP_END, start_tag, num);
+    snprintf(dst[0], len, "%s%'.3lf%%%s", start_tag, num, markup_end);
     break;
   }
 }
@@ -492,42 +496,42 @@ void StrToStrPangoColor(char **dst, const char *src, const unsigned int color)
 
   switch (color) {
   case NO_COLOR:
-    start_tag = MARKUP_START;
+    start_tag = markup_start;
     break;
   case BLACK:
-    start_tag = MARKUP_START_BLACK;
+    start_tag = markup_start_black;
     break;
   case RED:
-    start_tag = MARKUP_START_RED;
+    start_tag = markup_start_red;
     break;
   case GREEN:
-    start_tag = MARKUP_START_GREEN;
+    start_tag = markup_start_green;
     break;
   case BLUE:
-    start_tag = MARKUP_START_BLUE;
+    start_tag = markup_start_blue;
     break;
   case BLACK_ITALIC:
-    start_tag = MARKUP_START_BLACK_ITAlIC;
+    start_tag = markup_start_black_italic;
     break;
   case RED_ITALIC:
-    start_tag = MARKUP_START_RED_ITALIC;
+    start_tag = markup_start_red_italic;
     break;
   case GREEN_ITALIC:
-    start_tag = MARKUP_START_GREEN_ITALIC;
+    start_tag = markup_start_green_italic;
     break;
   case BLUE_ITALIC:
-    start_tag = MARKUP_START_BLUE_ITALIC;
+    start_tag = markup_start_blue_italic;
     break;
   case BOLD:
-    start_tag = MARKUP_START_BOLD;
+    start_tag = markup_start_bold;
     break;
   default: /* BOLD_UNDERLINE */
-    start_tag = MARKUP_START_BOLD_UNDERLINE;
+    start_tag = markup_start_bold_underline;
     break;
   }
 
   size_t len = strlen(src) + 1;
-  len = len + strlen(start_tag) + strlen(MARKUP_END);
+  len += strlen(start_tag) + strlen(markup_end);
 
   /* Adjust the string length */
   char *tmp = realloc(dst[0], len);
@@ -539,5 +543,5 @@ void StrToStrPangoColor(char **dst, const char *src, const unsigned int color)
 
   dst[0] = tmp;
 
-  snprintf(dst[0], len, "%s%s%s", start_tag, src, MARKUP_END);
+  snprintf(dst[0], len, "%s%s%s", start_tag, src, markup_end);
 }

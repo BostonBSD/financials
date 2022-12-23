@@ -220,8 +220,10 @@ static int main_wndwsz_callback(void *data, int argc, char **argv,
     return 1;
 
   window_data *window = (window_data *)data;
-  window->main_height = (int)strtol(argv[1] ? argv[1] : "0", NULL, 10);
-  window->main_width = (int)strtol(argv[2] ? argv[2] : "0", NULL, 10);
+  window->main_height =
+      (unsigned short)strtol(argv[1] ? argv[1] : "0", NULL, 10);
+  window->main_width =
+      (unsigned short)strtol(argv[2] ? argv[2] : "0", NULL, 10);
 
   pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
   return 0;
@@ -242,8 +244,10 @@ static int main_wndwpos_callback(void *data, int argc, char **argv,
     return 1;
 
   window_data *window = (window_data *)data;
-  window->main_x_pos = (int)strtol(argv[1] ? argv[1] : "0", NULL, 10);
-  window->main_y_pos = (int)strtol(argv[2] ? argv[2] : "0", NULL, 10);
+  window->main_x_pos =
+      (unsigned short)strtol(argv[1] ? argv[1] : "0", NULL, 10);
+  window->main_y_pos =
+      (unsigned short)strtol(argv[2] ? argv[2] : "0", NULL, 10);
 
   pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
   return 0;
@@ -264,8 +268,9 @@ static int rsi_wndwsz_callback(void *data, int argc, char **argv,
     return 1;
 
   window_data *window = (window_data *)data;
-  window->rsi_height = (int)strtol(argv[1] ? argv[1] : "0", NULL, 10);
-  window->rsi_width = (int)strtol(argv[2] ? argv[2] : "0", NULL, 10);
+  window->rsi_height =
+      (unsigned short)strtol(argv[1] ? argv[1] : "0", NULL, 10);
+  window->rsi_width = (unsigned short)strtol(argv[2] ? argv[2] : "0", NULL, 10);
 
   pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
   return 0;
@@ -286,8 +291,8 @@ static int rsi_wndwpos_callback(void *data, int argc, char **argv,
     return 1;
 
   window_data *window = (window_data *)data;
-  window->rsi_x_pos = (int)strtol(argv[1] ? argv[1] : "0", NULL, 10);
-  window->rsi_y_pos = (int)strtol(argv[2] ? argv[2] : "0", NULL, 10);
+  window->rsi_x_pos = (unsigned short)strtol(argv[1] ? argv[1] : "0", NULL, 10);
+  window->rsi_y_pos = (unsigned short)strtol(argv[2] ? argv[2] : "0", NULL, 10);
 
   pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
   return 0;
@@ -475,7 +480,7 @@ void SqliteProcessing(portfolio_packet *pkg) {
 void SqliteAddEquity(const char *symbol, const char *shares, meta *D) {
   pthread_mutex_lock(&mutex_working[SQLITE_MUTEX]);
 
-  size_t len;
+  unsigned short len;
   char *err_msg = 0;
   sqlite3 *db;
 
@@ -510,7 +515,7 @@ void SqliteAddBullion(const char *metal_name, const char *ounces,
                       const char *premium, metal *M, meta *D) {
   pthread_mutex_lock(&mutex_working[SQLITE_MUTEX]);
 
-  size_t len;
+  unsigned short len;
   char *err_msg = 0;
   sqlite3 *db;
 
@@ -550,7 +555,7 @@ void SqliteAddBullion(const char *metal_name, const char *ounces,
 void SqliteAddCash(const char *value, meta *D) {
   pthread_mutex_lock(&mutex_working[SQLITE_MUTEX]);
 
-  size_t len;
+  unsigned short len;
   char *err_msg = 0;
   sqlite3 *db;
 
@@ -584,7 +589,7 @@ void SqliteAddCash(const char *value, meta *D) {
 void SqliteAddAPIData(const char *keyword, const char *data, meta *D) {
   pthread_mutex_lock(&mutex_working[SQLITE_MUTEX]);
 
-  size_t len;
+  unsigned short len;
   char *err_msg = 0;
   sqlite3 *db;
 
@@ -618,7 +623,7 @@ void SqliteAddAPIData(const char *keyword, const char *data, meta *D) {
 void SqliteRemoveEquity(const char *symbol, meta *D) {
   pthread_mutex_lock(&mutex_working[SQLITE_MUTEX]);
 
-  size_t len;
+  unsigned short len;
   char *err_msg = 0;
   sqlite3 *db;
 
@@ -665,10 +670,11 @@ void SqliteRemoveAllEquity(meta *D) {
   pthread_mutex_unlock(&mutex_working[SQLITE_MUTEX]);
 }
 
-void SqliteAddMainWindowSize(int width, int height, meta *D) {
+void SqliteAddMainWindowSize(unsigned short width, unsigned short height,
+                             meta *D) {
   pthread_mutex_lock(&mutex_working[SQLITE_MUTEX]);
 
-  size_t len;
+  unsigned short len;
   char *err_msg = 0;
   sqlite3 *db;
 
@@ -695,10 +701,10 @@ void SqliteAddMainWindowSize(int width, int height, meta *D) {
   pthread_mutex_unlock(&mutex_working[SQLITE_MUTEX]);
 }
 
-void SqliteAddMainWindowPos(int x, int y, meta *D) {
+void SqliteAddMainWindowPos(unsigned short x, unsigned short y, meta *D) {
   pthread_mutex_lock(&mutex_working[SQLITE_MUTEX]);
 
-  size_t len;
+  unsigned short len;
   char *err_msg = 0;
   sqlite3 *db;
 
@@ -728,7 +734,7 @@ void SqliteAddMainWindowPos(int x, int y, meta *D) {
 void SqliteAddRSIWindowSize(int width, int height, meta *D) {
   pthread_mutex_lock(&mutex_working[SQLITE_MUTEX]);
 
-  size_t len;
+  unsigned short len;
   char *err_msg = 0;
   sqlite3 *db;
 
@@ -758,7 +764,7 @@ void SqliteAddRSIWindowSize(int width, int height, meta *D) {
 void SqliteAddRSIWindowPos(int x, int y, meta *D) {
   pthread_mutex_lock(&mutex_working[SQLITE_MUTEX]);
 
-  size_t len;
+  unsigned short len;
   char *err_msg = 0;
   sqlite3 *db;
 
@@ -825,7 +831,7 @@ static void escape_apostrophy(char **s)
     return;
 
   /* Read character by character until the null character is reached. */
-  for (int i = 0; s[0][i]; i++) {
+  for (unsigned short i = 0; s[0][i]; i++) {
 
     /* If we find an ''' character, ASCII decimal code 39 */
     if (s[0][i] == 39) {
@@ -835,7 +841,7 @@ static void escape_apostrophy(char **s)
       s[0] = tmp;
 
       /* Read each character from null back to that character */
-      for (int j = strlen(s[0]); j >= i; j--) {
+      for (unsigned short j = strlen(s[0]); j >= i; j--) {
         /* Shift the array one character to the right [duplicate the character]
          */
         s[0][j + 1] = s[0][j];
@@ -861,7 +867,7 @@ static void *add_mapping_to_database(void *data) {
 
   char *err_msg = 0;
   sqlite3 *db;
-  size_t len;
+  unsigned short len;
 
   /* Open the sqlite database file. */
   if (sqlite3_open(D->sqlite_symbol_name_db_path_ch, &db) != SQLITE_OK)
@@ -878,7 +884,7 @@ static void *add_mapping_to_database(void *data) {
     error_msg(db);
 
   /* Insert the mapping into the table. */
-  for (int g = 0; g < sn_map->size; g++) {
+  for (unsigned short g = 0; g < sn_map->size; g++) {
     if (sn_map->sn_container_arr[g] == NULL || sn_map->sn_container_arr == NULL)
       break;
 

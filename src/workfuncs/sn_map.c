@@ -83,7 +83,7 @@ void SNMapDestruct(symbol_name_map *sn_map) {
     return;
 
   if (sn_map->sn_container_arr) {
-    for (int i = 0; i < sn_map->size; i++) {
+    for (unsigned short i = 0; i < sn_map->size; i++) {
       /* Free the string members */
       free(sn_map->sn_container_arr[i]->symbol);
       sn_map->sn_container_arr[i]->symbol = NULL;
@@ -179,7 +179,7 @@ static symbol_name_map *sym_name_map_dup(symbol_name_map *sn_map)
   sn_map_dup->sn_container_arr = malloc(1);
   sn_map_dup->size = 0;
 
-  for (int g = 0; g < sn_map->size; g++) {
+  for (unsigned short g = 0; g < sn_map->size; g++) {
     AddSymbolToMap(sn_map->sn_container_arr[g]->symbol,
                    sn_map->sn_container_arr[g]->security_name, sn_map_dup);
   }
@@ -263,9 +263,9 @@ static symbol_to_security_name_container special_syms[] = {
     {"MATIC-USD", "Polygon Coin ( US Dollars )"}};
 
 static void add_special_symbols(symbol_name_map *sn_map) {
-  int size = (sizeof special_syms) / (sizeof special_syms[0]);
+  unsigned short size = (sizeof special_syms) / (sizeof special_syms[0]);
 
-  for (int i = 0; i < size; i++) {
+  for (unsigned short i = 0; i < size; i++) {
     AddSymbolToMap(special_syms[i].symbol, special_syms[i].security_name,
                    sn_map);
   }

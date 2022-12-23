@@ -40,41 +40,39 @@ POSSIBILITY OF SUCH DAMAGE.
 
 GtkBuilder *builder;
 
-typedef struct {
+static struct {
   const char *name;
   const char *shortcut;
-} Command;
-
-static Command commands[] = {{"Application Window", ""},
-                             {"      File", "Ctrl - F"},
-                             {"      RSI", "Ctrl - R"},
-                             {"      Quit", "Ctrl - Q"},
-                             {"", ""},
-                             {"      Edit", "Ctrl - E"},
-                             {"      Securities", "Ctrl - S"},
-                             {"      Bullion", "Ctrl - B"},
-                             {"      Cash", "Ctrl - C"},
-                             {"      API", "Ctrl - I"},
-                             {"      Preferences", "Ctrl - P"},
-                             {"", ""},
-                             {"      Help", "Ctrl - H"},
-                             {"      Hotkeys", "Ctrl - K"},
-                             {"      About", "Ctrl - A"},
-                             {"", ""},
-                             {"      Get Data", "Ctrl - D"},
-                             {"", ""},
-                             {"RSI Window", ""},
-                             {"      Get Data", "Ctrl - D"},
-                             {"      Close", "Ctrl - C"},
-                             {"", ""},
-                             {"Preferences Window", ""},
-                             {"      Get Symbols", "Ctrl - S"},
-                             {"      Close", "Ctrl - C"},
-                             {"", ""},
-                             {"Other Windows", ""},
-                             {"      File", "Ctrl - F"},
-                             {"      OK", "Ctrl - O"},
-                             {"      Close", "Ctrl - C"}};
+} commands[] = {{"Application Window", ""},
+                {"      File", "Ctrl - F"},
+                {"      RSI", "Ctrl - R"},
+                {"      Quit", "Ctrl - Q"},
+                {"", ""},
+                {"      Edit", "Ctrl - E"},
+                {"      Securities", "Ctrl - S"},
+                {"      Bullion", "Ctrl - B"},
+                {"      Cash", "Ctrl - C"},
+                {"      API", "Ctrl - I"},
+                {"      Preferences", "Ctrl - P"},
+                {"", ""},
+                {"      Help", "Ctrl - H"},
+                {"      Hotkeys", "Ctrl - K"},
+                {"      About", "Ctrl - A"},
+                {"", ""},
+                {"      Get Data", "Ctrl - D"},
+                {"", ""},
+                {"RSI Window", ""},
+                {"      Get Data", "Ctrl - D"},
+                {"      Close", "Ctrl - C"},
+                {"", ""},
+                {"Preferences Window", ""},
+                {"      Get Symbols", "Ctrl - S"},
+                {"      Close", "Ctrl - C"},
+                {"", ""},
+                {"Other Windows", ""},
+                {"      File", "Ctrl - F"},
+                {"      OK", "Ctrl - O"},
+                {"      Close", "Ctrl - C"}};
 
 static void shortcuts_set_treeview() {
   GtkWidget *TreeView =

@@ -60,7 +60,7 @@ static equity_folder
                            can change dynamically. */
 
 /* Class Method (also called Function) Definitions */
-static void convert_equity_to_strings(stock *S, short digits_right) {
+static void convert_equity_to_strings(stock *S, unsigned short digits_right) {
   /* Convert the double values into string values. */
   DoubToMonStrPango(&S->current_price_stock_mrkd_ch, S->current_price_stock_f,
                     digits_right);
@@ -252,6 +252,9 @@ static void AddStock(const char *symbol, const char *shares)
   pthread_mutex_lock(&mutex_working[CLASS_MEMBER_MUTEX]);
 
   equity_folder *F = FolderClassObject;
+  /* Does nothing if maximum number of stocks has been reached. */
+  if (F->size == 255)
+    return;
 
   /* realloc will free memory if assigned a smaller new value. */
   stock **tmp_array =
@@ -439,17 +442,17 @@ static stock *class_init_equity() {
   new_class->change_percent_f = 0.0f;
   new_class->current_investment_stock_f = 0.0f;
 
-  new_class->current_price_stock_mrkd_ch = malloc (1);
-  new_class->high_stock_mrkd_ch = malloc (1);
-  new_class->low_stock_mrkd_ch = malloc (1);
-  new_class->opening_stock_mrkd_ch = malloc (1);
-  new_class->prev_closing_stock_mrkd_ch = malloc (1);
-  new_class->change_share_stock_mrkd_ch = malloc (1);
-  new_class->change_value_mrkd_ch = malloc (1);
-  new_class->change_percent_mrkd_ch = malloc (1);
-  new_class->current_investment_stock_mrkd_ch = malloc (1);
-  new_class->num_shares_stock_mrkd_ch = malloc (1);
-  new_class->symbol_stock_mrkd_ch = malloc (1);
+  new_class->current_price_stock_mrkd_ch = malloc(1);
+  new_class->high_stock_mrkd_ch = malloc(1);
+  new_class->low_stock_mrkd_ch = malloc(1);
+  new_class->opening_stock_mrkd_ch = malloc(1);
+  new_class->prev_closing_stock_mrkd_ch = malloc(1);
+  new_class->change_share_stock_mrkd_ch = malloc(1);
+  new_class->change_value_mrkd_ch = malloc(1);
+  new_class->change_percent_mrkd_ch = malloc(1);
+  new_class->current_investment_stock_mrkd_ch = malloc(1);
+  new_class->num_shares_stock_mrkd_ch = malloc(1);
+  new_class->symbol_stock_mrkd_ch = malloc(1);
   new_class->security_name_mrkd_ch = NULL;
 
   new_class->symbol_stock_ch = strdup("NO_SYMBOL");
@@ -471,10 +474,10 @@ equity_folder *ClassInitEquityFolder() {
   new_class->size = 0;
 
   /* Initialize Variables */
-  new_class->stock_port_value_ch = malloc (1);
-  new_class->stock_port_value_chg_ch = malloc (1);
-  new_class->stock_port_value_p_chg_ch = malloc (1);
-  
+  new_class->stock_port_value_ch = malloc(1);
+  new_class->stock_port_value_chg_ch = malloc(1);
+  new_class->stock_port_value_p_chg_ch = malloc(1);
+
   new_class->stock_port_value_f = 0.0f;
   new_class->stock_port_value_chg_f = 0.0f;
   new_class->stock_port_value_p_chg_f = 0.0f;

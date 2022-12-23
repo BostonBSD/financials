@@ -55,14 +55,14 @@ typedef struct { /* A container to hold the type of row and symbol, on a right
 } right_click_container;
 
 typedef struct {
-  int main_height;
-  int main_width;
-  int main_x_pos;
-  int main_y_pos;
-  int rsi_height;
-  int rsi_width;
-  int rsi_x_pos;
-  int rsi_y_pos;
+  unsigned short main_height;
+  unsigned short main_width;
+  unsigned short main_x_pos;
+  unsigned short main_y_pos;
+  unsigned short rsi_height;
+  unsigned short rsi_width;
+  unsigned short rsi_x_pos;
+  unsigned short rsi_y_pos;
 } window_data;
 
 typedef struct {
@@ -225,7 +225,7 @@ typedef struct {
   double updates_per_min_f;
   double updates_hours_f;
 
-  short decimal_places_shrt;
+  unsigned short decimal_places_shrt;
 
   /* Pango Markup language strings */
   primary_heading pri_h_mkd;
@@ -265,17 +265,19 @@ typedef struct {
   char *sqlite_symbol_name_db_path_ch; /* Path to the sqlite symbol-name db file
                                         */
 
-  bool fetching_data_bool;      /* Indicates a fetch operation in progress. */
-  bool holiday_bool;            /* Indicates if today is a holiday. */
-  bool multicurl_cancel_bool;   /* Indicates if we should cancel the multicurl
-                                   request. */
-  bool index_bar_revealed_bool; /* Indicates if the indices bar is revealed or
-                                   not. */
-  bool
-      clocks_displayed_bool; /* Indicates if the clocks are displayed or not. */
-  bool main_win_default_view_bool; /* Indicates if the main window treeview is
-                                      displaying the default or the primary
-                                      view. Default is true. */
+  /* A bit field of six bits, used syntactically
+     the same as bools */
+  bool fetching_data_bool : 1;    /* Indicates a fetch operation in progress. */
+  bool holiday_bool : 1;          /* Indicates if today is a holiday. */
+  bool multicurl_cancel_bool : 1; /* Indicates if we should cancel the
+                                     multicurl request. */
+  bool index_bar_revealed_bool : 1;    /* Indicates if the indices bar is
+                                          revealed or not. */
+  bool clocks_displayed_bool : 1;      /* Indicates if the clocks are
+                                                   displayed or not. */
+  bool main_win_default_view_bool : 1; /* Indicates if the main window
+                                          treeview is displaying the default or
+                                          the primary view. Default is true. */
 
   CURL *rsi_hnd;               /* RSI Data cURL Easy Handle. */
   CURL *NASDAQ_completion_hnd; /* RSI NASDAQ Symbol list cURL Easy Handle. */
@@ -322,7 +324,7 @@ typedef struct {
   double bullion_port_value_p_chg_f;
   double gold_silver_ratio_f;
 
-  short decimal_places_shrt;
+  unsigned short decimal_places_shrt;
 
   /* Pango Markup language strings */
   char *bullion_port_value_mrkd_ch;       /* Total value of bullion holdings */
@@ -350,8 +352,10 @@ typedef struct {
   double stock_port_value_chg_f;
   double stock_port_value_p_chg_f;
 
-  unsigned short size; /* The number of stocks */
-  unsigned short decimal_places_shrt;
+  /* Can have up to 255 stocks [0-254]: 8 bits. */
+  unsigned short size : 8;
+  /* Only need to count to three: 2 bits */
+  unsigned short decimal_places_shrt : 2;
 
   /* Pango Markup language strings */
   char *stock_port_value_ch;       /* Total value of equity holdings */

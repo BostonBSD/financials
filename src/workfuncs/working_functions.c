@@ -87,7 +87,7 @@ char *RsiIndicator(double rsi)
 static void rsi_url_period(time_t *currenttime, time_t *starttime) {
 
   /* Number of Seconds in a Year Plus Three Weeks */
-  int period = 31557600 + (604800 * 3);
+  unsigned int period = 31557600 + (604800 * 3);
 
   time(currenttime);
   *starttime = *currenttime - (time_t)period;
@@ -95,7 +95,7 @@ static void rsi_url_period(time_t *currenttime, time_t *starttime) {
 
 static char *rsi_get_url(const char *symbol) {
   time_t end, start;
-  size_t len;
+  unsigned short len;
 
   rsi_url_period(&end, &start);
 

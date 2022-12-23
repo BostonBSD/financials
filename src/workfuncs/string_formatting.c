@@ -182,7 +182,7 @@ static size_t abs_val(const double n) {
 }
 
 static size_t length_doub_string(const double n, const unsigned short dec_pts,
-                            const unsigned int type) {
+                                 const unsigned int type) {
 
   size_t number = abs_val(n);
   size_t a = 1, b = 1, len = 0, chars = 0;

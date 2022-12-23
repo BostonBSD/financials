@@ -56,7 +56,7 @@ static GtkListStore *addrem_completion_set_store(symbol_name_map *sn_map) {
   gchar item[35];
   /* Populate the GtkListStore with the string of stock symbols in column 0,
      stock names in column 1, and symbols & names in column 2. */
-  for (gint i = 0; i < sn_map->size; i++) {
+  for (gushort i = 0; i < sn_map->size; i++) {
     snprintf(item, 35, "%s - %s", sn_map->sn_container_arr[i]->symbol,
              sn_map->sn_container_arr[i]->security_name);
 
@@ -86,7 +86,7 @@ static gboolean addrem_completion_match(GtkEntryCompletion *completion,
   gtk_tree_model_get(model, iter, 0, &item_symb, 1, &item_name, -1);
   gboolean ans = false, symbol_match = true, name_match = true;
 
-  int N = 0;
+  gushort N = 0;
   while (key[N]) {
     /* Only compare new key char if prev char was a match. */
     if (symbol_match)
