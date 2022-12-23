@@ -38,7 +38,7 @@ Bullion data is collected through Yahoo! Finance [the Finnhub free account does 
 
 ----------------------------------------------------------
 Has been tested on FreeBSD 13.1, 
-Debian “bullseye”, and Ubuntu 22.04.
+Debian “bullseye”, and Ubuntu 22.04.  Amd64 architecture.
 
 ----------------------------------------------------------
 
