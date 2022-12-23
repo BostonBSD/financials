@@ -439,17 +439,17 @@ static stock *class_init_equity() {
   new_class->change_percent_f = 0.0f;
   new_class->current_investment_stock_f = 0.0f;
 
-  new_class->current_price_stock_mrkd_ch = strdup("$0.00");
-  new_class->high_stock_mrkd_ch = strdup("$0.00");
-  new_class->low_stock_mrkd_ch = strdup("$0.00");
-  new_class->opening_stock_mrkd_ch = strdup("$0.00");
-  new_class->prev_closing_stock_mrkd_ch = strdup("$0.00");
-  new_class->change_share_stock_mrkd_ch = strdup("$0.00");
-  new_class->change_value_mrkd_ch = strdup("$0.00");
-  new_class->change_percent_mrkd_ch = strdup("000.000%");
-  new_class->current_investment_stock_mrkd_ch = strdup("$0.00");
-  new_class->num_shares_stock_mrkd_ch = strdup("0");
-  new_class->symbol_stock_mrkd_ch = strdup("NO_SYMBOL");
+  new_class->current_price_stock_mrkd_ch = malloc (1);
+  new_class->high_stock_mrkd_ch = malloc (1);
+  new_class->low_stock_mrkd_ch = malloc (1);
+  new_class->opening_stock_mrkd_ch = malloc (1);
+  new_class->prev_closing_stock_mrkd_ch = malloc (1);
+  new_class->change_share_stock_mrkd_ch = malloc (1);
+  new_class->change_value_mrkd_ch = malloc (1);
+  new_class->change_percent_mrkd_ch = malloc (1);
+  new_class->current_investment_stock_mrkd_ch = malloc (1);
+  new_class->num_shares_stock_mrkd_ch = malloc (1);
+  new_class->symbol_stock_mrkd_ch = malloc (1);
   new_class->security_name_mrkd_ch = NULL;
 
   new_class->symbol_stock_ch = strdup("NO_SYMBOL");
@@ -471,10 +471,10 @@ equity_folder *ClassInitEquityFolder() {
   new_class->size = 0;
 
   /* Initialize Variables */
-  new_class->stock_port_value_ch = strdup("$0.00");
-  new_class->stock_port_value_chg_ch = strdup("$0.00");
-  new_class->stock_port_value_p_chg_ch = strdup("000.000%");
-
+  new_class->stock_port_value_ch = malloc (1);
+  new_class->stock_port_value_chg_ch = malloc (1);
+  new_class->stock_port_value_p_chg_ch = malloc (1);
+  
   new_class->stock_port_value_f = 0.0f;
   new_class->stock_port_value_chg_f = 0.0f;
   new_class->stock_port_value_p_chg_f = 0.0f;

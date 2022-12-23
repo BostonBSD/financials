@@ -35,10 +35,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <stdbool.h>
 #include <time.h> /* struct tm  */
 
-/* We need the MemType, CURL, and CURLM types from this header file. */
-#include "multicurl_types.h"
-
-#include "gui_types.h" /*  */
+#include "gui_types.h"       /* symbol_name_map */
+#include "multicurl_types.h" /* CURL, CURLM */
 
 /* Method prototypes used by these classes
    Define the function pointer type here. */
@@ -49,10 +47,6 @@ typedef bool sub_func_d_t();
 typedef void sub_func_e_t(bool);
 typedef double sub_func_f_t();
 typedef unsigned int sub_func_g_t();
-typedef int sub_func_h_t(void *);
-typedef void sub_func_i_t(void *);
-typedef void sub_func_j_t(const char *, const char *);
-typedef void sub_func_k_t(const char *);
 
 typedef struct { /* A container to hold the type of row and symbol, on a right
                     click */
@@ -201,12 +195,10 @@ typedef struct {
 typedef struct {
   /* Data Variables */
   right_click_container rght_clk_data;
-  window_data *window_struct; /* A struct that holds the size and position of
+  window_data window_struct; /* A struct that holds the size and position of
                                  the main and rsi windows. */
-  symbol_name_map *sym_map;   /* The symbol to name mapping struct */
 
-  primary_heading *pri_h_mkd;
-  default_heading *def_h_mkd;
+  symbol_name_map *sym_map; /* The symbol to name mapping struct */
 
   double cash_f;
 
@@ -236,6 +228,9 @@ typedef struct {
   short decimal_places_shrt;
 
   /* Pango Markup language strings */
+  primary_heading pri_h_mkd;
+  default_heading def_h_mkd;
+
   char *cash_mrkd_ch;                 /* Total value of cash */
   char *portfolio_port_value_mrkd_ch; /* Total value of the entire portfolio */
   char *portfolio_port_value_chg_mrkd_ch; /* Total value of the entire portfolio
@@ -306,10 +301,10 @@ typedef struct {
      Create a function pointer from the type here.
   */
   sub_func_b_t *ToStringsPortfolio;
-  sub_func_i_t *CalculatePortfolio;
+  sub_func_b_t *CalculatePortfolio;
   sub_func_b_t *StopRSICurl;
   sub_func_b_t *StopSNMapCurl;
-  sub_func_h_t *SetUpCurlIndicesData;
+  sub_func_c_t *SetUpCurlIndicesData;
   sub_func_b_t *ExtractIndicesData;
   sub_func_b_t *ToStringsIndices;
 } meta;
@@ -342,7 +337,7 @@ typedef struct {
   /* Methods or Functions */
   sub_func_b_t *ToStrings;
   sub_func_b_t *Calculate;
-  sub_func_h_t *SetUpCurl;
+  sub_func_c_t *SetUpCurl;
   sub_func_b_t *ExtractData;
 } metal;
 
@@ -367,14 +362,14 @@ typedef struct {
   /* Methods or Functions */
   sub_func_b_t *ToStrings;
   sub_func_b_t *Calculate;
-  sub_func_i_t *GenerateURL;
-  sub_func_h_t *SetUpCurl;
+  sub_func_b_t *GenerateURL;
+  sub_func_c_t *SetUpCurl;
   sub_func_b_t *ExtractData;
-  sub_func_j_t *AddStock;
+  sub_func_b_t *AddStock;
   sub_func_b_t *Sort;
   sub_func_b_t *Reset;
-  sub_func_k_t *RemoveStock;
-  sub_func_i_t *SetSecurityNames;
+  sub_func_b_t *RemoveStock;
+  sub_func_b_t *SetSecurityNames;
 } equity_folder;
 
 /* A handle to our three primary classes and some useful functions */
@@ -410,7 +405,7 @@ typedef struct {
   sub_func_a_t *GetMetaClass;
   sub_func_a_t *GetMetalClass;
   sub_func_a_t *GetSymNameMap;
-  sub_func_i_t *SetSymNameMap;
+  sub_func_b_t *SetSymNameMap;
   sub_func_a_t *GetEquityFolderClass;
   sub_func_g_t *SecondsToOpen;
   sub_func_d_t *IsClockDisplayed;

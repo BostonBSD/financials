@@ -259,9 +259,9 @@ static void StopMultiCurl() {
   remove_main_curl_handles(packet);
 }
 
-static void *GetPrimaryHeadings() { return packet->meta_class->pri_h_mkd; }
+static void *GetPrimaryHeadings() { return &packet->meta_class->pri_h_mkd; }
 
-static void *GetDefaultHeadings() { return packet->meta_class->def_h_mkd; }
+static void *GetDefaultHeadings() { return &packet->meta_class->def_h_mkd; }
 
 static void SetWindowDataSql() {
   pthread_mutex_lock(&mutex_working[CLASS_MEMBER_MUTEX]);
@@ -278,7 +278,7 @@ static void SetWindowDataSql() {
   pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
 }
 
-static void *GetWindowData() { return packet->meta_class->window_struct; }
+static void *GetWindowData() { return &packet->meta_class->window_struct; }
 
 static void *GetMetaClass() { return packet->meta_class; }
 

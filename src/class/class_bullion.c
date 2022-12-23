@@ -325,18 +325,18 @@ static bullion *class_init_bullion() {
 
   new_class->url_ch = NULL;
 
-  new_class->spot_price_mrkd_ch = strdup("$0.00");
-  new_class->premium_mrkd_ch = strdup("$0.00");
-  new_class->port_value_mrkd_ch = strdup("$0.00");
-  new_class->ounce_mrkd_ch = strdup("0.000");
+  new_class->spot_price_mrkd_ch = malloc (1);
+  new_class->premium_mrkd_ch = malloc (1);
+  new_class->port_value_mrkd_ch = malloc (1);
+  new_class->ounce_mrkd_ch = malloc (1);
 
-  new_class->high_metal_mrkd_ch = strdup("$0.00");
-  new_class->low_metal_mrkd_ch = strdup("$0.00");
-  new_class->prev_closing_metal_mrkd_ch = strdup("$0.00");
-  new_class->change_ounce_mrkd_ch = strdup("$0.00");
-  new_class->change_value_mrkd_ch = strdup("$0.00");
-  new_class->change_percent_mrkd_ch = strdup("000.000%");
-  new_class->change_percent_raw_ch = strdup("000.000%");
+  new_class->high_metal_mrkd_ch = malloc (1);
+  new_class->low_metal_mrkd_ch = malloc (1);
+  new_class->prev_closing_metal_mrkd_ch = malloc (1);
+  new_class->change_ounce_mrkd_ch = malloc (1);
+  new_class->change_value_mrkd_ch = malloc (1);
+  new_class->change_percent_mrkd_ch = malloc (1);
+  new_class->change_percent_raw_ch = malloc (1);
 
   new_class->YAHOO_hnd = curl_easy_init();
   new_class->CURLDATA.memory = NULL;
@@ -363,10 +363,10 @@ metal *ClassInitMetal() {
 
   new_class->decimal_places_shrt = 2;
 
-  new_class->bullion_port_value_mrkd_ch = strdup("$0.00");
-  new_class->bullion_port_value_chg_mrkd_ch = strdup("$0.00");
-  new_class->bullion_port_value_p_chg_mrkd_ch = strdup("000.000%");
-  new_class->gold_silver_ratio_ch = strdup("0.00");
+  new_class->bullion_port_value_mrkd_ch = malloc (1);
+  new_class->bullion_port_value_chg_mrkd_ch = malloc (1);
+  new_class->bullion_port_value_p_chg_mrkd_ch = malloc (1);
+  new_class->gold_silver_ratio_ch = malloc (1);
 
   /* Connect Function Pointers To Function Definitions */
   new_class->ToStrings = ToStrings;

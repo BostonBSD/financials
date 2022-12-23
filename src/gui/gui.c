@@ -470,7 +470,8 @@ static void start_threads() {
   /* Set up the RSIView and AddRemSecurity Window's EntryBox Completion Widgets
      This will populate the NYSE and NASDAQ symbol to name mapping, from an
      sqlite Db, when the application loads. The Db of symbol to name mappings
-     needs to be downloaded by the user [in the preferences window]. */
+     needs to be downloaded by the user [in the preferences window] if it
+     doesn't already exist. */
   pthread_create(&thread_id, NULL, GUIThreadHandler, (void *)COMPLETION);
 }
 
@@ -509,7 +510,7 @@ void GuiStart(void *data)
   /* Start the clock threads and add the list of stock symbols from sqlite */
   start_threads();
 
-  /* Add the keyboard shortcuts to the Keyboard Shortcut window. */
+  /* Add the keyboard shortcuts to the Hotkeys window. */
   shortcuts_set_treeview();
 
   /* Add hyperlink markup to the About window labels. */

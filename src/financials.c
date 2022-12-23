@@ -32,6 +32,12 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "financials.h"
 
+/* PascalCase for public functions, snake_case for private functions.
+   This is consistent throughout the source code.
+
+   In the class files, PascalCase names are class methods, snake_case names
+   are private [static to that file]. */
+
 pthread_mutex_t mutex_working[MUTEX_NUMBER]; /* A Posix Mutex Array */
 /*  Semaphores are the same as mutexes with the added capability to conduct
     interprocess communication, we use them here the same way as a mutex just

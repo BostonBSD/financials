@@ -452,8 +452,6 @@ static void free_primary_headings(primary_heading *pri_h_mkd) {
   free(pri_h_mkd->cash);
   free(pri_h_mkd->portfolio);
   free(pri_h_mkd->no_assets);
-
-  free(pri_h_mkd);
 }
 
 static void free_default_headings(default_heading *def_h_mkd) {
@@ -469,8 +467,6 @@ static void free_default_headings(default_heading *def_h_mkd) {
   free(def_h_mkd->equity);
   free(def_h_mkd->symbol);
   free(def_h_mkd->shares);
-
-  free(def_h_mkd);
 }
 
 /* Class Init Functions */
@@ -479,47 +475,45 @@ meta *ClassInitMeta() {
   meta *new_class = (meta *)malloc(sizeof(*new_class));
 
   /* Initialize Variables */
+  new_class->sym_map = NULL;
   new_class->rght_clk_data = (right_click_container){NULL};
 
-  new_class->window_struct = (window_data *)malloc(sizeof(*new_class->window_struct));
-  new_class->sym_map = NULL;
-
-  new_class->pri_h_mkd = malloc(sizeof *new_class->pri_h_mkd);
-  new_class->def_h_mkd = malloc(sizeof *new_class->def_h_mkd);
+  /* Initialize the main and rsi window size and locations to zero */
+  new_class->window_struct = (window_data){0};
 
   /* The pango funcs require each dest string to point to allocated space
                 or NULL, they use realloc ( and possibly malloc if NULL ). */
-  *new_class->pri_h_mkd = (primary_heading){NULL};
-  *new_class->def_h_mkd = (default_heading){NULL};
+  new_class->pri_h_mkd = (primary_heading){NULL};
+  new_class->def_h_mkd = (default_heading){NULL};
 
-  format_primary_headings_pango(new_class->pri_h_mkd);
-  format_default_headings_pango(new_class->def_h_mkd);
+  format_primary_headings_pango(&new_class->pri_h_mkd);
+  format_default_headings_pango(&new_class->def_h_mkd);
 
   new_class->stock_url_ch = strdup(FINNHUB_URL);
   new_class->curl_key_ch = strdup(FINNHUB_URL_TOKEN);
   new_class->Nasdaq_Symbol_url_ch = strdup(NASDAQ_SYMBOL_URL);
   new_class->NYSE_Symbol_url_ch = strdup(NYSE_SYMBOL_URL);
 
-  new_class->cash_mrkd_ch = strdup("$0.00");
-  new_class->portfolio_port_value_mrkd_ch = strdup("$0.00");
-  new_class->portfolio_port_value_chg_mrkd_ch = strdup("$0.00");
-  new_class->portfolio_port_value_p_chg_mrkd_ch = strdup("000.000%");
+  new_class->cash_mrkd_ch = malloc(1);
+  new_class->portfolio_port_value_mrkd_ch = malloc(1);
+  new_class->portfolio_port_value_chg_mrkd_ch = malloc(1);
+  new_class->portfolio_port_value_p_chg_mrkd_ch = malloc(1);
 
-  new_class->index_dow_value_ch = strdup("0.00");
-  new_class->index_dow_value_chg_ch = strdup("0.00");
-  new_class->index_dow_value_p_chg_ch = strdup("000.000%");
+  new_class->index_dow_value_ch = malloc(1);
+  new_class->index_dow_value_chg_ch = malloc(1);
+  new_class->index_dow_value_p_chg_ch = malloc(1);
 
-  new_class->index_nasdaq_value_ch = strdup("0.00");
-  new_class->index_nasdaq_value_chg_ch = strdup("0.00");
-  new_class->index_nasdaq_value_p_chg_ch = strdup("000.000%");
+  new_class->index_nasdaq_value_ch = malloc(1);
+  new_class->index_nasdaq_value_chg_ch = malloc(1);
+  new_class->index_nasdaq_value_p_chg_ch = malloc(1);
 
-  new_class->index_sp_value_ch = strdup("0.00");
-  new_class->index_sp_value_chg_ch = strdup("0.00");
-  new_class->index_sp_value_p_chg_ch = strdup("000.000%");
+  new_class->index_sp_value_ch = malloc(1);
+  new_class->index_sp_value_chg_ch = malloc(1);
+  new_class->index_sp_value_p_chg_ch = malloc(1);
 
-  new_class->crypto_bitcoin_value_ch = strdup("$0.00");
-  new_class->crypto_bitcoin_value_chg_ch = strdup("$0.00");
-  new_class->crypto_bitcoin_value_p_chg_ch = strdup("000.000%");
+  new_class->crypto_bitcoin_value_ch = malloc(1);
+  new_class->crypto_bitcoin_value_chg_ch = malloc(1);
+  new_class->crypto_bitcoin_value_p_chg_ch = malloc(1);
 
   new_class->cash_f = 0.0f;
   new_class->portfolio_port_value_f = 0.0f;
@@ -579,16 +573,6 @@ meta *ClassInitMeta() {
   snprintf(new_class->sqlite_symbol_name_db_path_ch, len, "%s%s", pw->pw_dir,
            SN_DB_FILE);
 
-  /* Initialize the main and rsi window size and locations */
-  new_class->window_struct->main_height = 0;
-  new_class->window_struct->main_width = 0;
-  new_class->window_struct->main_x_pos = 0;
-  new_class->window_struct->main_y_pos = 0;
-  new_class->window_struct->rsi_height = 0;
-  new_class->window_struct->rsi_width = 0;
-  new_class->window_struct->rsi_x_pos = 0;
-  new_class->window_struct->rsi_y_pos = 0;
-
   /* Connect Function Pointers To Function Definitions */
   new_class->ToStringsPortfolio = ToStringsPortfolio;
   new_class->CalculatePortfolio = CalculatePortfolio;
@@ -608,14 +592,16 @@ meta *ClassInitMeta() {
 /* Class Destruct Functions */
 void ClassDestructMeta(meta *meta_class) {
   /* Free Memory */
+  free_primary_headings(&meta_class->pri_h_mkd);
+  free_default_headings(&meta_class->def_h_mkd);
+
   if (meta_class->rght_clk_data.type)
     free(meta_class->rght_clk_data.type);
   if (meta_class->rght_clk_data.symbol)
     free(meta_class->rght_clk_data.symbol);
-  /* rght_clk_data is a variable and not a pointer, do not free */
-
-  if (meta_class->window_struct)
-    free(meta_class->window_struct);
+  /* rght_clk_data is a variable and not a pointer, do not free.
+     fyi; both variables and pointers are in heap memory, the variables are
+     allocated with the struct pointer and freed with the struct pointer. */
 
   /* Free the symbol to security name mapping array. */
   pthread_mutex_lock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
@@ -627,11 +613,6 @@ void ClassDestructMeta(meta *meta_class) {
   }
 
   pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
-
-  if (meta_class->pri_h_mkd)
-    free_primary_headings(meta_class->pri_h_mkd);
-  if (meta_class->def_h_mkd)
-    free_default_headings(meta_class->def_h_mkd);
 
   if (meta_class->stock_url_ch)
     free(meta_class->stock_url_ch);
