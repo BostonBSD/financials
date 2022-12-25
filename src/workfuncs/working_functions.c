@@ -67,7 +67,7 @@ double CalcRsi(double avg_gain, double avg_loss) {
   return (100 - (100 / (1 + rs)));
 }
 
-char *RsiIndicator(double rsi)
+const char *RsiIndicator(double rsi)
 /* Return an indicator string. Do not free return value (faster using stack
    memory). */
 {

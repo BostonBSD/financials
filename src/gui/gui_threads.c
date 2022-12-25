@@ -289,7 +289,7 @@ void *GUIThreadHandler(void *data) {
        current map, if any exists, set the current map to the new map.
        Otherwise do nothing.*/
     sym_map = SymNameFetchUpdate(packet, sym_map);
-    
+
     gdk_threads_add_idle(PrefSymBtnStop, NULL);
 
     /* Make sure the security names are set with pango style markups. */

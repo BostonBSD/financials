@@ -112,7 +112,7 @@ void DoubToMonStrPango(char **dst, const double num,
 
   len = strlen(markup_start) + strlen(num_ch) + strlen(markup_end) + 1;
 
-  /* Adjust the string length */
+  /* Adjust the memory allocation */
   char *tmp = realloc(dst[0], len);
 
   if (tmp == NULL) {
@@ -146,7 +146,7 @@ void DoubToPerStrPango(char **dst, const double num,
 
   size_t len = LengthPercent(num, digits_right) + 1;
   len += strlen(markup_start) + strlen(markup_end);
-  /* Adjust the string length */
+  /* Adjust the memory allocation */
   char *tmp = realloc(dst[0], len);
 
   if (tmp == NULL) {
@@ -193,7 +193,7 @@ void DoubToNumStrPango(char **dst, const double num,
   size_t len = LengthNumber(num, digits_right) + 1;
   len += strlen(markup_start) + strlen(markup_end);
 
-  /* Adjust the string length */
+  /* Adjust the memory allocation */
   char *tmp = realloc(dst[0], len);
 
   if (tmp == NULL) {
@@ -330,7 +330,7 @@ static void double_to_mon_str_pango_color_ext(char **dst, const double num,
 
   len = strlen(start_tag) + strlen(num_ch) + strlen(markup_end) + 1;
 
-  /* Adjust the destination string length */
+  /* Adjust the memory allocation */
   char *ptr = realloc(dst[0], len);
 
   if (ptr == NULL) {
@@ -422,7 +422,7 @@ static void double_to_per_str_pango_color_ext(char **dst, const double num,
 
   size_t len = strlen(start_tag) + LengthPercent(num, digits_right) +
                strlen(markup_end) + 1;
-  /* Adjust the string length */
+  /* Adjust the memory allocation */
   char *tmp = realloc(dst[0], len);
 
   if (tmp == NULL) {
@@ -533,7 +533,7 @@ void StrToStrPangoColor(char **dst, const char *src, const unsigned int color)
   size_t len = strlen(src) + 1;
   len += strlen(start_tag) + strlen(markup_end);
 
-  /* Adjust the string length */
+  /* Adjust the memory allocation */
   char *tmp = realloc(dst[0], len);
 
   if (tmp == NULL) {

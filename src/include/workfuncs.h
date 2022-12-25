@@ -116,6 +116,6 @@ double CalcGain(double, double);
 void Summation(double, double *, double *);
 void CalcAvg(double, double *, double *);
 double CalcRsi(double, double);
-char *RsiIndicator(double);
+const char *RsiIndicator(double);
 
 #endif /* WORKFUNCS_HEADER_H */

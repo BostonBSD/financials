@@ -344,27 +344,129 @@ int RSIGetSymbol(char **s)
   return 0;
 }
 
+enum { RUN, RESET };
+bool rsi_ready(double gain_f, double *rsi_f, int state) {
+  /* We need to remember the running averages
+     and the counter between iterations. */
+  static unsigned short c = 0;
+  static double avg_gain_f = 0, avg_loss_f = 0;
+  if (state == RESET) {
+    c = 0;
+    avg_gain_f = 0.0f;
+    avg_loss_f = 0.0f;
+    return false;
+  }
+
+  /* Until we get 14 days of data we sum the gains and losses. */
+  if (c <= 13)
+    Summation(gain_f, &avg_gain_f, &avg_loss_f);
+  /* On the 14th day we calculate the regular average and use that to seed a
+   * running average. */
+  if (c == 13) {
+    avg_gain_f = avg_gain_f / 14;
+    avg_loss_f = avg_loss_f / 14;
+  }
+  /* On the 15th day we start calculating the RSI. */
+  if (c >= 14) {
+    /* Calculate the running average. */
+    CalcAvg(gain_f, &avg_gain_f, &avg_loss_f);
+    /* Calculate the rsi. */
+    *rsi_f = CalcRsi(avg_gain_f, avg_loss_f);
+    c++;
+    return true;
+  }
+  c++;
+  return false;
+}
+
+typedef struct {
+  char *date_ch;
+  char *price_ch;
+  char *high_ch;
+  char *low_ch;
+  char *opening_ch;
+  char *prev_closing_ch;
+  char *change_ch;
+  char *gain_ch;
+  char *rsi_ch;
+  char *volume_ch;
+  const char *indicator_ch; /* Immutable, do not free */
+  const char *fg_colr_ch;   /* Immutable, do not free */
+} rsi_strings;
+
+static bool rsi_calculate(char *line, rsi_strings *strings, int state) {
+  /* We need to remember the last closing price in the next iteration. */
+  static double cur_price_f = 0.0f;
+
+  if (state == RESET) {
+    /* Reset the static variables. */
+    cur_price_f = 0.0f;
+    rsi_ready(0.0, NULL, RESET);
+    return false;
+  }
+
+  double gain_f, prev_price_f, rsi_f, change_f;
+  unsigned long volume_long;
+  const char *fg_colr_red_ch = "DarkRed";
+  const char *fg_colr_green_ch = "DarkGreen";
+  const char *fg_colr_black_ch = "Black";
+
+  Chomp(line);
+  char **csv_array = parse_csv(line);
+  prev_price_f = cur_price_f;
+  cur_price_f = strtod(csv_array[4], NULL);
+
+  /* The initial closing price has no prev_price */
+  if (prev_price_f == 0.0f) {
+    free_csv_line(csv_array);
+    return false;
+  }
+
+  gain_f = CalcGain(cur_price_f, prev_price_f);
+  if (!rsi_ready(gain_f, &rsi_f, RUN)) {
+    /* Until we get 14 days of data return false. */
+    free_csv_line(csv_array);
+    return false;
+  }
+
+  /* The RsiIndicator return value is stored in the stack, do not free. */
+  strings->indicator_ch = RsiIndicator(rsi_f);
+  CopyString(&strings->date_ch, csv_array[0]);
+  DoubleToMonStr(&strings->prev_closing_ch, prev_price_f, 3);
+  DoubleToMonStr(&strings->price_ch, cur_price_f, 3);
+  StringToMonStr(&strings->high_ch, csv_array[2], 3);
+  StringToMonStr(&strings->low_ch, csv_array[3], 3);
+  StringToMonStr(&strings->opening_ch, csv_array[1], 3);
+  change_f = cur_price_f - prev_price_f;
+  DoubleToMonStr(&strings->change_ch, change_f, 3);
+  DoubToPerStr(&strings->gain_ch, gain_f, 3);
+  DoubToNumStr(&strings->rsi_ch, rsi_f, 3);
+  volume_long = (unsigned long)strtol(csv_array[6], NULL, 10);
+  DoubToNumStr(&strings->volume_ch, (double)volume_long, 0);
+  /* fg_colr_ch is stored in the stack, do not free. */
+  if (gain_f > 0) {
+    strings->fg_colr_ch = fg_colr_green_ch;
+  } else if (gain_f < 0) {
+    strings->fg_colr_ch = fg_colr_red_ch;
+  } else {
+    strings->fg_colr_ch = fg_colr_black_ch;
+  }
+  free_csv_line(csv_array);
+  return true;
+}
+
 static void rsi_set_store(GtkListStore *store, void *data) {
   MemType *MyOutputStruct;
   data ? (MyOutputStruct = (MemType *)data) : (MyOutputStruct = NULL);
 
-  gdouble gain, avg_gain = 0, avg_loss = 0, cur_price, prev_price, rsi, change;
-  gchar *price_ch, *high_ch, *low_ch, *opening_ch, *prev_closing_ch, *change_ch,
-      *indicator_ch;
-  gchar gain_ch[10], rsi_ch[10], volume_ch[15];
-  gulong volume;
-  gint *new_order = (gint *)malloc(1), *tmp;
-
-  price_ch = high_ch = low_ch = opening_ch = prev_closing_ch = change_ch = NULL;
+  rsi_strings rsi_strs = (rsi_strings){NULL};
 
   GtkTreeIter iter;
 
   if (MyOutputStruct == NULL) {
-    free(new_order);
     return;
   }
   if (MyOutputStruct->memory == NULL) {
-    free(new_order);
     free(MyOutputStruct);
     return;
   }
@@ -373,145 +475,50 @@ static void rsi_set_store(GtkListStore *store, void *data) {
   FILE *fp = fmemopen((void *)MyOutputStruct->memory,
                       strlen(MyOutputStruct->memory) + 1, "r");
 
-  gint counter = 0, c = 0;
   char line[1024];
-  char **csv_array;
-
-  /* Get rid of the header line from the file stream */
-  if (fgets(line, 1024, fp) == NULL) {
-    free(new_order);
-    fclose(fp);
-    return;
-  }
-
-  /* Get the initial closing price */
-  if (fgets(line, 1024, fp) == NULL) {
-    free(new_order);
-    fclose(fp);
-    return;
-  }
-
-  Chomp(line);
-  csv_array = parse_csv(line);
-  prev_price = strtod(csv_array[4], NULL);
-  free_csv_line(csv_array);
-
   while (fgets(line, 1024, fp) != NULL) {
     /* If there is a null error in this line, ignore the line.
        Sometimes Yahoo! data is incomplete, the result is more
        correct if we ignore the incomplete portion of data. */
-    if (strstr(line, "null"))
+    /* Ignore the header line, which contains the 'Date' string */
+    if (strstr(line, "null") || strstr(line, "Date"))
       continue;
 
-    Chomp(line);
-    csv_array = parse_csv(line);
+    /* Don't start adding rows until we get 14 days of data. */
+    if (!rsi_calculate(line, &rsi_strs, RUN))
+      continue;
 
-    cur_price = strtod(csv_array[4], NULL);
-    gain = CalcGain(cur_price, prev_price);
-    change = cur_price - prev_price;
-    DoubleToMonStr(&prev_closing_ch, prev_price, 3);
-    prev_price = cur_price;
-
-    /* Until we get 14 days of data we sum the gains and losses. */
-    if (counter < 14)
-      Summation(gain, &avg_gain, &avg_loss);
-    /* On the 14th day we calculate the regular average and use that to seed a
-     * running average. */
-    if (counter == 13) {
-      avg_gain = avg_gain / 14;
-      avg_loss = avg_loss / 14;
-    }
-    /* We only start adding rows if we have enough data to calculate the RSI,
-       which is at least 14 days of data plus the initial closing price. */
-    if (counter >= 14) {
-      tmp = (gint *)realloc(new_order,
-                                      sizeof(gint) * (c + 1));
-      new_order = tmp;
-
-      /* Calculate the running average. */
-      CalcAvg(gain, &avg_gain, &avg_loss);
-      /* Calculate the rsi. */
-      rsi = CalcRsi(avg_gain, avg_loss);
-      /* The RsiIndicator return value is stored in the stack, do not free. */
-      indicator_ch = RsiIndicator(rsi);
-
-      StringToMonStr(&price_ch, csv_array[4], 3);
-      StringToMonStr(&high_ch, csv_array[2], 3);
-      StringToMonStr(&low_ch, csv_array[3], 3);
-      StringToMonStr(&opening_ch, csv_array[1], 3);
-      DoubleToMonStr(&change_ch, change, 3);
-
-      volume = (gulong)strtol(csv_array[6], NULL, 10);
-      setlocale(LC_NUMERIC, LOCALE);
-      snprintf(gain_ch, 10, "%0.03f%%", gain);
-      snprintf(rsi_ch, 10, "%0.03f", rsi);
-      snprintf(volume_ch, 15, "%'ld", volume);
-
-      /* Add data to the storage container. */
-      gtk_list_store_append(store, &iter);
-      if (gain > 0) {
-        gtk_list_store_set(
-            store, &iter, RSI_FOREGROUND_COLOR, "DarkGreen", RSI_COLUMN_ONE,
-            csv_array[0], RSI_COLUMN_TWO, price_ch, RSI_COLUMN_THREE, high_ch,
-            RSI_COLUMN_FOUR, low_ch, RSI_COLUMN_FIVE, opening_ch,
-            RSI_COLUMN_SIX, prev_closing_ch, RSI_COLUMN_SEVEN, change_ch,
-            RSI_COLUMN_EIGHT, gain_ch, RSI_COLUMN_NINE, volume_ch,
-            RSI_COLUMN_TEN, rsi_ch, RSI_COLUMN_ELEVEN, indicator_ch, -1);
-      } else if (gain < 0) {
-        gtk_list_store_set(
-            store, &iter, RSI_FOREGROUND_COLOR, "DarkRed", RSI_COLUMN_ONE,
-            csv_array[0], RSI_COLUMN_TWO, price_ch, RSI_COLUMN_THREE, high_ch,
-            RSI_COLUMN_FOUR, low_ch, RSI_COLUMN_FIVE, opening_ch,
-            RSI_COLUMN_SIX, prev_closing_ch, RSI_COLUMN_SEVEN, change_ch,
-            RSI_COLUMN_EIGHT, gain_ch, RSI_COLUMN_NINE, volume_ch,
-            RSI_COLUMN_TEN, rsi_ch, RSI_COLUMN_ELEVEN, indicator_ch, -1);
-      } else {
-        gtk_list_store_set(store, &iter, RSI_COLUMN_ONE, csv_array[0],
-                           RSI_COLUMN_TWO, price_ch, RSI_COLUMN_THREE, high_ch,
-                           RSI_COLUMN_FOUR, low_ch, RSI_COLUMN_FIVE, opening_ch,
-                           RSI_COLUMN_SIX, prev_closing_ch, RSI_COLUMN_SEVEN,
-                           change_ch, RSI_COLUMN_EIGHT, gain_ch,
-                           RSI_COLUMN_NINE, volume_ch, RSI_COLUMN_TEN, rsi_ch,
-                           RSI_COLUMN_ELEVEN, indicator_ch, -1);
-      }
-      c++; /* The number of rows added to the TreeView */
-    }
-
-    free_csv_line(csv_array);
-    counter++;
+    /* Add data to the storage container. */
+    /* Yahoo! sends data with the earliest date first, so we prepend rows.
+       The last [most recent] entry needs to be at the top. */
+    gtk_list_store_prepend(store, &iter);
+    gtk_list_store_set(
+        store, &iter, RSI_FOREGROUND_COLOR, rsi_strs.fg_colr_ch, RSI_COLUMN_ONE,
+        rsi_strs.date_ch, RSI_COLUMN_TWO, rsi_strs.price_ch, RSI_COLUMN_THREE,
+        rsi_strs.high_ch, RSI_COLUMN_FOUR, rsi_strs.low_ch, RSI_COLUMN_FIVE,
+        rsi_strs.opening_ch, RSI_COLUMN_SIX, rsi_strs.prev_closing_ch,
+        RSI_COLUMN_SEVEN, rsi_strs.change_ch, RSI_COLUMN_EIGHT,
+        rsi_strs.gain_ch, RSI_COLUMN_NINE, rsi_strs.volume_ch, RSI_COLUMN_TEN,
+        rsi_strs.rsi_ch, RSI_COLUMN_ELEVEN, rsi_strs.indicator_ch, -1);
   }
-
+  /* Reset the static variables. */
+  rsi_calculate(NULL, NULL, RESET);
   fclose(fp);
 
   /* Free MyOutputStruct */
   free(MyOutputStruct->memory);
   free(MyOutputStruct);
 
-  /* The rows were added to the TreeView first [earliest] to last [most recent],
-     we need to reverse this from last to first.
-     The last [most recent] entry needs to be at the top. */
-  if (c > 0) {
-    /* For the zero row, c = 1 after one iteration, so subtract one
-       before the next calculation. */
-    c -= 1;
-    gint b = 0;
-    while (c >= 0) {
-      /* new_order [newpos] = oldpos */
-      new_order[b] = c;
-      c--;
-      b++;
-    }
-
-    gtk_list_store_reorder(store, new_order);
-  }
-  g_free(new_order);
-
-  g_free(price_ch);
-  g_free(high_ch);
-  g_free(low_ch);
-  g_free(opening_ch);
-  g_free(change_ch);
-  g_free(prev_closing_ch);
+  free(rsi_strs.date_ch);
+  free(rsi_strs.gain_ch);
+  free(rsi_strs.rsi_ch);
+  free(rsi_strs.volume_ch);
+  free(rsi_strs.price_ch);
+  free(rsi_strs.high_ch);
+  free(rsi_strs.low_ch);
+  free(rsi_strs.opening_ch);
+  free(rsi_strs.change_ch);
+  free(rsi_strs.prev_closing_ch);
 }
 
 static GtkListStore *rsi_make_store(void *data) {
