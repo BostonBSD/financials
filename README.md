@@ -57,7 +57,7 @@ In the distant future, or perhaps not at all, we could try to implement linear a
 
 Migration to more Gnomish datatypes and style, etc.  I started this project to learn C [coming from a C++ background] and Gtk, now that we're entering beta mode, it's time to make it more canonical.  
 
-I can also relicense my code under the GPL if anyone would like to fork this project [you could license it yourself under a GPL project, the BSD license allows for this; so long as the BSD license is complied with, but I also am willing to relicense it].  As we all know, being less offensive is stronger than making subversive attempts at derailment.
+I can also relicense my code under the GPL if anyone would like to fork this project [you could license it yourself under a GPL project, the BSD license allows for this; so long as the BSD license is complied with, but I also am willing to relicense it].  As we all know, being less offensive is stronger than making subversive attempts at derailment, which is why I try to accomodate both licenses.
 
 ----------------------------------------------------------
 
