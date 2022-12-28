@@ -338,7 +338,7 @@ void *GUIThreadHandler(void *data) {
     sym_map = packet->GetSymNameMap();
     sec_name = GetSecurityName(symbol, sym_map);
     pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
-    free(symbol);
+    if(symbol)free(symbol);
 
     /* Set the security name label, this function runs inside the Gtk Loop.
        The sec_name string is freed in RSISetSNLabel */

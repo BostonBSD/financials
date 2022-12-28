@@ -29,9 +29,9 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
 IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
-#define _GNU_SOURCE /* hcreate_r, hsearch_r; these are GNU extensions on       \
-                       GNU/Linux, this macro needs to be defined before all    \
-                       header files. */
+#define _GNU_SOURCE /* hcreate_r, hsearch_r, hdestroy_r; these are GNU         \
+                       extensions on GNU/Linux, this macro needs to be defined \
+                       before all header files [on GNU systems]. */
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,10 +40,12 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <sqlite3.h>
 
 #include "../include/class_types.h" /* equity_folder, metal, meta, window_data */
-#include "../include/gui_types.h" /* symbol_to_security_name_container, symbol_name_map */
+#include "../include/gui_types.h"   /* symbol_to_security_name_container, 
+                                       symbol_name_map symbol_name_map, hcreate_r, 
+                                       hsearch_r */
 #include "../include/macros.h"
 #include "../include/mutex.h"
-#include "../include/workfuncs.h" /* symbol_name_map, hcreate_r, hsearch_r */
+#include "../include/workfuncs.h"
 
 static int equity_callback(void *data, int argc, char **argv, char **ColName) {
   /* argv[0] is id, argv[1] is symbol, argv[2] is shares */
@@ -827,6 +829,8 @@ symbol_name_map *SqliteGetSymbolNameMap(meta *D) {
     memset(sn_map->htab, 0, sizeof(struct hsearch_data));
 
     ENTRY e, *ep;
+    /* GNU suggests the table size be 25% larger than needed.  On FreeBSD table
+     * size is dynamic. */
     size_t tab_size = (size_t)floor((double)(sn_map->size * 1.25));
     hcreate_r(tab_size, sn_map->htab);
     unsigned short s = 0;

@@ -30,7 +30,7 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 #define _GNU_SOURCE /* hcreate_r, hsearch_r, hdestroy_r; these are GNU         \
-                       extensions on GNU/Linux, this macro needs to be defined                                     \
+                       extensions on GNU/Linux, this macro needs to be defined \
                        before all header files [on GNU systems]. */
 #include <math.h>
 #include <search.h>
@@ -275,7 +275,8 @@ static void create_hash_table(symbol_name_map *sn_map) {
 
   /* Create a hashing table of the sn_map. */
   ENTRY e, *ep;
-  /* Make the size 25% larger than needed. */
+  /* GNU suggests the table size be 25% larger than needed.  On FreeBSD table
+   * size is dynamic. */
   size_t tab_size = (size_t)floor((double)(sn_map->size * 1.25));
   hcreate_r(tab_size, sn_map->htab);
   unsigned short s = 0;

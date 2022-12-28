@@ -474,14 +474,20 @@ static void rsi_set_store(GtkListStore *store, void *data) {
   /* Convert a String to a File Pointer Stream for Reading */
   FILE *fp = fmemopen((void *)MyOutputStruct->memory,
                       strlen(MyOutputStruct->memory) + 1, "r");
-
   char line[1024];
+
+  /* Ignore the header line */
+  if (fgets(line, 1024, fp) == NULL){
+    free(MyOutputStruct->memory);
+    free(MyOutputStruct);
+    fclose(fp);
+    return;
+  }
   while (fgets(line, 1024, fp) != NULL) {
     /* If there is a null error in this line, ignore the line.
        Sometimes Yahoo! data is incomplete, the result is more
        correct if we ignore the incomplete portion of data. */
-    /* Ignore the header line, which contains the 'Date' string */
-    if (strstr(line, "null") || strstr(line, "Date"))
+    if (strstr(line, "null"))
       continue;
 
     /* Don't start adding rows until we get 14 days of data. */
