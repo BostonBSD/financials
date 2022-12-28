@@ -29,7 +29,11 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
 IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
-
+#define _GNU_SOURCE /* hcreate_r, hsearch_r, hdestroy_r; these are GNU         \
+                       extensions on GNU/Linux, this macro needs to be defined                                     \
+                       before all header files [on GNU systems]. */
+#include <math.h>
+#include <search.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,38 +45,25 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/multicurl.h"
 #include "../include/sqlite.h"
 
-static int sym_search_func(const void *a, const void *b) {
-  /* Cast the void pointer to a char pointer. */
-  char *aa = (char *)a;
-  /* Cast the void pointer to a double struct pointer. */
-  symbol_to_security_name_container **bb =
-      (symbol_to_security_name_container **)b;
-
-  return strcasecmp(aa, bb[0]->symbol);
-}
-
-char *GetSecurityName(const char *s, const symbol_name_map *sn_map)
+char *GetSecurityName(char *s, const symbol_name_map *sn_map)
 /* Look for a Security Name using the Symbol as a key value.
    Must free return value. */
 {
-  symbol_to_security_name_container **item = NULL;
+  symbol_to_security_name_container *item = NULL;
+  ENTRY e, *ep;
   if (sn_map == NULL)
     return NULL;
 
-  /* The second parameter is the same type as the return value. A double pointer
-   * to a struct. */
-  /* It's basically searching through an array of pointer addresses, the compare
-     function dereferences the pointer address to get the string we are
-     comparing against. */
-  /* The array must already be sorted for bsearch to work. */
-  item = (symbol_to_security_name_container **)bsearch(
-      s, &sn_map->sn_container_arr[0], sn_map->size,
-      sizeof(symbol_to_security_name_container *), sym_search_func);
+  e.key = s;
+  if (hsearch_r(e, FIND, &ep, sn_map->htab) == 0) {
+    ep = NULL;
+  }
+  item = ep ? ep->data : NULL;
 
   if (item) {
     /* The item pointer is not freed. It points to an item in the
        sn_container_arr array and not a duplicate. */
-    return strdup(item[0]->security_name);
+    return strdup(item->security_name);
   } else {
     return NULL;
   }
@@ -81,6 +72,16 @@ char *GetSecurityName(const char *s, const symbol_name_map *sn_map)
 void SNMapDestruct(symbol_name_map *sn_map) {
   if (sn_map == NULL)
     return;
+
+  /* Destroy the table data and free htab */
+  /* This does not free the key and data pointers, they are stored in the
+   * sn_container_arr; (GNU and FreeBSD...FreeBSD needs to update their man
+   * page). */
+  if (sn_map->htab) {
+    hdestroy_r(sn_map->htab);
+    free(sn_map->htab);
+    sn_map->htab = NULL;
+  }
 
   if (sn_map->sn_container_arr) {
     for (unsigned short i = 0; i < sn_map->size; i++) {
@@ -118,6 +119,13 @@ static int alpha_asc_sec_name(const void *a, const void *b)
   return strcasecmp(aa[0]->symbol, bb[0]->symbol);
 }
 
+const char *bad_syms[] = {"Symbol", "File Creation Time",
+                          "TEST",   "ZXYZ.A",
+                          "ZZT",    "ZEXIT",
+                          "ZIEXT",  "ZVZZC",
+                          "ZVV",    "ZXIET",
+                          "ZBZX"};
+
 static bool check_symbol(const char *s)
 /* Depository share symbols include dollars signs, which we don't want.
    The first line of the file includes the "Symbol" string, which we don't want.
@@ -127,29 +135,15 @@ static bool check_symbol(const char *s)
 {
   if (strpbrk(s, "$"))
     return false;
-  if (strstr(s, "Symbol"))
-    return false;
-  if (strstr(s, "File Creation Time"))
-    return false;
-  /* Test Stock Symbols */
-  if (strstr(s, "TEST"))
-    return false;
-  if (strstr(s, "ZXYZ.A"))
-    return false;
-  if (strstr(s, "ZZT"))
-    return false;
-  if (strstr(s, "ZEXIT"))
-    return false;
-  if (strstr(s, "ZIEXT"))
-    return false;
-  if (strstr(s, "ZVZZC"))
-    return false;
-  if (strstr(s, "ZVV"))
-    return false;
-  if (strstr(s, "ZXIET"))
-    return false;
-  if (strstr(s, "ZBZX"))
-    return false;
+
+  unsigned short g = 0, size = sizeof bad_syms / sizeof bad_syms[0];
+
+  while (g < size) {
+    if (strstr(s, bad_syms[g])) {
+      return false;
+    }
+    g++;
+  }
 
   return true;
 }
@@ -178,6 +172,8 @@ static symbol_name_map *sym_name_map_dup(symbol_name_map *sn_map)
   symbol_name_map *sn_map_dup = (symbol_name_map *)malloc(sizeof(*sn_map_dup));
   sn_map_dup->sn_container_arr = malloc(1);
   sn_map_dup->size = 0;
+  /* Not using the hash table here. */
+  sn_map_dup->htab = NULL;
 
   for (unsigned short g = 0; g < sn_map->size; g++) {
     AddSymbolToMap(sn_map->sn_container_arr[g]->symbol,
@@ -271,6 +267,29 @@ static void add_special_symbols(symbol_name_map *sn_map) {
   }
 }
 
+static void create_hash_table(symbol_name_map *sn_map) {
+  /* Create a hashing table of the sn_map->sn_container_arr elements */
+  sn_map->htab = (struct hsearch_data *)malloc(sizeof(struct hsearch_data));
+  /*zeroize the table.*/
+  memset(sn_map->htab, 0, sizeof(struct hsearch_data));
+
+  /* Create a hashing table of the sn_map. */
+  ENTRY e, *ep;
+  /* Make the size 25% larger than needed. */
+  size_t tab_size = (size_t)floor((double)(sn_map->size * 1.25));
+  hcreate_r(tab_size, sn_map->htab);
+  unsigned short s = 0;
+  while (s < sn_map->size) {
+    /* The symbol is the key value. */
+    e.key = sn_map->sn_container_arr[s]->symbol;
+    e.data = sn_map->sn_container_arr[s];
+    if (hsearch_r(e, ENTER, &ep, sn_map->htab) == 0) {
+      fprintf(stderr, "hash table entry failed\n");
+      exit(EXIT_FAILURE);
+    }
+    s++;
+  }
+}
 static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
   meta *D = pkg->GetMetaClass();
 
@@ -281,6 +300,7 @@ static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
   symbol_name_map *sn_map = (symbol_name_map *)malloc(sizeof(*sn_map));
   sn_map->sn_container_arr = malloc(1);
   sn_map->size = 0;
+  sn_map->htab = NULL;
 
   MemType Nasdaq_Struct, NYSE_Struct;
   Nasdaq_Struct.memory = NULL;
@@ -349,6 +369,7 @@ static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
           free(NYSE_Struct.memory);
         if (line)
           free(line);
+        create_hash_table(sn_map);
         return sn_map;
       }
     }
@@ -365,6 +386,10 @@ static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
    * list. */
   qsort(&sn_map->sn_container_arr[0], sn_map->size,
         sizeof(symbol_to_security_name_container *), alpha_asc_sec_name);
+
+  /* Create a hashing table from the sn_container_arr, the symbol is the key
+   * value. */
+  create_hash_table(sn_map);
 
   fclose(fp[0]);
   fclose(fp[1]);
@@ -405,7 +430,7 @@ symbol_name_map *SymNameFetchUpdate(portfolio_packet *pkg,
   meta *D = pkg->GetMetaClass();
   symbol_name_map *sn_map_dup = NULL;
 
-  /* Download the symbol lists from the server */
+  /* Download the symbol lists from the server, create hash table */
   symbol_name_map *sn_map_new = symbol_list_fetch(pkg);
 
   if (sn_map_new) {

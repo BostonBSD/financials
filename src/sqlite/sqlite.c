@@ -29,7 +29,10 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
 IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
-
+#define _GNU_SOURCE /* hcreate_r, hsearch_r; these are GNU extensions on       \
+                       GNU/Linux, this macro needs to be defined before all    \
+                       header files. */
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -40,7 +43,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/gui_types.h" /* symbol_to_security_name_container, symbol_name_map */
 #include "../include/macros.h"
 #include "../include/mutex.h"
-#include "../include/workfuncs.h"
+#include "../include/workfuncs.h" /* symbol_name_map, hcreate_r, hsearch_r */
 
 static int equity_callback(void *data, int argc, char **argv, char **ColName) {
   /* argv[0] is id, argv[1] is symbol, argv[2] is shares */
@@ -799,6 +802,7 @@ symbol_name_map *SqliteGetSymbolNameMap(meta *D) {
   symbol_name_map *sn_map = (symbol_name_map *)malloc(sizeof(*sn_map));
   sn_map->sn_container_arr = malloc(1);
   sn_map->size = 0;
+  sn_map->htab = NULL;
 
   /* Open the sqlite database file. */
   if (sqlite3_open(D->sqlite_symbol_name_db_path_ch, &db) != SQLITE_OK)
@@ -816,6 +820,25 @@ symbol_name_map *SqliteGetSymbolNameMap(meta *D) {
     free(sn_map->sn_container_arr);
     free(sn_map);
     sn_map = NULL;
+  } else {
+    /* Create a hashing table of the sn_map. */
+    sn_map->htab = (struct hsearch_data *)malloc(sizeof(struct hsearch_data));
+    /*zeroize the table.*/
+    memset(sn_map->htab, 0, sizeof(struct hsearch_data));
+
+    ENTRY e, *ep;
+    size_t tab_size = (size_t)floor((double)(sn_map->size * 1.25));
+    hcreate_r(tab_size, sn_map->htab);
+    unsigned short s = 0;
+    while (s < sn_map->size) {
+      e.key = sn_map->sn_container_arr[s]->symbol;
+      e.data = sn_map->sn_container_arr[s];
+      if (hsearch_r(e, ENTER, &ep, sn_map->htab) == 0) {
+        fprintf(stderr, "entry failed\n");
+        exit(EXIT_FAILURE);
+      }
+      s++;
+    }
   }
 
   pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_SQLITE_MUTEX]);

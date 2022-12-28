@@ -133,9 +133,9 @@ static void create_index_url(char **url_ch, const char *symbol_ch) {
 
   time(&end_time);
   /* The start time needs to be a few days before the current time, so minus
-     four days This compensates for weekends and holidays and ensures enough
+     seven days This compensates for weekends and holidays and ensures enough
      data. */
-  start_time = end_time - (86400 * 4);
+  start_time = end_time - (86400 * 7);
 
   len = strlen(symbol_ch) + strlen(YAHOO_URL_START) +
         strlen(YAHOO_URL_MIDDLE_ONE) + strlen(YAHOO_URL_MIDDLE_TWO) +

@@ -75,7 +75,7 @@ void StrToStrPangoColor(char **, const char *, const unsigned int);
 void AddSymbolToMap(const char *, const char *, symbol_name_map *);
 symbol_name_map *SymNameFetch(portfolio_packet *);
 symbol_name_map *SymNameFetchUpdate(portfolio_packet *, symbol_name_map *);
-char *GetSecurityName(const char *, const symbol_name_map *);
+char *GetSecurityName(char *, const symbol_name_map *);
 void SNMapDestruct(symbol_name_map *);
 
 /* string_formatting */

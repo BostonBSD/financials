@@ -31,6 +31,10 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 #ifndef GUI_TYPES_HEADER_H
 #define GUI_TYPES_HEADER_H
+#define _GNU_SOURCE /* hcreate_r, hsearch_r; these are GNU extensions on       \
+                       GNU/Linux, this macro needs to be defined before all    \
+                       header files. */
+#include <search.h>
 
 /* Structs and Enums */
 typedef struct { /* A mapping between sec symbols and sec names */
@@ -40,6 +44,7 @@ typedef struct { /* A mapping between sec symbols and sec names */
 
 typedef struct { /* A handle to the symbol-name mapping array. */
   symbol_to_security_name_container **sn_container_arr;
+  struct hsearch_data *htab;
   unsigned short size;
 } symbol_name_map;
 

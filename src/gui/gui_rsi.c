@@ -345,11 +345,11 @@ int RSIGetSymbol(char **s)
 }
 
 enum { RUN, RESET };
-bool rsi_ready(double gain_f, double *rsi_f, int state) {
+static bool rsi_ready(double gain_f, double *rsi_f, int state) {
   /* We need to remember the running averages
      and the counter between iterations. */
   static unsigned short c = 0;
-  static double avg_gain_f = 0, avg_loss_f = 0;
+  static double avg_gain_f = 0.0f, avg_loss_f = 0.0f;
   if (state == RESET) {
     c = 0;
     avg_gain_f = 0.0f;
@@ -363,8 +363,8 @@ bool rsi_ready(double gain_f, double *rsi_f, int state) {
   /* On the 14th day we calculate the regular average and use that to seed a
    * running average. */
   if (c == 13) {
-    avg_gain_f = avg_gain_f / 14;
-    avg_loss_f = avg_loss_f / 14;
+    avg_gain_f /= 14.0f;
+    avg_loss_f /= 14.0f;
   }
   /* On the 15th day we start calculating the RSI. */
   if (c >= 14) {
@@ -390,8 +390,8 @@ typedef struct {
   char *gain_ch;
   char *rsi_ch;
   char *volume_ch;
-  const char *indicator_ch; /* Immutable, do not free */
-  const char *fg_colr_ch;   /* Immutable, do not free */
+  const char *indicator_ch; /* points to stack memory, do not free */
+  const char *fg_colr_ch;   /* points to stack memory, do not free */
 } rsi_strings;
 
 static bool rsi_calculate(char *line, rsi_strings *strings, int state) {
@@ -407,8 +407,8 @@ static bool rsi_calculate(char *line, rsi_strings *strings, int state) {
 
   double gain_f, prev_price_f, rsi_f, change_f;
   unsigned long volume_long;
-  const char *fg_colr_red_ch = "DarkRed";
   const char *fg_colr_green_ch = "DarkGreen";
+  const char *fg_colr_red_ch = "DarkRed";
   const char *fg_colr_black_ch = "Black";
 
   Chomp(line);
