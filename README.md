@@ -47,6 +47,8 @@ Some additional features could include cryptocurrency, api selection
 
 It might be useful to create a watch list that displays a list of stocks and their stats [one per row], the current RSI, whether it is an upward or downward trend, and an indicator string, updating maybe every 4 or 5 seconds [save the historical data on the first fetch operation].  
 
+A table that accounts for purchase date, price, shares, and symbol; account for cost basis, gain since purchase, whether it is short term or long term [held over 1 year].  I decided against this in favor of simplicity, but it could be possible, especially after a watch list is created.
+
 An RSS news reader that displays any current pertinent news in a plaintext format for listed stocks [Nasdaq RSS Feeds looks like a promising news source. GMarkup and Libxml2 look like useful libraries].
 
 Conversion to Gtk4 after an XML file creation application is developed [they aren't developing glade any longer].
