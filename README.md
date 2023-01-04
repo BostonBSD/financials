@@ -42,24 +42,9 @@ Debian “bullseye”, and Ubuntu 22.04; using amd64 architecture.
 
 ----------------------------------------------------------
 
-Some additional features could include cryptocurrency, api selection 
-(inclusion of other data service providers), and RSI trendline calibration [we can account for trendlines by using one week intervals over a two year timespan instead of one day intervals].  
+I started this project to learn C [coming from a C++ background] and Gtk.  
 
-It might be useful to create a watch list that displays a list of stocks and their stats [one per row], the current RSI, whether it is an upward or downward trend, and an indicator string, updating maybe every 4 or 5 seconds [save the historical data on the first fetch operation].  
-
-A table that accounts for purchase date, price, shares, and symbol; account for cost basis, gain since purchase, whether it is short term or long term [held over 1 year].  I decided against this in favor of simplicity, but it could be possible, especially after a watch list is created.
-
-An RSS news reader that displays any current pertinent news in a plaintext format for listed stocks [Nasdaq RSS Feeds looks like a promising news source. GMarkup and Libxml2 look like useful libraries].
-
-Conversion to Gtk4 after an XML file creation application is developed [they aren't developing glade any longer].
-
-Other pattern indicators such as Williams %R, MACD, the moving average crossover, Commodity Channel Index, stochastic oscillator, etc.
-
-In the distant future, or perhaps not at all, we could try to implement deterministic and probabilistic optimization for equity decision making [the lpsolve library and the GNU Linear Programming Kit look promising].
-
-Migration to more Gnomish datatypes and style, etc.  I started this project to learn C [coming from a C++ background] and Gtk, now that we're entering beta mode, it's time to make it more canonical.  
-
-I can also relicense my code under the GPL if anyone would like to fork this project [you could license it yourself under a GPL project, the BSD license allows for this; so long as the BSD license is complied with].  As we all know, being less offensive is stronger than making subversive attempts at derailment, which is why I try to accomodate both licenses.
+I can relicense my code under the GPL if anyone would like to fork this project [you could license it yourself under a GPL project, the BSD license allows for this; so long as the BSD license is complied with].  As we all know, being less offensive is stronger than making subversive attempts at derailment, which is why I try to accomodate both licenses.
 
 ----------------------------------------------------------
 
