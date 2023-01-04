@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 BostonBSD. All rights reserved.
+Copyright (c) 2022-2023 BostonBSD. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -33,22 +33,13 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef FINANCIALS_HEADER_H
 #define FINANCIALS_HEADER_H
 
-#include <X11/Xlib.h> /* We're only including this for the XInitThreads () function */
-
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "include/mutex.h" /* pthread_mutex_t mutex_working[ MUTEX_NUMBER ], pthread_mutex_init (), 
                                        pthread_mutex_destroy () */
-#include "include/macros.h"
-
-#include "include/class.h"  /* ClassDestructPortfolioPacket () and 
+#include "include/class.h"   /* ClassDestructPortfolioPacket () and 
                                        ClassInitPortfolioPacket () functions */
-#include "include/config.h" /* ReadConfig () */
-
-#include "include/gui.h" /* GuiStart () */
-#include "include/gui_globals.h" /* sem_t semaphore[ SIGNAL_NUM ], sem_init (), sem_destroy () */
-
+#include "include/config.h"  /* ReadConfig () */
 #include "include/globals.h" /* portfolio_packet *packet */
+#include "include/gui.h"     /* GuiStart () */
+#include "include/macros.h"
 
 #endif /* FINANCIALS_HEADER_H */

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 BostonBSD. All rights reserved.
+Copyright (c) 2022-2023 BostonBSD. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -118,6 +118,8 @@ char *WhichHoliday(struct tm NY_tz) {
     /* New Years Day */
     if (NY_tz.tm_mday == 1)
       return "Market Closed - New Years Day";
+    if (NY_tz.tm_wday == MON && NY_tz.tm_mday > 1 && NY_tz.tm_mday <= 3)
+      return "Market Closed - New Years Holiday";
 
     /* Presidents Day */
     if (NY_tz.tm_wday == MON && NY_tz.tm_mday >= 15 && NY_tz.tm_mday <= 21)
@@ -137,14 +139,14 @@ char *WhichHoliday(struct tm NY_tz) {
     /* Juneteenth Day */
     if (NY_tz.tm_mday == 19)
       return "Market Closed - Juneteenth Day";
-    if (NY_tz.tm_wday == MON && NY_tz.tm_mday >= 19 && NY_tz.tm_mday <= 21)
+    if (NY_tz.tm_wday == MON && NY_tz.tm_mday > 19 && NY_tz.tm_mday <= 21)
       return "Market Closed - Juneteenth Holiday";
     break;
   case JUL:
     /* US Independence Day */
     if (NY_tz.tm_mday == 4)
       return "Market Closed - US Independence Day";
-    if (NY_tz.tm_wday == MON && NY_tz.tm_mday >= 4 && NY_tz.tm_mday <= 6)
+    if (NY_tz.tm_wday == MON && NY_tz.tm_mday > 4 && NY_tz.tm_mday <= 6)
       return "Market Closed - US Independence Holiday";
     break;
   case AUG:
@@ -171,7 +173,7 @@ char *WhichHoliday(struct tm NY_tz) {
     /* Christmas Day */
     if (NY_tz.tm_mday == 25)
       return "Market Closed - Christmas Day";
-    if (NY_tz.tm_wday == MON && NY_tz.tm_mday >= 25 && NY_tz.tm_mday <= 27)
+    if (NY_tz.tm_wday == MON && NY_tz.tm_mday > 25 && NY_tz.tm_mday <= 27)
       return "Market Closed - Christmas Holiday";
     break;
   default: /* MAR || APR */
@@ -196,6 +198,8 @@ bool CheckHoliday(struct tm NY_tz) {
     /* New Years Day */
     if (NY_tz.tm_mday == 1)
       return true;
+    if (NY_tz.tm_wday == MON && NY_tz.tm_mday > 1 && NY_tz.tm_mday <= 3)
+      return true;
 
     /* Presidents Day */
     if (NY_tz.tm_wday == MON && NY_tz.tm_mday >= 15 && NY_tz.tm_mday <= 21)
@@ -215,14 +219,14 @@ bool CheckHoliday(struct tm NY_tz) {
     /* Juneteenth Day */
     if (NY_tz.tm_mday == 19)
       return true;
-    if (NY_tz.tm_wday == MON && NY_tz.tm_mday >= 19 && NY_tz.tm_mday <= 21)
+    if (NY_tz.tm_wday == MON && NY_tz.tm_mday > 19 && NY_tz.tm_mday <= 21)
       return true;
     break;
   case JUL:
     /* US Independence Day */
     if (NY_tz.tm_mday == 4)
       return true;
-    if (NY_tz.tm_wday == MON && NY_tz.tm_mday >= 4 && NY_tz.tm_mday <= 6)
+    if (NY_tz.tm_wday == MON && NY_tz.tm_mday > 4 && NY_tz.tm_mday <= 6)
       return true;
     break;
   case AUG:
@@ -249,7 +253,7 @@ bool CheckHoliday(struct tm NY_tz) {
     /* Christmas Day */
     if (NY_tz.tm_mday == 25)
       return true;
-    if (NY_tz.tm_wday == MON && NY_tz.tm_mday >= 25 && NY_tz.tm_mday <= 27)
+    if (NY_tz.tm_wday == MON && NY_tz.tm_mday > 25 && NY_tz.tm_mday <= 27)
       return true;
     break;
   default: /* MAR || APR */

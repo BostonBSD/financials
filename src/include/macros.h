@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 BostonBSD. All rights reserved.
+Copyright (c) 2022-2023 BostonBSD. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -78,8 +78,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #define YAHOO_URL_END "&interval=1d&events=history&includeAdjustedClose=true"
 #endif
 
-/* The symbol URL macros are used by the ClassInitMeta () and
- * api_callback () functions */
+/* The symbol URL macros are used by the ClassInitMeta () [class_meta.c] and
+ * api_callback () [sqlite.c] functions */
 #ifndef NASDAQ_SYMBOL_URL
 #define NASDAQ_SYMBOL_URL                                                      \
   "http://www.nasdaqtrader.com/dynamic/SymDir/nasdaqlisted.txt"

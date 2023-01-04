@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 BostonBSD. All rights reserved.
+Copyright (c) 2022-2023 BostonBSD. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -77,9 +77,9 @@ static int cash_callback(void *data, int argc, char **argv, char **ColName) {
 
   meta *mdata = (meta *)data;
 
-  mdata->cash_f = StringToDoub(argv[1] ? argv[1] : "0");
-  DoubToMonStrPango(&mdata->cash_mrkd_ch, mdata->cash_f,
-                    mdata->decimal_places_shrt);
+  mdata->cash_f = StringToDouble(argv[1] ? argv[1] : "0");
+  DoubleToMonStrPango(&mdata->cash_mrkd_ch, mdata->cash_f,
+                      mdata->decimal_places_shrt);
 
   pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
   return 0;
@@ -100,42 +100,44 @@ static int bullion_callback(void *data, int argc, char **argv, char **ColName) {
   if (strcmp(ColName[3], "Premium") != 0)
     return 1;
 
-  metal *m = (metal *)data;
+  portfolio_packet *pkg = (portfolio_packet *)data;
+  meta *D = pkg->GetMetaClass();
+  metal *m = pkg->GetMetalClass();
 
   if (strcasecmp(argv[1], "gold") == 0) {
-    m->Gold->ounce_f = StringToDoub(argv[2] ? argv[2] : "0");
-    DoubToNumStrPango(&m->Gold->ounce_mrkd_ch, m->Gold->ounce_f, 4);
+    m->Gold->ounce_f = StringToDouble(argv[2] ? argv[2] : "0");
+    DoubleToNumStrPango(&m->Gold->ounce_mrkd_ch, m->Gold->ounce_f, 4);
 
-    m->Gold->premium_f = StringToDoub(argv[3] ? argv[3] : "0");
-    DoubToMonStrPango(&m->Gold->premium_mrkd_ch, m->Gold->premium_f,
-                      m->decimal_places_shrt);
+    m->Gold->premium_f = StringToDouble(argv[3] ? argv[3] : "0");
+    DoubleToMonStrPango(&m->Gold->premium_mrkd_ch, m->Gold->premium_f,
+                        D->decimal_places_shrt);
   }
 
   if (strcasecmp(argv[1], "silver") == 0) {
-    m->Silver->ounce_f = StringToDoub(argv[2] ? argv[2] : "0");
-    DoubToNumStrPango(&m->Silver->ounce_mrkd_ch, m->Silver->ounce_f, 4);
+    m->Silver->ounce_f = StringToDouble(argv[2] ? argv[2] : "0");
+    DoubleToNumStrPango(&m->Silver->ounce_mrkd_ch, m->Silver->ounce_f, 4);
 
-    m->Silver->premium_f = StringToDoub(argv[3] ? argv[3] : "0");
-    DoubToMonStrPango(&m->Silver->premium_mrkd_ch, m->Silver->premium_f,
-                      m->decimal_places_shrt);
+    m->Silver->premium_f = StringToDouble(argv[3] ? argv[3] : "0");
+    DoubleToMonStrPango(&m->Silver->premium_mrkd_ch, m->Silver->premium_f,
+                        D->decimal_places_shrt);
   }
 
   if (strcasecmp(argv[1], "platinum") == 0) {
-    m->Platinum->ounce_f = StringToDoub(argv[2] ? argv[2] : "0");
-    DoubToNumStrPango(&m->Platinum->ounce_mrkd_ch, m->Platinum->ounce_f, 4);
+    m->Platinum->ounce_f = StringToDouble(argv[2] ? argv[2] : "0");
+    DoubleToNumStrPango(&m->Platinum->ounce_mrkd_ch, m->Platinum->ounce_f, 4);
 
-    m->Platinum->premium_f = StringToDoub(argv[3] ? argv[3] : "0");
-    DoubToMonStrPango(&m->Platinum->premium_mrkd_ch, m->Platinum->premium_f,
-                      m->decimal_places_shrt);
+    m->Platinum->premium_f = StringToDouble(argv[3] ? argv[3] : "0");
+    DoubleToMonStrPango(&m->Platinum->premium_mrkd_ch, m->Platinum->premium_f,
+                        D->decimal_places_shrt);
   }
 
   if (strcasecmp(argv[1], "palladium") == 0) {
-    m->Palladium->ounce_f = StringToDoub(argv[2] ? argv[2] : "0");
-    DoubToNumStrPango(&m->Palladium->ounce_mrkd_ch, m->Palladium->ounce_f, 4);
+    m->Palladium->ounce_f = StringToDouble(argv[2] ? argv[2] : "0");
+    DoubleToNumStrPango(&m->Palladium->ounce_mrkd_ch, m->Palladium->ounce_f, 4);
 
-    m->Palladium->premium_f = StringToDoub(argv[3] ? argv[3] : "0");
-    DoubToMonStrPango(&m->Palladium->premium_mrkd_ch, m->Palladium->premium_f,
-                      m->decimal_places_shrt);
+    m->Palladium->premium_f = StringToDouble(argv[3] ? argv[3] : "0");
+    DoubleToMonStrPango(&m->Palladium->premium_mrkd_ch, m->Palladium->premium_f,
+                        D->decimal_places_shrt);
   }
 
   pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
@@ -331,7 +333,6 @@ void SqliteProcessing(portfolio_packet *pkg) {
   /* There are two database files, one holds the config info,
   the other holds the stock symbol-security name mapping. */
   equity_folder *F = pkg->GetEquityFolderClass();
-  metal *M = pkg->GetMetalClass();
   meta *D = pkg->GetMetaClass();
   window_data *W = pkg->GetWindowData();
   char *err_msg = 0;
@@ -415,16 +416,12 @@ void SqliteProcessing(portfolio_packet *pkg) {
   if (sqlite3_exec(db, sql_cmd, api_callback, D, &err_msg) != SQLITE_OK)
     error_msg(db);
 
-  /* Synchronize the display precision for each asset */
-  F->decimal_places_shrt = D->decimal_places_shrt;
-  M->decimal_places_shrt = D->decimal_places_shrt;
-
   sql_cmd = "SELECT * FROM equity;";
   if (sqlite3_exec(db, sql_cmd, equity_callback, F, &err_msg) != SQLITE_OK)
     error_msg(db);
 
   sql_cmd = "SELECT * FROM bullion;";
-  if (sqlite3_exec(db, sql_cmd, bullion_callback, M, &err_msg) != SQLITE_OK)
+  if (sqlite3_exec(db, sql_cmd, bullion_callback, pkg, &err_msg) != SQLITE_OK)
     error_msg(db);
 
   sql_cmd = "SELECT * FROM cash;";
@@ -517,7 +514,7 @@ void SqliteAddEquity(const char *symbol, const char *shares, meta *D) {
 }
 
 void SqliteAddBullion(const char *metal_name, const char *ounces,
-                      const char *premium, metal *M, meta *D) {
+                      const char *premium, meta *D) {
   pthread_mutex_lock(&mutex_working[SQLITE_MUTEX]);
 
   unsigned short len;
@@ -545,11 +542,6 @@ void SqliteAddBullion(const char *metal_name, const char *ounces,
   if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
     error_msg(db);
   free(sql_cmd);
-
-  /* Update the metal handle. */
-  sql_cmd = "SELECT * FROM bullion;";
-  if (sqlite3_exec(db, sql_cmd, bullion_callback, M, &err_msg) != SQLITE_OK)
-    error_msg(db);
 
   /* Close the sqlite database file. */
   sqlite3_close(db);
@@ -579,11 +571,6 @@ void SqliteAddCash(const char *value, meta *D) {
   if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
     error_msg(db);
   free(sql_cmd);
-
-  /* Update the cash value in the meta class. */
-  sql_cmd = "SELECT * FROM cash;";
-  if (sqlite3_exec(db, sql_cmd, cash_callback, D, &err_msg) != SQLITE_OK)
-    error_msg(db);
 
   /* Close the sqlite database file. */
   sqlite3_close(db);
@@ -941,7 +928,7 @@ static void *add_mapping_to_database(void *data) {
   free(mmc);
 
   pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_SQLITE_MUTEX]);
-  return NULL;
+  pthread_exit(NULL);
 }
 
 void SqliteAddMap(symbol_name_map *sn_map, meta *D) {
@@ -952,4 +939,5 @@ void SqliteAddMap(symbol_name_map *sn_map, meta *D) {
   /* Add the data in a separate thread; saves time. */
   pthread_t thread_id;
   pthread_create(&thread_id, NULL, add_mapping_to_database, mmc);
+  pthread_detach(thread_id);
 }

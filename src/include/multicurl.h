@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 BostonBSD. All rights reserved.
+Copyright (c) 2022-2023 BostonBSD. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -36,6 +36,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "multicurl_types.h" /* MemType, CURL, CURLM */
 
 /* Function Prototypes */
+void FreeMemtype(MemType *);
 void *SetUpCurlHandle(CURL *, CURLM *, char *, MemType *);
 unsigned short PerformMultiCurl(CURLM *, double);
 unsigned short PerformMultiCurl_no_prog(CURLM *);

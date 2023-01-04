@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 BostonBSD. All rights reserved.
+Copyright (c) 2022-2023 BostonBSD. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -90,8 +90,6 @@ enum {
 /* Callback/Thread Handler Index Signals */
 typedef enum {
   MAIN_FETCH_BTN,
-  MAIN_CLOCK,
-  MAIN_TIME_CLOSE_INDICATOR,
   MAIN_EXIT,
   EQUITY_TOGGLE_BTN,
   EQUITY_OK_BTN,
@@ -110,9 +108,8 @@ typedef enum {
   RSI_TOGGLE_BTN,
   RSI_FETCH_BTN,
   RSI_CURSOR_MOVE,
-  COMPLETION,
   ABOUT_TOGGLE_BTN,
-  SHORTCUT_TOGGLE_BTN,
+  HOTKEYS_TOGGLE_BTN,
   PREF_TOGGLE_BTN,
   PREF_SYMBOL_UPDATE_BTN,
   SIGNAL_NUM

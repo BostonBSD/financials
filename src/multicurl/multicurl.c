@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 BostonBSD. All rights reserved.
+Copyright (c) 2022-2023 BostonBSD. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -39,9 +39,18 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #define MAX_WAIT_MSECS 50
 
+void FreeMemtype(MemType *mem_data) {
+/* Reset the MemType members, doesn't free the 
+   object pointer. */
+  if (mem_data->memory) {
+    free(mem_data->memory);
+    mem_data->memory = NULL;
+  }
+  mem_data->size = 0;
+}
 
-/* This callback function example can be found here: 
-   https://everything.curl.dev/libcurl/callbacks/write 
+/* This callback function example can be found here:
+   https://everything.curl.dev/libcurl/callbacks/write
 */
 static size_t write_callback(char *ptr, size_t size, size_t nmemb,
                              void *userdata)
@@ -83,6 +92,11 @@ void *SetUpCurlHandle(CURL *hnd, CURLM *mh, char *url, MemType *output)
 /* Take in an easy handle pointer address, a multihandle pointer address, a URL,
    and a struct pointer address, add easy handle to multi handle. */
 {
+  /* Make sure output->memory = NULL
+     or an allocated pointer addr. */
+  if (output->memory)
+    FreeMemtype(output); /* Resets the output members, doesn't free the output
+                            pointer. */
   output->memory =
       malloc(1);    /* Initialize the memory component of the structure. */
   output->size = 0; /* Initialize the size component of the structure. */
@@ -180,7 +194,7 @@ unsigned short PerformMultiCurl(CURLM *mh, double size)
   } while (still_running);
 
   /* Reset the Progress Bar outside this function.
-     [ the MainPrimaryTreeview function ]
+     [ the MainProgBarReset function ]
      Prevents data corruption through pointer passing.
   */
 

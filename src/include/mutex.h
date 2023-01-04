@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 BostonBSD. All rights reserved.
+Copyright (c) 2022-2023 BostonBSD. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -38,7 +38,10 @@ POSSIBILITY OF SUCH DAMAGE.
 /* System mutex enum */
 enum {
   CLASS_MEMBER_MUTEX,
+  CLASS_CALCULATE_MUTEX,
+  CLASS_TOSTRINGS_MUTEX,
   FETCH_DATA_MUTEX,
+  RSI_FETCH_MUTEX,
   MULTICURL_PROG_MUTEX,
   MULTICURL_NO_PROG_MUTEX,
   SYMBOL_NAME_MAP_MUTEX,

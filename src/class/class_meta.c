@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 BostonBSD. All rights reserved.
+Copyright (c) 2022-2023 BostonBSD. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -38,9 +38,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <pwd.h>
 #include <unistd.h>
 
-#include <locale.h>
-#include <monetary.h>
-
 #include "../include/class_types.h" /* Includes portfolio_packet, metal, meta, 
                                              and equity_folder class types */
 
@@ -63,21 +60,22 @@ static void ToStringsPortfolio() {
   meta *Met = MetaClassObject;
 
   /* The cash value. */
-  DoubToMonStrPango(&Met->cash_mrkd_ch, Met->cash_f, Met->decimal_places_shrt);
+  DoubleToMonStrPango(&Met->cash_mrkd_ch, Met->cash_f,
+                      Met->decimal_places_shrt);
 
   /* The total portfolio value. */
-  DoubToMonStrPango(&Met->portfolio_port_value_mrkd_ch,
-                    Met->portfolio_port_value_f, Met->decimal_places_shrt);
+  DoubleToMonStrPango(&Met->portfolio_port_value_mrkd_ch,
+                      Met->portfolio_port_value_f, Met->decimal_places_shrt);
 
   /* The change in total portfolio value. */
-  DoubToMonStrPangoColor(&Met->portfolio_port_value_chg_mrkd_ch,
-                         Met->portfolio_port_value_chg_f,
-                         Met->decimal_places_shrt, NOT_ITALIC);
+  DoubleToMonStrPangoColor(&Met->portfolio_port_value_chg_mrkd_ch,
+                           Met->portfolio_port_value_chg_f,
+                           Met->decimal_places_shrt, NOT_ITALIC);
 
   /* The change in total portfolio value as a percentage. */
-  DoubToPerStrPangoColor(&Met->portfolio_port_value_p_chg_mrkd_ch,
-                         Met->portfolio_port_value_p_chg_f,
-                         Met->decimal_places_shrt, NOT_ITALIC);
+  DoubleToPerStrPangoColor(&Met->portfolio_port_value_p_chg_mrkd_ch,
+                           Met->portfolio_port_value_p_chg_f,
+                           Met->decimal_places_shrt, NOT_ITALIC);
 }
 
 static void CalculatePortfolio(void *data) {
@@ -234,8 +232,7 @@ static void extract_index_data(char *index, MemType *Data) {
       Met->crypto_bitcoin_value_p_chg_f = 0.0f;
     }
 
-    free(Data->memory);
-    Data->memory = NULL;
+    FreeMemtype(Data);
     return;
   }
 
@@ -281,8 +278,7 @@ static void extract_index_data(char *index, MemType *Data) {
   }
 
   fclose(fp);
-  free(Data->memory);
-  Data->memory = NULL;
+  FreeMemtype(Data);
 }
 
 static void ExtractIndicesData() {
@@ -297,27 +293,31 @@ static void ExtractIndicesData() {
 static void ToStringsIndices() {
   meta *Met = MetaClassObject;
 
-  DoubToNumStr(&Met->index_dow_value_ch, Met->index_dow_value_f, 2);
-  DoubToNumStr(&Met->index_dow_value_chg_ch, Met->index_dow_value_chg_f, 2);
-  DoubToPerStr(&Met->index_dow_value_p_chg_ch, Met->index_dow_value_p_chg_f, 2);
+  DoubleToNumStr(&Met->index_dow_value_ch, Met->index_dow_value_f, 2);
+  DoubleToNumStr(&Met->index_dow_value_chg_ch, Met->index_dow_value_chg_f, 2);
+  DoubleToPerStr(&Met->index_dow_value_p_chg_ch, Met->index_dow_value_p_chg_f,
+                 2);
 
-  DoubToNumStr(&Met->index_nasdaq_value_ch, Met->index_nasdaq_value_f, 2);
-  DoubToNumStr(&Met->index_nasdaq_value_chg_ch, Met->index_nasdaq_value_chg_f,
-               2);
-  DoubToPerStr(&Met->index_nasdaq_value_p_chg_ch,
-               Met->index_nasdaq_value_p_chg_f, 2);
+  DoubleToNumStr(&Met->index_nasdaq_value_ch, Met->index_nasdaq_value_f, 2);
+  DoubleToNumStr(&Met->index_nasdaq_value_chg_ch, Met->index_nasdaq_value_chg_f,
+                 2);
+  DoubleToPerStr(&Met->index_nasdaq_value_p_chg_ch,
+                 Met->index_nasdaq_value_p_chg_f, 2);
 
-  DoubToNumStr(&Met->index_sp_value_ch, Met->index_sp_value_f, 2);
-  DoubToNumStr(&Met->index_sp_value_chg_ch, Met->index_sp_value_chg_f, 2);
-  DoubToPerStr(&Met->index_sp_value_p_chg_ch, Met->index_sp_value_p_chg_f, 2);
+  DoubleToNumStr(&Met->index_sp_value_ch, Met->index_sp_value_f, 2);
+  DoubleToNumStr(&Met->index_sp_value_chg_ch, Met->index_sp_value_chg_f, 2);
+  DoubleToPerStr(&Met->index_sp_value_p_chg_ch, Met->index_sp_value_p_chg_f, 2);
 
   DoubleToMonStr(&Met->crypto_bitcoin_value_ch, Met->crypto_bitcoin_value_f, 2);
   DoubleToMonStr(&Met->crypto_bitcoin_value_chg_ch,
                  Met->crypto_bitcoin_value_chg_f, 2);
-  DoubToPerStr(&Met->crypto_bitcoin_value_p_chg_ch,
-               Met->crypto_bitcoin_value_p_chg_f, 2);
+  DoubleToPerStr(&Met->crypto_bitcoin_value_p_chg_ch,
+                 Met->crypto_bitcoin_value_p_chg_f, 2);
 }
 
+/* The order of the strings, in these struct inits, is important,
+   they match similar names within the struct definitions
+   (in class_types.h). */
 static primary_heading primary_headings = {
     "Bullion",    "Metal",        "Ounces",
     "Spot Price", "Premium",      "High",
@@ -345,75 +345,87 @@ static default_heading default_headings = {"Bullion",
 
 static void format_primary_headings_pango(primary_heading *pri_h_mkd) {
 
-  StrToStrPangoColor(&pri_h_mkd->bullion, primary_headings.bullion, BOLD);
-  StrToStrPangoColor(&pri_h_mkd->metal, primary_headings.metal, BOLD_UNDERLINE);
-  StrToStrPangoColor(&pri_h_mkd->ounces, primary_headings.ounces,
-                     BOLD_UNDERLINE);
+  StringToStrPangoColor(&pri_h_mkd->bullion, primary_headings.bullion, BOLD);
+  StringToStrPangoColor(&pri_h_mkd->metal, primary_headings.metal,
+                        BOLD_UNDERLINE);
+  StringToStrPangoColor(&pri_h_mkd->ounces, primary_headings.ounces,
+                        BOLD_UNDERLINE);
 
-  StrToStrPangoColor(&pri_h_mkd->spot_price, primary_headings.spot_price,
-                     BOLD_UNDERLINE);
-  StrToStrPangoColor(&pri_h_mkd->premium, primary_headings.premium,
-                     BOLD_UNDERLINE);
-  StrToStrPangoColor(&pri_h_mkd->high, primary_headings.high, BOLD_UNDERLINE);
+  StringToStrPangoColor(&pri_h_mkd->spot_price, primary_headings.spot_price,
+                        BOLD_UNDERLINE);
+  StringToStrPangoColor(&pri_h_mkd->premium, primary_headings.premium,
+                        BOLD_UNDERLINE);
+  StringToStrPangoColor(&pri_h_mkd->high, primary_headings.high,
+                        BOLD_UNDERLINE);
 
-  StrToStrPangoColor(&pri_h_mkd->low, primary_headings.low, BOLD_UNDERLINE);
-  StrToStrPangoColor(&pri_h_mkd->prev_closing, primary_headings.prev_closing,
-                     BOLD_UNDERLINE);
-  StrToStrPangoColor(&pri_h_mkd->chg_ounce, primary_headings.chg_ounce,
-                     BOLD_UNDERLINE);
+  StringToStrPangoColor(&pri_h_mkd->low, primary_headings.low, BOLD_UNDERLINE);
+  StringToStrPangoColor(&pri_h_mkd->prev_closing, primary_headings.prev_closing,
+                        BOLD_UNDERLINE);
+  StringToStrPangoColor(&pri_h_mkd->chg_ounce, primary_headings.chg_ounce,
+                        BOLD_UNDERLINE);
 
-  StrToStrPangoColor(&pri_h_mkd->gain_sym, primary_headings.gain_sym,
-                     BOLD_UNDERLINE);
-  StrToStrPangoColor(&pri_h_mkd->total, primary_headings.total, BOLD_UNDERLINE);
-  StrToStrPangoColor(&pri_h_mkd->gain_per, primary_headings.gain_per,
-                     BOLD_UNDERLINE);
+  StringToStrPangoColor(&pri_h_mkd->gain_sym, primary_headings.gain_sym,
+                        BOLD_UNDERLINE);
+  StringToStrPangoColor(&pri_h_mkd->total, primary_headings.total,
+                        BOLD_UNDERLINE);
+  StringToStrPangoColor(&pri_h_mkd->gain_per, primary_headings.gain_per,
+                        BOLD_UNDERLINE);
 
-  StrToStrPangoColor(&pri_h_mkd->gold, primary_headings.gold, BOLD);
-  StrToStrPangoColor(&pri_h_mkd->silver, primary_headings.silver, BOLD);
-  StrToStrPangoColor(&pri_h_mkd->platinum, primary_headings.platinum, BOLD);
+  StringToStrPangoColor(&pri_h_mkd->gold, primary_headings.gold, BOLD);
+  StringToStrPangoColor(&pri_h_mkd->silver, primary_headings.silver, BOLD);
+  StringToStrPangoColor(&pri_h_mkd->platinum, primary_headings.platinum, BOLD);
 
-  StrToStrPangoColor(&pri_h_mkd->palladium, primary_headings.palladium, BOLD);
-  StrToStrPangoColor(&pri_h_mkd->equity, primary_headings.equity, BOLD);
-  StrToStrPangoColor(&pri_h_mkd->symbol, primary_headings.symbol,
-                     BOLD_UNDERLINE);
+  StringToStrPangoColor(&pri_h_mkd->palladium, primary_headings.palladium,
+                        BOLD);
+  StringToStrPangoColor(&pri_h_mkd->equity, primary_headings.equity, BOLD);
+  StringToStrPangoColor(&pri_h_mkd->symbol, primary_headings.symbol,
+                        BOLD_UNDERLINE);
 
-  StrToStrPangoColor(&pri_h_mkd->shares, primary_headings.shares,
-                     BOLD_UNDERLINE);
-  StrToStrPangoColor(&pri_h_mkd->price, primary_headings.price, BOLD_UNDERLINE);
-  StrToStrPangoColor(&pri_h_mkd->opening, primary_headings.opening,
-                     BOLD_UNDERLINE);
+  StringToStrPangoColor(&pri_h_mkd->shares, primary_headings.shares,
+                        BOLD_UNDERLINE);
+  StringToStrPangoColor(&pri_h_mkd->price, primary_headings.price,
+                        BOLD_UNDERLINE);
+  StringToStrPangoColor(&pri_h_mkd->opening, primary_headings.opening,
+                        BOLD_UNDERLINE);
 
-  StrToStrPangoColor(&pri_h_mkd->chg_share, primary_headings.chg_share,
-                     BOLD_UNDERLINE);
-  StrToStrPangoColor(&pri_h_mkd->asset, primary_headings.asset, BOLD_UNDERLINE);
-  StrToStrPangoColor(&pri_h_mkd->value, primary_headings.value, BOLD_UNDERLINE);
+  StringToStrPangoColor(&pri_h_mkd->chg_share, primary_headings.chg_share,
+                        BOLD_UNDERLINE);
+  StringToStrPangoColor(&pri_h_mkd->asset, primary_headings.asset,
+                        BOLD_UNDERLINE);
+  StringToStrPangoColor(&pri_h_mkd->value, primary_headings.value,
+                        BOLD_UNDERLINE);
 
-  StrToStrPangoColor(&pri_h_mkd->cash, primary_headings.cash, BOLD);
-  StrToStrPangoColor(&pri_h_mkd->portfolio, primary_headings.portfolio, BOLD);
-  StrToStrPangoColor(&pri_h_mkd->no_assets, primary_headings.no_assets, BLUE);
+  StringToStrPangoColor(&pri_h_mkd->cash, primary_headings.cash, BOLD);
+  StringToStrPangoColor(&pri_h_mkd->portfolio, primary_headings.portfolio,
+                        BOLD);
+  StringToStrPangoColor(&pri_h_mkd->no_assets, primary_headings.no_assets,
+                        BLUE);
 }
 
 static void format_default_headings_pango(default_heading *def_h_mkd) {
 
-  StrToStrPangoColor(&def_h_mkd->bullion, default_headings.bullion, BOLD);
-  StrToStrPangoColor(&def_h_mkd->metal, default_headings.metal, BOLD_UNDERLINE);
-  StrToStrPangoColor(&def_h_mkd->ounces, default_headings.ounces,
-                     BOLD_UNDERLINE);
-  StrToStrPangoColor(&def_h_mkd->premium, default_headings.premium,
-                     BOLD_UNDERLINE);
-  StrToStrPangoColor(&def_h_mkd->gold, default_headings.gold, BOLD);
-  StrToStrPangoColor(&def_h_mkd->silver, default_headings.silver, BOLD);
-  StrToStrPangoColor(&def_h_mkd->platinum, default_headings.platinum, BOLD);
-  StrToStrPangoColor(&def_h_mkd->palladium, default_headings.palladium, BOLD);
+  StringToStrPangoColor(&def_h_mkd->bullion, default_headings.bullion, BOLD);
+  StringToStrPangoColor(&def_h_mkd->metal, default_headings.metal,
+                        BOLD_UNDERLINE);
+  StringToStrPangoColor(&def_h_mkd->ounces, default_headings.ounces,
+                        BOLD_UNDERLINE);
+  StringToStrPangoColor(&def_h_mkd->premium, default_headings.premium,
+                        BOLD_UNDERLINE);
+  StringToStrPangoColor(&def_h_mkd->gold, default_headings.gold, BOLD);
+  StringToStrPangoColor(&def_h_mkd->silver, default_headings.silver, BOLD);
+  StringToStrPangoColor(&def_h_mkd->platinum, default_headings.platinum, BOLD);
+  StringToStrPangoColor(&def_h_mkd->palladium, default_headings.palladium,
+                        BOLD);
 
-  StrToStrPangoColor(&def_h_mkd->equity, default_headings.equity, BOLD);
-  StrToStrPangoColor(&def_h_mkd->symbol, default_headings.symbol,
-                     BOLD_UNDERLINE);
-  StrToStrPangoColor(&def_h_mkd->shares, default_headings.shares,
-                     BOLD_UNDERLINE);
+  StringToStrPangoColor(&def_h_mkd->equity, default_headings.equity, BOLD);
+  StringToStrPangoColor(&def_h_mkd->symbol, default_headings.symbol,
+                        BOLD_UNDERLINE);
+  StringToStrPangoColor(&def_h_mkd->shares, default_headings.shares,
+                        BOLD_UNDERLINE);
 
-  StrToStrPangoColor(&def_h_mkd->cash, default_headings.cash, BOLD);
-  StrToStrPangoColor(&def_h_mkd->no_assets, default_headings.no_assets, BLUE);
+  StringToStrPangoColor(&def_h_mkd->cash, default_headings.cash, BOLD);
+  StringToStrPangoColor(&def_h_mkd->no_assets, default_headings.no_assets,
+                        BLUE);
 }
 
 static void free_primary_headings(primary_heading *pri_h_mkd) {
@@ -527,6 +539,7 @@ meta *ClassInitMeta() {
   new_class->fetching_data_bool = false;
   new_class->holiday_bool = false;
   new_class->multicurl_cancel_bool = false;
+  new_class->multicurl_cancel_main_bool = false;
   new_class->index_bar_revealed_bool = true;
   new_class->clocks_displayed_bool = true;
   new_class->main_win_default_view_bool = true;
@@ -547,6 +560,10 @@ meta *ClassInitMeta() {
   new_class->INDEX_NASDAQ_CURLDATA.memory = NULL;
   new_class->INDEX_SP_CURLDATA.memory = NULL;
   new_class->CRYPTO_BITCOIN_CURLDATA.memory = NULL;
+
+  new_class->thread_id_clock = 0;
+  new_class->thread_id_closing_time = 0;
+  new_class->thread_id_main_fetch_data = 0;
 
   /* Set The User's Home Directory */
   /* We need to get the path to the User's home directory: */
@@ -688,25 +705,10 @@ void ClassDestructMeta(meta *meta_class) {
   if (meta_class->multicurl_rsi_hnd)
     curl_multi_cleanup(meta_class->multicurl_rsi_hnd);
 
-  if (meta_class->INDEX_DOW_CURLDATA.memory) {
-    free(meta_class->INDEX_DOW_CURLDATA.memory);
-    meta_class->INDEX_DOW_CURLDATA.memory = NULL;
-  }
-
-  if (meta_class->INDEX_NASDAQ_CURLDATA.memory) {
-    free(meta_class->INDEX_NASDAQ_CURLDATA.memory);
-    meta_class->INDEX_NASDAQ_CURLDATA.memory = NULL;
-  }
-
-  if (meta_class->INDEX_SP_CURLDATA.memory) {
-    free(meta_class->INDEX_SP_CURLDATA.memory);
-    meta_class->INDEX_SP_CURLDATA.memory = NULL;
-  }
-
-  if (meta_class->CRYPTO_BITCOIN_CURLDATA.memory) {
-    free(meta_class->CRYPTO_BITCOIN_CURLDATA.memory);
-    meta_class->CRYPTO_BITCOIN_CURLDATA.memory = NULL;
-  }
+  FreeMemtype(&meta_class->INDEX_DOW_CURLDATA);
+  FreeMemtype(&meta_class->INDEX_NASDAQ_CURLDATA);
+  FreeMemtype(&meta_class->INDEX_SP_CURLDATA);
+  FreeMemtype(&meta_class->CRYPTO_BITCOIN_CURLDATA);
 
   /* Free Memory From Class Object */
   if (meta_class) {

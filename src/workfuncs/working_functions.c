@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 BostonBSD. All rights reserved.
+Copyright (c) 2022-2023 BostonBSD. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -114,19 +114,20 @@ static char *rsi_get_url(const char *symbol) {
 MemType *FetchRSIData(const char *symbol, portfolio_packet *pkg) {
   meta *D = pkg->GetMetaClass();
   char *MyUrl = NULL;
-  MyUrl = rsi_get_url(symbol);
-
   MemType *MyOutputStruct = (MemType *)malloc(sizeof(*MyOutputStruct));
   MyOutputStruct->memory = NULL;
+  MyOutputStruct->size = 0;
+  
+  MyUrl = rsi_get_url(symbol);
 
   SetUpCurlHandle(D->rsi_hnd, D->multicurl_rsi_hnd, MyUrl, MyOutputStruct);
   if (PerformMultiCurl_no_prog(D->multicurl_rsi_hnd) != 0) {
     free(MyUrl);
-    free(MyOutputStruct->memory);
+    FreeMemtype(MyOutputStruct);
     free(MyOutputStruct);
     return NULL;
   }
+  
   free(MyUrl);
-
   return MyOutputStruct;
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 BostonBSD. All rights reserved.
+Copyright (c) 2022-2023 BostonBSD. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -33,16 +33,13 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "financials.h"
 
 /* PascalCase for public functions, snake_case for private functions.
-   This is consistent throughout the source code.
+   The handler functions are PascalCase with snake_case postfixed for greater
+   clarity, these are public functions.
 
    In the class files, PascalCase names are class methods, snake_case names
    are private [static to that file]. */
 
 pthread_mutex_t mutex_working[MUTEX_NUMBER]; /* A Posix Mutex Array */
-/*  Semaphores are the same as mutexes with the added capability to conduct
-    interprocess communication, we use them here the same way as a mutex just
-    to illustrate their use. */
-sem_t semaphore[SIGNAL_NUM]; /* A Posix Semaphore Array */
 
 static void mutex_init()
 /* Initialize Mutexes */
@@ -63,29 +60,6 @@ static void mutex_destruct()
   short g = 0;
   while (g < MUTEX_NUMBER) {
     pthread_mutex_destroy(&mutex_working[g]);
-    g++;
-  }
-}
-
-static void semaphore_init()
-/* Initialize Semaphores */
-{
-  short g = 0;
-  while (g < SIGNAL_NUM) {
-    if (sem_init(&semaphore[g], 0, 1) != 0) {
-      printf("\nPosix semaphore init has failed\n");
-      exit(EXIT_FAILURE);
-    }
-    g++;
-  }
-}
-
-static void semaphore_destruct()
-/* Free Semaphore Resources */
-{
-  short g = 0;
-  while (g < SIGNAL_NUM) {
-    sem_destroy(&semaphore[g]);
     g++;
   }
 }
@@ -121,23 +95,12 @@ int main(int argc, char *argv[]) {
   /* This needs to be initialized before ReadConfig */
   class_package_init();
 
-  /* Initialize Xlib support for concurrent threads */
-  /* This needs to be initialized before gtk_init */
-
-  /* Some sources say this is not required because gdk_threads_add_idle
-     will do this automatically.  Other sources say they've experienced
-     problems without it while using gdk_threads_add_idle. */
-  XInitThreads();
-
   /* Initialize gtk */
   gtk_init(&argc, &argv);
 
   /* Initialize Mutexes */
   /* This needs to be initialized before ReadConfig */
   mutex_init();
-
-  /* Initialize Semaphores */
-  semaphore_init();
 
   /* Read config file and populate associated variables */
   ReadConfig(packet);
@@ -150,9 +113,6 @@ int main(int argc, char *argv[]) {
 
   /* Free Mutex Resources */
   mutex_destruct();
-
-  /* Free Semaphore Resources */
-  semaphore_destruct();
 
   return 0;
 }

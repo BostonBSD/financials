@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 BostonBSD. All rights reserved.
+Copyright (c) 2022-2023 BostonBSD. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -47,6 +47,7 @@ typedef bool sub_func_d_t();
 typedef void sub_func_e_t(bool);
 typedef double sub_func_f_t();
 typedef unsigned int sub_func_g_t();
+typedef void sub_func_h_t(unsigned short);
 
 typedef struct { /* A container to hold the type of row and symbol, on a right
                     click */
@@ -265,12 +266,14 @@ typedef struct {
   char *sqlite_symbol_name_db_path_ch; /* Path to the sqlite symbol-name db file
                                         */
 
-  /* A bit field of six bits, used syntactically
+  /* A bit field of seven bits, used syntactically
      the same as bools */
   bool fetching_data_bool : 1;    /* Indicates a fetch operation in progress. */
   bool holiday_bool : 1;          /* Indicates if today is a holiday. */
-  bool multicurl_cancel_bool : 1; /* Indicates if we should cancel the
-                                     multicurl request. */
+  bool multicurl_cancel_bool : 1; /* Indicates if we should cancel all
+                                     multicurl requests. */
+  bool multicurl_cancel_main_bool : 1; /* Indicates if we should cancel the
+                                          main multicurl request. */
   bool index_bar_revealed_bool : 1;    /* Indicates if the indices bar is
                                           revealed or not. */
   bool clocks_displayed_bool : 1;      /* Indicates if the clocks are
@@ -298,6 +301,11 @@ typedef struct {
   MemType INDEX_SP_CURLDATA;
   MemType CRYPTO_BITCOIN_CURLDATA;
 
+  /* Thread Ids */
+  pthread_t thread_id_clock;
+  pthread_t thread_id_closing_time;
+  pthread_t thread_id_main_fetch_data;
+
   /*
      Methods or Functions
      Create a function pointer from the type here.
@@ -324,8 +332,6 @@ typedef struct {
   double bullion_port_value_p_chg_f;
   double gold_silver_ratio_f;
 
-  unsigned short decimal_places_shrt;
-
   /* Pango Markup language strings */
   char *bullion_port_value_mrkd_ch;       /* Total value of bullion holdings */
   char *bullion_port_value_chg_mrkd_ch;   /* Total value of bullion holdings
@@ -337,7 +343,7 @@ typedef struct {
   char *gold_silver_ratio_ch;
 
   /* Methods or Functions */
-  sub_func_b_t *ToStrings;
+  sub_func_h_t *ToStrings;
   sub_func_b_t *Calculate;
   sub_func_c_t *SetUpCurl;
   sub_func_b_t *ExtractData;
@@ -352,10 +358,9 @@ typedef struct {
   double stock_port_value_chg_f;
   double stock_port_value_p_chg_f;
 
-  /* Can have up to 255 stocks [0-254]: 8 bits. */
+  /* Can have up to 255 stocks [0-254]: 8 bits.
+     I'd like to keep this a bit field in order to limit it to 8 bits. */
   unsigned short size : 8;
-  /* Only need to count to three: 2 bits */
-  unsigned short decimal_places_shrt : 2;
 
   /* Pango Markup language strings */
   char *stock_port_value_ch;       /* Total value of equity holdings */
@@ -364,7 +369,7 @@ typedef struct {
                                       change */
 
   /* Methods or Functions */
-  sub_func_b_t *ToStrings;
+  sub_func_h_t *ToStrings;
   sub_func_b_t *Calculate;
   sub_func_b_t *GenerateURL;
   sub_func_c_t *SetUpCurl;
@@ -395,9 +400,13 @@ typedef struct {
   sub_func_e_t *SetFetchingData;
   sub_func_d_t *IsDefaultView;
   sub_func_e_t *SetDefaultView;
-  sub_func_b_t *StopMultiCurl;
+  sub_func_b_t *FreeMainCurlData;
+  sub_func_b_t *StopMultiCurlMain;
+  sub_func_b_t *StopMultiCurlAll;
   sub_func_d_t *IsCurlCanceled;
   sub_func_e_t *SetCurlCanceled;
+  sub_func_d_t *IsMainCurlCanceled;
+  sub_func_e_t *SetMainCurlCanceled;
   sub_func_f_t *GetHoursOfUpdates;
   sub_func_f_t *GetUpdatesPerMinute;
   sub_func_d_t *IsHoliday;

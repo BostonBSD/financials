@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 BostonBSD. All rights reserved.
+Copyright (c) 2022-2023 BostonBSD. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -106,8 +106,8 @@ void CopyString(char **dst, const char *src)
 
    Reallocs memory to fit the src string.
 
-   Take care that *dst is not an unallocated ptr address.
-   Set *dst = NULL first or send an allocated ptr address.
+   Take care that *dst is not an unallocated address.
+   Set *dst = NULL first or send an allocated address.
    */
 {
   if (!dst || !src)
@@ -353,8 +353,8 @@ void DoubleToMonStr(char **dst, const double num,
   }
 }
 
-void DoubToPerStr(char **dst, const double num,
-                  const unsigned short digits_right)
+void DoubleToPerStr(char **dst, const double num,
+                    const unsigned short digits_right)
 /* Take in a string buffer, a double, and the number of digits
    to the right of the decimal point, convert to a percent string,
    grouping the digits according to the locale [dec points or commas].
@@ -402,8 +402,8 @@ void DoubToPerStr(char **dst, const double num,
   }
 }
 
-void DoubToNumStr(char **dst, const double num,
-                  const unsigned short digits_right)
+void DoubleToNumStr(char **dst, const double num,
+                    const unsigned short digits_right)
 /* Take in a string buffer, a double, and the number of digits
    to the right of the decimal point, convert to a number string,
    grouping the digits according to the locale [dec points or commas].
@@ -455,7 +455,7 @@ void DoubToNumStr(char **dst, const double num,
   }
 }
 
-double StringToDoub(const char *str)
+double StringToDouble(const char *str)
 /* Take in a number string, convert to a double value.
    The string can be formatted as a monetary string, a percent string,
    a number formatted string [thousands gouping], or a regular number

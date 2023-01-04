@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 BostonBSD. All rights reserved.
+Copyright (c) 2022-2023 BostonBSD. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -35,9 +35,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <string.h>
 #include <time.h> /* time_t, struct tm, time ()  */
 
-#include <locale.h>
-#include <monetary.h>
-
 #include "../include/class_types.h" /* Includes portfolio_packet, metal, meta, 
                                              and equity_folder class types */
 
@@ -60,63 +57,68 @@ static metal *
     MetalClassObject; /* A class handle to the bullion class object pointers. */
 
 /* Class Method (also called Function) Definitions */
-static void convert_bullion_to_strings(bullion *B, short digits_right) {
+static void convert_bullion_to_strings(bullion *B,
+                                       unsigned short digits_right) {
   /* Basic metal data */
-  DoubToMonStrPango(&B->prev_closing_metal_mrkd_ch, B->prev_closing_metal_f,
-                    digits_right);
+  DoubleToNumStrPango(&B->ounce_mrkd_ch, B->ounce_f, 4);
 
-  DoubToMonStrPango(&B->high_metal_mrkd_ch, B->high_metal_f, digits_right);
+  DoubleToMonStrPango(&B->premium_mrkd_ch, B->premium_f, digits_right);
 
-  DoubToMonStrPango(&B->low_metal_mrkd_ch, B->low_metal_f, digits_right);
+  DoubleToMonStrPango(&B->prev_closing_metal_mrkd_ch, B->prev_closing_metal_f,
+                      digits_right);
 
-  DoubToMonStrPango(&B->spot_price_mrkd_ch, B->spot_price_f, digits_right);
+  DoubleToMonStrPango(&B->high_metal_mrkd_ch, B->high_metal_f, digits_right);
 
-  DoubToMonStrPango(&B->premium_mrkd_ch, B->premium_f, digits_right);
+  DoubleToMonStrPango(&B->low_metal_mrkd_ch, B->low_metal_f, digits_right);
+
+  DoubleToMonStrPango(&B->spot_price_mrkd_ch, B->spot_price_f, digits_right);
+
+  DoubleToMonStrPango(&B->premium_mrkd_ch, B->premium_f, digits_right);
 
   /* The total invested in this metal */
-  DoubToMonStrPango(&B->port_value_mrkd_ch, B->port_value_f, digits_right);
+  DoubleToMonStrPango(&B->port_value_mrkd_ch, B->port_value_f, digits_right);
 
   /* The change in spot price per ounce. */
-  DoubToMonStrPangoColor(&B->change_ounce_mrkd_ch, B->change_ounce_f,
-                         digits_right, NOT_ITALIC);
+  DoubleToMonStrPangoColor(&B->change_ounce_mrkd_ch, B->change_ounce_f,
+                           digits_right, NOT_ITALIC);
 
   /* The change in total investment in this metal. */
-  DoubToMonStrPangoColor(&B->change_value_mrkd_ch, B->change_value_f,
-                         digits_right, NOT_ITALIC);
+  DoubleToMonStrPangoColor(&B->change_value_mrkd_ch, B->change_value_f,
+                           digits_right, NOT_ITALIC);
 
   /* The change in total investment in this metal as a percentage. */
-  DoubToPerStrPangoColor(&B->change_percent_mrkd_ch, B->change_percent_f,
-                         digits_right, NOT_ITALIC);
+  DoubleToPerStrPangoColor(&B->change_percent_mrkd_ch, B->change_percent_f,
+                           digits_right, NOT_ITALIC);
 
   /* The raw change in bullion as a percentage. */
-  DoubToPerStr(&B->change_percent_raw_ch, B->change_percent_raw_f, 2);
+  DoubleToPerStr(&B->change_percent_raw_ch, B->change_percent_raw_f, 2);
 }
 
-static void ToStrings() {
+static void ToStrings(unsigned short digits_right) {
   metal *M = MetalClassObject;
-  convert_bullion_to_strings(M->Gold, M->decimal_places_shrt);
-  convert_bullion_to_strings(M->Silver, M->decimal_places_shrt);
+  convert_bullion_to_strings(M->Gold, digits_right);
+  convert_bullion_to_strings(M->Silver, digits_right);
   if (M->Platinum->ounce_f > 0)
-    convert_bullion_to_strings(M->Platinum, M->decimal_places_shrt);
+    convert_bullion_to_strings(M->Platinum, digits_right);
   if (M->Palladium->ounce_f > 0)
-    convert_bullion_to_strings(M->Palladium, M->decimal_places_shrt);
+    convert_bullion_to_strings(M->Palladium, digits_right);
 
   /* The total investment in bullion. */
-  DoubToMonStrPango(&M->bullion_port_value_mrkd_ch, M->bullion_port_value_f,
-                    M->decimal_places_shrt);
+  DoubleToMonStrPango(&M->bullion_port_value_mrkd_ch, M->bullion_port_value_f,
+                      digits_right);
 
   /* The change in total investment in bullion. */
-  DoubToMonStrPangoColor(&M->bullion_port_value_chg_mrkd_ch,
-                         M->bullion_port_value_chg_f, M->decimal_places_shrt,
-                         NOT_ITALIC);
+  DoubleToMonStrPangoColor(&M->bullion_port_value_chg_mrkd_ch,
+                           M->bullion_port_value_chg_f, digits_right,
+                           NOT_ITALIC);
 
   /* The change in total investment in bullion as a percentage. */
-  DoubToPerStrPangoColor(&M->bullion_port_value_p_chg_mrkd_ch,
-                         M->bullion_port_value_p_chg_f, M->decimal_places_shrt,
-                         NOT_ITALIC);
+  DoubleToPerStrPangoColor(&M->bullion_port_value_p_chg_mrkd_ch,
+                           M->bullion_port_value_p_chg_f, digits_right,
+                           NOT_ITALIC);
 
   /* The Gold to Silver Ratio */
-  DoubToNumStr(&M->gold_silver_ratio_ch, M->gold_silver_ratio_f, 2);
+  DoubleToNumStr(&M->gold_silver_ratio_ch, M->gold_silver_ratio_f, 2);
 }
 
 static double stake(const double ounces, const double prem,
@@ -163,7 +165,8 @@ static void Calculate() {
   bullion_calculations(M->Silver);
   /* There's no if statement here.  If the user removes either of the following
    two metals, we want the port_value_f to be zero (notice that the following
-   statements always account for all metals). */
+   statements always account for all metals, these two statements reset the
+   values). */
   bullion_calculations(M->Platinum);
   bullion_calculations(M->Palladium);
 
@@ -256,8 +259,7 @@ static void extract_bullion_data(bullion *B) {
     B->low_metal_f = 0.0f;
     B->spot_price_f = 0.0f;
 
-    free(B->CURLDATA.memory);
-    B->CURLDATA.memory = NULL;
+    FreeMemtype(&B->CURLDATA);
     return;
   }
 
@@ -289,8 +291,7 @@ static void extract_bullion_data(bullion *B) {
 
   free_csv_line(csv_array);
   fclose(fp);
-  free(B->CURLDATA.memory);
-  B->CURLDATA.memory = NULL;
+  FreeMemtype(&B->CURLDATA);
 }
 
 static void ExtractData() {
@@ -325,18 +326,18 @@ static bullion *class_init_bullion() {
 
   new_class->url_ch = NULL;
 
-  new_class->spot_price_mrkd_ch = malloc (1);
-  new_class->premium_mrkd_ch = malloc (1);
-  new_class->port_value_mrkd_ch = malloc (1);
-  new_class->ounce_mrkd_ch = malloc (1);
+  new_class->spot_price_mrkd_ch = malloc(1);
+  new_class->premium_mrkd_ch = malloc(1);
+  new_class->port_value_mrkd_ch = malloc(1);
+  new_class->ounce_mrkd_ch = malloc(1);
 
-  new_class->high_metal_mrkd_ch = malloc (1);
-  new_class->low_metal_mrkd_ch = malloc (1);
-  new_class->prev_closing_metal_mrkd_ch = malloc (1);
-  new_class->change_ounce_mrkd_ch = malloc (1);
-  new_class->change_value_mrkd_ch = malloc (1);
-  new_class->change_percent_mrkd_ch = malloc (1);
-  new_class->change_percent_raw_ch = malloc (1);
+  new_class->high_metal_mrkd_ch = malloc(1);
+  new_class->low_metal_mrkd_ch = malloc(1);
+  new_class->prev_closing_metal_mrkd_ch = malloc(1);
+  new_class->change_ounce_mrkd_ch = malloc(1);
+  new_class->change_value_mrkd_ch = malloc(1);
+  new_class->change_percent_mrkd_ch = malloc(1);
+  new_class->change_percent_raw_ch = malloc(1);
 
   new_class->YAHOO_hnd = curl_easy_init();
   new_class->CURLDATA.memory = NULL;
@@ -349,7 +350,10 @@ metal *ClassInitMetal() {
   /* Allocate Memory For A New Class */
   metal *new_class = (metal *)malloc(sizeof(*new_class));
 
-  /* Initialize Nested Class Objects */
+  /* Initialize Nested Class Objects,
+     technically these are structs because
+     we removed their function pointers.
+   */
   new_class->Gold = class_init_bullion();
   new_class->Silver = class_init_bullion();
   new_class->Platinum = class_init_bullion();
@@ -361,12 +365,10 @@ metal *ClassInitMetal() {
   new_class->bullion_port_value_p_chg_f = 0.0f;
   new_class->gold_silver_ratio_f = 0.0f;
 
-  new_class->decimal_places_shrt = 2;
-
-  new_class->bullion_port_value_mrkd_ch = malloc (1);
-  new_class->bullion_port_value_chg_mrkd_ch = malloc (1);
-  new_class->bullion_port_value_p_chg_mrkd_ch = malloc (1);
-  new_class->gold_silver_ratio_ch = malloc (1);
+  new_class->bullion_port_value_mrkd_ch = malloc(1);
+  new_class->bullion_port_value_chg_mrkd_ch = malloc(1);
+  new_class->bullion_port_value_p_chg_mrkd_ch = malloc(1);
+  new_class->gold_silver_ratio_ch = malloc(1);
 
   /* Connect Function Pointers To Function Definitions */
   new_class->ToStrings = ToStrings;
@@ -412,10 +414,8 @@ static void class_destruct_bullion(bullion *bullion_class) {
 
   if (bullion_class->YAHOO_hnd)
     curl_easy_cleanup(bullion_class->YAHOO_hnd);
-  if (bullion_class->CURLDATA.memory) {
-    free(bullion_class->CURLDATA.memory);
-    bullion_class->CURLDATA.memory = NULL;
-  }
+
+  FreeMemtype(&bullion_class->CURLDATA);
 
   /* Free Memory From Class Object */
   if (bullion_class) {

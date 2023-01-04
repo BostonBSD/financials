@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 BostonBSD. All rights reserved.
+Copyright (c) 2022-2023 BostonBSD. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -67,8 +67,8 @@ const char *markup_start_bold_underline =
     "underline='single'>";
 const char *markup_end = "</span>";
 
-void DoubToMonStrPango(char **dst, const double num,
-                       const unsigned short digits_right)
+void DoubleToMonStrPango(char **dst, const double num,
+                         const unsigned short digits_right)
 /* Take in a string buffer, a double, and the number of digits
    to the right of the decimal point, convert to a monetary format
    Pango Markup string, grouping the digits according to the locale
@@ -127,8 +127,8 @@ void DoubToMonStrPango(char **dst, const double num,
   free(num_ch);
 }
 
-void DoubToPerStrPango(char **dst, const double num,
-                       const unsigned short digits_right)
+void DoubleToPerStrPango(char **dst, const double num,
+                         const unsigned short digits_right)
 /* Take in a string buffer, a double, and the number of digits
    to the right of the decimal point, convert to a percent format
    Pango Markup string, grouping the digits according to the locale
@@ -173,8 +173,8 @@ void DoubToPerStrPango(char **dst, const double num,
   }
 }
 
-void DoubToNumStrPango(char **dst, const double num,
-                       const unsigned short digits_right)
+void DoubleToNumStrPango(char **dst, const double num,
+                         const unsigned short digits_right)
 /* Take in a string buffer, a double, and the number of digits
    to the right of the decimal point, convert to a number format
    Pango Markup string, grouping the digits according to the locale
@@ -223,7 +223,7 @@ void DoubToNumStrPango(char **dst, const double num,
   }
 }
 
-void StrToStrPango(char **dst, const char *src)
+void StringToStrPango(char **dst, const char *src)
 /* Take in a string buffer and a src string, convert to Pango Markup
    string.
 
@@ -344,9 +344,9 @@ static void double_to_mon_str_pango_color_ext(char **dst, const double num,
   free(num_ch);
 }
 
-void DoubToMonStrPangoColor(char **dst, const double num,
-                            const unsigned short digits_right,
-                            const unsigned int italic) {
+void DoubleToMonStrPangoColor(char **dst, const double num,
+                              const unsigned short digits_right,
+                              const unsigned int italic) {
   unsigned int color;
 
   switch (italic) {
@@ -449,9 +449,9 @@ static void double_to_per_str_pango_color_ext(char **dst, const double num,
   }
 }
 
-void DoubToPerStrPangoColor(char **dst, const double num,
-                            const unsigned short digits_right,
-                            const unsigned int italic) {
+void DoubleToPerStrPangoColor(char **dst, const double num,
+                              const unsigned short digits_right,
+                              const unsigned int italic) {
   unsigned int color;
 
   switch (italic) {
@@ -478,7 +478,8 @@ void DoubToPerStrPangoColor(char **dst, const double num,
   double_to_per_str_pango_color_ext(dst, num, digits_right, color);
 }
 
-void StrToStrPangoColor(char **dst, const char *src, const unsigned int color)
+void StringToStrPangoColor(char **dst, const char *src,
+                           const unsigned int color)
 /* Take in a string buffer and a src string, convert to Pango Markup
    string.
 

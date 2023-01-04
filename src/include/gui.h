@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 BostonBSD. All rights reserved.
+Copyright (c) 2022-2023 BostonBSD. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -33,10 +33,16 @@ POSSIBILITY OF SUCH DAMAGE.
 #define GUI_HEADER_H
 
 #include <gtk/gtk.h> /* gboolean, GtkSwitch, GtkWidget, GdkEvent, GtkEntryCompletion,
-                         GtkTreeModel, GtkTreeIter, GdkEventButton */
+                         GtkTreeModel, GtkTreeIter, GdkEventButton, GtkListStore */
+
 #include <stdbool.h> /* bool */
 
+#include "gui_types.h" /* symbol_name_map */
+
 /* gui */
+GtkWidget *GetWidget(const gchar *);
+GObject *GetGObject(const gchar *);
+const gchar *GetEntryText(const char *);
 void GuiStart(void *);
 
 /* gui_main */
@@ -46,6 +52,7 @@ int MainFetchBTNLabel(void *);
 int MainDisplayTime();
 int MainDisplayTimeRemaining(void *);
 void MainProgBar(double *);
+int MainProgBarReset();
 int MainHideWindow();
 int MainDisplayClocks(void *);
 
@@ -71,9 +78,11 @@ int CashShowHide(void *);
 int CashOk(void *);
 int CashCursorMove();
 int AboutShowHide();
-int ShortcutShowHide();
+int HotkeysShowHide();
 
 /* gui_rsi */
+GtkListStore *CompletionSetStore(symbol_name_map *);
+gboolean CompletionMatch(GtkEntryCompletion *, const gchar *, GtkTreeIter *);
 int RSIShowHide(void *);
 int RSITreeViewClear();
 int RSIMakeTreeview(void *);
@@ -81,12 +90,13 @@ int RSICursorMove();
 int RSICompletionSet(void *);
 int RSISetSNLabel(void *);
 int RSIGetSymbol(char **);
+GtkListStore *RSIMakeStore(const char *);
 
 /* GUI Callback Functions */
 void GUICallbackHandler(GtkWidget *, void *);
-void GUICallbackHandler_add_rem_stack(GObject *, GParamSpec *, void *);
-gboolean GUICallbackHandler_pref_clock_switch(GtkSwitch *, bool, void *);
-gboolean GUICallbackHandler_pref_indices_switch(GtkSwitch *, bool, void *);
+void GUICallbackHandler_add_rem_stack(GObject *);
+gboolean GUICallbackHandler_pref_clock_switch(GtkSwitch *, bool);
+gboolean GUICallbackHandler_pref_indices_switch(GtkSwitch *, bool);
 void GUICallbackHandler_pref_dec_places_combobox(GtkComboBox *);
 void GUICallbackHandler_pref_up_min_combobox(GtkComboBox *);
 void GUICallbackHandler_pref_hours_spinbutton(GtkEditable *);
@@ -99,7 +109,16 @@ gboolean GUICallbackHandler_cursor_comp(GtkEntryCompletion *, GtkTreeModel *,
                                         GtkTreeIter *);
 gboolean view_onButtonPressed(GtkWidget *, GdkEventButton *);
 
-/* GUI Thread Handler Function */
-void *GUIThreadHandler(void *);
+/* GUI Thread Handler Functions */
+void *GUIThreadHandler_api_ok(void *);
+void *GUIThreadHandler_cash_ok(void *);
+void *GUIThreadHandler_bul_ok(void *);
+void *GUIThreadHandler_main_fetch_data(void *);
+void *GUIThreadHandler_rsi_fetch(void *);
+void *GUIThreadHandler_sym_name_update(void *);
+void *GUIThreadHandler_completion_set(void *);
+void *GUIThreadHandler_main_clock();
+void *GUIThreadHandler_time_to_close(void *);
+void *GUIThreadHandler_main_exit(void *);
 
 #endif /* GUI_HEADER_H */

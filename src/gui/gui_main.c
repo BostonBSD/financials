@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 BostonBSD. All rights reserved.
+Copyright (c) 2022-2023 BostonBSD. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -34,23 +34,19 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <string.h>
 
-#include <glib-object.h>
 #include <gtk/gtk.h>
-
-#include "../include/gui_globals.h" /* GtkBuilder *builder */
-#include "../include/gui_types.h"   /* enums, etc */
 
 #include "../include/class.h" /* ClassDestructPortfolioPacket(), portfolio_packet, 
                                                 equity_folder, metal, meta  */
+#include "../include/gui.h"
 #include "../include/macros.h"
 #include "../include/workfuncs.h"
 
 int MainFetchBTNLabel(void *data) {
   portfolio_packet *pkg = (portfolio_packet *)data;
-  GtkWidget *label =
-      GTK_WIDGET(gtk_builder_get_object(builder, "FetchDataBtnLabel"));
+  GtkWidget *label = GetWidget("FetchDataBtnLabel");
 
-  if (pkg->IsFetchingData() == true) {
+  if (pkg->IsFetchingData()) {
     gtk_label_set_label(GTK_LABEL(label), "Stop Updates");
   } else {
     gtk_label_set_label(GTK_LABEL(label), "Get Data");
@@ -62,14 +58,16 @@ int MainFetchBTNLabel(void *data) {
 static int main_prog_bar(void *data) {
   double *fraction = (double *)data;
 
-  GtkWidget *ProgressBar =
-      GTK_WIDGET(gtk_builder_get_object(builder, "ProgressBar"));
+  GtkWidget *ProgressBar = GetWidget("ProgressBar");
   gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(ProgressBar), *fraction);
 
   return 0;
 }
 
-void MainProgBar(double *fraction) {
+void MainProgBar(double *fraction)
+/* Because this function is accessed outside the main
+   loop, we can only pass pointers through. */
+{
   if (*fraction > 1)
     *fraction = 1;
   if (*fraction < 0)
@@ -77,9 +75,16 @@ void MainProgBar(double *fraction) {
   gdk_threads_add_idle(main_prog_bar, fraction);
 }
 
+int MainProgBarReset() {
+  GtkWidget *ProgressBar = GetWidget("ProgressBar");
+  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(ProgressBar), 0.0f);
+
+  return 0;
+}
+
 static int main_tree_view_clr() {
   /* Clear the main window's GtkTreeView. */
-  GtkWidget *treeview = GTK_WIDGET(gtk_builder_get_object(builder, "TreeView"));
+  GtkWidget *treeview = GetWidget("TreeView");
   GtkTreeViewColumn *column;
   gushort n = gtk_tree_view_get_n_columns(GTK_TREE_VIEW(treeview));
 
@@ -95,7 +100,7 @@ static int main_tree_view_clr() {
 static int main_set_columns(int column_type) {
   GtkCellRenderer *renderer;
   GtkTreeViewColumn *column;
-  GtkWidget *list = GTK_WIDGET(gtk_builder_get_object(builder, "TreeView"));
+  GtkWidget *list = GetWidget("TreeView");
 
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes("type_text", renderer,
@@ -594,8 +599,7 @@ static void show_indices_labels(void *data) {
   meta *D = package->GetMetaClass();
 
   /* Set Revealer Bar */
-  GtkWidget *revealer =
-      GTK_WIDGET(gtk_builder_get_object(builder, "MainIndicesRevealer"));
+  GtkWidget *revealer = GetWidget("MainIndicesRevealer");
   gtk_revealer_set_reveal_child(GTK_REVEALER(revealer),
                                 D->index_bar_revealed_bool);
 }
@@ -620,8 +624,7 @@ static void set_indices_labels(void *data) {
     format = red_format;
   };
 
-  GtkWidget *label =
-      GTK_WIDGET(gtk_builder_get_object(builder, "DowIndexValue"));
+  GtkWidget *label = GetWidget("DowIndexValue");
   markup = g_markup_printf_escaped(format, D->index_dow_value_ch,
                                    D->index_dow_value_chg_ch,
                                    D->index_dow_value_p_chg_ch);
@@ -634,7 +637,7 @@ static void set_indices_labels(void *data) {
     format = red_format;
   };
 
-  label = GTK_WIDGET(gtk_builder_get_object(builder, "NasdaqIndexValue"));
+  label = GetWidget("NasdaqIndexValue");
   markup = g_markup_printf_escaped(format, D->index_nasdaq_value_ch,
                                    D->index_nasdaq_value_chg_ch,
                                    D->index_nasdaq_value_p_chg_ch);
@@ -647,7 +650,7 @@ static void set_indices_labels(void *data) {
     format = red_format;
   };
 
-  label = GTK_WIDGET(gtk_builder_get_object(builder, "SPIndexValue"));
+  label = GetWidget("SPIndexValue");
   markup = g_markup_printf_escaped(format, D->index_sp_value_ch,
                                    D->index_sp_value_chg_ch,
                                    D->index_sp_value_p_chg_ch);
@@ -660,7 +663,7 @@ static void set_indices_labels(void *data) {
     format = red_format;
   };
 
-  label = GTK_WIDGET(gtk_builder_get_object(builder, "BitcoinValue"));
+  label = GetWidget("BitcoinValue");
   markup = g_markup_printf_escaped(format, D->crypto_bitcoin_value_ch,
                                    D->crypto_bitcoin_value_chg_ch,
                                    D->crypto_bitcoin_value_p_chg_ch);
@@ -673,7 +676,7 @@ static void set_indices_labels(void *data) {
     format = red_format;
   };
 
-  label = GTK_WIDGET(gtk_builder_get_object(builder, "GoldValue"));
+  label = GetWidget("GoldValue");
   DoubleToMonStr(&spot, M->Gold->spot_price_f, 2);
   DoubleToMonStr(&chg_ounce, M->Gold->change_ounce_f, 2);
   markup = g_markup_printf_escaped(format, spot, chg_ounce,
@@ -687,7 +690,7 @@ static void set_indices_labels(void *data) {
     format = red_format;
   };
 
-  label = GTK_WIDGET(gtk_builder_get_object(builder, "SilverValue"));
+  label = GetWidget("SilverValue");
   DoubleToMonStr(&spot, M->Silver->spot_price_f, 2);
   DoubleToMonStr(&chg_ounce, M->Silver->change_ounce_f, 2);
   markup = g_markup_printf_escaped(format, spot, chg_ounce,
@@ -695,7 +698,7 @@ static void set_indices_labels(void *data) {
   gtk_label_set_markup(GTK_LABEL(label), markup);
   g_free(markup);
 
-  label = GTK_WIDGET(gtk_builder_get_object(builder, "GSValue"));
+  label = GetWidget("GSValue");
   markup = g_markup_printf_escaped("<span foreground=\"black\">%s</span>",
                                    M->gold_silver_ratio_ch);
   gtk_label_set_markup(GTK_LABEL(label), markup);
@@ -706,11 +709,6 @@ static void set_indices_labels(void *data) {
 }
 
 int MainPrimaryTreeview(void *data) {
-  /* Reset the ProgressBar */
-  GtkWidget *ProgressBar =
-      GTK_WIDGET(gtk_builder_get_object(builder, "ProgressBar"));
-  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(ProgressBar), 0.0f);
-
   /* Show the Indices Labels */
   show_indices_labels(data);
 
@@ -718,7 +716,7 @@ int MainPrimaryTreeview(void *data) {
   set_indices_labels(data);
 
   GtkListStore *store = NULL;
-  GtkWidget *list = GTK_WIDGET(gtk_builder_get_object(builder, "TreeView"));
+  GtkWidget *list = GetWidget("TreeView");
 
   /* Clear the current TreeView */
   main_tree_view_clr();
@@ -744,14 +742,13 @@ int MainPrimaryTreeview(void *data) {
 }
 
 static void hide_indices_labels() {
-  GtkWidget *revealer =
-      GTK_WIDGET(gtk_builder_get_object(builder, "MainIndicesRevealer"));
+  GtkWidget *revealer = GetWidget("MainIndicesRevealer");
   gtk_revealer_set_reveal_child(GTK_REVEALER(revealer), false);
 }
 
 int MainDefaultTreeview(void *data) {
   GtkListStore *store = NULL;
-  GtkWidget *list = GTK_WIDGET(gtk_builder_get_object(builder, "TreeView"));
+  GtkWidget *list = GetWidget("TreeView");
 
   /* Hide the Indices Labels */
   hide_indices_labels();
@@ -779,8 +776,7 @@ int MainDefaultTreeview(void *data) {
 }
 
 int MainDisplayTime() {
-  GtkWidget *NewYorkTimeLabel =
-      GTK_WIDGET(gtk_builder_get_object(builder, "NYTimeLabel"));
+  GtkWidget *NewYorkTimeLabel = GetWidget("NYTimeLabel");
   int ny_h, ny_m;
   char time_ch[10];
 
@@ -797,13 +793,9 @@ int MainDisplayTime() {
 int MainDisplayTimeRemaining(void *data) {
   /* Unpack the package */
   portfolio_packet *package = (portfolio_packet *)data;
-  if (package->IsClockDisplayed() == false)
-    return 0;
 
-  GtkWidget *CloseLabel =
-      GTK_WIDGET(gtk_builder_get_object(builder, "MarketCloseLabel"));
-  GtkWidget *TimeRemLabel =
-      GTK_WIDGET(gtk_builder_get_object(builder, "TimeLeftLabel"));
+  GtkWidget *CloseLabel = GetWidget("MarketCloseLabel");
+  GtkWidget *TimeRemLabel = GetWidget("TimeLeftLabel");
   int h, m, s;
   char time_left_ch[10];
   bool isclosed;
@@ -830,29 +822,28 @@ int MainDisplayTimeRemaining(void *data) {
 }
 
 int MainHideWindow() {
-  GtkWidget *window = GTK_WIDGET(gtk_builder_get_object(builder, "MainWindow"));
+  GtkWidget *window = GetWidget("MainWindow");
   gtk_widget_set_visible(window, false);
 
-  window = GTK_WIDGET(gtk_builder_get_object(builder, "AboutWindow"));
+  window = GetWidget("AboutWindow");
   gtk_widget_set_visible(window, false);
 
-  window =
-      GTK_WIDGET(gtk_builder_get_object(builder, "AddRemoveBullionWindow"));
+  window = GetWidget("AddRemoveBullionWindow");
   gtk_widget_set_visible(window, false);
 
-  window = GTK_WIDGET(gtk_builder_get_object(builder, "AddRemoveCashWindow"));
+  window = GetWidget("AddRemoveCashWindow");
   gtk_widget_set_visible(window, false);
 
-  window = GTK_WIDGET(gtk_builder_get_object(builder, "ViewRSIWindow"));
+  window = GetWidget("ViewRSIWindow");
   gtk_widget_set_visible(window, false);
 
-  window = GTK_WIDGET(gtk_builder_get_object(builder, "AddRemoveSecurity"));
+  window = GetWidget("AddRemoveSecurity");
   gtk_widget_set_visible(window, false);
 
-  window = GTK_WIDGET(gtk_builder_get_object(builder, "ShortcutWindow"));
+  window = GetWidget("ShortcutWindow");
   gtk_widget_set_visible(window, false);
 
-  window = GTK_WIDGET(gtk_builder_get_object(builder, "ChangeApiInfoWindow"));
+  window = GetWidget("ChangeApiInfoWindow");
   gtk_widget_set_visible(window, false);
 
   return 0;
@@ -861,16 +852,8 @@ int MainHideWindow() {
 int MainDisplayClocks(void *data) {
   portfolio_packet *pkg = (portfolio_packet *)data;
 
-  GtkWidget *revealer =
-      GTK_WIDGET(gtk_builder_get_object(builder, "MainClockRevealer"));
+  GtkWidget *revealer = GetWidget("MainClockRevealer");
   gtk_revealer_set_reveal_child(GTK_REVEALER(revealer),
                                 pkg->IsClockDisplayed());
-
-  if (pkg->IsClockDisplayed()) {
-    GtkWidget *widget =
-        GTK_WIDGET(gtk_builder_get_object(builder, "TimeLeftLabel"));
-    gtk_label_set_text(GTK_LABEL(widget), "");
-  }
-
   return 0;
 }

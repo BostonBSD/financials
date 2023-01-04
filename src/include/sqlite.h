@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 BostonBSD. All rights reserved.
+Copyright (c) 2022-2023 BostonBSD. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -42,8 +42,7 @@ void SqliteAddEquity(const char *, const char *, meta *);
 void SqliteRemoveEquity(const char *, meta *);
 void SqliteRemoveAllEquity(meta *);
 
-void SqliteAddBullion(const char *, const char *, const char *, metal *,
-                      meta *);
+void SqliteAddBullion(const char *, const char *, const char *, meta *);
 void SqliteAddCash(const char *, meta *);
 void SqliteAddAPIData(const char *, const char *, meta *);
 

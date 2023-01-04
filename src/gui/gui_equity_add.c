@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 BostonBSD. All rights reserved.
+Copyright (c) 2022-2023 BostonBSD. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -35,77 +35,15 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <string.h>
 
-#include <glib-object.h>
 #include <gtk/gtk.h>
 
-#include "../include/gui.h"
-#include "../include/gui_globals.h" /* GtkBuilder *builder */
-
 #include "../include/class_types.h" /* portfolio_packet, equity_folder, metal, meta, window_data */
+#include "../include/gui.h"
 #include "../include/json.h"
 #include "../include/multicurl.h"
 #include "../include/mutex.h"
 #include "../include/sqlite.h"
 #include "../include/workfuncs.h"
-
-static GtkListStore *addrem_completion_set_store(symbol_name_map *sn_map) {
-  GtkListStore *store =
-      gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
-  GtkTreeIter iter;
-
-  gchar item[35];
-  /* Populate the GtkListStore with the string of stock symbols in column 0,
-     stock names in column 1, and symbols & names in column 2. */
-  for (gushort i = 0; i < sn_map->size; i++) {
-    snprintf(item, 35, "%s - %s", sn_map->sn_container_arr[i]->symbol,
-             sn_map->sn_container_arr[i]->security_name);
-
-    gtk_list_store_append(store, &iter);
-    /* Completion is going to match off of columns 0 and 1, but display column 2
-     */
-    /* Completion matches based off of the symbol or the company name, inserts
-     * the symbol, displays both */
-    gtk_list_store_set(store, &iter, 0, sn_map->sn_container_arr[i]->symbol, 1,
-                       sn_map->sn_container_arr[i]->security_name, 2, item, -1);
-  }
-  return store;
-}
-
-static gboolean addrem_completion_match(GtkEntryCompletion *completion,
-                                        const gchar *key, GtkTreeIter *iter,
-                                        void *data) {
-  /* We aren't using the data parameter, but the next statement
-     silences a warning/error. */
-  if (data != NULL)
-    data = NULL;
-
-  GtkTreeModel *model = gtk_entry_completion_get_model(completion);
-  gchar *item_symb, *item_name;
-  /* We are finding matches based off of column 0 and 1, however,
-     we display column 2 in our 3 column model */
-  gtk_tree_model_get(model, iter, 0, &item_symb, 1, &item_name, -1);
-  gboolean ans = false, symbol_match = true, name_match = true;
-
-  gushort N = 0;
-  while (key[N]) {
-    /* Only compare new key char if prev char was a match. */
-    if (symbol_match)
-      symbol_match = (tolower(key[N]) == tolower(item_symb[N]));
-    if (name_match)
-      name_match = (tolower(key[N]) == tolower(item_name[N]));
-    /* Break the loop if both the symbol and the name are not a match. */
-    if ((symbol_match == false) && (name_match == false))
-      break;
-    N++;
-  }
-
-  /* if either the symbol or the name match the key value, return true. */
-  ans = symbol_match || name_match;
-  g_free(item_symb);
-  g_free(item_name);
-
-  return ans;
-}
 
 int AddRemCompletionSet(void *data) {
   pthread_mutex_lock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
@@ -114,15 +52,16 @@ int AddRemCompletionSet(void *data) {
     return 0;
   }
 
-  GtkWidget *EntryBox = GTK_WIDGET(
-      gtk_builder_get_object(builder, "AddRemoveSecuritySymbolEntryBox"));
+  GtkWidget *EntryBox = GetWidget("AddRemoveSecuritySymbolEntryBox");
   GtkEntryCompletion *completion = gtk_entry_completion_new();
-  GtkListStore *store = addrem_completion_set_store((symbol_name_map *)data);
+  /* CompletionSetStore in gui_rsi.c */
+  GtkListStore *store = CompletionSetStore((symbol_name_map *)data);
 
   gtk_entry_completion_set_model(completion, GTK_TREE_MODEL(store));
   g_object_unref(G_OBJECT(store));
+  /* CompletionMatch in gui_rsi.c */
   gtk_entry_completion_set_match_func(
-      completion, (GtkEntryCompletionMatchFunc)addrem_completion_match, NULL,
+      completion, (GtkEntryCompletionMatchFunc)CompletionMatch, NULL,
       NULL);
   /* Set AddRemoveSecuritySymbol entrybox completion widget. */
   gtk_entry_set_completion(GTK_ENTRY(EntryBox), completion);
@@ -152,15 +91,9 @@ int AddRemCompletionSet(void *data) {
 }
 
 int AddRemCursorMove() {
-  GtkWidget *Button =
-      GTK_WIDGET(gtk_builder_get_object(builder, "AddRemoveSecurityOkBTN"));
-  GtkWidget *EntryBoxSymbol = GTK_WIDGET(
-      gtk_builder_get_object(builder, "AddRemoveSecuritySymbolEntryBox"));
-  GtkWidget *EntryBoxShares = GTK_WIDGET(
-      gtk_builder_get_object(builder, "AddRemoveSecuritySharesEntryBox"));
-
-  const gchar *symbol = gtk_entry_get_text(GTK_ENTRY(EntryBoxSymbol));
-  const gchar *shares = gtk_entry_get_text(GTK_ENTRY(EntryBoxShares));
+  GtkWidget *Button = GetWidget("AddRemoveSecurityOkBTN");
+  const gchar *symbol = GetEntryText("AddRemoveSecuritySymbolEntryBox");
+  const gchar *shares = GetEntryText("AddRemoveSecuritySharesEntryBox");
 
   if (CheckValidString(symbol) && CheckValidString(shares) &&
       CheckIfStringLongPositiveNumber(shares)) {
@@ -189,16 +122,11 @@ int AddRemComBoxChange(void *data) {
   portfolio_packet *pkg = (portfolio_packet *)data;
   symbol_name_map *sn_map = pkg->GetSymNameMap();
 
-  GtkWidget *ComboBox =
-      GTK_WIDGET(gtk_builder_get_object(builder, "AddRemoveSecurityComboBox"));
+  GtkWidget *ComboBox = GetWidget("AddRemoveSecurityComboBox");
   gint index = gtk_combo_box_get_active(GTK_COMBO_BOX(ComboBox));
 
-  GtkWidget *button =
-      GTK_WIDGET(gtk_builder_get_object(builder, "AddRemoveSecurityOkBTN"));
-  GtkWidget *label =
-      GTK_WIDGET(gtk_builder_get_object(builder, "AddRemoveSecurityLabel"));
-
-  gtk_label_set_label(GTK_LABEL(label), "");
+  GtkWidget *button = GetWidget("AddRemoveSecurityOkBTN");
+  GtkWidget *label = GetWidget("AddRemoveSecurityLabel");
 
   if (index != 0) {
     gchar *symbol =
@@ -247,16 +175,13 @@ static void *fetch_data_for_new_stock(void *data) {
   pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
 
   /* Sort the equity folder, the following three statements lock the
-   * CLASS_MEMBER_MUTEX */
+   * MUTEXes */
   F->Sort(); /* The new stock is in alphabetical order within the array. */
 
   pkg->Calculate();
   pkg->ToStrings();
 
-  /* Update the main window treeview. */
-  gdk_threads_add_idle(MainPrimaryTreeview, data);
-
-  return NULL;
+  pthread_exit(NULL);
 }
 
 static void add_equity_to_folder(char *symbol, const char *shares,
@@ -275,28 +200,31 @@ static void add_equity_to_folder(char *symbol, const char *shares,
   /* Make sure the security names are set with pango style markups. */
   pkg->SetSecurityNames();
 
-  if (!pkg->IsDefaultView()) {
+  if (pkg->IsDefaultView()) {
+    /* Sort the equity folder. */
+    F->Sort();
+    gdk_threads_add_idle(MainDefaultTreeview, pkg);
+  } else {
     /* Fetch the data in a separate thread */
     pthread_t thread_id;
     pthread_create(&thread_id, NULL, fetch_data_for_new_stock, pkg);
-  } else {
-    /* Sort the equity folder. */
-    F->Sort();
+    pthread_join(thread_id, NULL);
+    gdk_threads_add_idle(MainProgBarReset, NULL);
+    gdk_threads_add_idle(MainPrimaryTreeview, pkg);
   }
 }
 
-static void add_security_ok(void *data) {
+static void *add_security_ok(void *data) {
+  /* This mutex prevents the program from crashing if a
+      MAIN_FETCH_BTN signal is run in parallel with this thread. */
+  pthread_mutex_lock(&mutex_working[FETCH_DATA_MUTEX]);
+
   /* Unpack the package */
   portfolio_packet *package = (portfolio_packet *)data;
   meta *D = package->GetMetaClass();
 
-  GtkWidget *EntryBox = GTK_WIDGET(
-      gtk_builder_get_object(builder, "AddRemoveSecuritySymbolEntryBox"));
-  gchar *symbol = strdup(gtk_entry_get_text(GTK_ENTRY(EntryBox)));
-
-  EntryBox = GTK_WIDGET(
-      gtk_builder_get_object(builder, "AddRemoveSecuritySharesEntryBox"));
-  const gchar *shares = gtk_entry_get_text(GTK_ENTRY(EntryBox));
+  gchar *symbol = strdup(GetEntryText("AddRemoveSecuritySymbolEntryBox"));
+  const gchar *shares = GetEntryText("AddRemoveSecuritySharesEntryBox");
 
   UpperCaseStr(symbol);
 
@@ -304,19 +232,27 @@ static void add_security_ok(void *data) {
   add_equity_to_folder(symbol, shares, package);
 
   g_free(symbol);
+
+  pthread_mutex_unlock(&mutex_working[FETCH_DATA_MUTEX]);
+  pthread_exit(NULL);
 }
 
-static void remove_security_ok(void *data) {
+static void *remove_security_ok(void *data) {
+  /* This mutex prevents the program from crashing if a
+     MAIN_FETCH_BTN signal is run in parallel with this thread. */
+  pthread_mutex_lock(&mutex_working[FETCH_DATA_MUTEX]);
+
   /* Unpack the package */
   portfolio_packet *pkg = (portfolio_packet *)data;
   equity_folder *F = pkg->GetEquityFolderClass();
   meta *D = pkg->GetMetaClass();
 
-  GtkWidget *ComboBox =
-      GTK_WIDGET(gtk_builder_get_object(builder, "AddRemoveSecurityComboBox"));
+  GtkWidget *ComboBox = GetWidget("AddRemoveSecurityComboBox");
   gint index = gtk_combo_box_get_active(GTK_COMBO_BOX(ComboBox));
-  if (index == 0)
-    return;
+  if (index == 0) {
+    pthread_mutex_unlock(&mutex_working[FETCH_DATA_MUTEX]);
+    pthread_exit(NULL);
+  }
   if (index == 1) {
     SqliteRemoveAllEquity(D);
     /* Reset Equity Folder */
@@ -324,11 +260,6 @@ static void remove_security_ok(void *data) {
 
     pkg->Calculate();
     pkg->ToStrings();
-
-    if (!pkg->IsDefaultView()) {
-      /* Update the main window treeview. */
-      MainPrimaryTreeview(data);
-    }
   } else {
     gchar *symbol =
         gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(ComboBox));
@@ -336,44 +267,35 @@ static void remove_security_ok(void *data) {
     F->RemoveStock(symbol);
     g_free(symbol);
 
-    /* Sort the equity folder, the following three statements lock the
-     * CLASS_MEMBER_MUTEX */
-    F->Sort(); /* The new stock is in alphabetical order within the array. */
-
     pkg->Calculate();
     pkg->ToStrings();
-
-    if (!pkg->IsDefaultView()) {
-      /* Update the main window treeview. */
-      MainPrimaryTreeview(data);
-    }
   }
-}
 
-int AddRemOk(void *data) {
-  /* Unpack the package */
-  portfolio_packet *package = (portfolio_packet *)data;
-
-  /* This mutex prevents the program from crashing if a
-      FETCH_DATA_BTN signal is run in parallel with this thread. */
-  pthread_mutex_lock(&mutex_working[FETCH_DATA_MUTEX]);
-
-  GtkWidget *stack =
-      GTK_WIDGET(gtk_builder_get_object(builder, "AddRemoveSecurityStack"));
-  const gchar *name = gtk_stack_get_visible_child_name(GTK_STACK(stack));
-
-  if (strcasecmp(name, "add") == 0) {
-    add_security_ok(data);
+  /* Update the treeview. */
+  if (pkg->IsDefaultView()) {
+    gdk_threads_add_idle(MainDefaultTreeview, data);
   } else {
-    remove_security_ok(data);
-  }
-
-  if (package->IsDefaultView()) {
-    MainDefaultTreeview(data);
+    gdk_threads_add_idle(MainPrimaryTreeview, data);
   }
 
   pthread_mutex_unlock(&mutex_working[FETCH_DATA_MUTEX]);
+  pthread_exit(NULL);
+}
 
+int AddRemOk(void *data) {
+  GtkWidget *stack = GetWidget("AddRemoveSecurityStack");
+  const gchar *name = gtk_stack_get_visible_child_name(GTK_STACK(stack));
+
+  pthread_t thread_id;
+  if (strcasecmp(name, "add") == 0) {
+    /* Add the data in a separate thread */
+    pthread_create(&thread_id, NULL, add_security_ok, data);
+    pthread_detach(thread_id);
+  } else {
+    /* Remove the data in a separate thread */
+    pthread_create(&thread_id, NULL, remove_security_ok, data);
+    pthread_detach(thread_id);
+  }
   return 0;
 }
 
@@ -382,16 +304,12 @@ int AddRemShowHide(void *data) {
   portfolio_packet *package = (portfolio_packet *)data;
   equity_folder *F = package->GetEquityFolderClass();
 
-  GtkWidget *window =
-      GTK_WIDGET(gtk_builder_get_object(builder, "AddRemoveSecurity"));
+  GtkWidget *window = GetWidget("AddRemoveSecurity");
   gboolean visible = gtk_widget_is_visible(window);
 
-  GtkWidget *stack =
-      GTK_WIDGET(gtk_builder_get_object(builder, "AddRemoveSecurityStack"));
-  GtkWidget *ComboBox =
-      GTK_WIDGET(gtk_builder_get_object(builder, "AddRemoveSecurityComboBox"));
-  GtkWidget *Button =
-      GTK_WIDGET(gtk_builder_get_object(builder, "AddRemoveSecurityOkBTN"));
+  GtkWidget *stack = GetWidget("AddRemoveSecurityStack");
+  GtkWidget *ComboBox = GetWidget("AddRemoveSecurityComboBox");
+  GtkWidget *Button = GetWidget("AddRemoveSecurityOkBTN");
 
   if (visible == false) {
     gtk_stack_set_visible_child_name(GTK_STACK(stack), "add");
@@ -400,17 +318,20 @@ int AddRemShowHide(void *data) {
     gtk_widget_set_sensitive(Button, false);
 
     /* Reset EntryBoxes */
-    GtkWidget *EntryBox = GTK_WIDGET(
-        gtk_builder_get_object(builder, "AddRemoveSecuritySymbolEntryBox"));
+    GtkWidget *EntryBox = GetWidget("AddRemoveSecuritySymbolEntryBox");
     gtk_entry_set_text(GTK_ENTRY(EntryBox), "");
     gtk_widget_grab_focus(EntryBox);
 
-    EntryBox = GTK_WIDGET(
-        gtk_builder_get_object(builder, "AddRemoveSecuritySharesEntryBox"));
+    EntryBox = GetWidget("AddRemoveSecuritySharesEntryBox");
     gtk_entry_set_text(GTK_ENTRY(EntryBox), "");
     g_object_set(G_OBJECT(EntryBox), "activates-default", TRUE, NULL);
 
     /* Reset ComboBox */
+    /* Temp. Disconnect combobox signal handler. */
+    g_signal_handlers_disconnect_by_func(G_OBJECT(ComboBox),
+                                         G_CALLBACK(GUICallbackHandler),
+                                         (void *)EQUITY_COMBO_BOX);
+
     gtk_combo_box_text_remove_all(GTK_COMBO_BOX_TEXT(ComboBox));
     gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(ComboBox), NULL,
                               "Select a security");
@@ -420,12 +341,20 @@ int AddRemShowHide(void *data) {
                                 "Remove all");
     }
 
-    for (short i = 0; i < F->size; i++) {
+    for (unsigned short i = 0; i < F->size; i++) {
       gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(ComboBox), NULL,
                                 F->Equity[i]->symbol_stock_ch);
     }
 
+    GtkWidget *label = GetWidget("AddRemoveSecurityLabel");
+
+    gtk_label_set_label(GTK_LABEL(label), "");
+
     gtk_combo_box_set_active(GTK_COMBO_BOX(ComboBox), 0);
+
+    /* Reconnect combobox signal handler. */
+    g_signal_connect(G_OBJECT(ComboBox), "changed",
+                     G_CALLBACK(GUICallbackHandler), (void *)EQUITY_COMBO_BOX);
 
     gtk_widget_set_visible(window, true);
 

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 BostonBSD. All rights reserved.
+Copyright (c) 2022-2023 BostonBSD. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -33,15 +33,11 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <string.h>
 
-#include <locale.h>
-#include <monetary.h>
-
 #include "../include/class.h" /* The class init and destruct funcs are required 
                                  in the class methods, includes portfolio_packet 
                                  metal, meta, and equity_folder class types */
 
 #include "../include/json.h"
-#include "../include/macros.h"
 #include "../include/multicurl.h"
 #include "../include/mutex.h"
 #include "../include/workfuncs.h"
@@ -62,65 +58,65 @@ static equity_folder
 /* Class Method (also called Function) Definitions */
 static void convert_equity_to_strings(stock *S, unsigned short digits_right) {
   /* Convert the double values into string values. */
-  DoubToMonStrPango(&S->current_price_stock_mrkd_ch, S->current_price_stock_f,
-                    digits_right);
+  DoubleToMonStrPango(&S->current_price_stock_mrkd_ch, S->current_price_stock_f,
+                      digits_right);
 
-  DoubToMonStrPango(&S->high_stock_mrkd_ch, S->high_stock_f, digits_right);
+  DoubleToMonStrPango(&S->high_stock_mrkd_ch, S->high_stock_f, digits_right);
 
-  DoubToMonStrPango(&S->low_stock_mrkd_ch, S->low_stock_f, digits_right);
+  DoubleToMonStrPango(&S->low_stock_mrkd_ch, S->low_stock_f, digits_right);
 
-  DoubToMonStrPango(&S->opening_stock_mrkd_ch, S->opening_stock_f,
-                    digits_right);
+  DoubleToMonStrPango(&S->opening_stock_mrkd_ch, S->opening_stock_f,
+                      digits_right);
 
-  DoubToMonStrPango(&S->prev_closing_stock_mrkd_ch, S->prev_closing_stock_f,
-                    digits_right);
+  DoubleToMonStrPango(&S->prev_closing_stock_mrkd_ch, S->prev_closing_stock_f,
+                      digits_right);
 
-  DoubToMonStrPangoColor(&S->change_value_mrkd_ch, S->change_value_f,
-                         digits_right, NOT_ITALIC);
+  DoubleToMonStrPangoColor(&S->change_value_mrkd_ch, S->change_value_f,
+                           digits_right, NOT_ITALIC);
 
   switch (S->num_shares_stock_int) {
   case 0:
 
-    DoubToMonStrPangoColor(&S->change_share_stock_mrkd_ch, S->change_share_f,
-                           digits_right, ITALIC);
+    DoubleToMonStrPangoColor(&S->change_share_stock_mrkd_ch, S->change_share_f,
+                             digits_right, ITALIC);
 
-    DoubToPerStrPangoColor(&S->change_percent_mrkd_ch, S->change_percent_f,
-                           digits_right, ITALIC);
+    DoubleToPerStrPangoColor(&S->change_percent_mrkd_ch, S->change_percent_f,
+                             digits_right, ITALIC);
     break;
   default:
 
-    DoubToMonStrPangoColor(&S->change_share_stock_mrkd_ch, S->change_share_f,
-                           digits_right, NOT_ITALIC);
+    DoubleToMonStrPangoColor(&S->change_share_stock_mrkd_ch, S->change_share_f,
+                             digits_right, NOT_ITALIC);
 
-    DoubToPerStrPangoColor(&S->change_percent_mrkd_ch, S->change_percent_f,
-                           digits_right, NOT_ITALIC);
+    DoubleToPerStrPangoColor(&S->change_percent_mrkd_ch, S->change_percent_f,
+                             digits_right, NOT_ITALIC);
     break;
   }
 
   /* The total current investment in this equity. */
-  DoubToMonStrPango(&S->current_investment_stock_mrkd_ch,
-                    S->current_investment_stock_f, digits_right);
+  DoubleToMonStrPango(&S->current_investment_stock_mrkd_ch,
+                      S->current_investment_stock_f, digits_right);
 }
 
-static void ToStrings() {
+static void ToStrings(unsigned short digits_right) {
   equity_folder *F = FolderClassObject;
 
   for (unsigned short g = 0; g < F->size; g++) {
-    convert_equity_to_strings(F->Equity[g], F->decimal_places_shrt);
+    convert_equity_to_strings(F->Equity[g], digits_right);
   }
 
   /* The total equity portfolio value. */
-  DoubToMonStrPango(&F->stock_port_value_ch, F->stock_port_value_f,
-                    F->decimal_places_shrt);
+  DoubleToMonStrPango(&F->stock_port_value_ch, F->stock_port_value_f,
+                      digits_right);
 
   /* The equity portfolio's change in value. */
-  DoubToMonStrPangoColor(&F->stock_port_value_chg_ch, F->stock_port_value_chg_f,
-                         F->decimal_places_shrt, NOT_ITALIC);
+  DoubleToMonStrPangoColor(&F->stock_port_value_chg_ch,
+                           F->stock_port_value_chg_f, digits_right, NOT_ITALIC);
 
   /* The change in total investment in equity as a percentage. */
-  DoubToPerStrPangoColor(&F->stock_port_value_p_chg_ch,
-                         F->stock_port_value_p_chg_f, F->decimal_places_shrt,
-                         NOT_ITALIC);
+  DoubleToPerStrPangoColor(&F->stock_port_value_p_chg_ch,
+                           F->stock_port_value_p_chg_f, digits_right,
+                           NOT_ITALIC);
 }
 
 static void equity_calculations(stock *S) {
@@ -250,7 +246,6 @@ static void AddStock(const char *symbol, const char *shares)
    increments size. */
 {
   pthread_mutex_lock(&mutex_working[CLASS_MEMBER_MUTEX]);
-
   equity_folder *F = FolderClassObject;
   /* Does nothing if maximum number of stocks has been reached. */
   if (F->size == 255)
@@ -273,8 +268,8 @@ static void AddStock(const char *symbol, const char *shares)
   /* Add The Shares To the stock object */
   F->Equity[F->size]->num_shares_stock_int =
       (unsigned int)strtol(shares ? shares : "0", NULL, 10);
-  DoubToNumStrPango(&F->Equity[F->size]->num_shares_stock_mrkd_ch,
-                    (double)F->Equity[F->size]->num_shares_stock_int, 0);
+  DoubleToNumStrPango(&F->Equity[F->size]->num_shares_stock_mrkd_ch,
+                      (double)F->Equity[F->size]->num_shares_stock_int, 0);
 
   /* Add The Stock Symbol To the stock object */
   /* This string is used to process the stock. */
@@ -283,11 +278,12 @@ static void AddStock(const char *symbol, const char *shares)
   switch (F->Equity[F->size]->num_shares_stock_int) {
     /* This string is used on TreeViews. */
   case 0:
-    StrToStrPangoColor(&F->Equity[F->size]->symbol_stock_mrkd_ch, symbol,
-                       BLACK_ITALIC);
+    StringToStrPangoColor(&F->Equity[F->size]->symbol_stock_mrkd_ch, symbol,
+                          BLACK_ITALIC);
     break;
   default:
-    StrToStrPangoColor(&F->Equity[F->size]->symbol_stock_mrkd_ch, symbol, BLUE);
+    StringToStrPangoColor(&F->Equity[F->size]->symbol_stock_mrkd_ch, symbol,
+                          BLUE);
     break;
   }
   F->size++;
@@ -342,8 +338,7 @@ static void ExtractData() {
           &F->Equity[c]->change_share_f, &F->Equity[c]->change_percent_f);
 
       /* Free memory. */
-      free(F->Equity[c]->JSON.memory);
-      F->Equity[c]->JSON.memory = NULL;
+      FreeMemtype(&F->Equity[c]->JSON);
     } else {
       F->Equity[c]->current_price_stock_f = 0.0;
       F->Equity[c]->high_stock_f = 0.0;
@@ -408,11 +403,11 @@ static void SetSecurityNames(void *data) {
     }
 
     if (F->Equity[g]->num_shares_stock_int) {
-      StrToStrPangoColor(&F->Equity[g]->security_name_mrkd_ch,
-                         security_name ? security_name : "", BLUE);
+      StringToStrPangoColor(&F->Equity[g]->security_name_mrkd_ch,
+                            security_name ? security_name : "", BLUE);
     } else {
-      StrToStrPangoColor(&F->Equity[g]->security_name_mrkd_ch,
-                         security_name ? security_name : "", BLACK_ITALIC);
+      StringToStrPangoColor(&F->Equity[g]->security_name_mrkd_ch,
+                            security_name ? security_name : "", BLACK_ITALIC);
     }
 
     if (security_name) {
@@ -460,6 +455,7 @@ static stock *class_init_equity() {
 
   new_class->easy_hnd = curl_easy_init();
   new_class->JSON.memory = NULL;
+  new_class->JSON.size = 0;
 
   /* Return Our Initialized Class */
   return new_class;
@@ -481,8 +477,6 @@ equity_folder *ClassInitEquityFolder() {
   new_class->stock_port_value_f = 0.0f;
   new_class->stock_port_value_chg_f = 0.0f;
   new_class->stock_port_value_p_chg_f = 0.0f;
-
-  new_class->decimal_places_shrt = 2;
 
   /* Connect Function Pointers To Function Definitions */
   /* The functions do not need to have the same name as the pointer,
@@ -574,10 +568,7 @@ static void class_destruct_equity(stock *stock_class) {
   if (stock_class->easy_hnd)
     curl_easy_cleanup(stock_class->easy_hnd);
 
-  if (stock_class->JSON.memory) {
-    free(stock_class->JSON.memory);
-    stock_class->JSON.memory = NULL;
-  }
+  FreeMemtype(&stock_class->JSON);
 
   /* Free Memory From Class Object */
   if (stock_class) {

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 BostonBSD. All rights reserved.
+Copyright (c) 2022-2023 BostonBSD. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -35,13 +35,11 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <math.h>
 #include <search.h>
 #include <stdbool.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "../include/class_types.h"
 #include "../include/gui_types.h"
-#include "../include/macros.h"
 #include "../include/multicurl.h"
 #include "../include/sqlite.h"
 
@@ -74,7 +72,7 @@ void SNMapDestruct(symbol_name_map *sn_map) {
     return;
 
   /* Destroy the table data and free htab */
-  /* This does not free the key and data pointers, they are stored in the
+  /* hdestroy_r does not free the key and data pointers, they are stored in the
    * sn_container_arr; (GNU and FreeBSD...FreeBSD needs to update their man
    * page). */
   if (sn_map->htab) {
@@ -119,18 +117,20 @@ static int alpha_asc_sec_name(const void *a, const void *b)
   return strcasecmp(aa[0]->symbol, bb[0]->symbol);
 }
 
-const char *bad_syms[] = {"Symbol", "File Creation Time",
-                          "TEST",   "ZXYZ.A",
-                          "ZZT",    "ZEXIT",
-                          "ZIEXT",  "ZVZZC",
-                          "ZVV",    "ZXIET",
-                          "ZBZX"};
+/* Symbols we don't want. */
+static const char *bad_syms[] = {"Symbol", "File Creation Time",
+                                 "TEST",   "ZXYZ.A",
+                                 "ZZT",    "ZEXIT",
+                                 "ZIEXT",  "ZVZZC",
+                                 "ZVV",    "ZXIET",
+                                 "ZBZX"};
 
 static bool check_symbol(const char *s)
-/* Depository share symbols include dollars signs, which we don't want.
-   The first line of the file includes the "Symbol" string, which we don't want.
-   The last line of the file includes the "File Creation Time" string, which we
-   don't want. Some symbols are test stocks, which we don't want.
+/* Depository share symbols include dollar signs, which we don't want [Yahoo!
+   doesn't recognize symbols with $ signs]. The first line of the file includes
+   the "Symbol" string, which we don't want. The last line of the file includes
+   the "File Creation Time" string, which we don't want. Some symbols are test
+   stocks, which we don't want.
 */
 {
   if (strpbrk(s, "$"))
@@ -154,8 +154,14 @@ void AddSymbolToMap(const char *symbol, const char *name,
   symbol_to_security_name_container **tmp =
       realloc(sn_map->sn_container_arr,
               sizeof(symbol_to_security_name_container *) * (sn_map->size + 1));
+
+  if (tmp == NULL) {
+    printf("Not Enough Memory, realloc returned NULL.\n");
+    exit(EXIT_FAILURE);
+  }
+
   sn_map->sn_container_arr = tmp;
-  /* Allocate memory for a pointer address and add it to the array */
+  /* Allocate memory for an object and add the address of it to the array */
   sn_map->sn_container_arr[sn_map->size] =
       malloc(sizeof(symbol_to_security_name_container));
   /* Populate a data member with the symbol string */
@@ -184,7 +190,7 @@ static symbol_name_map *sym_name_map_dup(symbol_name_map *sn_map)
 }
 
 /* Special Symbols Array */
-static symbol_to_security_name_container special_syms[] = {
+static const symbol_to_security_name_container special_syms[] = {
     /* Indices. */
     {"^DJI", "Dow Jones Industrial Average ( Dow 30 Index )"},
     {"^IXIC", "Nasdaq Composite Index"},
@@ -273,7 +279,6 @@ static void create_hash_table(symbol_name_map *sn_map) {
   /*zeroize the table.*/
   memset(sn_map->htab, 0, sizeof(struct hsearch_data));
 
-  /* Create a hashing table of the sn_map. */
   ENTRY e, *ep;
   /* GNU suggests the table size be 25% larger than needed.  On FreeBSD table
    * size is dynamic. */
@@ -305,7 +310,9 @@ static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
 
   MemType Nasdaq_Struct, NYSE_Struct;
   Nasdaq_Struct.memory = NULL;
+  Nasdaq_Struct.size = 0;
   NYSE_Struct.memory = NULL;
+  NYSE_Struct.size = 0;
 
   SetUpCurlHandle(D->NASDAQ_completion_hnd, D->multicurl_cmpltn_hnd,
                   D->Nasdaq_Symbol_url_ch, &Nasdaq_Struct);
@@ -313,10 +320,8 @@ static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
                   D->NYSE_Symbol_url_ch, &NYSE_Struct);
   if (PerformMultiCurl_no_prog(D->multicurl_cmpltn_hnd) != 0 ||
       pkg->IsCurlCanceled()) {
-    if (Nasdaq_Struct.memory)
-      free(Nasdaq_Struct.memory);
-    if (NYSE_Struct.memory)
-      free(NYSE_Struct.memory);
+    FreeMemtype(&Nasdaq_Struct);
+    FreeMemtype(&NYSE_Struct);
     if (sn_map->sn_container_arr)
       free(sn_map->sn_container_arr);
     if (sn_map)
@@ -364,10 +369,8 @@ static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
           fclose(fp[0]);
         if (fp[1])
           fclose(fp[1]);
-        if (Nasdaq_Struct.memory)
-          free(Nasdaq_Struct.memory);
-        if (NYSE_Struct.memory)
-          free(NYSE_Struct.memory);
+        FreeMemtype(&Nasdaq_Struct);
+        FreeMemtype(&NYSE_Struct);
         if (line)
           free(line);
         create_hash_table(sn_map);
@@ -394,8 +397,8 @@ static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
 
   fclose(fp[0]);
   fclose(fp[1]);
-  free(Nasdaq_Struct.memory);
-  free(NYSE_Struct.memory);
+  FreeMemtype(&Nasdaq_Struct);
+  FreeMemtype(&NYSE_Struct);
   return sn_map;
 }
 
@@ -431,7 +434,7 @@ symbol_name_map *SymNameFetchUpdate(portfolio_packet *pkg,
   meta *D = pkg->GetMetaClass();
   symbol_name_map *sn_map_dup = NULL;
 
-  /* Download the symbol lists from the server, create hash table */
+  /* Download the symbol lists from the server */
   symbol_name_map *sn_map_new = symbol_list_fetch(pkg);
 
   if (sn_map_new) {

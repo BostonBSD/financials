@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 BostonBSD. All rights reserved.
+Copyright (c) 2022-2023 BostonBSD. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -37,9 +37,9 @@ POSSIBILITY OF SUCH DAMAGE.
 
 /* Globals */
 
-/* The packet global class is only accessible from financials.c,
-   gui_callbacks.c, and gui_threads.c */
-/* All other functions access the class data through pass by reference */
+/* The packet global class is only accessible from class_packet.c, financials.c
+ * and gui_callbacks.c */
+/* All other functions access the class data through pointer passing */
 
 extern portfolio_packet *packet; /* The gui worker functions need access to the
                                     classes, so we package them and send a

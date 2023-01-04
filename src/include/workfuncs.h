@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 BostonBSD. All rights reserved.
+Copyright (c) 2022-2023 BostonBSD. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -61,15 +61,15 @@ enum {
   ITALIC,
 };
 
-void DoubToMonStrPango(char **, const double, const unsigned short);
-void DoubToPerStrPango(char **, const double, const unsigned short);
-void DoubToNumStrPango(char **, const double, const unsigned short);
-void StrToStrPango(char **, const char *);
-void DoubToMonStrPangoColor(char **, const double, const unsigned short,
-                            const unsigned int);
-void DoubToPerStrPangoColor(char **, const double, const unsigned short,
-                            unsigned int);
-void StrToStrPangoColor(char **, const char *, const unsigned int);
+void DoubleToMonStrPango(char **, const double, const unsigned short);
+void DoubleToPerStrPango(char **, const double, const unsigned short);
+void DoubleToNumStrPango(char **, const double, const unsigned short);
+void StringToStrPango(char **, const char *);
+void DoubleToMonStrPangoColor(char **, const double, const unsigned short,
+                              const unsigned int);
+void DoubleToPerStrPangoColor(char **, const double, const unsigned short,
+                              unsigned int);
+void StringToStrPangoColor(char **, const char *, const unsigned int);
 
 /* sn_map */
 void AddSymbolToMap(const char *, const char *, symbol_name_map *);
@@ -93,9 +93,9 @@ size_t LengthPercent(const double, const unsigned short);
 size_t LengthNumber(const double, const unsigned short);
 void StringToMonStr(char **, const char *, const unsigned short);
 void DoubleToMonStr(char **, const double, const unsigned short);
-void DoubToPerStr(char **, const double, const unsigned short);
-void DoubToNumStr(char **, const double, const unsigned short);
-double StringToDoub(const char *);
+void DoubleToPerStr(char **, const double, const unsigned short);
+void DoubleToNumStr(char **, const double, const unsigned short);
+double StringToDouble(const char *);
 
 /* time_funcs */
 void NYTime(int *, int *);
