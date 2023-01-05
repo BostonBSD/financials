@@ -38,7 +38,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/class_types.h"
 #include "../include/macros.h"
 #include "../include/multicurl.h"
-#include "../include/mutex.h"
 
 double CalcGain(double cur_price, double prev_price) {
   return (100 * ((cur_price - prev_price) / prev_price));
@@ -117,7 +116,7 @@ MemType *FetchRSIData(const char *symbol, portfolio_packet *pkg) {
   MemType *MyOutputStruct = (MemType *)malloc(sizeof(*MyOutputStruct));
   MyOutputStruct->memory = NULL;
   MyOutputStruct->size = 0;
-  
+
   MyUrl = rsi_get_url(symbol);
 
   SetUpCurlHandle(D->rsi_hnd, D->multicurl_rsi_hnd, MyUrl, MyOutputStruct);
@@ -127,7 +126,7 @@ MemType *FetchRSIData(const char *symbol, portfolio_packet *pkg) {
     free(MyOutputStruct);
     return NULL;
   }
-  
+
   free(MyUrl);
   return MyOutputStruct;
 }

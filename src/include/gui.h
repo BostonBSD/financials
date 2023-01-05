@@ -44,6 +44,7 @@ GtkWidget *GetWidget(const gchar *);
 GObject *GetGObject(const gchar *);
 const gchar *GetEntryText(const char *);
 void GuiStart(void *);
+int CompletionSet(void *, uintptr_t);
 
 /* gui_main */
 int MainPrimaryTreeview(void *);
@@ -81,8 +82,6 @@ int AboutShowHide();
 int HotkeysShowHide();
 
 /* gui_rsi */
-GtkListStore *CompletionSetStore(symbol_name_map *);
-gboolean CompletionMatch(GtkEntryCompletion *, const gchar *, GtkTreeIter *);
 int RSIShowHide(void *);
 int RSITreeViewClear();
 int RSIMakeTreeview(void *);
@@ -104,9 +103,9 @@ gboolean GUICallbackHandler_hide_window_on_delete(GtkWidget *, GdkEvent *,
                                                   void *);
 gboolean GUICallbackHandler_window_data(GtkWidget *, GdkEvent *, void *);
 gboolean GUICallbackHandler_select_comp(GtkEntryCompletion *, GtkTreeModel *,
-                                        GtkTreeIter *);
+                                        GtkTreeIter *, void *);
 gboolean GUICallbackHandler_cursor_comp(GtkEntryCompletion *, GtkTreeModel *,
-                                        GtkTreeIter *);
+                                        GtkTreeIter *, void *);
 gboolean view_onButtonPressed(GtkWidget *, GdkEventButton *);
 
 /* GUI Thread Handler Functions */

@@ -30,13 +30,6 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <ctype.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include <gtk/gtk.h>
-
 #include "../include/class_types.h" /* portfolio_packet, equity_folder, metal, meta, window_data */
 #include "../include/gui.h"
 #include "../include/json.h"
@@ -46,47 +39,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/workfuncs.h"
 
 int AddRemCompletionSet(void *data) {
-  pthread_mutex_lock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
-  if (data == NULL) {
-    pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
-    return 0;
-  }
-
-  GtkWidget *EntryBox = GetWidget("AddRemoveSecuritySymbolEntryBox");
-  GtkEntryCompletion *completion = gtk_entry_completion_new();
-  /* CompletionSetStore in gui_rsi.c */
-  GtkListStore *store = CompletionSetStore((symbol_name_map *)data);
-
-  gtk_entry_completion_set_model(completion, GTK_TREE_MODEL(store));
-  g_object_unref(G_OBJECT(store));
-  /* CompletionMatch in gui_rsi.c */
-  gtk_entry_completion_set_match_func(
-      completion, (GtkEntryCompletionMatchFunc)CompletionMatch, NULL,
-      NULL);
-  /* Set AddRemoveSecuritySymbol entrybox completion widget. */
-  gtk_entry_set_completion(GTK_ENTRY(EntryBox), completion);
-
-  /* The text column to display is column 2 */
-  gtk_entry_completion_set_text_column(completion, 2);
-  gtk_entry_completion_set_inline_completion(completion, FALSE);
-  gtk_entry_completion_set_inline_selection(completion, TRUE);
-  gtk_entry_completion_set_popup_completion(completion, TRUE);
-  /* Must type at least two characters for completion to make suggestions,
-     reduces the number of results for single character keys. */
-  gtk_entry_completion_set_minimum_key_length(completion, 2);
-  /* The text column to insert is column 0
-     We use a callback on the match-selected signal and insert the text from
-     column 0 instead of column 2 We use a callback on the cursor-on-match
-     signal and insert the text from column 0 instead of column 2
-  */
-  g_signal_connect(G_OBJECT(completion), "match-selected",
-                   G_CALLBACK(GUICallbackHandler_select_comp), NULL);
-  g_signal_connect(G_OBJECT(completion), "cursor-on-match",
-                   G_CALLBACK(GUICallbackHandler_cursor_comp), NULL);
-
-  g_object_unref(G_OBJECT(completion));
-
-  pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
+  CompletionSet(data, GUI_COMPLETION_EQUITIES);
   return 0;
 }
 
@@ -169,8 +122,7 @@ static void *fetch_data_for_new_stock(void *data) {
                     &F->Equity[F->size - 1]->change_percent_f);
 
   /* Free memory. */
-  free(F->Equity[F->size - 1]->JSON.memory);
-  F->Equity[F->size - 1]->JSON.memory = NULL;
+  FreeMemtype(&F->Equity[F->size - 1]->JSON);
 
   pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
 

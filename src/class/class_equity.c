@@ -251,7 +251,6 @@ static void AddStock(const char *symbol, const char *shares)
   if (F->size == 255)
     return;
 
-  /* realloc will free memory if assigned a smaller new value. */
   stock **tmp_array =
       (stock **)realloc(F->Equity, (F->size + 1) * sizeof(stock *));
 
@@ -311,6 +310,7 @@ static void RemoveStock(const char *s)
         F->Equity[j] = F->Equity[j + 1];
         j++;
       }
+      /* realloc will free memory if assigned a smaller new value. */
       tmp = realloc(F->Equity, (F->size - 1) * sizeof(stock *));
       if (tmp)
         F->Equity = tmp;
@@ -424,7 +424,7 @@ static stock *class_init_equity() {
   /* Allocate Memory For A New Class Object */
   stock *new_class = (stock *)malloc(sizeof(*new_class));
 
-  /* Allocate Memory For Variables */
+  /* Initialize Variables */
   new_class->num_shares_stock_int = 0;
 
   new_class->current_price_stock_f = 0.0f;

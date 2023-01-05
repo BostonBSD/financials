@@ -40,8 +40,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #define MAX_WAIT_MSECS 50
 
 void FreeMemtype(MemType *mem_data) {
-/* Reset the MemType members, doesn't free the 
-   object pointer. */
+  /* Reset the MemType members, doesn't free the
+     object pointer. */
   if (mem_data->memory) {
     free(mem_data->memory);
     mem_data->memory = NULL;

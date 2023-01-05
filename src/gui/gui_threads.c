@@ -29,10 +29,7 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
 IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
-#include <gtk/gtk.h>
-
-#include "../include/gui.h"
-#include "../include/gui_types.h" /* symbol_name_map, cb_signal, etc */
+#include "../include/gui.h" /* Gtk header, types: symbol_name_map, cb_signal, etc */
 #include "../include/multicurl.h" /* FreeMemtype() */
 #include "../include/mutex.h"     /* pthread_mutex_t mutex_working */
 #include "../include/workfuncs.h" /* includes class_types.h [portfolio_packet, meta, etc] */
@@ -170,6 +167,7 @@ static void main_fetch_data_thd_cleanup(void *data)
 
   /* Reset FetchingData flag. */
   pkg->SetFetchingData(false);
+
   /* Reset Fetch Button label. */
   gdk_threads_add_idle(MainFetchBTNLabel, pkg);
 }
@@ -250,6 +248,14 @@ void *GUIThreadHandler_main_fetch_data(void *data)
   portfolio_packet *pkg = (portfolio_packet *)data;
   meta *D = pkg->GetMetaClass();
 
+  /* if there is a concurrent thread waiting on a join or creating a thread,
+     exit this thread. */
+  static atomic_bool handler_busy = false;
+  if (handler_busy)
+    pthread_exit(NULL);
+
+  handler_busy = true;
+
   /* If the main_fetch_data_thd thread is currently running. */
   if (pkg->IsFetchingData()) {
     /* Cancel fetching data thread. */
@@ -258,30 +264,33 @@ void *GUIThreadHandler_main_fetch_data(void *data)
 
     /* If the fetching thread is not running. */
   } else {
+    /* Create fetching data thread. */
     pthread_create(&D->thread_id_main_fetch_data, NULL, main_fetch_data_thd,
                    data);
     pthread_detach(D->thread_id_main_fetch_data);
   }
+
+  handler_busy = false;
   pthread_exit(NULL);
 }
 
 typedef struct {
   MemType *RSIOutput;
   char *symbol;
-}rsi_cleanup;
+} rsi_cleanup;
 
 static void rsi_fetch_thd_cleanup(void *data) {
-  rsi_cleanup *thd_data = (rsi_cleanup*)data;
+  rsi_cleanup *thd_data = (rsi_cleanup *)data;
   pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
   pthread_mutex_unlock(&mutex_working[RSI_FETCH_MUTEX]);
   pthread_mutex_unlock(&mutex_working[MULTICURL_NO_PROG_MUTEX]);
 
-  if(thd_data->RSIOutput){
+  if (thd_data->RSIOutput) {
     FreeMemtype(thd_data->RSIOutput);
     free(thd_data->RSIOutput);
   }
 
-  if(thd_data->symbol){
+  if (thd_data->symbol) {
     free(thd_data->symbol);
   }
 }
@@ -294,9 +303,8 @@ void *GUIThreadHandler_rsi_fetch(void *data) {
   GtkListStore *store = NULL;
 
   pthread_cleanup_push(rsi_fetch_thd_cleanup, &rsi_thd_data);
-  /* Prevent's multiple concurrent RSI fetch requests. */
+  /* Prevents multiple concurrent RSI fetch requests. */
   pthread_mutex_lock(&mutex_working[RSI_FETCH_MUTEX]);
-
 
   /* Get the symbol string */
   RSIGetSymbol(&rsi_thd_data.symbol);
@@ -404,17 +412,15 @@ void *GUIThreadHandler_completion_set(void *data) {
   /* Make sure the security names are set with pango style markups. */
   pkg->SetSecurityNames();
 
+  pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
+
   if (pkg->IsCurlCanceled())
     pthread_exit(NULL);
 
-  /* gdk_threads_add_idle is non-blocking, we need the mutex
-     in the RSICompletionSet and AddRemCompletionSet functions. */
   if (sym_map) {
     gdk_threads_add_idle(RSICompletionSet, sym_map);
     gdk_threads_add_idle(AddRemCompletionSet, sym_map);
   }
-
-  pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
 
   /* Set the default treeview. */
   if (pkg->IsDefaultView())
@@ -429,7 +435,7 @@ void *GUIThreadHandler_main_clock() {
      This is a single process multithreaded application.
      The process is always using New York time.
   */
-  pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
+  pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
   pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 
   while (1) {
@@ -449,7 +455,7 @@ void *GUIThreadHandler_main_clock() {
 }
 
 void *GUIThreadHandler_time_to_close(void *data) {
-  pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
+  pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
   pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 
   portfolio_packet *pkg = (portfolio_packet *)data;
@@ -483,7 +489,7 @@ void *GUIThreadHandler_time_to_close(void *data) {
 }
 
 static void main_exit_curl_cleanup(portfolio_packet *pkg) {
-  if(pkg->IsFetchingData()){
+  if (pkg->IsFetchingData()) {
     /* Non-Main Curl */
     pkg->SetCurlCanceled(true);
     /* Main Curl */

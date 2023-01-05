@@ -49,6 +49,9 @@ typedef struct { /* A handle to the symbol-name mapping array. */
 /* Window Signals */
 enum { GUI_MAIN_WINDOW, GUI_RSI_WINDOW };
 
+/* Completion Set Signals */
+enum { GUI_COMPLETION_EQUITIES, GUI_COMPLETION_RSI };
+
 /* Main TreeView Data Column Type */
 enum { GUI_COLUMN_DEFAULT, GUI_COLUMN_PRIMARY };
 

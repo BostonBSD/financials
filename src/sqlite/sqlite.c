@@ -33,7 +33,6 @@ POSSIBILITY OF SUCH DAMAGE.
                        extensions on GNU/Linux, this macro needs to be defined \
                        before all header files [on GNU systems]. */
 #include <math.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 

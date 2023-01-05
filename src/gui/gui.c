@@ -29,13 +29,11 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
 IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
-
-#include <gtk/gtk.h>
-
-#include "../include/class_types.h" /* portfolio_packet, window_data */
 #include "../include/gui.h"
-#include "../include/gui_types.h"
+#include "../include/class_types.h" /* portfolio_packet, window_data */
+#include "../include/mutex.h"
 #include "../include/workfuncs.h"
+#include <ctype.h>
 
 static GtkBuilder *builder;
 
@@ -53,6 +51,125 @@ const gchar *GetEntryText(const char *name_ch) {
   return gtk_entry_get_text(GTK_ENTRY(EntryBox));
 }
 
+/* Set completion widgets for both the equities and rsi entry boxes. */
+static GtkListStore *completion_set_store(symbol_name_map *sn_map) {
+  GtkListStore *store =
+      gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+  GtkTreeIter iter;
+
+  gchar item[35];
+  /* Populate the GtkListStore with the string of stock symbols in column 0,
+     stock names in column 1, and symbols & names in column 2. */
+  for (gushort i = 0; i < sn_map->size; i++) {
+    snprintf(item, 35, "%s - %s", sn_map->sn_container_arr[i]->symbol,
+             sn_map->sn_container_arr[i]->security_name);
+
+    gtk_list_store_append(store, &iter);
+    /* Completion is going to match off of columns 0 and 1, but display column 2
+     */
+    /* Completion matches based off of the symbol or the company name, inserts
+     * the symbol, displays both */
+    gtk_list_store_set(store, &iter, 0, sn_map->sn_container_arr[i]->symbol, 1,
+                       sn_map->sn_container_arr[i]->security_name, 2, item, -1);
+  }
+  return store;
+}
+
+static gboolean completion_match(GtkEntryCompletion *completion,
+                                 const gchar *key, GtkTreeIter *iter) {
+  GtkTreeModel *model = gtk_entry_completion_get_model(completion);
+  gchar *item_symb, *item_name;
+  /* We are finding matches based off of column 0 and 1, however,
+     we display column 2 in our 3 column model */
+  gtk_tree_model_get(model, iter, 0, &item_symb, 1, &item_name, -1);
+  gboolean ans = false, symbol_match = true, name_match = true;
+
+  gushort N = 0;
+  while (key[N]) {
+    /* Only compare new key char if prev char was a match. */
+    if (symbol_match)
+      symbol_match = (tolower(key[N]) == tolower(item_symb[N]));
+    if (name_match)
+      name_match = (tolower(key[N]) == tolower(item_name[N]));
+    /* Break the loop if both the symbol and the name are not a match. */
+    if ((symbol_match == false) && (name_match == false))
+      break;
+    N++;
+  }
+
+  /* if either the symbol or the name match the key value, return true. */
+  ans = symbol_match || name_match;
+  g_free(item_symb);
+  g_free(item_name);
+
+  return ans;
+}
+
+int CompletionSet(void *data, uintptr_t gui_completion_sig) {
+  if (data == NULL)
+    return 0;
+
+  GtkWidget *EntryBox = NULL;
+  if (gui_completion_sig == GUI_COMPLETION_RSI) {
+    EntryBox = GetWidget("ViewRSISymbolEntryBox");
+  } else {
+    EntryBox = GetWidget("AddRemoveSecuritySymbolEntryBox");
+  }
+
+  GtkEntryCompletion *completion = gtk_entry_completion_new();
+  GtkListStore *store = completion_set_store((symbol_name_map *)data);
+  gtk_entry_completion_set_model(completion, GTK_TREE_MODEL(store));
+  g_object_unref(G_OBJECT(store));
+
+  gtk_entry_completion_set_match_func(
+      completion, (GtkEntryCompletionMatchFunc)completion_match, NULL, NULL);
+
+  /* Set entrybox completion widget. */
+  gtk_entry_set_completion(GTK_ENTRY(EntryBox), completion);
+
+  /* The text column to display is column 2 */
+  gtk_entry_completion_set_text_column(completion, 2);
+  gtk_entry_completion_set_inline_completion(completion, FALSE);
+  gtk_entry_completion_set_inline_selection(completion, TRUE);
+  gtk_entry_completion_set_popup_completion(completion, TRUE);
+  /* Must type at least two characters for completion to make suggestions,
+     reduces the number of results for single character keys. */
+  gtk_entry_completion_set_minimum_key_length(completion, 2);
+
+  /* Connect GtkEntryCompletion signals to callbacks */
+
+  /* The text column to insert is column 0
+     We use a callback on the 'match-selected' signal and insert the text from
+     column 0 instead of column 2 We use a callback on the 'cursor-on-match'
+     signal and insert the text from column 0 instead of column 2
+  */
+  g_signal_connect(G_OBJECT(completion), "match-selected",
+                   G_CALLBACK(GUICallbackHandler_select_comp),
+                   (void *)gui_completion_sig);
+  g_signal_connect(G_OBJECT(completion), "cursor-on-match",
+                   G_CALLBACK(GUICallbackHandler_cursor_comp),
+                   (void *)gui_completion_sig);
+
+  g_object_unref(G_OBJECT(completion));
+
+  return 0;
+}
+
+static void completion_set_start_thd(void *data) {
+  pthread_t thread_id;
+
+  /* Set up the EntryBox Completion Widgets
+     This will populate the symbol to name mapping,
+     from an sqlite Db when the application loads.
+
+     The lists of symbol to name mappings need to be
+     downloaded by the user [in the preferences window]
+     if the db isn't already populated. */
+  pthread_create(&thread_id, NULL, GUIThreadHandler_completion_set, data);
+  pthread_detach(thread_id);
+}
+
+/* Some other preliminary functions. */
 static struct {
   const char *name;
   const char *shortcut;
@@ -193,20 +310,7 @@ static void clock_display(void *data)
   gtk_revealer_set_transition_duration(GTK_REVEALER(revealer), 300);
 }
 
-static void completion_set(void *data) {
-  pthread_t thread_id;
-
-  /* Set up the EntryBox Completion Widgets
-     This will populate the symbol to name mapping,
-     from an sqlite Db when the application loads.
-
-     The lists of symbol to name mappings need to be
-     downloaded by the user [in the preferences window]
-     if the db isn't already populated. */
-  pthread_create(&thread_id, NULL, GUIThreadHandler_completion_set, data);
-  pthread_detach(thread_id);
-}
-
+/* GtkWidget/GObject signal connect functions. */
 static void main_window_sig_connect(void *data) {
   portfolio_packet *pkg = (portfolio_packet *)data;
   window_data *W = pkg->GetWindowData();
@@ -534,8 +638,8 @@ static void gui_signal_connect(void *data)
    to the GUICallbackHandler function in gui_callbacks.c.
 
    Some signals require separate threads to perform computational tasks, these
-   are dispatched from GUICallbackHandler functions [in gui_threads.c].  The
-   clock threads are dispatched by separate functions [clock_display(),
+   are dispatched from the GUICallbackHandler functions [in gui_callbacks.c].
+   The clock threads are dispatched by separate functions [clock_display(),
    GUICallbackHandler_pref_clock_switch()].
 
    There are ancillary widget signals to perform other tasks depending upon
@@ -575,7 +679,7 @@ void GuiStart(void *data)
 
   /* Add the list of stock symbols from sqlite to a struct.
      Set two entrybox completion widgets.*/
-  completion_set(data);
+  completion_set_start_thd(data);
 
   /* Add the keyboard shortcuts to the Hotkeys window. */
   hotkeys_set_treeview();
@@ -587,9 +691,10 @@ void GuiStart(void *data)
   gui_signal_connect(data);
 
   /* Set the default treeview.
-     This treeview is already set in the completion_set thread [created in
-     completion_set()], however, there may be a db read delay before it is
-     displayed. So we set it here showing any available data. */
+     This treeview is already set in the GUIThreadHandler_completion_set thread
+     [created in completion_set_start_thd()], however, there may be a db read
+     delay before it is displayed. So we set it here showing any available data.
+   */
   MainDefaultTreeview(data);
 
   /* Start the gtk_main loop. */

@@ -32,6 +32,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef CLASS_TYPES_HEADER_H
 #define CLASS_TYPES_HEADER_H
 
+#include <stdatomic.h>
 #include <stdbool.h>
 #include <time.h> /* struct tm  */
 
@@ -266,19 +267,17 @@ typedef struct {
   char *sqlite_symbol_name_db_path_ch; /* Path to the sqlite symbol-name db file
                                         */
 
-  /* A bit field of seven bits, used syntactically
-     the same as bools */
-  bool fetching_data_bool : 1;    /* Indicates a fetch operation in progress. */
-  bool holiday_bool : 1;          /* Indicates if today is a holiday. */
-  bool multicurl_cancel_bool : 1; /* Indicates if we should cancel all
-                                     multicurl requests. */
-  bool multicurl_cancel_main_bool : 1; /* Indicates if we should cancel the
+  atomic_bool fetching_data_bool; /* Indicates a fetch operation in progress. */
+  atomic_bool holiday_bool;       /* Indicates if today is a holiday. */
+  atomic_bool multicurl_cancel_bool;      /* Indicates if we should cancel all
+                                          multicurl requests. */
+  atomic_bool multicurl_cancel_main_bool; /* Indicates if we should cancel the
                                           main multicurl request. */
-  bool index_bar_revealed_bool : 1;    /* Indicates if the indices bar is
+  atomic_bool index_bar_revealed_bool;    /* Indicates if the indices bar is
                                           revealed or not. */
-  bool clocks_displayed_bool : 1;      /* Indicates if the clocks are
+  atomic_bool clocks_displayed_bool;      /* Indicates if the clocks are
                                                    displayed or not. */
-  bool main_win_default_view_bool : 1; /* Indicates if the main window
+  atomic_bool main_win_default_view_bool; /* Indicates if the main window
                                           treeview is displaying the default or
                                           the primary view. Default is true. */
 

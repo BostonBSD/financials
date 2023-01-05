@@ -30,14 +30,12 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <dirent.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <sys/stat.h>
-#include <sys/types.h>
-
-#include <dirent.h>
-#include <errno.h>
 
 #include "../include/class_types.h" /* equity_folder, metal, meta, window_data */
 #include "../include/macros.h"

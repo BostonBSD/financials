@@ -34,7 +34,6 @@ POSSIBILITY OF SUCH DAMAGE.
                        before all header files [on GNU systems]. */
 #include <math.h>
 #include <search.h>
-#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 

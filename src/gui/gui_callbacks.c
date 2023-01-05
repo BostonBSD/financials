@@ -30,14 +30,8 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 #include <ctype.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include <gtk/gtk.h>
 
 #include "../include/gui.h"
-#include "../include/gui_types.h"
 
 #include "../include/class_types.h" /* portfolio_packet, equity_folder, metal, meta, window_data */
 #include "../include/globals.h" /* portfolio_packet packet */
@@ -57,7 +51,7 @@ void GUICallbackHandler(GtkWidget *widget, void *data)
 
   pthread_t thread_id;
 
-  /* We're using data as a value rather than a pointer here. */
+  /* We're using data as a value rather than a pointer. */
   cb_signal index_signal = (cb_signal)((uintptr_t)data);
 
   switch (index_signal) {
@@ -453,19 +447,23 @@ gboolean GUICallbackHandler_window_data(GtkWidget *window, GdkEvent *event,
 }
 
 gboolean GUICallbackHandler_select_comp(GtkEntryCompletion *completion,
-                                        GtkTreeModel *model, GtkTreeIter *iter)
+                                        GtkTreeModel *model, GtkTreeIter *iter,
+                                        void *data)
 /* activated when an item is selected from the completion list */
 {
   if (!(completion))
     return true;
-  GtkWidget *EntryBoxRSI = GetWidget("ViewRSISymbolEntryBox");
-  GtkWidget *EntryBoxAddRem = GetWidget("AddRemoveSecuritySymbolEntryBox");
+
+  /* We're using data as a value rather than a pointer. */
+  uintptr_t index_signal = (uintptr_t)data;
   GtkWidget *EntryBox = NULL;
-  if (gtk_widget_has_focus(EntryBoxRSI)) {
-    EntryBox = EntryBoxRSI;
+
+  if (index_signal == GUI_COMPLETION_RSI) {
+    EntryBox = GetWidget("ViewRSISymbolEntryBox");
   } else {
-    EntryBox = EntryBoxAddRem;
+    EntryBox = GetWidget("AddRemoveSecuritySymbolEntryBox");
   }
+
   gchar *item;
   /* when a match is selected insert column zero instead of column 2 */
   gtk_tree_model_get(model, iter, 0, &item, -1);
@@ -481,19 +479,23 @@ gboolean GUICallbackHandler_select_comp(GtkEntryCompletion *completion,
 }
 
 gboolean GUICallbackHandler_cursor_comp(GtkEntryCompletion *completion,
-                                        GtkTreeModel *model, GtkTreeIter *iter)
+                                        GtkTreeModel *model, GtkTreeIter *iter,
+                                        void *data)
 /* activated when an item is highlighted from the completion list */
 {
   if (!(completion))
     return true;
-  GtkWidget *EntryBoxRSI = GetWidget("ViewRSISymbolEntryBox");
-  GtkWidget *EntryBoxAddRem = GetWidget("AddRemoveSecuritySymbolEntryBox");
+
+  /* We're using data as a value rather than a pointer. */
+  uintptr_t index_signal = (uintptr_t)data;
   GtkWidget *EntryBox = NULL;
-  if (gtk_widget_has_focus(EntryBoxRSI)) {
-    EntryBox = EntryBoxRSI;
+
+  if (index_signal == GUI_COMPLETION_RSI) {
+    EntryBox = GetWidget("ViewRSISymbolEntryBox");
   } else {
-    EntryBox = EntryBoxAddRem;
+    EntryBox = GetWidget("AddRemoveSecuritySymbolEntryBox");
   }
+
   gchar *item;
   /* when a match is highlighted insert column zero instead of column 2 */
   gtk_tree_model_get(model, iter, 0, &item, -1);

@@ -41,8 +41,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/sqlite.h"
 #include "../include/workfuncs.h"
 
-/* The global variable 'packet' from globals.h is always accessed via these
- * functions. */
+/* The global variable 'packet', which is externed in globals.h, is always
+ * accessed via these functions. */
 /* This is an ad-hoc way of self referencing a class.
    It prevents multiple instances of the portfolio_packet class. */
 

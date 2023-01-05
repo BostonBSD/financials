@@ -29,117 +29,18 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
 IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
-#include <locale.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #include <ctype.h>
-#include <stdbool.h>
-
-#include <gtk/gtk.h>
 
 #include "../include/class_types.h" /* portfolio_packet, window_data */
-#include "../include/gui.h"         /* GtkBuilder *builder, enums, etc */
+#include "../include/gui.h"         /* Gtk headers and funcs */
 
 #include "../include/csv.h"
-#include "../include/macros.h"
-#include "../include/multicurl.h"
 #include "../include/mutex.h"
 #include "../include/workfuncs.h"
 
-GtkListStore *CompletionSetStore(symbol_name_map *sn_map) {
-  GtkListStore *store =
-      gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
-  GtkTreeIter iter;
-
-  gchar item[35];
-  /* Populate the GtkListStore with the string of stock symbols in column 0,
-     stock names in column 1, and symbols & names in column 2. */
-  for (gushort i = 0; i < sn_map->size; i++) {
-    snprintf(item, 35, "%s - %s", sn_map->sn_container_arr[i]->symbol,
-             sn_map->sn_container_arr[i]->security_name);
-
-    gtk_list_store_append(store, &iter);
-    /* Completion is going to match off of columns 0 and 1, but display column 2
-     */
-    /* Completion matches based off of the symbol or the company name, inserts
-     * the symbol, displays both */
-    gtk_list_store_set(store, &iter, 0, sn_map->sn_container_arr[i]->symbol, 1,
-                       sn_map->sn_container_arr[i]->security_name, 2, item, -1);
-  }
-  return store;
-}
-
-gboolean CompletionMatch(GtkEntryCompletion *completion, const gchar *key,
-                         GtkTreeIter *iter) {
-  GtkTreeModel *model = gtk_entry_completion_get_model(completion);
-  gchar *item_symb, *item_name;
-  /* We are finding matches based off of column 0 and 1, however,
-     we display column 2 in our 3 column model */
-  gtk_tree_model_get(model, iter, 0, &item_symb, 1, &item_name, -1);
-  gboolean ans = false, symbol_match = true, name_match = true;
-
-  gushort N = 0;
-  while (key[N]) {
-    /* Only compare new key char if prev char was a match. */
-    if (symbol_match)
-      symbol_match = (tolower(key[N]) == tolower(item_symb[N]));
-    if (name_match)
-      name_match = (tolower(key[N]) == tolower(item_name[N]));
-    /* Break the loop if both the symbol and the name are not a match. */
-    if ((symbol_match == false) && (name_match == false))
-      break;
-    N++;
-  }
-
-  /* if either the symbol or the name match the key value, return true. */
-  ans = symbol_match || name_match;
-  g_free(item_symb);
-  g_free(item_name);
-
-  return ans;
-}
-
 int RSICompletionSet(void *data) {
-  pthread_mutex_lock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
-  if (data == NULL) {
-    pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
-    return 0;
-  }
-
-  GtkWidget *EntryBox = GetWidget("ViewRSISymbolEntryBox");
-  GtkEntryCompletion *completion = gtk_entry_completion_new();
-  GtkListStore *store = CompletionSetStore((symbol_name_map *)data);
-
-  gtk_entry_completion_set_model(completion, GTK_TREE_MODEL(store));
-  g_object_unref(G_OBJECT(store));
-  gtk_entry_completion_set_match_func(
-      completion, (GtkEntryCompletionMatchFunc)CompletionMatch, NULL, NULL);
-  /* Set RSIView entrybox completion widget. */
-  gtk_entry_set_completion(GTK_ENTRY(EntryBox), completion);
-
-  /* The text column to display is column 2 */
-  gtk_entry_completion_set_text_column(completion, 2);
-  gtk_entry_completion_set_inline_completion(completion, FALSE);
-  gtk_entry_completion_set_inline_selection(completion, TRUE);
-  gtk_entry_completion_set_popup_completion(completion, TRUE);
-  /* Must type at least two characters for completion to make suggestions,
-     reduces the number of results for single character keys. */
-  gtk_entry_completion_set_minimum_key_length(completion, 2);
-  /* The text column to insert is column 0
-     We use a callback on the match-selected signal and insert the text from
-     column 0 instead of column 2 We use a callback on the cursor-on-match
-     signal and insert the text from column 0 instead of column 2
-  */
-  g_signal_connect(G_OBJECT(completion), "match-selected",
-                   G_CALLBACK(GUICallbackHandler_select_comp), NULL);
-  g_signal_connect(G_OBJECT(completion), "cursor-on-match",
-                   G_CALLBACK(GUICallbackHandler_cursor_comp), NULL);
-
-  g_object_unref(G_OBJECT(completion));
-
-  pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
+  CompletionSet(data, GUI_COMPLETION_RSI);
   return 0;
 }
 
@@ -435,8 +336,8 @@ static bool rsi_calculate(char *line, rsi_strings *strings, int state) {
   return true;
 }
 
-static void rsi_set_store_thd_cleanup (void *data){
-  rsi_strings *rsi_strs = (rsi_strings*)data;
+static void rsi_set_store_thd_cleanup(void *data) {
+  rsi_strings *rsi_strs = (rsi_strings *)data;
 
   /* Reset the static variables. */
   rsi_calculate(NULL, NULL, RESET);
@@ -521,10 +422,6 @@ int RSIMakeTreeview(void *data) {
 
   /* Set the columns for the new TreeView model */
   rsi_set_columns();
-
-  /* Set up the storage container, pass in the outputstruct pointer. */
-  /* This function frees data. */
-  // store = rsi_make_store(data);
 
   /* Add the store of data to the list. */
   gtk_tree_view_set_model(GTK_TREE_VIEW(list), GTK_TREE_MODEL(store));

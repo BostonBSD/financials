@@ -29,17 +29,9 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
 IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
-#include <locale.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
 
-#include <gtk/gtk.h>
-
-#include "../include/class.h" /* ClassDestructPortfolioPacket(), portfolio_packet, 
-                                                equity_folder, metal, meta  */
+#include "../include/class.h" /* portfolio_packet, equity_folder, metal, meta  */
 #include "../include/gui.h"
-#include "../include/macros.h"
 #include "../include/workfuncs.h"
 
 int MainFetchBTNLabel(void *data) {
@@ -66,7 +58,7 @@ static int main_prog_bar(void *data) {
 
 void MainProgBar(double *fraction)
 /* Because this function is accessed outside the main
-   loop, we can only pass pointers through. */
+   loop thread, we can only pass pointers through. */
 {
   if (*fraction > 1)
     *fraction = 1;
@@ -102,6 +94,8 @@ static int main_set_columns(int column_type) {
   GtkTreeViewColumn *column;
   GtkWidget *list = GetWidget("TreeView");
 
+  /* A hidden column indicating the type of row [bullion, equity, blank space,
+   * etc] */
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes("type_text", renderer,
                                                     "text", GUI_TYPE, NULL);
@@ -109,6 +103,8 @@ static int main_set_columns(int column_type) {
   gtk_tree_view_column_set_min_width(column, 0);
   gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
+  /* A hidden column indicating the item symbol at that row [gold, silver, stock
+   * symbol, etc] */
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes("symbol_text", renderer,
                                                     "text", GUI_SYMBOL, NULL);
@@ -593,7 +589,7 @@ static GtkListStore *main_default_store(void *data) {
   return store;
 }
 
-static void show_indices_labels(void *data) {
+static void show_indices(void *data) {
   /* Unpack the class package */
   portfolio_packet *package = (portfolio_packet *)data;
   meta *D = package->GetMetaClass();
@@ -710,7 +706,7 @@ static void set_indices_labels(void *data) {
 
 int MainPrimaryTreeview(void *data) {
   /* Show the Indices Labels */
-  show_indices_labels(data);
+  show_indices(data);
 
   /* Set The Indices Labels */
   set_indices_labels(data);
@@ -741,7 +737,7 @@ int MainPrimaryTreeview(void *data) {
   return 0;
 }
 
-static void hide_indices_labels() {
+static void hide_indices() {
   GtkWidget *revealer = GetWidget("MainIndicesRevealer");
   gtk_revealer_set_reveal_child(GTK_REVEALER(revealer), false);
 }
@@ -750,8 +746,8 @@ int MainDefaultTreeview(void *data) {
   GtkListStore *store = NULL;
   GtkWidget *list = GetWidget("TreeView");
 
-  /* Hide the Indices Labels */
-  hide_indices_labels();
+  /* Hide the Indices */
+  hide_indices();
 
   /* Clear the current TreeView model */
   main_tree_view_clr();
