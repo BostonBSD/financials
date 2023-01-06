@@ -40,7 +40,7 @@ Bullion data is collected through Yahoo! Finance [the Finnhub free account does 
 Has been tested on FreeBSD 13.1, 
 Debian “bullseye”, and Ubuntu 22.04; using amd64 architecture.
 
-Will compile on FreeBSD 13.1 for arm64, although it hasn't been tested [I only have a headless test machine].
+Will compile and run on FreeBSD 13.1 for arm64, although it's not regularly tested.
 
 ----------------------------------------------------------
 
