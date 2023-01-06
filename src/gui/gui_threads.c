@@ -250,11 +250,8 @@ void *GUIThreadHandler_main_fetch_data(void *data)
 
   /* if there is a concurrent thread waiting on a join or creating a thread,
      exit this thread. */
-  static atomic_bool handler_busy = false;
-  if (handler_busy)
+  if (pthread_mutex_trylock(&mutex_working[FETCH_DATA_HANDLER_MUTEX]))
     pthread_exit(NULL);
-
-  handler_busy = true;
 
   /* If the main_fetch_data_thd thread is currently running. */
   if (pkg->IsFetchingData()) {
@@ -270,7 +267,7 @@ void *GUIThreadHandler_main_fetch_data(void *data)
     pthread_detach(D->thread_id_main_fetch_data);
   }
 
-  handler_busy = false;
+  pthread_mutex_unlock(&mutex_working[FETCH_DATA_HANDLER_MUTEX]);
   pthread_exit(NULL);
 }
 
