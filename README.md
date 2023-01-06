@@ -10,7 +10,7 @@ This application depends upon the following development packages to compile.
 Their package name may vary depending upon the distro; libgtk3 instead of 
 gtk3 for example:
 
-gtk+-3.0 json-glib-1.0 glib-2.0 libcurl sqlite3 cmake clang/gcc
+gtk+-3.0 json-glib-1.0 glib-2.0 libcurl sqlite3 cmake llvm/gcc pkgconf
 
 Once these development packages are installed, open a terminal to the project root directory.
 
@@ -39,6 +39,8 @@ Bullion data is collected through Yahoo! Finance [the Finnhub free account does 
 ----------------------------------------------------------
 Has been tested on FreeBSD 13.1, 
 Debian “bullseye”, and Ubuntu 22.04; using amd64 architecture.
+
+Will compile on FreeBSD 13.1 for arm64, although it hasn't been tested [I only have a headless test machine].
 
 ----------------------------------------------------------
 
