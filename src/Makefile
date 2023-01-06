@@ -8,6 +8,9 @@ CFLAGS=`pkg-config --cflags gtk+-3.0 json-glib-1.0 glib-2.0 libcurl sqlite3`
 LIBS=`pkg-config --libs gtk+-3.0 json-glib-1.0 glib-2.0 libcurl sqlite3`
 WARN=-Wall 
 
-financials: $(SRC)
-	$(CC) -Ofast -s -lm -o ../build/$@ $(SRC) $(LIB_INT_SRC) $(GUI_SRC) $(CLASS_SRC) $(WK_SRC) $(CFLAGS) $(LIBS) $(WARN)
-	
+MKDIR=mkdir -p
+OUT_DIR=../build
+
+financials:
+	${MKDIR} ${OUT_DIR}
+	$(CC) -Ofast -s -lm -o $(OUT_DIR)/$@ $(SRC) $(LIB_INT_SRC) $(GUI_SRC) $(CLASS_SRC) $(WK_SRC) $(CFLAGS) $(LIBS) $(WARN)
