@@ -76,7 +76,7 @@
                     <property name="label" translatable="yes">Finnhub.io request url</property>
                     <property name="justify">center</property>
                     <attributes>
-                      <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                      <attribute name="font-desc" value="Oxygen-Sans 10"/>
                     </attributes>
                   </object>
                   <packing>
@@ -124,7 +124,7 @@
                     <property name="label" translatable="yes">Finnhub.io key</property>
                     <property name="justify">center</property>
                     <attributes>
-                      <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                      <attribute name="font-desc" value="Oxygen-Sans 10"/>
                     </attributes>
                   </object>
                   <packing>
@@ -141,7 +141,7 @@
                 <property name="can-focus">True</property>
                 <property name="label" translatable="yes">Equity API</property>
                 <attributes>
-                  <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                  <attribute name="font-desc" value="Oxygen-Sans 10"/>
                 </attributes>
               </object>
               <packing>
@@ -186,7 +186,7 @@
                     <property name="label" translatable="yes">Nasdaq symbol url</property>
                     <property name="justify">center</property>
                     <attributes>
-                      <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                      <attribute name="font-desc" value="Oxygen-Sans 10"/>
                     </attributes>
                   </object>
                   <packing>
@@ -234,7 +234,7 @@
                     <property name="label" translatable="yes">NYSE and other listed symbols url</property>
                     <property name="justify">center</property>
                     <attributes>
-                      <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                      <attribute name="font-desc" value="Oxygen-Sans 10"/>
                     </attributes>
                   </object>
                   <packing>
@@ -254,7 +254,7 @@
                 <property name="can-focus">True</property>
                 <property name="label" translatable="yes">Symbol Urls</property>
                 <attributes>
-                  <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                  <attribute name="font-desc" value="Oxygen-Sans 10"/>
                 </attributes>
               </object>
               <packing>
@@ -310,7 +310,7 @@
             <property name="can-focus">False</property>
             <property name="label" translatable="yes">API</property>
             <attributes>
-              <attribute name="font-desc" value="Oxygen-Sans 11"/>
+              <attribute name="font-desc" value="Oxygen-Sans 10"/>
             </attributes>
           </object>
         </child>
@@ -348,26 +348,22 @@
   <object class="GtkWindow" id="AboutWindow">
     <property name="can-focus">False</property>
     <property name="resizable">False</property>
-    <property name="default-width">425</property>
-    <property name="default-height">400</property>
     <property name="icon">Stocks-icon.png</property>
     <property name="skip-pager-hint">True</property>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="margin-start">15</property>
-        <property name="margin-end">15</property>
-        <property name="margin-top">25</property>
-        <property name="margin-bottom">25</property>
-        <property name="vexpand">True</property>
+        <property name="halign">center</property>
+        <property name="valign">center</property>
         <property name="orientation">vertical</property>
         <property name="spacing">5</property>
-        <property name="baseline-position">top</property>
         <child>
           <object class="GtkImage">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="halign">center</property>
+            <property name="valign">center</property>
             <property name="pixbuf">Stocks-icon-128.png</property>
           </object>
           <packing>
@@ -398,7 +394,6 @@
           <object class="GtkStack" id="AboutStack">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="hhomogeneous">False</property>
             <property name="transition-duration">500</property>
             <property name="transition-type">slide-up-down</property>
             <property name="interpolate-size">True</property>
@@ -547,6 +542,7 @@
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="vexpand">True</property>
+                <property name="hscrollbar-policy">never</property>
                 <property name="shadow-type">in</property>
                 <property name="min-content-width">200</property>
                 <property name="min-content-height">180</property>
@@ -560,7 +556,6 @@
                       <object class="GtkLabel" id="AboutLicenseLabel">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="vexpand">True</property>
                         <property name="label" translatable="yes">Copyright (c) 2022-2023 BostonBSD. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -672,12 +667,12 @@ POSSIBILITY OF SUCH DAMAGE.</property>
       <object class="GtkBox">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="margin-start">15</property>
-        <property name="margin-end">15</property>
-        <property name="margin-top">20</property>
-        <property name="margin-bottom">35</property>
+        <property name="margin-start">5</property>
+        <property name="margin-end">5</property>
+        <property name="margin-top">5</property>
+        <property name="margin-bottom">5</property>
         <property name="orientation">vertical</property>
-        <property name="spacing">10</property>
+        <property name="homogeneous">True</property>
         <property name="baseline-position">top</property>
         <child>
           <!-- n-columns=1 n-rows=5 -->
@@ -688,23 +683,18 @@ POSSIBILITY OF SUCH DAMAGE.</property>
             <property name="margin-end">10</property>
             <property name="hexpand">True</property>
             <property name="vexpand">True</property>
-            <property name="row-spacing">10</property>
             <property name="column-homogeneous">True</property>
             <child>
               <object class="GtkFrame" id="AddRemoveBullionGoldFrame">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="label-xalign">0</property>
-                <property name="shadow-type">in</property>
+                <property name="shadow-type">none</property>
                 <child>
                   <!-- n-columns=2 n-rows=2 -->
                   <object class="GtkGrid">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="margin-start">5</property>
-                    <property name="margin-end">5</property>
-                    <property name="margin-bottom">10</property>
-                    <property name="row-spacing">10</property>
                     <property name="column-spacing">5</property>
                     <property name="column-homogeneous">True</property>
                     <child>
@@ -714,7 +704,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                         <property name="label" translatable="yes">Ounces</property>
                         <property name="justify">center</property>
                         <attributes>
-                          <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                          <attribute name="font-desc" value="Oxygen-Sans 10"/>
                         </attributes>
                       </object>
                       <packing>
@@ -745,7 +735,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                         <property name="label" translatable="yes">Premium</property>
                         <property name="justify">center</property>
                         <attributes>
-                          <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                          <attribute name="font-desc" value="Oxygen-Sans 10"/>
                         </attributes>
                       </object>
                       <packing>
@@ -775,10 +765,9 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="margin-start">10</property>
                     <property name="label" translatable="yes">Gold</property>
                     <attributes>
-                      <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                      <attribute name="font-desc" value="Oxygen-Sans 10"/>
                     </attributes>
                   </object>
                 </child>
@@ -792,16 +781,12 @@ POSSIBILITY OF SUCH DAMAGE.</property>
               <object class="GtkFrame" id="AddRemoveBullionSilverFrame">
                 <property name="can-focus">False</property>
                 <property name="label-xalign">0</property>
-                <property name="shadow-type">in</property>
+                <property name="shadow-type">none</property>
                 <child>
                   <!-- n-columns=2 n-rows=2 -->
                   <object class="GtkGrid">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="margin-start">5</property>
-                    <property name="margin-end">5</property>
-                    <property name="margin-bottom">10</property>
-                    <property name="row-spacing">10</property>
                     <property name="column-spacing">5</property>
                     <property name="column-homogeneous">True</property>
                     <child>
@@ -811,7 +796,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                         <property name="label" translatable="yes">Ounces</property>
                         <property name="justify">center</property>
                         <attributes>
-                          <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                          <attribute name="font-desc" value="Oxygen-Sans 10"/>
                         </attributes>
                       </object>
                       <packing>
@@ -826,7 +811,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                         <property name="label" translatable="yes">Premium</property>
                         <property name="justify">center</property>
                         <attributes>
-                          <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                          <attribute name="font-desc" value="Oxygen-Sans 10"/>
                         </attributes>
                       </object>
                       <packing>
@@ -872,10 +857,9 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="margin-start">10</property>
                     <property name="label" translatable="yes">Silver</property>
                     <attributes>
-                      <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                      <attribute name="font-desc" value="Oxygen-Sans 10"/>
                     </attributes>
                   </object>
                 </child>
@@ -889,16 +873,12 @@ POSSIBILITY OF SUCH DAMAGE.</property>
               <object class="GtkFrame" id="AddRemoveBullionPlatinumFrame">
                 <property name="can-focus">False</property>
                 <property name="label-xalign">0</property>
-                <property name="shadow-type">in</property>
+                <property name="shadow-type">none</property>
                 <child>
                   <!-- n-columns=2 n-rows=2 -->
                   <object class="GtkGrid">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="margin-start">5</property>
-                    <property name="margin-end">5</property>
-                    <property name="margin-bottom">10</property>
-                    <property name="row-spacing">10</property>
                     <property name="column-spacing">5</property>
                     <property name="column-homogeneous">True</property>
                     <child>
@@ -908,7 +888,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                         <property name="label" translatable="yes">Ounces</property>
                         <property name="justify">center</property>
                         <attributes>
-                          <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                          <attribute name="font-desc" value="Oxygen-Sans 10"/>
                         </attributes>
                       </object>
                       <packing>
@@ -923,7 +903,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                         <property name="label" translatable="yes">Premium</property>
                         <property name="justify">center</property>
                         <attributes>
-                          <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                          <attribute name="font-desc" value="Oxygen-Sans 10"/>
                         </attributes>
                       </object>
                       <packing>
@@ -972,7 +952,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                     <property name="margin-start">10</property>
                     <property name="label" translatable="yes">Platinum</property>
                     <attributes>
-                      <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                      <attribute name="font-desc" value="Oxygen-Sans 10"/>
                     </attributes>
                   </object>
                 </child>
@@ -986,16 +966,12 @@ POSSIBILITY OF SUCH DAMAGE.</property>
               <object class="GtkFrame" id="AddRemoveBullionPalladiumFrame">
                 <property name="can-focus">False</property>
                 <property name="label-xalign">0</property>
-                <property name="shadow-type">in</property>
+                <property name="shadow-type">none</property>
                 <child>
                   <!-- n-columns=2 n-rows=2 -->
                   <object class="GtkGrid">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="margin-start">5</property>
-                    <property name="margin-end">5</property>
-                    <property name="margin-bottom">10</property>
-                    <property name="row-spacing">10</property>
                     <property name="column-spacing">5</property>
                     <property name="column-homogeneous">True</property>
                     <child>
@@ -1005,7 +981,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                         <property name="label" translatable="yes">Ounces</property>
                         <property name="justify">center</property>
                         <attributes>
-                          <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                          <attribute name="font-desc" value="Oxygen-Sans 10"/>
                         </attributes>
                       </object>
                       <packing>
@@ -1020,7 +996,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                         <property name="label" translatable="yes">Premium</property>
                         <property name="justify">center</property>
                         <attributes>
-                          <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                          <attribute name="font-desc" value="Oxygen-Sans 10"/>
                         </attributes>
                       </object>
                       <packing>
@@ -1066,10 +1042,9 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="margin-start">10</property>
                     <property name="label" translatable="yes">Palladium</property>
                     <attributes>
-                      <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                      <attribute name="font-desc" value="Oxygen-Sans 10"/>
                     </attributes>
                   </object>
                 </child>
@@ -1122,7 +1097,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                         <property name="can-focus">False</property>
                         <property name="label" translatable="yes">OK</property>
                         <attributes>
-                          <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                          <attribute name="font-desc" value="Oxygen-Sans 10"/>
                         </attributes>
                       </object>
                     </child>
@@ -1162,7 +1137,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
             <property name="can-focus">False</property>
             <property name="label" translatable="yes">Bullion</property>
             <attributes>
-              <attribute name="font-desc" value="Oxygen-Sans 11"/>
+              <attribute name="font-desc" value="Oxygen-Sans 10"/>
             </attributes>
           </object>
         </child>
@@ -1213,20 +1188,18 @@ POSSIBILITY OF SUCH DAMAGE.</property>
       <object class="GtkBox">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="margin-start">50</property>
-        <property name="margin-end">50</property>
-        <property name="margin-top">20</property>
-        <property name="margin-bottom">20</property>
+        <property name="margin-start">10</property>
+        <property name="margin-end">10</property>
+        <property name="margin-bottom">5</property>
         <property name="orientation">vertical</property>
-        <property name="spacing">15</property>
         <property name="baseline-position">top</property>
         <child>
           <!-- n-columns=1 n-rows=1 -->
           <object class="GtkGrid">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="margin-top">30</property>
-            <property name="margin-bottom">20</property>
+            <property name="margin-top">5</property>
+            <property name="margin-bottom">5</property>
             <property name="hexpand">True</property>
             <property name="row-homogeneous">True</property>
             <property name="column-homogeneous">True</property>
@@ -1268,7 +1241,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
           <object class="GtkGrid">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="margin-top">23</property>
             <property name="column-homogeneous">True</property>
             <child>
               <object class="GtkButton" id="AddRemoveCashOKBTN">
@@ -1286,7 +1258,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                     <property name="can-focus">False</property>
                     <property name="label" translatable="yes">OK</property>
                     <attributes>
-                      <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                      <attribute name="font-desc" value="Oxygen-Sans 10"/>
                     </attributes>
                   </object>
                 </child>
@@ -1323,7 +1295,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
             <property name="can-focus">False</property>
             <property name="label" translatable="yes">Cash</property>
             <attributes>
-              <attribute name="font-desc" value="Oxygen-Sans 11"/>
+              <attribute name="font-desc" value="Oxygen-Sans 10"/>
             </attributes>
           </object>
         </child>
@@ -1472,20 +1444,15 @@ POSSIBILITY OF SUCH DAMAGE.</property>
               <object class="GtkGrid">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="margin-bottom">20</property>
                 <child>
                   <object class="GtkBox">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="margin-top">20</property>
-                    <property name="margin-bottom">5</property>
                     <property name="orientation">vertical</property>
                     <child>
                       <object class="GtkRevealer" id="MainClockRevealer">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="margin-start">10</property>
-                        <property name="margin-end">10</property>
                         <property name="transition-type">slide-up</property>
                         <property name="transition-duration">300</property>
                         <property name="reveal-child">True</property>
@@ -1502,7 +1469,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                                 <property name="can-focus">False</property>
                                 <property name="halign">start</property>
                                 <property name="label-xalign">0</property>
-                                <property name="shadow-type">in</property>
+                                <property name="shadow-type">none</property>
                                 <child>
                                   <object class="GtkBox">
                                     <property name="visible">True</property>
@@ -1564,7 +1531,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                                 <property name="can-focus">False</property>
                                 <property name="halign">end</property>
                                 <property name="label-xalign">0</property>
-                                <property name="shadow-type">in</property>
+                                <property name="shadow-type">none</property>
                                 <child>
                                   <object class="GtkBox">
                                     <property name="visible">True</property>
@@ -1636,9 +1603,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                       <object class="GtkRevealer" id="MainIndicesRevealer">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="margin-start">10</property>
-                        <property name="margin-end">10</property>
-                        <property name="margin-top">20</property>
                         <property name="transition-type">slide-up</property>
                         <property name="transition-duration">300</property>
                         <child>
@@ -1647,13 +1611,13 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                             <property name="can-focus">True</property>
                             <property name="valign">center</property>
                             <property name="vscrollbar-policy">never</property>
-                            <property name="shadow-type">in</property>
                             <property name="overlay-scrolling">False</property>
                             <child>
                               <object class="GtkViewport">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="valign">center</property>
+                                <property name="shadow-type">none</property>
                                 <child>
                                   <object class="GtkBox">
                                     <property name="visible">True</property>
@@ -1996,11 +1960,8 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                   <object class="GtkScrolledWindow">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="margin-start">10</property>
-                    <property name="margin-end">10</property>
                     <property name="hexpand">True</property>
                     <property name="vexpand">True</property>
-                    <property name="shadow-type">in</property>
                     <property name="min-content-height">10</property>
                     <property name="overlay-scrolling">False</property>
                     <property name="propagate-natural-height">True</property>
@@ -2029,6 +1990,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                   <object class="GtkGrid">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
+                    <property name="margin-bottom">5</property>
                     <property name="row-homogeneous">True</property>
                     <property name="column-homogeneous">True</property>
                     <child>
@@ -2053,7 +2015,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                         <property name="tooltip-text" translatable="yes">Download data from Finnhub.io and Yahoo! Finance</property>
                         <property name="halign">center</property>
                         <property name="valign">end</property>
-                        <property name="margin-top">20</property>
                         <child>
                           <object class="GtkLabel" id="FetchDataBtnLabel">
                             <property name="visible">True</property>
@@ -2061,7 +2022,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                             <property name="label" translatable="yes">Get Data</property>
                             <property name="justify">center</property>
                             <attributes>
-                              <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                              <attribute name="font-desc" value="Oxygen-Sans 10"/>
                             </attributes>
                           </object>
                         </child>
@@ -2107,7 +2068,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
             <property name="can-focus">False</property>
             <property name="label" translatable="yes">Financials</property>
             <attributes>
-              <attribute name="font-desc" value="Oxygen-Sans 11"/>
+              <attribute name="font-desc" value="Oxygen-Sans 10"/>
             </attributes>
           </object>
         </child>
@@ -2197,8 +2158,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
     <property name="can-focus">False</property>
     <property name="can-default">True</property>
     <property name="resizable">False</property>
-    <property name="default-width">425</property>
-    <property name="default-height">425</property>
     <property name="destroy-with-parent">True</property>
     <property name="icon">Stocks-icon.png</property>
     <property name="skip-pager-hint">True</property>
@@ -2207,8 +2166,11 @@ POSSIBILITY OF SUCH DAMAGE.</property>
       <object class="GtkGrid">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="valign">center</property>
-        <property name="row-spacing">35</property>
+        <property name="margin-start">5</property>
+        <property name="margin-end">5</property>
+        <property name="margin-top">5</property>
+        <property name="margin-bottom">5</property>
+        <property name="row-spacing">20</property>
         <property name="column-homogeneous">True</property>
         <child>
           <object class="GtkButton" id="PrefStockSymbolUpdateBTN">
@@ -2225,7 +2187,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                 <property name="can-focus">False</property>
                 <property name="label" translatable="yes">Get Symbols</property>
                 <attributes>
-                  <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                  <attribute name="font-desc" value="Oxygen-Sans 10"/>
                 </attributes>
               </object>
             </child>
@@ -2242,7 +2204,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
             <property name="can-focus">False</property>
             <property name="label" translatable="yes">Stock Symbol List</property>
             <attributes>
-              <attribute name="font-desc" value="Oxygen-Sans 11"/>
+              <attribute name="font-desc" value="Oxygen-Sans 10"/>
             </attributes>
           </object>
           <packing>
@@ -2256,7 +2218,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
             <property name="can-focus">False</property>
             <property name="label" translatable="yes">Show Indices</property>
             <attributes>
-              <attribute name="font-desc" value="Oxygen-Sans 11"/>
+              <attribute name="font-desc" value="Oxygen-Sans 10"/>
             </attributes>
           </object>
           <packing>
@@ -2298,7 +2260,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
             <property name="can-focus">False</property>
             <property name="label" translatable="yes">Show Clocks</property>
             <attributes>
-              <attribute name="font-desc" value="Oxygen-Sans 11"/>
+              <attribute name="font-desc" value="Oxygen-Sans 10"/>
             </attributes>
           </object>
           <packing>
@@ -2312,7 +2274,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
             <property name="can-focus">False</property>
             <property name="label" translatable="yes">Hours of Updates</property>
             <attributes>
-              <attribute name="font-desc" value="Oxygen-Sans 11"/>
+              <attribute name="font-desc" value="Oxygen-Sans 10"/>
             </attributes>
           </object>
           <packing>
@@ -2376,7 +2338,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
             <property name="can-focus">False</property>
             <property name="label" translatable="yes">Updates Per Minute</property>
             <attributes>
-              <attribute name="font-desc" value="Oxygen-Sans 11"/>
+              <attribute name="font-desc" value="Oxygen-Sans 10"/>
             </attributes>
           </object>
           <packing>
@@ -2390,7 +2352,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
             <property name="can-focus">False</property>
             <property name="label" translatable="yes">Decimal Places</property>
             <attributes>
-              <attribute name="font-desc" value="Oxygen-Sans 11"/>
+              <attribute name="font-desc" value="Oxygen-Sans 10"/>
             </attributes>
           </object>
           <packing>
@@ -2431,7 +2393,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
             <property name="can-focus">False</property>
             <property name="label" translatable="yes">Preferences</property>
             <attributes>
-              <attribute name="font-desc" value="Oxygen-Sans 11"/>
+              <attribute name="font-desc" value="Oxygen-Sans 10"/>
             </attributes>
           </object>
         </child>
@@ -2486,22 +2448,20 @@ POSSIBILITY OF SUCH DAMAGE.</property>
               <object class="GtkGrid">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="margin-top">10</property>
+                <property name="margin-top">5</property>
                 <property name="row-spacing">5</property>
                 <child>
                   <!-- n-columns=3 n-rows=3 -->
                   <object class="GtkGrid">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="margin-top">5</property>
-                    <property name="margin-bottom">5</property>
                     <property name="column-homogeneous">True</property>
                     <child>
                       <object class="GtkLabel" id="ViewRSIStockSymbolLabel">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <attributes>
-                          <attribute name="font-desc" value="Oxygen-Sans 12"/>
+                          <attribute name="font-desc" value="Oxygen-Sans 10"/>
                           <attribute name="style" value="normal"/>
                           <attribute name="weight" value="normal"/>
                           <attribute name="variant" value="normal"/>
@@ -2547,11 +2507,8 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                   <object class="GtkScrolledWindow">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="margin-start">10</property>
-                    <property name="margin-end">10</property>
                     <property name="hexpand">True</property>
                     <property name="vexpand">True</property>
-                    <property name="shadow-type">in</property>
                     <property name="min-content-height">10</property>
                     <property name="overlay-scrolling">False</property>
                     <property name="propagate-natural-height">True</property>
@@ -2580,8 +2537,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                   <object class="GtkGrid">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="margin-top">5</property>
-                    <property name="margin-bottom">20</property>
                     <property name="row-homogeneous">True</property>
                     <property name="column-homogeneous">True</property>
                     <child>
@@ -2611,7 +2566,8 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                         <property name="tooltip-text" translatable="yes">Download data from Yahoo! Finance</property>
                         <property name="halign">center</property>
                         <property name="valign">end</property>
-                        <property name="margin-top">20</property>
+                        <property name="margin-top">5</property>
+                        <property name="margin-bottom">5</property>
                         <child>
                           <object class="GtkLabel" id="ViewRSIFetchDataBtnLabel">
                             <property name="visible">True</property>
@@ -2619,7 +2575,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                             <property name="label" translatable="yes">Get Data</property>
                             <property name="justify">center</property>
                             <attributes>
-                              <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                              <attribute name="font-desc" value="Oxygen-Sans 10"/>
                               <attribute name="style" value="normal"/>
                               <attribute name="weight" value="normal"/>
                               <attribute name="variant" value="normal"/>
@@ -2697,8 +2653,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
   <object class="GtkWindow" id="AddRemoveSecurity">
     <property name="can-focus">False</property>
     <property name="resizable">False</property>
-    <property name="default-width">440</property>
-    <property name="default-height">250</property>
     <property name="destroy-with-parent">True</property>
     <property name="icon">Stocks-icon.png</property>
     <property name="skip-pager-hint">True</property>
@@ -2706,16 +2660,16 @@ POSSIBILITY OF SUCH DAMAGE.</property>
       <object class="GtkBox">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="margin-top">10</property>
+        <property name="margin-bottom">5</property>
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkStack" id="AddRemoveSecurityStack">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="margin-top">15</property>
-            <property name="margin-bottom">25</property>
+            <property name="margin-bottom">5</property>
             <property name="transition-duration">500</property>
             <property name="transition-type">slide-left-right</property>
+            <property name="interpolate-size">True</property>
             <child>
               <!-- n-columns=1 n-rows=4 -->
               <object class="GtkGrid">
@@ -2730,7 +2684,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                     <property name="can-focus">False</property>
                     <property name="label" translatable="yes">Symbol</property>
                     <attributes>
-                      <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                      <attribute name="font-desc" value="Oxygen-Sans 10"/>
                     </attributes>
                   </object>
                   <packing>
@@ -2761,7 +2715,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                     <property name="can-focus">False</property>
                     <property name="label" translatable="yes">Shares</property>
                     <attributes>
-                      <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                      <attribute name="font-desc" value="Oxygen-Sans 10"/>
                     </attributes>
                   </object>
                   <packing>
@@ -2776,7 +2730,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                     <property name="tooltip-text" translatable="yes">Number of shares</property>
                     <property name="halign">center</property>
                     <property name="valign">center</property>
-                    <property name="margin-bottom">20</property>
                     <property name="max-length">10</property>
                     <property name="xalign">0.5</property>
                     <property name="placeholder-text" translatable="yes">Number of shares</property>
@@ -2797,10 +2750,8 @@ POSSIBILITY OF SUCH DAMAGE.</property>
               <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="valign">center</property>
-                <property name="margin-bottom">40</property>
                 <property name="orientation">vertical</property>
-                <property name="spacing">60</property>
+                <property name="homogeneous">True</property>
                 <child>
                   <object class="GtkLabel" id="AddRemoveSecurityLabel">
                     <property name="visible">True</property>
@@ -2863,20 +2814,18 @@ POSSIBILITY OF SUCH DAMAGE.</property>
             <property name="tooltip-text" translatable="yes">Commit Changes</property>
             <property name="halign">center</property>
             <property name="valign">end</property>
-            <property name="margin-top">5</property>
-            <property name="margin-bottom">20</property>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="label" translatable="yes">OK</property>
                 <attributes>
-                  <attribute name="font-desc" value="Oxygen-Sans 11"/>
+                  <attribute name="font-desc" value="Oxygen-Sans 10"/>
                 </attributes>
               </object>
             </child>
-            <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
             <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+            <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -2934,8 +2883,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
     <property name="can-focus">False</property>
     <property name="can-default">True</property>
     <property name="resizable">False</property>
-    <property name="default-width">280</property>
-    <property name="default-height">820</property>
     <property name="destroy-with-parent">True</property>
     <property name="icon">Stocks-icon.png</property>
     <property name="skip-pager-hint">True</property>
@@ -2943,17 +2890,12 @@ POSSIBILITY OF SUCH DAMAGE.</property>
       <object class="GtkBox">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="margin-start">10</property>
-        <property name="margin-end">10</property>
-        <property name="margin-top">15</property>
-        <property name="margin-bottom">15</property>
         <property name="orientation">vertical</property>
         <property name="baseline-position">top</property>
         <child>
           <object class="GtkScrolledWindow" id="ShortcutScrolledWindow">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="shadow-type">in</property>
             <property name="min-content-width">200</property>
             <property name="min-content-height">500</property>
             <child>
@@ -2985,7 +2927,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
             <property name="can-focus">False</property>
             <property name="label" translatable="yes">Hotkeys</property>
             <attributes>
-              <attribute name="font-desc" value="Oxygen-Sans 11"/>
+              <attribute name="font-desc" value="Oxygen-Sans 10"/>
             </attributes>
           </object>
         </child>

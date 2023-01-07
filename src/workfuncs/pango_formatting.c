@@ -39,31 +39,34 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/macros.h"
 #include "../include/workfuncs.h"
 
+#define FONT_SIZE "10"
+#define FONT_NAME "Cantarell"
+
 const char *markup_start =
-    "<span font_desc='Oxygen-Sans 11' foreground='Black' weight='Medium'>";
+    "<span font_desc='"FONT_NAME" "FONT_SIZE"' foreground='Black' weight='Medium'>";
 const char *markup_start_black =
-    "<span font_desc='Oxygen-Sans 11' foreground='Black' weight='Medium'>";
+    "<span font_desc='"FONT_NAME" "FONT_SIZE"' foreground='Black' weight='Medium'>";
 const char *markup_start_red =
-    "<span font_desc='Oxygen-Sans 11' foreground='DarkRed' weight='Medium'>";
+    "<span font_desc='"FONT_NAME" "FONT_SIZE"' foreground='DarkRed' weight='Medium'>";
 const char *markup_start_green =
-    "<span font_desc='Oxygen-Sans 11' foreground='DarkGreen' weight='Medium'>";
-const char *markup_start_blue = "<span font_desc='Oxygen-Sans 11' "
+    "<span font_desc='"FONT_NAME" "FONT_SIZE"' foreground='DarkGreen' weight='Medium'>";
+const char *markup_start_blue = "<span font_desc='"FONT_NAME" "FONT_SIZE"' "
                                 "foreground='MidnightBlue' weight='Demi-Bold'>";
 const char *markup_start_black_italic =
-    "<span font_desc='Oxygen-Sans italic 11' foreground='Black' "
+    "<span font_desc='"FONT_NAME" italic "FONT_SIZE"' foreground='Black' "
     "weight='Medium'>";
-const char *markup_start_red_italic = "<span font_desc='Oxygen-Sans italic 11' "
+const char *markup_start_red_italic = "<span font_desc='"FONT_NAME" italic "FONT_SIZE"' "
                                       "foreground='IndianRed' weight='Medium'>";
 const char *markup_start_green_italic =
-    "<span font_desc='Oxygen-Sans italic 11' foreground='LimeGreen' "
+    "<span font_desc='"FONT_NAME" italic "FONT_SIZE"' foreground='LimeGreen' "
     "weight='Medium'>";
 const char *markup_start_blue_italic =
-    "<span font_desc='Oxygen-Sans italic 11' foreground='MidnightBlue' "
+    "<span font_desc='"FONT_NAME" italic "FONT_SIZE"' foreground='MidnightBlue' "
     "weight='Demi-Bold'>";
 const char *markup_start_bold =
-    "<span font_desc='Oxygen-Sans 11' foreground='Black' weight='Bold'>";
+    "<span font_desc='"FONT_NAME" "FONT_SIZE"' foreground='Black' weight='Bold'>";
 const char *markup_start_bold_underline =
-    "<span font_desc='Oxygen-Sans 11' foreground='Black' weight='Bold' "
+    "<span font_desc='"FONT_NAME" "FONT_SIZE"' foreground='Black' weight='Bold' "
     "underline='single'>";
 const char *markup_end = "</span>";
 

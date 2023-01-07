@@ -203,9 +203,6 @@ static GtkListStore *main_primary_store(void *data) {
       G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 
   /* Add data to the storage container. */
-  gtk_list_store_append(store, &iter);
-  gtk_list_store_set(store, &iter, GUI_TYPE, "blank_space_primary", GUI_SYMBOL,
-                     "", GUI_COLUMN_ONE, "", -1);
   if (M->bullion_port_value_f) {
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, GUI_TYPE, "bullion_total", GUI_SYMBOL, "",
@@ -453,9 +450,6 @@ static GtkListStore *main_default_store(void *data) {
   /* Add data to the storage container. */
   if (M->Gold->ounce_f || M->Silver->ounce_f || M->Platinum->ounce_f ||
       M->Palladium->ounce_f) {
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, GUI_TYPE, "blank_space_default",
-                       GUI_SYMBOL, "", -1);
 
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, GUI_TYPE, "bullion_total", GUI_SYMBOL, "",
@@ -498,25 +492,23 @@ static GtkListStore *main_default_store(void *data) {
                          GUI_COLUMN_TWO, M->Silver->ounce_mrkd_ch,
                          GUI_COLUMN_THREE, M->Silver->premium_mrkd_ch, -1);
     }
+
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, GUI_TYPE, "blank_space_default",
+                       GUI_SYMBOL, "", GUI_COLUMN_ONE, "", -1);
     no_assets = false;
   }
 
   if (F->size) {
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, GUI_TYPE, "blank_space_default",
-                       GUI_SYMBOL, "", GUI_COLUMN_ONE, "", -1);
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, GUI_TYPE, "blank_space_default",
-                       GUI_SYMBOL, "", GUI_COLUMN_ONE, "", -1);
-    gtk_list_store_append(store, &iter);
-
     gtk_list_store_set(store, &iter, GUI_TYPE, "equity_total", GUI_SYMBOL, "",
                        GUI_COLUMN_ONE, def_h_mkd->equity, -1);
+
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, GUI_TYPE, "blank_space_default",
                        GUI_SYMBOL, "", GUI_COLUMN_ONE, "", -1);
-    gtk_list_store_append(store, &iter);
 
+    gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, GUI_TYPE, "equity_total", GUI_SYMBOL, "",
                        GUI_COLUMN_ONE, def_h_mkd->symbol, GUI_COLUMN_TWO,
                        def_h_mkd->shares, -1);
@@ -551,18 +543,14 @@ static GtkListStore *main_default_store(void *data) {
       }
       g++;
     }
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter, GUI_TYPE, "blank_space_default",
+                       GUI_SYMBOL, "", GUI_COLUMN_ONE, "", -1);
     no_assets = false;
   }
 
   if (D->cash_f) {
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, GUI_TYPE, "blank_space_default",
-                       GUI_SYMBOL, "", GUI_COLUMN_ONE, "", -1);
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, GUI_TYPE, "blank_space_default",
-                       GUI_SYMBOL, "", GUI_COLUMN_ONE, "", -1);
-    gtk_list_store_append(store, &iter);
-
     gtk_list_store_set(store, &iter, GUI_TYPE, "cash", GUI_SYMBOL, "",
                        GUI_COLUMN_ONE, def_h_mkd->cash, GUI_COLUMN_THREE,
                        D->cash_mrkd_ch, -1);

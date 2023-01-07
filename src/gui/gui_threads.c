@@ -177,7 +177,6 @@ static void *main_fetch_data_thd(void *data) {
 
   pthread_cleanup_push(main_fetch_data_thd_cleanup, data);
 
-  pkg->SetFetchingData(true);
   gdk_threads_add_idle(MainFetchBTNLabel, pkg);
 
   double seconds_per_iteration;
@@ -245,13 +244,13 @@ static void *main_fetch_data_thd(void *data) {
 void *GUIThreadHandler_main_fetch_data(void *data)
 /* A thread that handles the main_fetch_data_thd thread. */
 {
-  portfolio_packet *pkg = (portfolio_packet *)data;
-  meta *D = pkg->GetMetaClass();
-
   /* if there is a concurrent thread waiting on a join or creating a thread,
      exit this thread. */
   if (pthread_mutex_trylock(&mutex_working[FETCH_DATA_HANDLER_MUTEX]))
     pthread_exit(NULL);
+
+  portfolio_packet *pkg = (portfolio_packet *)data;
+  meta *D = pkg->GetMetaClass();
 
   /* If the main_fetch_data_thd thread is currently running. */
   if (pkg->IsFetchingData()) {
@@ -265,6 +264,9 @@ void *GUIThreadHandler_main_fetch_data(void *data)
     pthread_create(&D->thread_id_main_fetch_data, NULL, main_fetch_data_thd,
                    data);
     pthread_detach(D->thread_id_main_fetch_data);
+
+    /* This flag needs to be set true before a mutex unlock. */
+    pkg->SetFetchingData(true);
   }
 
   pthread_mutex_unlock(&mutex_working[FETCH_DATA_HANDLER_MUTEX]);
