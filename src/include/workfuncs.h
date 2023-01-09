@@ -61,6 +61,7 @@ enum {
   ITALIC,
 };
 
+void SetFont(const char *);
 void DoubleToMonStrPango(char **, const double, const unsigned short);
 void DoubleToPerStrPango(char **, const double, const unsigned short);
 void DoubleToNumStrPango(char **, const double, const unsigned short);

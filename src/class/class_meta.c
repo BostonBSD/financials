@@ -479,6 +479,12 @@ static void free_default_headings(default_heading *def_h_mkd) {
   free(def_h_mkd->shares);
 }
 
+static void ToStringsHeadings() {
+  meta *D = MetaClassObject;
+  format_primary_headings_pango(&D->pri_h_mkd);
+  format_default_headings_pango(&D->def_h_mkd);
+}
+
 /* Class Init Functions */
 meta *ClassInitMeta() {
   /* Allocate Memory For A New Class Object */
@@ -490,14 +496,6 @@ meta *ClassInitMeta() {
 
   /* Initialize the main and rsi window size and locations to zero */
   new_class->window_struct = (window_data){0};
-
-  /* The pango funcs require each dest string to point to allocated space
-                or NULL, they use realloc ( and possibly malloc if NULL ). */
-  new_class->pri_h_mkd = (primary_heading){NULL};
-  new_class->def_h_mkd = (default_heading){NULL};
-
-  format_primary_headings_pango(&new_class->pri_h_mkd);
-  format_default_headings_pango(&new_class->def_h_mkd);
 
   new_class->stock_url_ch = strdup(FINNHUB_URL);
   new_class->curl_key_ch = strdup(FINNHUB_URL_TOKEN);
@@ -524,6 +522,15 @@ meta *ClassInitMeta() {
   new_class->crypto_bitcoin_value_ch = malloc(1);
   new_class->crypto_bitcoin_value_chg_ch = malloc(1);
   new_class->crypto_bitcoin_value_p_chg_ch = malloc(1);
+
+  /* Set up the main treeview font */
+  new_class->main_treeview_font_ch = strdup(MAIN_FONT);
+  SetFont(new_class->main_treeview_font_ch);
+
+  /* The pango funcs require each dest string to point to allocated space
+                or NULL, they use realloc ( and possibly malloc if NULL ). */
+  new_class->pri_h_mkd = (primary_heading){NULL};
+  new_class->def_h_mkd = (default_heading){NULL};
 
   new_class->cash_f = 0.0f;
   new_class->portfolio_port_value_f = 0.0f;
@@ -596,6 +603,7 @@ meta *ClassInitMeta() {
   new_class->SetUpCurlIndicesData = SetUpCurlIndicesData;
   new_class->ExtractIndicesData = ExtractIndicesData;
   new_class->ToStringsIndices = ToStringsIndices;
+  new_class->ToStringsHeadings = ToStringsHeadings;
 
   /* Set the file global variable so we can self-reference this class. */
   MetaClassObject = new_class;
@@ -674,6 +682,9 @@ void ClassDestructMeta(meta *meta_class) {
     free(meta_class->crypto_bitcoin_value_chg_ch);
   if (meta_class->crypto_bitcoin_value_p_chg_ch)
     free(meta_class->crypto_bitcoin_value_p_chg_ch);
+
+  if (meta_class->main_treeview_font_ch)
+    free(meta_class->main_treeview_font_ch);
 
   if (meta_class->home_dir_ch)
     free(meta_class->home_dir_ch);

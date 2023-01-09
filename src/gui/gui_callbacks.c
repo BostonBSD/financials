@@ -196,6 +196,41 @@ static void *add_api_data_thd(void *data) {
   pthread_exit(NULL);
 }
 
+static void *add_api_data_font_thd(void *data) {
+  api_data *api_d = (api_data *)data;
+  meta *D = packet->GetMetaClass();
+
+  SqliteAddAPIData(api_d->keyword, api_d->value, D);
+
+  packet->ToStrings();
+  packet->equity_folder_class->SetSecurityNames(packet);
+
+  if (packet->IsDefaultView()) {
+    gdk_threads_add_idle(MainDefaultTreeview, packet);
+  } else {
+    gdk_threads_add_idle(MainPrimaryTreeview, packet);
+  }
+
+  /* Don't free the member strings */
+  free(api_d);
+  pthread_exit(NULL);
+}
+
+void GUICallbackHandler_pref_font_button(GtkFontButton *widget, void *data) {
+  meta *D = packet->GetMetaClass();
+  pthread_t thread_id;
+
+  free(D->main_treeview_font_ch);
+  D->main_treeview_font_ch =
+      gtk_font_chooser_get_font(GTK_FONT_CHOOSER(widget));
+  SetFont(D->main_treeview_font_ch);
+  
+  /* Add the sqlite data */
+  api_data *api_d = api_data_init("Main_TrVw_Font", D->main_treeview_font_ch);
+  pthread_create(&thread_id, NULL, add_api_data_font_thd, api_d);
+  pthread_detach(thread_id);
+}
+
 gboolean GUICallbackHandler_pref_clock_switch(GtkSwitch *Switch, bool state) {
   meta *D = packet->GetMetaClass();
   pthread_t thread_id;

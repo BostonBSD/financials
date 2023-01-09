@@ -74,6 +74,8 @@ static void convert_equity_to_strings(stock *S, unsigned short digits_right) {
   DoubleToMonStrPangoColor(&S->change_value_mrkd_ch, S->change_value_f,
                            digits_right, NOT_ITALIC);
 
+  DoubleToNumStrPango(&S->num_shares_stock_mrkd_ch,
+                      (double)S->num_shares_stock_int, 0);
   switch (S->num_shares_stock_int) {
   case 0:
 
@@ -82,6 +84,8 @@ static void convert_equity_to_strings(stock *S, unsigned short digits_right) {
 
     DoubleToPerStrPangoColor(&S->change_percent_mrkd_ch, S->change_percent_f,
                              digits_right, ITALIC);
+
+    StringToStrPangoColor(&S->symbol_stock_mrkd_ch, S->symbol_stock_ch, BLACK_ITALIC);
     break;
   default:
 
@@ -90,6 +94,8 @@ static void convert_equity_to_strings(stock *S, unsigned short digits_right) {
 
     DoubleToPerStrPangoColor(&S->change_percent_mrkd_ch, S->change_percent_f,
                              digits_right, NOT_ITALIC);
+
+    StringToStrPangoColor(&S->symbol_stock_mrkd_ch, S->symbol_stock_ch, BLUE);
     break;
   }
 

@@ -31,6 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "financials.h"
+#include "include/workfuncs.h"
 
 /* PascalCase for public functions, snake_case for private functions.
    The handler functions are PascalCase with snake_case postfixed for greater

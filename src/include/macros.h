@@ -50,6 +50,11 @@ POSSIBILITY OF SUCH DAMAGE.
 #define SN_DB_FILE CONFIG_FILE_DIR "/financials_symbols.db"
 #endif
 
+/* The main treeview font. */
+#ifndef MAIN_FONT
+#define MAIN_FONT "Cantarell 10"
+#endif
+
 /* The current locale */
 #ifndef LOCALE
 #define LOCALE "en_US.UTF-8"

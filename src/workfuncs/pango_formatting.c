@@ -30,6 +30,7 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -39,36 +40,79 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/macros.h"
 #include "../include/workfuncs.h"
 
-#define FONT_SIZE "10"
-#define FONT_NAME "Cantarell"
+/* Font and size file global. */
+static const char *font_name;
 
-const char *markup_start =
-    "<span font_desc='"FONT_NAME" "FONT_SIZE"' foreground='Black' weight='Medium'>";
-const char *markup_start_black =
-    "<span font_desc='"FONT_NAME" "FONT_SIZE"' foreground='Black' weight='Medium'>";
-const char *markup_start_red =
-    "<span font_desc='"FONT_NAME" "FONT_SIZE"' foreground='DarkRed' weight='Medium'>";
-const char *markup_start_green =
-    "<span font_desc='"FONT_NAME" "FONT_SIZE"' foreground='DarkGreen' weight='Medium'>";
-const char *markup_start_blue = "<span font_desc='"FONT_NAME" "FONT_SIZE"' "
-                                "foreground='MidnightBlue' weight='Demi-Bold'>";
-const char *markup_start_black_italic =
-    "<span font_desc='"FONT_NAME" italic "FONT_SIZE"' foreground='Black' "
-    "weight='Medium'>";
-const char *markup_start_red_italic = "<span font_desc='"FONT_NAME" italic "FONT_SIZE"' "
-                                      "foreground='IndianRed' weight='Medium'>";
-const char *markup_start_green_italic =
-    "<span font_desc='"FONT_NAME" italic "FONT_SIZE"' foreground='LimeGreen' "
-    "weight='Medium'>";
-const char *markup_start_blue_italic =
-    "<span font_desc='"FONT_NAME" italic "FONT_SIZE"' foreground='MidnightBlue' "
-    "weight='Demi-Bold'>";
-const char *markup_start_bold =
-    "<span font_desc='"FONT_NAME" "FONT_SIZE"' foreground='Black' weight='Bold'>";
-const char *markup_start_bold_underline =
-    "<span font_desc='"FONT_NAME" "FONT_SIZE"' foreground='Black' weight='Bold' "
-    "underline='single'>";
-const char *markup_end = "</span>";
+void SetFont(const char *fnt){
+  font_name = fnt;
+}
+
+static void create_markup(char **str, const char *fmt, ...)
+/* Create a string from a format string and a list of arguments.
+   Useful for creating marked up strings and their attribute components.
+
+   Make sure *str = NULL or an allocated pointer address. */
+{
+  va_list arg_ptr;
+
+  /* Set the arg pointer. */
+  va_start(arg_ptr, fmt);
+  /* Get the size of the potential string. */
+  size_t len = vsnprintf(NULL, 0, fmt, arg_ptr);
+  va_end(arg_ptr);
+
+  /* Realloc str[0] to the string size. */
+  if (str[0] == NULL)
+    str[0] = malloc(1);
+  char *tmp = realloc(str[0], len + 1);
+  str[0] = tmp;
+
+  /* Reset the arg pointer. */
+  va_start(arg_ptr, fmt);
+  /* Create the markup string from format and argument list. */
+  vsnprintf(str[0], len + 1, fmt, arg_ptr);
+  va_end(arg_ptr);
+}
+
+static char *font_attr(const char *fnt_name) {
+  const char *fnt_fmt = "font_desc='%s'";
+  char *attr = NULL;
+
+  create_markup(&attr, fnt_fmt, fnt_name);
+  return attr;
+}
+
+static char *fg_attr(const char *fg_color) {
+  char *fg_fmt = "foreground='%s'";
+  char *attr = NULL;
+
+  create_markup(&attr, fg_fmt, fg_color);
+  return attr;
+}
+
+static char *wght_attr(const char *wght_name) {
+  char *wght_fmt = "weight='%s'";
+  char *attr = NULL;
+
+  create_markup(&attr, wght_fmt, wght_name);
+  return attr;
+}
+
+static char *undln_attr(const char *undln_type) {
+  char *undln_fmt = "underline='%s'";
+  char *attr = NULL;
+
+  create_markup(&attr, undln_fmt, undln_type);
+  return attr;
+}
+
+static char *style_attr(const char *style_type) {
+  char *style_fmt = "style='%s'";
+  char *attr = NULL;
+
+  create_markup(&attr, style_fmt, style_type);
+  return attr;
+}
 
 void DoubleToMonStrPango(char **dst, const double num,
                          const unsigned short digits_right)
@@ -87,93 +131,23 @@ void DoubleToMonStrPango(char **dst, const double num,
   if (dst[0] == NULL)
     dst[0] = malloc(1);
 
-  size_t len = LengthMonetary(num, digits_right) + 1;
+  char *num_ch = NULL;
+  /* Get the monetary string from the number */
+  DoubleToMonStr(&num_ch, num, digits_right);
 
-  /* malloc a monetary number string */
-  char *num_ch = malloc(len);
+  /* Set the attributes */
+  char *font = font_attr(font_name);
+  char *fg = fg_attr("Black");
+  char *wght = wght_attr("Medium");
+  char *format = "<span %s %s %s>%s</span>";
 
-  /* The C.UTF-8 locale does not have a monetary
-     format and is the default in C.
-  */
-  setlocale(LC_ALL, LOCALE);
+  /* Create the marked up string from the attributes and the monetary string */
+  create_markup(dst, format, font, fg, wght, num_ch);
 
-  /* Set the string value. */
-  switch (digits_right) {
-  case 0:
-    strfmon(num_ch, len, "%(.0n", num);
-    break;
-  case 1:
-    strfmon(num_ch, len, "%(.1n", num);
-    break;
-  case 2:
-    strfmon(num_ch, len, "%(.2n", num);
-    break;
-  default:
-    strfmon(num_ch, len, "%(.3n", num);
-    break;
-  }
-
-  len = strlen(markup_start) + strlen(num_ch) + strlen(markup_end) + 1;
-
-  /* Adjust the memory allocation */
-  char *tmp = realloc(dst[0], len);
-
-  if (tmp == NULL) {
-    printf("Not Enough Memory, realloc returned NULL.\n");
-    exit(EXIT_FAILURE);
-  }
-
-  dst[0] = tmp;
-
-  /* Pango markup the string. */
-  snprintf(dst[0], len, "%s%s%s", markup_start, num_ch, markup_end);
   free(num_ch);
-}
-
-void DoubleToPerStrPango(char **dst, const double num,
-                         const unsigned short digits_right)
-/* Take in a string buffer, a double, and the number of digits
-   to the right of the decimal point, convert to a percent format
-   Pango Markup string, grouping the digits according to the locale
-   [dec points or commas].
-
-   Reallocs memory to fit the output string.
-
-   Take care that *dst is not an unallocated ptr address.
-   Set *dst = NULL first.*/
-{
-  if (!dst)
-    return;
-  if (dst[0] == NULL)
-    dst[0] = malloc(1);
-
-  size_t len = LengthPercent(num, digits_right) + 1;
-  len += strlen(markup_start) + strlen(markup_end);
-  /* Adjust the memory allocation */
-  char *tmp = realloc(dst[0], len);
-
-  if (tmp == NULL) {
-    printf("Not Enough Memory, realloc returned NULL.\n");
-    exit(EXIT_FAILURE);
-  }
-
-  dst[0] = tmp;
-
-  setlocale(LC_NUMERIC, LOCALE);
-  switch (digits_right) {
-  case 0:
-    snprintf(dst[0], len, "%s%'.0lf%%%s", markup_start, num, markup_end);
-    break;
-  case 1:
-    snprintf(dst[0], len, "%s%'.1lf%%%s", markup_start, num, markup_end);
-    break;
-  case 2:
-    snprintf(dst[0], len, "%s%'.2lf%%%s", markup_start, num, markup_end);
-    break;
-  default:
-    snprintf(dst[0], len, "%s%'.3lf%%%s", markup_start, num, markup_end);
-    break;
-  }
+  free(font);
+  free(fg);
+  free(wght);
 }
 
 void DoubleToNumStrPango(char **dst, const double num,
@@ -193,67 +167,23 @@ void DoubleToNumStrPango(char **dst, const double num,
   if (dst[0] == NULL)
     dst[0] = malloc(1);
 
-  size_t len = LengthNumber(num, digits_right) + 1;
-  len += strlen(markup_start) + strlen(markup_end);
+  char *num_ch = NULL;
+  /* Get the number string from the number */
+  DoubleToNumStr(&num_ch, num, digits_right);
 
-  /* Adjust the memory allocation */
-  char *tmp = realloc(dst[0], len);
+  /* Set the attributes */
+  char *font = font_attr(font_name);
+  char *fg = fg_attr("Black");
+  char *wght = wght_attr("Medium");
+  char *format = "<span %s %s %s>%s</span>";
 
-  if (tmp == NULL) {
-    printf("Not Enough Memory, realloc returned NULL.\n");
-    exit(EXIT_FAILURE);
-  }
+  /* Create the marked up string from the attributes and the number string */
+  create_markup(dst, format, font, fg, wght, num_ch);
 
-  dst[0] = tmp;
-
-  setlocale(LC_NUMERIC, LOCALE);
-  switch (digits_right) {
-  case 0:
-    snprintf(dst[0], len, "%s%'.0lf%s", markup_start, num, markup_end);
-    break;
-  case 1:
-    snprintf(dst[0], len, "%s%'.1lf%s", markup_start, num, markup_end);
-    break;
-  case 2:
-    snprintf(dst[0], len, "%s%'.2lf%s", markup_start, num, markup_end);
-    break;
-  case 3:
-    snprintf(dst[0], len, "%s%'.3lf%s", markup_start, num, markup_end);
-    break;
-  default:
-    snprintf(dst[0], len, "%s%'.4lf%s", markup_start, num, markup_end);
-    break;
-  }
-}
-
-void StringToStrPango(char **dst, const char *src)
-/* Take in a string buffer and a src string, convert to Pango Markup
-   string.
-
-   Reallocs memory to fit the output string.
-
-   Take care that *dst is not an unallocated ptr address.
-   Set *dst = NULL first.*/
-{
-  if (!dst || !src)
-    return;
-  if (dst[0] == NULL)
-    dst[0] = malloc(1);
-
-  size_t len = strlen(src) + 1;
-  len += strlen(markup_start) + strlen(markup_end);
-
-  /* Adjust the string length */
-  char *tmp = realloc(dst[0], len);
-
-  if (tmp == NULL) {
-    printf("Not Enough Memory, realloc returned NULL.\n");
-    exit(EXIT_FAILURE);
-  }
-
-  dst[0] = tmp;
-
-  snprintf(dst[0], len, "%s%s%s", markup_start, src, markup_end);
+  free(num_ch);
+  free(font);
+  free(fg);
+  free(wght);
 }
 
 static void double_to_mon_str_pango_color_ext(char **dst, const double num,
@@ -274,77 +204,83 @@ static void double_to_mon_str_pango_color_ext(char **dst, const double num,
   if (dst[0] == NULL)
     dst[0] = malloc(1);
 
-  size_t len = LengthMonetary(num, digits_right) + 1;
+  char *num_ch = NULL;
+  DoubleToMonStr(&num_ch, num, digits_right);
 
-  /* malloc a monetary number string */
-  char *num_ch = malloc(len);
-
-  /* The C.UTF-8 locale does not have a monetary
-     format and is the default in C.
-  */
-  setlocale(LC_ALL, LOCALE);
-
-  /* Set the string value. */
-  switch (digits_right) {
-  case 0:
-    strfmon(num_ch, len, "%(.0n", num);
-    break;
-  case 1:
-    strfmon(num_ch, len, "%(.1n", num);
-    break;
-  case 2:
-    strfmon(num_ch, len, "%(.2n", num);
-    break;
-  default:
-    strfmon(num_ch, len, "%(.3n", num);
-    break;
-  }
+  char *font = font_attr(font_name);
+  char *fg = NULL;
+  char *wght = NULL;
+  char *style = NULL;
+  char *format_reg = "<span %s %s %s>%s</span>";
+  char *format_itl = "<span %s %s %s %s>%s</span>";
+  char *format;
 
   /* Create the full string concatenating the end tag and the number
      to the start tag. */
-  const char *start_tag = NULL;
 
   switch (color) {
   case NO_COLOR:
-    start_tag = markup_start;
+    fg = fg_attr("Black");
+    wght = wght_attr("Medium");
+    format = format_reg;
+    create_markup(dst, format, font, fg, wght, num_ch);
     break;
   case BLACK:
-    start_tag = markup_start_black;
+    fg = fg_attr("Black");
+    wght = wght_attr("Medium");
+    format = format_reg;
+    create_markup(dst, format, font, fg, wght, num_ch);
     break;
   case RED:
-    start_tag = markup_start_red;
+    fg = fg_attr("DarkRed");
+    wght = wght_attr("Medium");
+    format = format_reg;
+    create_markup(dst, format, font, fg, wght, num_ch);
     break;
   case GREEN:
-    start_tag = markup_start_green;
+    fg = fg_attr("DarkGreen");
+    wght = wght_attr("Medium");
+    format = format_reg;
+    create_markup(dst, format, font, fg, wght, num_ch);
     break;
   case BLUE:
-    start_tag = markup_start_blue;
+    fg = fg_attr("MidnightBlue");
+    wght = wght_attr("Demi-Bold");
+    format = format_reg;
+    create_markup(dst, format, font, fg, wght, num_ch);
     break;
   case BLACK_ITALIC:
-    start_tag = markup_start_black_italic;
+    fg = fg_attr("Black");
+    wght = wght_attr("Medium");
+    style = style_attr("italic");
+    format = format_itl;
+    create_markup(dst, format, font, fg, wght, style, num_ch);
     break;
   case RED_ITALIC:
-    start_tag = markup_start_red_italic;
+    fg = fg_attr("DarkRed");
+    wght = wght_attr("Medium");
+    style = style_attr("italic");
+    format = format_itl;
+    create_markup(dst, format, font, fg, wght, style, num_ch);
     break;
   default: /* GREEN_ITALIC */
-    start_tag = markup_start_green_italic;
+    fg = fg_attr("DarkGreen");
+    wght = wght_attr("Medium");
+    style = style_attr("italic");
+    format = format_itl;
+    create_markup(dst, format, font, fg, wght, style, num_ch);
     break;
   }
 
-  len = strlen(start_tag) + strlen(num_ch) + strlen(markup_end) + 1;
-
-  /* Adjust the memory allocation */
-  char *ptr = realloc(dst[0], len);
-
-  if (ptr == NULL) {
-    printf("Not Enough Memory, realloc returned NULL.\n");
-    exit(EXIT_FAILURE);
-  }
-
-  dst[0] = ptr;
-
-  snprintf(dst[0], len, "%s%s%s", start_tag, num_ch, markup_end);
   free(num_ch);
+  if (font)
+    free(font);
+  if (fg)
+    free(fg);
+  if (wght)
+    free(wght);
+  if (style)
+    free(style);
 }
 
 void DoubleToMonStrPangoColor(char **dst, const double num,
@@ -394,62 +330,80 @@ static void double_to_per_str_pango_color_ext(char **dst, const double num,
   if (dst[0] == NULL)
     dst[0] = malloc(1);
 
-  const char *start_tag;
+  char *num_ch = NULL;
+  DoubleToPerStr(&num_ch, num, digits_right);
+
+  char *font = font_attr(font_name);
+  char *fg = NULL;
+  char *wght = NULL;
+  char *style = NULL;
+  char *format_reg = "<span %s %s %s>%s</span>";
+  char *format_itl = "<span %s %s %s %s>%s</span>";
+  char *format;
 
   switch (color) {
   case NO_COLOR:
-    start_tag = markup_start;
+    fg = fg_attr("Black");
+    wght = wght_attr("Medium");
+    format = format_reg;
+    create_markup(dst, format, font, fg, wght, num_ch);
     break;
   case BLACK:
-    start_tag = markup_start_black;
+    fg = fg_attr("Black");
+    wght = wght_attr("Medium");
+    format = format_reg;
+    create_markup(dst, format, font, fg, wght, num_ch);
     break;
   case RED:
-    start_tag = markup_start_red;
+    fg = fg_attr("DarkRed");
+    wght = wght_attr("Medium");
+    format = format_reg;
+    create_markup(dst, format, font, fg, wght, num_ch);
     break;
   case GREEN:
-    start_tag = markup_start_green;
+    fg = fg_attr("DarkGreen");
+    wght = wght_attr("Medium");
+    format = format_reg;
+    create_markup(dst, format, font, fg, wght, num_ch);
     break;
   case BLUE:
-    start_tag = markup_start_blue;
+    fg = fg_attr("MidnightBlue");
+    wght = wght_attr("Demi-Bold");
+    format = format_reg;
+    create_markup(dst, format, font, fg, wght, num_ch);
     break;
   case BLACK_ITALIC:
-    start_tag = markup_start_black_italic;
+    fg = fg_attr("Black");
+    wght = wght_attr("Medium");
+    style = style_attr("italic");
+    format = format_itl;
+    create_markup(dst, format, font, fg, wght, style, num_ch);
     break;
   case RED_ITALIC:
-    start_tag = markup_start_red_italic;
+    fg = fg_attr("DarkRed");
+    wght = wght_attr("Medium");
+    style = style_attr("italic");
+    format = format_itl;
+    create_markup(dst, format, font, fg, wght, style, num_ch);
     break;
   default: /* GREEN_ITALIC */
-    start_tag = markup_start_green_italic;
+    fg = fg_attr("DarkGreen");
+    wght = wght_attr("Medium");
+    style = style_attr("italic");
+    format = format_itl;
+    create_markup(dst, format, font, fg, wght, style, num_ch);
     break;
   }
 
-  size_t len = strlen(start_tag) + LengthPercent(num, digits_right) +
-               strlen(markup_end) + 1;
-  /* Adjust the memory allocation */
-  char *tmp = realloc(dst[0], len);
-
-  if (tmp == NULL) {
-    printf("Not Enough Memory, realloc returned NULL.\n");
-    exit(EXIT_FAILURE);
-  }
-
-  dst[0] = tmp;
-
-  setlocale(LC_NUMERIC, LOCALE);
-  switch (digits_right) {
-  case 0:
-    snprintf(dst[0], len, "%s%'.0lf%%%s", start_tag, num, markup_end);
-    break;
-  case 1:
-    snprintf(dst[0], len, "%s%'.1lf%%%s", start_tag, num, markup_end);
-    break;
-  case 2:
-    snprintf(dst[0], len, "%s%'.2lf%%%s", start_tag, num, markup_end);
-    break;
-  default:
-    snprintf(dst[0], len, "%s%'.3lf%%%s", start_tag, num, markup_end);
-    break;
-  }
+  free(num_ch);
+  if (font)
+    free(font);
+  if (fg)
+    free(fg);
+  if (wght)
+    free(wght);
+  if (style)
+    free(style);
 }
 
 void DoubleToPerStrPangoColor(char **dst, const double num,
@@ -496,56 +450,97 @@ void StringToStrPangoColor(char **dst, const char *src,
   if (dst[0] == NULL)
     dst[0] = malloc(1);
 
-  const char *start_tag;
+  char *font = font_attr(font_name);
+  char *fg = NULL;
+  char *wght = NULL;
+  char *undln = NULL;
+  char *style = NULL;
+  char *format_reg = "<span %s %s %s>%s</span>";
+  char *format_itl = "<span %s %s %s %s>%s</span>";
+  char *format;
 
   switch (color) {
   case NO_COLOR:
-    start_tag = markup_start;
+    fg = fg_attr("Black");
+    wght = wght_attr("Medium");
+    format = format_reg;
+    create_markup(dst, format, font, fg, wght, src);
     break;
   case BLACK:
-    start_tag = markup_start_black;
+    fg = fg_attr("Black");
+    wght = wght_attr("Medium");
+    format = format_reg;
+    create_markup(dst, format, font, fg, wght, src);
     break;
   case RED:
-    start_tag = markup_start_red;
+    fg = fg_attr("DarkRed");
+    wght = wght_attr("Medium");
+    format = format_reg;
+    create_markup(dst, format, font, fg, wght, src);
     break;
   case GREEN:
-    start_tag = markup_start_green;
+    fg = fg_attr("DarkGreen");
+    wght = wght_attr("Medium");
+    format = format_reg;
+    create_markup(dst, format, font, fg, wght, src);
     break;
   case BLUE:
-    start_tag = markup_start_blue;
+    fg = fg_attr("MidnightBlue");
+    wght = wght_attr("Demi-Bold");
+    format = format_reg;
+    create_markup(dst, format, font, fg, wght, src);
     break;
   case BLACK_ITALIC:
-    start_tag = markup_start_black_italic;
+    fg = fg_attr("Black");
+    wght = wght_attr("Medium");
+    style = style_attr("italic");
+    format = format_itl;
+    create_markup(dst, format, font, fg, wght, style, src);
     break;
   case RED_ITALIC:
-    start_tag = markup_start_red_italic;
+    fg = fg_attr("DarkRed");
+    wght = wght_attr("Medium");
+    style = style_attr("italic");
+    format = format_itl;
+    create_markup(dst, format, font, fg, wght, style, src);
     break;
   case GREEN_ITALIC:
-    start_tag = markup_start_green_italic;
+    fg = fg_attr("DarkGreen");
+    wght = wght_attr("Medium");
+    style = style_attr("italic");
+    format = format_itl;
+    create_markup(dst, format, font, fg, wght, style, src);
     break;
   case BLUE_ITALIC:
-    start_tag = markup_start_blue_italic;
+    fg = fg_attr("MidnightBlue");
+    wght = wght_attr("Demi-Bold");
+    style = style_attr("italic");
+    format = format_itl;
+    create_markup(dst, format, font, fg, wght, style, src);
     break;
   case BOLD:
-    start_tag = markup_start_bold;
+    fg = fg_attr("Black");
+    wght = wght_attr("Bold");
+    format = format_reg;
+    create_markup(dst, format, font, fg, wght, src);
     break;
   default: /* BOLD_UNDERLINE */
-    start_tag = markup_start_bold_underline;
+    fg = fg_attr("Black");
+    wght = wght_attr("Bold");
+    undln = undln_attr("single");
+    format = format_itl;
+    create_markup(dst, format, font, fg, wght, undln, src);
     break;
   }
 
-  size_t len = strlen(src) + 1;
-  len += strlen(start_tag) + strlen(markup_end);
-
-  /* Adjust the memory allocation */
-  char *tmp = realloc(dst[0], len);
-
-  if (tmp == NULL) {
-    printf("Not Enough Memory, realloc returned NULL.\n");
-    exit(EXIT_FAILURE);
-  }
-
-  dst[0] = tmp;
-
-  snprintf(dst[0], len, "%s%s%s", start_tag, src, markup_end);
+  if (font)
+    free(font);
+  if (fg)
+    free(fg);
+  if (wght)
+    free(wght);
+  if (undln)
+    free(undln);
+  if (style)
+    free(style);
 }

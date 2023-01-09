@@ -94,6 +94,7 @@ GtkListStore *RSIMakeStore(const char *);
 /* GUI Callback Functions */
 void GUICallbackHandler(GtkWidget *, void *);
 void GUICallbackHandler_add_rem_stack(GObject *);
+void GUICallbackHandler_pref_font_button(GtkFontButton *, void *);
 gboolean GUICallbackHandler_pref_clock_switch(GtkSwitch *, bool);
 gboolean GUICallbackHandler_pref_indices_switch(GtkSwitch *, bool);
 void GUICallbackHandler_pref_dec_places_combobox(GtkComboBox *);

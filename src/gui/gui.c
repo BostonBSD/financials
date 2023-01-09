@@ -29,11 +29,13 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
 IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
-#include "../include/gui.h"
+
+#include <ctype.h>
+
 #include "../include/class_types.h" /* portfolio_packet, window_data */
+#include "../include/gui.h"
 #include "../include/mutex.h"
 #include "../include/workfuncs.h"
-#include <ctype.h>
 
 static GtkBuilder *builder;
 
@@ -515,6 +517,11 @@ static void preferences_window_sig_connect(void *data) {
   g_signal_connect(object, "changed",
                    G_CALLBACK(GUICallbackHandler_pref_dec_places_combobox),
                    NULL);
+
+  object = GetGObject("PrefFontChooserBTN");
+  /* Make sure the font is set before connecting a signal to it. */
+  gtk_font_chooser_set_font (GTK_FONT_CHOOSER(object), D->main_treeview_font_ch);
+  g_signal_connect(object, "font-set", G_CALLBACK(GUICallbackHandler_pref_font_button), NULL);
 }
 
 static void api_window_sig_connect() {
@@ -695,6 +702,8 @@ void GuiStart(void *data)
      [created in completion_set_start_thd()], however, there may be a db read
      delay before it is displayed. So we set it here showing any available data.
    */
+  portfolio_packet *pkg = (portfolio_packet*)data;
+  pkg->ToStrings();
   MainDefaultTreeview(data);
 
   /* Start the gtk_main loop. */

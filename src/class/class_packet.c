@@ -64,6 +64,7 @@ static void Calculate() {
 static void ToStrings() {
   pthread_mutex_lock(&mutex_working[CLASS_TOSTRINGS_MUTEX]);
 
+  packet->meta_class->ToStringsHeadings();
   packet->meta_class->ToStringsPortfolio();
   packet->meta_class->ToStringsIndices();
   packet->metal_class->ToStrings(packet->meta_class->decimal_places_shrt);

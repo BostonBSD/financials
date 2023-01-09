@@ -206,6 +206,12 @@ static int api_callback(void *data, int argc, char **argv, char **ColName) {
     }
   }
 
+  if (strcasecmp(argv[1], "Main_TrVw_Font") == 0) {
+    free(mdata->main_treeview_font_ch);
+    mdata->main_treeview_font_ch = strdup(argv[2] ? argv[2] : MAIN_FONT);
+    SetFont(mdata->main_treeview_font_ch);
+  }
+
   pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
 
   return 0;
@@ -411,7 +417,8 @@ void SqliteProcessing(portfolio_packet *pkg) {
   F->Reset();
 
   /* Populate class/struct instances with saved data. */
-  sql_cmd = "SELECT * FROM apidata;";
+  sql_cmd =
+      "SELECT * FROM apidata;"; /* We always want this table selected first */
   if (sqlite3_exec(db, sql_cmd, api_callback, D, &err_msg) != SQLITE_OK)
     error_msg(db);
 
