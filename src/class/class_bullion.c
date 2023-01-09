@@ -47,7 +47,7 @@ POSSIBILITY OF SUCH DAMAGE.
 static bullion *class_init_bullion();
 static void class_destruct_bullion(bullion *);
 
-/* The static local-global variable 'MetalClassObject' is always accessed via
+/* The static file-global variable 'MetalClassObject' is always accessed via
  * these functions. */
 /* This is an ad-hoc way of self referencing a class.
    It prevents multiple instances of the metal class. */

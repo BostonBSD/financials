@@ -224,11 +224,17 @@ void GUICallbackHandler_pref_font_button(GtkFontButton *widget, void *data) {
   D->main_treeview_font_ch =
       gtk_font_chooser_get_font(GTK_FONT_CHOOSER(widget));
   SetFont(D->main_treeview_font_ch);
-  
+
   /* Add the sqlite data */
   api_data *api_d = api_data_init("Main_TrVw_Font", D->main_treeview_font_ch);
   pthread_create(&thread_id, NULL, add_api_data_font_thd, api_d);
   pthread_detach(thread_id);
+  
+  /* make sure font is set on the clock labels */
+  MainSetClockHeaderFonts(packet);
+
+  /* make sure font is set on the indice header labels */
+  MainSetIndiceHeaderFonts(packet);
 }
 
 gboolean GUICallbackHandler_pref_clock_switch(GtkSwitch *Switch, bool state) {
@@ -249,7 +255,7 @@ gboolean GUICallbackHandler_pref_clock_switch(GtkSwitch *Switch, bool state) {
 
     /* Start clock threads */
     pthread_create(&D->thread_id_clock, NULL, GUIThreadHandler_main_clock,
-                   NULL);
+                   packet);
     pthread_create(&D->thread_id_closing_time, NULL,
                    GUIThreadHandler_time_to_close, packet);
     pthread_detach(D->thread_id_clock);

@@ -43,9 +43,7 @@ POSSIBILITY OF SUCH DAMAGE.
 /* Font and size file global. */
 static const char *font_name;
 
-void SetFont(const char *fnt){
-  font_name = fnt;
-}
+void SetFont(const char *fnt) { font_name = fnt; }
 
 static void create_markup(char **str, const char *fmt, ...)
 /* Create a string from a format string and a list of arguments.
@@ -83,7 +81,7 @@ static char *font_attr(const char *fnt_name) {
 }
 
 static char *fg_attr(const char *fg_color) {
-  char *fg_fmt = "foreground='%s'";
+  const char *fg_fmt = "foreground='%s'";
   char *attr = NULL;
 
   create_markup(&attr, fg_fmt, fg_color);
@@ -91,7 +89,7 @@ static char *fg_attr(const char *fg_color) {
 }
 
 static char *wght_attr(const char *wght_name) {
-  char *wght_fmt = "weight='%s'";
+  const char *wght_fmt = "weight='%s'";
   char *attr = NULL;
 
   create_markup(&attr, wght_fmt, wght_name);
@@ -99,15 +97,23 @@ static char *wght_attr(const char *wght_name) {
 }
 
 static char *undln_attr(const char *undln_type) {
-  char *undln_fmt = "underline='%s'";
+  const char *undln_fmt = "underline='%s'";
   char *attr = NULL;
 
   create_markup(&attr, undln_fmt, undln_type);
   return attr;
 }
 
+static char *undln__colr_attr(const char *undln_color) {
+  const char *undln_colr_fmt = "underline_color='%s'";
+  char *attr = NULL;
+
+  create_markup(&attr, undln_colr_fmt, undln_color);
+  return attr;
+}
+
 static char *style_attr(const char *style_type) {
-  char *style_fmt = "style='%s'";
+  const char *style_fmt = "style='%s'";
   char *attr = NULL;
 
   create_markup(&attr, style_fmt, style_type);
@@ -139,7 +145,7 @@ void DoubleToMonStrPango(char **dst, const double num,
   char *font = font_attr(font_name);
   char *fg = fg_attr("Black");
   char *wght = wght_attr("Medium");
-  char *format = "<span %s %s %s>%s</span>";
+  const char *format = "<span %s %s %s>%s</span>";
 
   /* Create the marked up string from the attributes and the monetary string */
   create_markup(dst, format, font, fg, wght, num_ch);
@@ -175,7 +181,7 @@ void DoubleToNumStrPango(char **dst, const double num,
   char *font = font_attr(font_name);
   char *fg = fg_attr("Black");
   char *wght = wght_attr("Medium");
-  char *format = "<span %s %s %s>%s</span>";
+  const char *format = "<span %s %s %s>%s</span>";
 
   /* Create the marked up string from the attributes and the number string */
   create_markup(dst, format, font, fg, wght, num_ch);
@@ -211,9 +217,9 @@ static void double_to_mon_str_pango_color_ext(char **dst, const double num,
   char *fg = NULL;
   char *wght = NULL;
   char *style = NULL;
-  char *format_reg = "<span %s %s %s>%s</span>";
-  char *format_itl = "<span %s %s %s %s>%s</span>";
-  char *format;
+  const char *format_reg = "<span %s %s %s>%s</span>";
+  const char *format_itl = "<span %s %s %s %s>%s</span>";
+  const char *format;
 
   /* Create the full string concatenating the end tag and the number
      to the start tag. */
@@ -337,9 +343,9 @@ static void double_to_per_str_pango_color_ext(char **dst, const double num,
   char *fg = NULL;
   char *wght = NULL;
   char *style = NULL;
-  char *format_reg = "<span %s %s %s>%s</span>";
-  char *format_itl = "<span %s %s %s %s>%s</span>";
-  char *format;
+  const char *format_reg = "<span %s %s %s>%s</span>";
+  const char *format_itl = "<span %s %s %s %s>%s</span>";
+  const char *format;
 
   switch (color) {
   case NO_COLOR:
@@ -454,10 +460,12 @@ void StringToStrPangoColor(char **dst, const char *src,
   char *fg = NULL;
   char *wght = NULL;
   char *undln = NULL;
+  char *undln_colr = NULL;
   char *style = NULL;
-  char *format_reg = "<span %s %s %s>%s</span>";
-  char *format_itl = "<span %s %s %s %s>%s</span>";
-  char *format;
+  const char *format_reg = "<span %s %s %s>%s</span>";
+  const char *format_itl = "<span %s %s %s %s>%s</span>";
+  const char *format_undln = "<span %s %s %s %s %s>%s</span>";
+  const char *format;
 
   switch (color) {
   case NO_COLOR:
@@ -519,17 +527,18 @@ void StringToStrPangoColor(char **dst, const char *src,
     create_markup(dst, format, font, fg, wght, style, src);
     break;
   case BOLD:
-    fg = fg_attr("Black");
-    wght = wght_attr("Bold");
+    fg = fg_attr("DarkSlateGray");
+    wght = wght_attr("Demi-Bold");
     format = format_reg;
     create_markup(dst, format, font, fg, wght, src);
     break;
   default: /* BOLD_UNDERLINE */
-    fg = fg_attr("Black");
-    wght = wght_attr("Bold");
+    fg = fg_attr("SaddleBrown");
+    wght = wght_attr("Demi-Bold");
     undln = undln_attr("single");
-    format = format_itl;
-    create_markup(dst, format, font, fg, wght, undln, src);
+    undln_colr = undln__colr_attr("SaddleBrown");
+    format = format_undln;
+    create_markup(dst, format, font, fg, wght, undln, undln_colr, src);
     break;
   }
 
@@ -541,6 +550,8 @@ void StringToStrPangoColor(char **dst, const char *src,
     free(wght);
   if (undln)
     free(undln);
+  if (undln_colr)
+    free(undln_colr);
   if (style)
     free(style);
 }

@@ -46,7 +46,7 @@ POSSIBILITY OF SUCH DAMAGE.
 static stock *class_init_equity();
 static void class_destruct_equity(stock *);
 
-/* The static local-global variable 'FolderClassObject' is always accessed via
+/* The static file-global variable 'FolderClassObject' is always accessed via
  * these functions. */
 /* This is an ad-hoc way of self referencing a class.
    It prevents multiple instances of the equity_folder class. */

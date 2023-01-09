@@ -2852,8 +2852,8 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                 </attributes>
               </object>
             </child>
-            <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
             <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+            <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -2911,6 +2911,8 @@ POSSIBILITY OF SUCH DAMAGE.</property>
     <property name="can-focus">False</property>
     <property name="can-default">True</property>
     <property name="resizable">False</property>
+    <property name="default-width">-1</property>
+    <property name="default-height">-1</property>
     <property name="destroy-with-parent">True</property>
     <property name="icon">Stocks-icon.png</property>
     <property name="skip-pager-hint">True</property>
@@ -2924,15 +2926,16 @@ POSSIBILITY OF SUCH DAMAGE.</property>
           <object class="GtkScrolledWindow" id="ShortcutScrolledWindow">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="hexpand">True</property>
+            <property name="vexpand">True</property>
             <property name="min-content-width">200</property>
             <property name="min-content-height">500</property>
+            <property name="propagate-natural-width">True</property>
+            <property name="propagate-natural-height">True</property>
             <child>
               <object class="GtkTreeView" id="ShortcutWindowTreeView">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <child internal-child="selection">
-                  <object class="GtkTreeSelection"/>
-                </child>
               </object>
             </child>
           </object>

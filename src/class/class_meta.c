@@ -45,7 +45,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/mutex.h"
 #include "../include/workfuncs.h"
 
-/* The static local-global variable 'MetaClassObject' is always accessed via
+/* The static file-global variable 'MetaClassObject' is always accessed via
  * these functions. */
 /* This is an ad-hoc way of self referencing a class.
    It prevents multiple instances of the meta class. */

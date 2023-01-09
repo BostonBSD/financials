@@ -234,19 +234,20 @@ static void hotkeys_set_treeview() {
   GtkListStore *store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
   GtkTreeIter iter;
 
+  const char *fmt =
+      "<span font_desc='Cantarell Regular 10' foreground='black'>%s</span>";
   for (int i = 0; i < G_N_ELEMENTS(commands); i++) {
     /* We mark them up slightly first. */
-    StringToStrPangoColor(&cmd_name_markup, commands[i].name, BLACK);
-    StringToStrPangoColor(&cmd_shortcut_markup, commands[i].shortcut, BLACK);
+    cmd_name_markup = g_markup_printf_escaped(fmt, commands[i].name);
+    cmd_shortcut_markup = g_markup_printf_escaped(fmt, commands[i].shortcut);
 
     /* We add them to a new row. */
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, 0, cmd_name_markup, 1, cmd_shortcut_markup,
                        -1);
+    free(cmd_name_markup);
+    free(cmd_shortcut_markup);
   }
-
-  free(cmd_name_markup);
-  free(cmd_shortcut_markup);
 
   /* Add the store of data to the TreeView. */
   gtk_tree_view_set_model(GTK_TREE_VIEW(TreeView), GTK_TREE_MODEL(store));
@@ -285,18 +286,19 @@ static void clock_display(void *data)
 /* Set the initial display of the clocks.
    We don't want the revealer animation on startup. */
 {
+  /* Set the clock label fonts */
+  MainSetClockHeaderFonts(data);
+
   portfolio_packet *pkg = (portfolio_packet *)data;
   meta *D = pkg->GetMetaClass();
 
   GtkWidget *revealer = GetWidget("MainClockRevealer");
-
   if (pkg->IsClockDisplayed()) {
     /* Start the clock threads. */
     /* gdk_threads_add_idle (in these threads) creates a pending event for the
        gtk_main loop. When the gtk_main loop starts the event will be processed.
     */
-    pthread_create(&D->thread_id_clock, NULL, GUIThreadHandler_main_clock,
-                   NULL);
+    pthread_create(&D->thread_id_clock, NULL, GUIThreadHandler_main_clock, pkg);
     pthread_create(&D->thread_id_closing_time, NULL,
                    GUIThreadHandler_time_to_close, pkg);
     pthread_detach(D->thread_id_clock);
@@ -520,8 +522,9 @@ static void preferences_window_sig_connect(void *data) {
 
   object = GetGObject("PrefFontChooserBTN");
   /* Make sure the font is set before connecting a signal to it. */
-  gtk_font_chooser_set_font (GTK_FONT_CHOOSER(object), D->main_treeview_font_ch);
-  g_signal_connect(object, "font-set", G_CALLBACK(GUICallbackHandler_pref_font_button), NULL);
+  gtk_font_chooser_set_font(GTK_FONT_CHOOSER(object), D->main_treeview_font_ch);
+  g_signal_connect(object, "font-set",
+                   G_CALLBACK(GUICallbackHandler_pref_font_button), NULL);
 }
 
 static void api_window_sig_connect() {
@@ -694,6 +697,9 @@ void GuiStart(void *data)
   /* Add hyperlink markup to the About window labels. */
   about_set_label();
 
+  /* Make sure the font is set on the indice header labels */
+  MainSetIndiceHeaderFonts(data);
+
   /* Connect callback functions to corresponding GUI signals. */
   gui_signal_connect(data);
 
@@ -702,7 +708,7 @@ void GuiStart(void *data)
      [created in completion_set_start_thd()], however, there may be a db read
      delay before it is displayed. So we set it here showing any available data.
    */
-  portfolio_packet *pkg = (portfolio_packet*)data;
+  portfolio_packet *pkg = (portfolio_packet *)data;
   pkg->ToStrings();
   MainDefaultTreeview(data);
 

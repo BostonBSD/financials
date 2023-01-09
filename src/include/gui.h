@@ -47,10 +47,12 @@ void GuiStart(void *);
 int CompletionSet(void *, uintptr_t);
 
 /* gui_main */
+void MainSetClockHeaderFonts(void *);
+void MainSetIndiceHeaderFonts(void *);
 int MainPrimaryTreeview(void *);
 int MainDefaultTreeview(void *);
 int MainFetchBTNLabel(void *);
-int MainDisplayTime();
+int MainDisplayTime(void *);
 int MainDisplayTimeRemaining(void *);
 void MainProgBar(double *);
 int MainProgBarReset();
@@ -117,7 +119,7 @@ void *GUIThreadHandler_main_fetch_data(void *);
 void *GUIThreadHandler_rsi_fetch(void *);
 void *GUIThreadHandler_sym_name_update(void *);
 void *GUIThreadHandler_completion_set(void *);
-void *GUIThreadHandler_main_clock();
+void *GUIThreadHandler_main_clock(void *);
 void *GUIThreadHandler_time_to_close(void *);
 void *GUIThreadHandler_main_exit(void *);
 

@@ -429,7 +429,7 @@ void *GUIThreadHandler_completion_set(void *data) {
   pthread_exit(NULL);
 }
 
-void *GUIThreadHandler_main_clock() {
+void *GUIThreadHandler_main_clock(void *data) {
   /*
      This is a single process multithreaded application.
      The process is always using New York time.
@@ -438,7 +438,7 @@ void *GUIThreadHandler_main_clock() {
   pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 
   while (1) {
-    gdk_threads_add_idle(MainDisplayTime, NULL);
+    gdk_threads_add_idle(MainDisplayTime, data);
 
     /* Allow the thread to be canceled while sleeping. */
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);

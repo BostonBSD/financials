@@ -207,9 +207,7 @@ static GtkListStore *main_primary_store(void *data) {
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, GUI_TYPE, "bullion_total", GUI_SYMBOL, "",
                        GUI_COLUMN_ONE, pri_h_mkd->bullion, -1);
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, GUI_TYPE, "blank_space_primary",
-                       GUI_SYMBOL, "", -1);
+
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(
         store, &iter, GUI_TYPE, "bullion_total", GUI_SYMBOL, "", GUI_COLUMN_ONE,
@@ -299,9 +297,7 @@ static GtkListStore *main_primary_store(void *data) {
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, GUI_TYPE, "equity_total", GUI_SYMBOL, "",
                        GUI_COLUMN_ONE, pri_h_mkd->equity, -1);
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, GUI_TYPE, "blank_space_primary",
-                       GUI_SYMBOL, "", -1);
+
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(
         store, &iter, GUI_TYPE, "equity_total", GUI_SYMBOL, "", GUI_COLUMN_ONE,
@@ -456,10 +452,6 @@ static GtkListStore *main_default_store(void *data) {
                        GUI_COLUMN_ONE, def_h_mkd->bullion, -1);
 
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, GUI_TYPE, "blank_space_default",
-                       GUI_SYMBOL, "", GUI_COLUMN_ONE, "", -1);
-
-    gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, GUI_TYPE, "bullion_total", GUI_SYMBOL, "",
                        GUI_COLUMN_ONE, def_h_mkd->metal, GUI_COLUMN_TWO,
                        def_h_mkd->ounces, GUI_COLUMN_THREE, def_h_mkd->premium,
@@ -503,10 +495,6 @@ static GtkListStore *main_default_store(void *data) {
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, GUI_TYPE, "equity_total", GUI_SYMBOL, "",
                        GUI_COLUMN_ONE, def_h_mkd->equity, -1);
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, GUI_TYPE, "blank_space_default",
-                       GUI_SYMBOL, "", GUI_COLUMN_ONE, "", -1);
 
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, GUI_TYPE, "equity_total", GUI_SYMBOL, "",
@@ -588,17 +576,115 @@ static void show_indices(void *data) {
                                 D->index_bar_revealed_bool);
 }
 
+void MainSetClockHeaderFonts(void *data) {
+  portfolio_packet *pkg = (portfolio_packet *)data;
+
+  PangoAttrList *attrlist = pango_attr_list_new();
+  PangoFontDescription *font_desc = pango_font_description_from_string(
+      pkg->meta_class->main_treeview_font_ch);
+
+  PangoAttribute *attr = pango_attr_font_desc_new(font_desc);
+  pango_attr_list_insert(attrlist, attr);
+
+  /* Set clock heading labels with attrlist */
+  GtkWidget *label = GetWidget("NewYorkTimeLabel");
+  gtk_label_set_attributes((GtkLabel *)label, attrlist);
+  label = GetWidget("MarketCloseLabel");
+  gtk_label_set_attributes((GtkLabel *)label, attrlist);
+
+  pango_font_description_free(font_desc);
+  pango_attr_list_unref(attrlist);
+
+  /* make sure font is set on the clock value labels */
+  MainDisplayTime(pkg);
+  MainDisplayTimeRemaining(pkg);
+}
+
+void MainSetIndiceHeaderFonts(void *data) {
+  portfolio_packet *pkg = (portfolio_packet *)data;
+
+  /* Set the markup on the index header labels */
+  const char *format = "<span foreground='DarkSlateGrey'>%s</span>";
+
+  GtkWidget *label = GetWidget("DowLabel");
+  char *markup = g_markup_printf_escaped(format, "Dow");
+  gtk_label_set_markup(GTK_LABEL(label), markup);
+  g_free(markup);
+
+  label = GetWidget("NasdaqLabel");
+  markup = g_markup_printf_escaped(format, "Nasdaq");
+  gtk_label_set_markup(GTK_LABEL(label), markup);
+  g_free(markup);
+
+  label = GetWidget("SPLabel");
+  markup = g_markup_printf_escaped(format, "S&P 500");
+  gtk_label_set_markup(GTK_LABEL(label), markup);
+  g_free(markup);
+
+  label = GetWidget("BitcoinLabel");
+  markup = g_markup_printf_escaped(format, "Bitcoin");
+  gtk_label_set_markup(GTK_LABEL(label), markup);
+  g_free(markup);
+
+  label = GetWidget("GoldLabel");
+  markup = g_markup_printf_escaped(format, "Gold");
+  gtk_label_set_markup(GTK_LABEL(label), markup);
+  g_free(markup);
+
+  label = GetWidget("SilverLabel");
+  markup = g_markup_printf_escaped(format, "Silver");
+  gtk_label_set_markup(GTK_LABEL(label), markup);
+  g_free(markup);
+
+  label = GetWidget("GSLabel");
+  markup = g_markup_printf_escaped(format, "Gold/Silver");
+  gtk_label_set_markup(GTK_LABEL(label), markup);
+  g_free(markup);
+
+  /* Set the attribute list on the header labels */
+
+  /* Need to free/destroy attrlist. */
+  PangoAttrList *attrlist = pango_attr_list_new();
+
+  PangoFontDescription *font_desc = pango_font_description_from_string(
+      pkg->meta_class->main_treeview_font_ch);
+
+  /* attr does not take ownership of font_desc, need to destroy font_desc */
+  PangoAttribute *attr = pango_attr_font_desc_new(font_desc);
+  /* attrlist takes ownership of attr, do not free attr */
+  pango_attr_list_insert(attrlist, attr);
+
+  /* Index label headers */
+  label = GetWidget("DowLabel");
+  gtk_label_set_attributes((GtkLabel *)label, attrlist);
+  label = GetWidget("NasdaqLabel");
+  gtk_label_set_attributes((GtkLabel *)label, attrlist);
+  label = GetWidget("SPLabel");
+  gtk_label_set_attributes((GtkLabel *)label, attrlist);
+  label = GetWidget("BitcoinLabel");
+  gtk_label_set_attributes((GtkLabel *)label, attrlist);
+  label = GetWidget("GoldLabel");
+  gtk_label_set_attributes((GtkLabel *)label, attrlist);
+  label = GetWidget("SilverLabel");
+  gtk_label_set_attributes((GtkLabel *)label, attrlist);
+  label = GetWidget("GSLabel");
+  gtk_label_set_attributes((GtkLabel *)label, attrlist);
+
+  pango_font_description_free(font_desc);
+  pango_attr_list_unref(attrlist);
+}
+
 static void set_indices_labels(void *data) {
   /* Unpack the class package */
-  portfolio_packet *package = (portfolio_packet *)data;
-  meta *D = package->GetMetaClass();
-  metal *M = package->GetMetalClass();
+  portfolio_packet *pkg = (portfolio_packet *)data;
+  meta *D = pkg->GetMetaClass();
+  metal *M = pkg->GetMetalClass();
   const gchar *red_format =
-      "<span foreground=\"black\">%s\n</span><span foreground=\"darkred\" "
-      "size=\"small\">%s, %s</span>";
+      "<span foreground='black'>%s\n</span><span foreground='darkred' "
+      "size='small'>%s, %s</span>";
   const gchar *green_format =
-      "<span foreground=\"black\">%s\n</span><span foreground=\"darkgreen\" "
-      "size=\"small\">%s, %s</span>";
+      "<span foreground='black'>%s\n</span><span foreground='darkgreen' "
+      "size='small'>%s, %s</span>";
   const gchar *format;
   gchar *markup, *spot = malloc(1), *chg_ounce = malloc(1);
 
@@ -683,13 +769,45 @@ static void set_indices_labels(void *data) {
   g_free(markup);
 
   label = GetWidget("GSValue");
-  markup = g_markup_printf_escaped("<span foreground=\"black\">%s</span>",
+  markup = g_markup_printf_escaped("<span foreground='black'>%s</span>",
                                    M->gold_silver_ratio_ch);
   gtk_label_set_markup(GTK_LABEL(label), markup);
   g_free(markup);
-
   g_free(spot);
   g_free(chg_ounce);
+
+  /* Make sure the labels have the application font set. */
+
+  /* GtkLabels need the font set manually in an attribute list. */
+  /* Need to free/destroy attrlist. */
+  PangoAttrList *attrlist = pango_attr_list_new();
+
+  PangoFontDescription *font_desc = pango_font_description_from_string(
+      pkg->meta_class->main_treeview_font_ch);
+
+  /* attr does not take ownership of font_desc, need to destroy font_desc */
+  PangoAttribute *attr = pango_attr_font_desc_new(font_desc);
+  /* attrlist takes ownership of attr, do not free attr */
+  pango_attr_list_insert(attrlist, attr);
+
+  /* Index value labels */
+  label = GetWidget("DowIndexValue");
+  gtk_label_set_attributes((GtkLabel *)label, attrlist);
+  label = GetWidget("NasdaqIndexValue");
+  gtk_label_set_attributes((GtkLabel *)label, attrlist);
+  label = GetWidget("SPIndexValue");
+  gtk_label_set_attributes((GtkLabel *)label, attrlist);
+  label = GetWidget("BitcoinValue");
+  gtk_label_set_attributes((GtkLabel *)label, attrlist);
+  label = GetWidget("GoldValue");
+  gtk_label_set_attributes((GtkLabel *)label, attrlist);
+  label = GetWidget("SilverValue");
+  gtk_label_set_attributes((GtkLabel *)label, attrlist);
+  label = GetWidget("GSValue");
+  gtk_label_set_attributes((GtkLabel *)label, attrlist);
+
+  pango_font_description_free(font_desc);
+  pango_attr_list_unref(attrlist);
 }
 
 int MainPrimaryTreeview(void *data) {
@@ -759,17 +877,37 @@ int MainDefaultTreeview(void *data) {
   return 0;
 }
 
-int MainDisplayTime() {
+int MainDisplayTime(void *data) {
+  portfolio_packet *pkg = (portfolio_packet *)data;
   GtkWidget *NewYorkTimeLabel = GetWidget("NYTimeLabel");
   int ny_h, ny_m;
   char time_ch[10];
+  char *format = "<span foreground='DimGray'>%s</span>";
 
   /* Get the current New York time */
   NYTime(&ny_h, &ny_m);
 
   /* Set the New York time label */
   snprintf(time_ch, 10, "%02d:%02d", ny_h, ny_m);
-  gtk_label_set_text(GTK_LABEL(NewYorkTimeLabel), time_ch);
+  char *markup = g_markup_printf_escaped(format, time_ch);
+
+  /* gtk_label_set_markup resets the attribute list, so we need to
+     set the markup and attribute list each time this func is called.
+     gtk_label_set_markup doesn't display the font tag correctly,
+     gtk_label_set_attributes doesn't display the color correctly, so we need to
+     do both setting markup first then the attrib list. */
+  gtk_label_set_markup(GTK_LABEL(NewYorkTimeLabel), markup);
+  g_free(markup);
+
+  PangoAttrList *attrlist = pango_attr_list_new();
+  PangoFontDescription *font_desc = pango_font_description_from_string(
+      pkg->meta_class->main_treeview_font_ch);
+  PangoAttribute *attr = pango_attr_font_desc_new(font_desc);
+  pango_attr_list_insert(attrlist, attr);
+  gtk_label_set_attributes((GtkLabel *)NewYorkTimeLabel, attrlist);
+
+  pango_font_description_free(font_desc);
+  pango_attr_list_unref(attrlist);
 
   return 0;
 }
@@ -784,6 +922,8 @@ int MainDisplayTimeRemaining(void *data) {
   char time_left_ch[10];
   bool isclosed;
   struct tm NY_Time;
+  char *format = "<span foreground='DimGray'>%s</span>";
+  char *markup;
 
   isclosed = TimeToClose(&h, &m, &s);
 
@@ -798,7 +938,20 @@ int MainDisplayTimeRemaining(void *data) {
   } else {
     gtk_label_set_text(GTK_LABEL(CloseLabel), "Market Closes In");
     snprintf(time_left_ch, 10, "%02d:%02d:%02d", h, m, s);
-    gtk_label_set_text(GTK_LABEL(TimeRemLabel), time_left_ch);
+    markup = g_markup_printf_escaped(format, time_left_ch);
+    gtk_label_set_markup(GTK_LABEL(TimeRemLabel), markup);
+    g_free(markup);
+
+    PangoAttrList *attrlist = pango_attr_list_new();
+    PangoFontDescription *font_desc = pango_font_description_from_string(
+        package->meta_class->main_treeview_font_ch);
+    PangoAttribute *attr = pango_attr_font_desc_new(font_desc);
+    pango_attr_list_insert(attrlist, attr);
+    gtk_label_set_attributes((GtkLabel *)TimeRemLabel, attrlist);
+
+    pango_font_description_free(font_desc);
+    pango_attr_list_unref(attrlist);
+
     gtk_widget_set_visible(TimeRemLabel, true);
   }
 
