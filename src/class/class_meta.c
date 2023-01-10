@@ -524,8 +524,8 @@ meta *ClassInitMeta() {
   new_class->crypto_bitcoin_value_p_chg_ch = malloc(1);
 
   /* Set up the main treeview font */
-  new_class->main_treeview_font_ch = strdup(MAIN_FONT);
-  SetFont(new_class->main_treeview_font_ch);
+  new_class->main_font_ch = strdup(MAIN_FONT);
+  SetFont(new_class->main_font_ch);
 
   /* The pango funcs require each dest string to point to allocated space
                 or NULL, they use realloc ( and possibly malloc if NULL ). */
@@ -683,8 +683,8 @@ void ClassDestructMeta(meta *meta_class) {
   if (meta_class->crypto_bitcoin_value_p_chg_ch)
     free(meta_class->crypto_bitcoin_value_p_chg_ch);
 
-  if (meta_class->main_treeview_font_ch)
-    free(meta_class->main_treeview_font_ch);
+  if (meta_class->main_font_ch)
+    free(meta_class->main_font_ch);
 
   if (meta_class->home_dir_ch)
     free(meta_class->home_dir_ch);

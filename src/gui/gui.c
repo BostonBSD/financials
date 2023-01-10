@@ -286,9 +286,6 @@ static void clock_display(void *data)
 /* Set the initial display of the clocks.
    We don't want the revealer animation on startup. */
 {
-  /* Set the clock label fonts */
-  MainSetClockHeaderFonts(data);
-
   portfolio_packet *pkg = (portfolio_packet *)data;
   meta *D = pkg->GetMetaClass();
 
@@ -522,7 +519,7 @@ static void preferences_window_sig_connect(void *data) {
 
   object = GetGObject("PrefFontChooserBTN");
   /* Make sure the font is set before connecting a signal to it. */
-  gtk_font_chooser_set_font(GTK_FONT_CHOOSER(object), D->main_treeview_font_ch);
+  gtk_font_chooser_set_font(GTK_FONT_CHOOSER(object), D->main_font_ch);
   g_signal_connect(object, "font-set",
                    G_CALLBACK(GUICallbackHandler_pref_font_button), NULL);
 }
@@ -697,8 +694,8 @@ void GuiStart(void *data)
   /* Add hyperlink markup to the About window labels. */
   about_set_label();
 
-  /* Make sure the font is set on the indice header labels */
-  MainSetIndiceHeaderFonts(data);
+  /* Make sure the main label and treeview header fonts are set */
+  MainSetFonts(data);
 
   /* Connect callback functions to corresponding GUI signals. */
   gui_signal_connect(data);

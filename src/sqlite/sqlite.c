@@ -207,9 +207,9 @@ static int api_callback(void *data, int argc, char **argv, char **ColName) {
   }
 
   if (strcasecmp(argv[1], "Main_TrVw_Font") == 0) {
-    free(mdata->main_treeview_font_ch);
-    mdata->main_treeview_font_ch = strdup(argv[2] ? argv[2] : MAIN_FONT);
-    SetFont(mdata->main_treeview_font_ch);
+    free(mdata->main_font_ch);
+    mdata->main_font_ch = strdup(argv[2] ? argv[2] : MAIN_FONT);
+    SetFont(mdata->main_font_ch);
   }
 
   pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);

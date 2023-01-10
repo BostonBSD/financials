@@ -576,12 +576,12 @@ static void show_indices(void *data) {
                                 D->index_bar_revealed_bool);
 }
 
-void MainSetClockHeaderFonts(void *data) {
+static void set_clock_header_fonts(void *data) {
   portfolio_packet *pkg = (portfolio_packet *)data;
 
   PangoAttrList *attrlist = pango_attr_list_new();
   PangoFontDescription *font_desc = pango_font_description_from_string(
-      pkg->meta_class->main_treeview_font_ch);
+      pkg->meta_class->main_font_ch);
 
   PangoAttribute *attr = pango_attr_font_desc_new(font_desc);
   pango_attr_list_insert(attrlist, attr);
@@ -600,7 +600,7 @@ void MainSetClockHeaderFonts(void *data) {
   MainDisplayTimeRemaining(pkg);
 }
 
-void MainSetIndiceHeaderFonts(void *data) {
+static void set_indice_header_fonts(void *data) {
   portfolio_packet *pkg = (portfolio_packet *)data;
 
   /* Set the markup on the index header labels */
@@ -647,7 +647,7 @@ void MainSetIndiceHeaderFonts(void *data) {
   PangoAttrList *attrlist = pango_attr_list_new();
 
   PangoFontDescription *font_desc = pango_font_description_from_string(
-      pkg->meta_class->main_treeview_font_ch);
+      pkg->meta_class->main_font_ch);
 
   /* attr does not take ownership of font_desc, need to destroy font_desc */
   PangoAttribute *attr = pango_attr_font_desc_new(font_desc);
@@ -672,6 +672,18 @@ void MainSetIndiceHeaderFonts(void *data) {
 
   pango_font_description_free(font_desc);
   pango_attr_list_unref(attrlist);
+}
+
+void MainSetFonts(void *data){
+  /* Set the clock label fonts */
+  set_clock_header_fonts(data);
+
+  /* Make sure the font is set on the indice header labels */
+  set_indice_header_fonts(data);
+
+  /* Make sure the treeview heading fonts are set */
+  portfolio_packet *pkg = (portfolio_packet*)data;
+  pkg->meta_class->ToStringsHeadings();
 }
 
 static void set_indices_labels(void *data) {
@@ -783,7 +795,7 @@ static void set_indices_labels(void *data) {
   PangoAttrList *attrlist = pango_attr_list_new();
 
   PangoFontDescription *font_desc = pango_font_description_from_string(
-      pkg->meta_class->main_treeview_font_ch);
+      pkg->meta_class->main_font_ch);
 
   /* attr does not take ownership of font_desc, need to destroy font_desc */
   PangoAttribute *attr = pango_attr_font_desc_new(font_desc);
@@ -901,7 +913,7 @@ int MainDisplayTime(void *data) {
 
   PangoAttrList *attrlist = pango_attr_list_new();
   PangoFontDescription *font_desc = pango_font_description_from_string(
-      pkg->meta_class->main_treeview_font_ch);
+      pkg->meta_class->main_font_ch);
   PangoAttribute *attr = pango_attr_font_desc_new(font_desc);
   pango_attr_list_insert(attrlist, attr);
   gtk_label_set_attributes((GtkLabel *)NewYorkTimeLabel, attrlist);
@@ -944,7 +956,7 @@ int MainDisplayTimeRemaining(void *data) {
 
     PangoAttrList *attrlist = pango_attr_list_new();
     PangoFontDescription *font_desc = pango_font_description_from_string(
-        package->meta_class->main_treeview_font_ch);
+        package->meta_class->main_font_ch);
     PangoAttribute *attr = pango_attr_font_desc_new(font_desc);
     pango_attr_list_insert(attrlist, attr);
     gtk_label_set_attributes((GtkLabel *)TimeRemLabel, attrlist);

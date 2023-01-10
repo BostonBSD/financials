@@ -266,7 +266,7 @@ typedef struct {
   char *sqlite_db_path_ch;             /* Path to the sqlite db file */
   char *sqlite_symbol_name_db_path_ch; /* Path to the sqlite symbol-name db file
                                         */
-  char *main_treeview_font_ch;         /* The main treeview font */
+  char *main_font_ch;         /* The main treeview font */
 
   atomic_bool fetching_data_bool; /* Indicates a fetch operation in progress. */
   atomic_bool holiday_bool;       /* Indicates if today is a holiday. */
