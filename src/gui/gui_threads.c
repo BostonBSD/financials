@@ -158,12 +158,12 @@ static void main_fetch_data_thd_cleanup(void *data)
   pthread_mutex_unlock(&mutex_working[CLASS_CALCULATE_MUTEX]);
   pthread_mutex_unlock(&mutex_working[MULTICURL_PROG_MUTEX]);
 
+  /* Remove easy handles from multihandle, reset curl data for each
+     item [equity, bullion, indice]. */
+  pkg->StopMultiCurlMain();
+
   /* Reset the progressbar */
   gdk_threads_add_idle(MainProgBarReset, NULL);
-
-  /* Make sure the curl data is reset for each
-     item [equity, bullion, indice]. */
-  pkg->FreeMainCurlData();
 
   /* Reset FetchingData flag. */
   pkg->SetFetchingData(false);
@@ -184,15 +184,12 @@ static void *main_fetch_data_thd(void *data) {
   time_t start_curl, end_curl;
 
   pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
-  pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
+  pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
 
   looping_time(&end_time, &current_time, &seconds_per_iteration, pkg);
 
   while (end_time > current_time) {
-
-    time(&start_curl);
-
-    pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
+    time(&start_curl);    
 
     /* This mutex prevents the program from crashing if an
        MAIN_EXIT, EQUITY_OK_BTN, or API_OK_BTN thread is run
@@ -203,10 +200,6 @@ static void *main_fetch_data_thd(void *data) {
 
     pthread_mutex_unlock(&mutex_working[FETCH_DATA_MUTEX]);
 
-    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
-    usleep(1); /* This is kind of hacky until I can find a better way to cancel
-                  the thread. GetData() throws a signal 10 error on thread
-                  cancellation. */
     pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 
     if (pkg->IsMainCurlCanceled())

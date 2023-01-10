@@ -493,8 +493,8 @@ void StringToStrPangoColor(char **dst, const char *src,
     create_markup(dst, format, font, fg, wght, src);
     break;
   case BLUE:
-    fg = fg_attr("MidnightBlue");
-    wght = wght_attr("Demi-Bold");
+    fg = fg_attr("RoyalBlue");
+    wght = wght_attr("Bold");
     format = format_reg;
     create_markup(dst, format, font, fg, wght, src);
     break;
@@ -520,19 +520,19 @@ void StringToStrPangoColor(char **dst, const char *src,
     create_markup(dst, format, font, fg, wght, style, src);
     break;
   case BLUE_ITALIC:
-    fg = fg_attr("MidnightBlue");
-    wght = wght_attr("Demi-Bold");
+    fg = fg_attr("SteelBlue");
+    wght = wght_attr("Bold");
     style = style_attr("italic");
     format = format_itl;
     create_markup(dst, format, font, fg, wght, style, src);
     break;
-  case BOLD:
+  case HEADING_ASST_TYPE_FORMAT:
     fg = fg_attr("DarkSlateGray");
     wght = wght_attr("Demi-Bold");
     format = format_reg;
     create_markup(dst, format, font, fg, wght, src);
     break;
-  default: /* BOLD_UNDERLINE */
+  default: /* HEADING_UNLN_FORMAT */
     fg = fg_attr("SaddleBrown");
     wght = wght_attr("Demi-Bold");
     undln = undln_attr("single");

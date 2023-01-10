@@ -407,7 +407,7 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Alpha 2.0</property>
+                    <property name="label" translatable="yes">Alpha 2.5</property>
                     <property name="justify">center</property>
                     <attributes>
                       <attribute name="font-desc" value="Oxygen-Sans 11"/>
@@ -2852,8 +2852,8 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                 </attributes>
               </object>
             </child>
-            <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
             <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+            <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
           </object>
           <packing>
             <property name="expand">False</property>

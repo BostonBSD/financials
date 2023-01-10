@@ -245,10 +245,6 @@ static void remove_main_curl_handles(portfolio_packet *pkg)
 }
 
 static void StopMultiCurlMain() {
-  /* Rapidly initiating then stopping MultiCurl transfers,
-     repeatedly, is dangerous.
-     Try using pthread_cancel/join strategies instead. */
-
   /* Main Window Data Fetch Multicurl Operation */
   remove_main_curl_handles(packet);
 }

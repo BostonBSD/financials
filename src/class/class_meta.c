@@ -343,85 +343,92 @@ static default_heading default_headings = {"Bullion",
 
 static void format_primary_headings_pango(primary_heading *pri_h_mkd) {
 
-  StringToStrPangoColor(&pri_h_mkd->bullion, primary_headings.bullion, BOLD);
+  StringToStrPangoColor(&pri_h_mkd->bullion, primary_headings.bullion,
+                        HEADING_ASST_TYPE_FORMAT);
   StringToStrPangoColor(&pri_h_mkd->metal, primary_headings.metal,
-                        BOLD_UNDERLINE);
+                        HEADING_UNLN_FORMAT);
   StringToStrPangoColor(&pri_h_mkd->ounces, primary_headings.ounces,
-                        BOLD_UNDERLINE);
+                        HEADING_UNLN_FORMAT);
 
   StringToStrPangoColor(&pri_h_mkd->spot_price, primary_headings.spot_price,
-                        BOLD_UNDERLINE);
+                        HEADING_UNLN_FORMAT);
   StringToStrPangoColor(&pri_h_mkd->premium, primary_headings.premium,
-                        BOLD_UNDERLINE);
+                        HEADING_UNLN_FORMAT);
   StringToStrPangoColor(&pri_h_mkd->high, primary_headings.high,
-                        BOLD_UNDERLINE);
+                        HEADING_UNLN_FORMAT);
 
-  StringToStrPangoColor(&pri_h_mkd->low, primary_headings.low, BOLD_UNDERLINE);
+  StringToStrPangoColor(&pri_h_mkd->low, primary_headings.low,
+                        HEADING_UNLN_FORMAT);
   StringToStrPangoColor(&pri_h_mkd->prev_closing, primary_headings.prev_closing,
-                        BOLD_UNDERLINE);
+                        HEADING_UNLN_FORMAT);
   StringToStrPangoColor(&pri_h_mkd->chg_ounce, primary_headings.chg_ounce,
-                        BOLD_UNDERLINE);
+                        HEADING_UNLN_FORMAT);
 
   StringToStrPangoColor(&pri_h_mkd->gain_sym, primary_headings.gain_sym,
-                        BOLD_UNDERLINE);
+                        HEADING_UNLN_FORMAT);
   StringToStrPangoColor(&pri_h_mkd->total, primary_headings.total,
-                        BOLD_UNDERLINE);
+                        HEADING_UNLN_FORMAT);
   StringToStrPangoColor(&pri_h_mkd->gain_per, primary_headings.gain_per,
-                        BOLD_UNDERLINE);
+                        HEADING_UNLN_FORMAT);
 
-  StringToStrPangoColor(&pri_h_mkd->gold, primary_headings.gold, BOLD);
-  StringToStrPangoColor(&pri_h_mkd->silver, primary_headings.silver, BOLD);
-  StringToStrPangoColor(&pri_h_mkd->platinum, primary_headings.platinum, BOLD);
+  StringToStrPangoColor(&pri_h_mkd->gold, primary_headings.gold, BLUE);
+  StringToStrPangoColor(&pri_h_mkd->silver, primary_headings.silver, BLUE);
+  StringToStrPangoColor(&pri_h_mkd->platinum, primary_headings.platinum, BLUE);
 
   StringToStrPangoColor(&pri_h_mkd->palladium, primary_headings.palladium,
-                        BOLD);
-  StringToStrPangoColor(&pri_h_mkd->equity, primary_headings.equity, BOLD);
+                        BLUE);
+  StringToStrPangoColor(&pri_h_mkd->equity, primary_headings.equity,
+                        HEADING_ASST_TYPE_FORMAT);
   StringToStrPangoColor(&pri_h_mkd->symbol, primary_headings.symbol,
-                        BOLD_UNDERLINE);
+                        HEADING_UNLN_FORMAT);
 
   StringToStrPangoColor(&pri_h_mkd->shares, primary_headings.shares,
-                        BOLD_UNDERLINE);
+                        HEADING_UNLN_FORMAT);
   StringToStrPangoColor(&pri_h_mkd->price, primary_headings.price,
-                        BOLD_UNDERLINE);
+                        HEADING_UNLN_FORMAT);
   StringToStrPangoColor(&pri_h_mkd->opening, primary_headings.opening,
-                        BOLD_UNDERLINE);
+                        HEADING_UNLN_FORMAT);
 
   StringToStrPangoColor(&pri_h_mkd->chg_share, primary_headings.chg_share,
-                        BOLD_UNDERLINE);
+                        HEADING_UNLN_FORMAT);
   StringToStrPangoColor(&pri_h_mkd->asset, primary_headings.asset,
-                        BOLD_UNDERLINE);
+                        HEADING_UNLN_FORMAT);
   StringToStrPangoColor(&pri_h_mkd->value, primary_headings.value,
-                        BOLD_UNDERLINE);
+                        HEADING_UNLN_FORMAT);
 
-  StringToStrPangoColor(&pri_h_mkd->cash, primary_headings.cash, BOLD);
+  StringToStrPangoColor(&pri_h_mkd->cash, primary_headings.cash,
+                        HEADING_ASST_TYPE_FORMAT);
   StringToStrPangoColor(&pri_h_mkd->portfolio, primary_headings.portfolio,
-                        BOLD);
+                        HEADING_ASST_TYPE_FORMAT);
   StringToStrPangoColor(&pri_h_mkd->no_assets, primary_headings.no_assets,
                         BLUE);
 }
 
 static void format_default_headings_pango(default_heading *def_h_mkd) {
 
-  StringToStrPangoColor(&def_h_mkd->bullion, default_headings.bullion, BOLD);
+  StringToStrPangoColor(&def_h_mkd->bullion, default_headings.bullion,
+                        HEADING_ASST_TYPE_FORMAT);
   StringToStrPangoColor(&def_h_mkd->metal, default_headings.metal,
-                        BOLD_UNDERLINE);
+                        HEADING_UNLN_FORMAT);
   StringToStrPangoColor(&def_h_mkd->ounces, default_headings.ounces,
-                        BOLD_UNDERLINE);
+                        HEADING_UNLN_FORMAT);
   StringToStrPangoColor(&def_h_mkd->premium, default_headings.premium,
-                        BOLD_UNDERLINE);
-  StringToStrPangoColor(&def_h_mkd->gold, default_headings.gold, BOLD);
-  StringToStrPangoColor(&def_h_mkd->silver, default_headings.silver, BOLD);
-  StringToStrPangoColor(&def_h_mkd->platinum, default_headings.platinum, BOLD);
+                        HEADING_UNLN_FORMAT);
+  StringToStrPangoColor(&def_h_mkd->gold, default_headings.gold, BLUE);
+  StringToStrPangoColor(&def_h_mkd->silver, default_headings.silver, BLUE);
+  StringToStrPangoColor(&def_h_mkd->platinum, default_headings.platinum, BLUE);
   StringToStrPangoColor(&def_h_mkd->palladium, default_headings.palladium,
-                        BOLD);
+                        BLUE);
 
-  StringToStrPangoColor(&def_h_mkd->equity, default_headings.equity, BOLD);
+  StringToStrPangoColor(&def_h_mkd->equity, default_headings.equity,
+                        HEADING_ASST_TYPE_FORMAT);
   StringToStrPangoColor(&def_h_mkd->symbol, default_headings.symbol,
-                        BOLD_UNDERLINE);
+                        HEADING_UNLN_FORMAT);
   StringToStrPangoColor(&def_h_mkd->shares, default_headings.shares,
-                        BOLD_UNDERLINE);
+                        HEADING_UNLN_FORMAT);
 
-  StringToStrPangoColor(&def_h_mkd->cash, default_headings.cash, BOLD);
+  StringToStrPangoColor(&def_h_mkd->cash, default_headings.cash,
+                        HEADING_ASST_TYPE_FORMAT);
   StringToStrPangoColor(&def_h_mkd->no_assets, default_headings.no_assets,
                         BLUE);
 }
