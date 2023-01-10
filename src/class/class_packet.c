@@ -191,12 +191,10 @@ static void SetHoliday() {
 }
 
 static double GetHoursOfUpdates() {
-  pthread_mutex_lock(&mutex_working[CLASS_MEMBER_MUTEX]);
 
   meta *D = packet->GetMetaClass();
   double return_value = D->updates_hours_f;
 
-  pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
   return return_value;
 }
 

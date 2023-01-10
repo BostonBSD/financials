@@ -183,7 +183,7 @@ static void *main_fetch_data_thd(void *data) {
   time_t current_time, end_time;
   time_t start_curl, end_curl;
 
-  pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+  pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
   pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 
   looping_time(&end_time, &current_time, &seconds_per_iteration, pkg);
@@ -203,6 +203,12 @@ static void *main_fetch_data_thd(void *data) {
 
     pthread_mutex_unlock(&mutex_working[FETCH_DATA_MUTEX]);
 
+    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+    usleep(1); /* This is kind of hacky until I can find a better way to cancel
+                  the thread. GetData() throws a signal 10 error on thread
+                  cancellation. */
+    pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
+
     if (pkg->IsMainCurlCanceled())
       pthread_exit(NULL);
 
@@ -210,14 +216,17 @@ static void *main_fetch_data_thd(void *data) {
     pkg->Calculate();
     pkg->ToStrings();
 
-    /* Allow the thread to be canceled. */
-    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
-
     /* Reset the progressbar */
     gdk_threads_add_idle(MainProgBarReset, NULL);
 
     /* Set Gtk treeview. */
     gdk_threads_add_idle(MainPrimaryTreeview, pkg);
+
+    /* Allow the thread to be canceled. */
+    /* FYI, gdk_threads_add_idle causes pthreads to throw
+       a Resource deadlock sigabrt error when canceling a thread.
+       so we don't enable cancelation until after those statements. */
+    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
 
     /* If hours to update is zero or the market is closed;
      * only loop once. */
