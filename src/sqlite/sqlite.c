@@ -77,8 +77,8 @@ static int cash_callback(void *data, int argc, char **argv, char **ColName) {
   meta *mdata = (meta *)data;
 
   mdata->cash_f = StringToDouble(argv[1] ? argv[1] : "0");
-  DoubleToMonStrPango(&mdata->cash_mrkd_ch, mdata->cash_f,
-                      mdata->decimal_places_shrt);
+  DoubleToFormattedStrPango(&mdata->cash_mrkd_ch, mdata->cash_f,
+                            mdata->decimal_places_shrt, MON_STR, BLACK);
 
   pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
   return 0;
@@ -105,38 +105,44 @@ static int bullion_callback(void *data, int argc, char **argv, char **ColName) {
 
   if (strcasecmp(argv[1], "gold") == 0) {
     m->Gold->ounce_f = StringToDouble(argv[2] ? argv[2] : "0");
-    DoubleToNumStrPango(&m->Gold->ounce_mrkd_ch, m->Gold->ounce_f, 4);
+    DoubleToFormattedStrPango(&m->Gold->ounce_mrkd_ch, m->Gold->ounce_f, 4,
+                              NUM_STR, BLACK);
 
     m->Gold->premium_f = StringToDouble(argv[3] ? argv[3] : "0");
-    DoubleToMonStrPango(&m->Gold->premium_mrkd_ch, m->Gold->premium_f,
-                        D->decimal_places_shrt);
+    DoubleToFormattedStrPango(&m->Gold->premium_mrkd_ch, m->Gold->premium_f,
+                              D->decimal_places_shrt, MON_STR, BLACK);
   }
 
   if (strcasecmp(argv[1], "silver") == 0) {
     m->Silver->ounce_f = StringToDouble(argv[2] ? argv[2] : "0");
-    DoubleToNumStrPango(&m->Silver->ounce_mrkd_ch, m->Silver->ounce_f, 4);
+    DoubleToFormattedStrPango(&m->Silver->ounce_mrkd_ch, m->Silver->ounce_f, 4,
+                              NUM_STR, BLACK);
 
     m->Silver->premium_f = StringToDouble(argv[3] ? argv[3] : "0");
-    DoubleToMonStrPango(&m->Silver->premium_mrkd_ch, m->Silver->premium_f,
-                        D->decimal_places_shrt);
+    DoubleToFormattedStrPango(&m->Silver->premium_mrkd_ch, m->Silver->premium_f,
+                              D->decimal_places_shrt, MON_STR, BLACK);
   }
 
   if (strcasecmp(argv[1], "platinum") == 0) {
     m->Platinum->ounce_f = StringToDouble(argv[2] ? argv[2] : "0");
-    DoubleToNumStrPango(&m->Platinum->ounce_mrkd_ch, m->Platinum->ounce_f, 4);
+    DoubleToFormattedStrPango(&m->Platinum->ounce_mrkd_ch, m->Platinum->ounce_f,
+                              4, NUM_STR, BLACK);
 
     m->Platinum->premium_f = StringToDouble(argv[3] ? argv[3] : "0");
-    DoubleToMonStrPango(&m->Platinum->premium_mrkd_ch, m->Platinum->premium_f,
-                        D->decimal_places_shrt);
+    DoubleToFormattedStrPango(&m->Platinum->premium_mrkd_ch,
+                              m->Platinum->premium_f, D->decimal_places_shrt,
+                              MON_STR, BLACK);
   }
 
   if (strcasecmp(argv[1], "palladium") == 0) {
     m->Palladium->ounce_f = StringToDouble(argv[2] ? argv[2] : "0");
-    DoubleToNumStrPango(&m->Palladium->ounce_mrkd_ch, m->Palladium->ounce_f, 4);
+    DoubleToFormattedStrPango(&m->Palladium->ounce_mrkd_ch,
+                              m->Palladium->ounce_f, 4, NUM_STR, BLACK);
 
     m->Palladium->premium_f = StringToDouble(argv[3] ? argv[3] : "0");
-    DoubleToMonStrPango(&m->Palladium->premium_mrkd_ch, m->Palladium->premium_f,
-                        D->decimal_places_shrt);
+    DoubleToFormattedStrPango(&m->Palladium->premium_mrkd_ch,
+                              m->Palladium->premium_f, D->decimal_places_shrt,
+                              MON_STR, BLACK);
   }
 
   pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);

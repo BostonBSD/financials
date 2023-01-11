@@ -407,7 +407,7 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Alpha 2.5</property>
+                    <property name="label" translatable="yes">Alpha 3.0</property>
                     <property name="justify">center</property>
                     <attributes>
                       <attribute name="font-desc" value="Oxygen-Sans 11"/>
@@ -1434,7 +1434,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
         <property name="visible">True</property>
         <property name="can-focus">True</property>
         <property name="shadow-type">in</property>
-        <property name="overlay-scrolling">False</property>
         <child>
           <object class="GtkViewport">
             <property name="visible">True</property>
@@ -1611,7 +1610,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                             <property name="can-focus">True</property>
                             <property name="valign">center</property>
                             <property name="vscrollbar-policy">never</property>
-                            <property name="overlay-scrolling">False</property>
                             <child>
                               <object class="GtkViewport">
                                 <property name="visible">True</property>
@@ -1963,7 +1961,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                     <property name="hexpand">True</property>
                     <property name="vexpand">True</property>
                     <property name="min-content-height">10</property>
-                    <property name="overlay-scrolling">False</property>
                     <property name="propagate-natural-height">True</property>
                     <child>
                       <object class="GtkTreeView" id="TreeView">
@@ -2538,7 +2535,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                     <property name="hexpand">True</property>
                     <property name="vexpand">True</property>
                     <property name="min-content-height">10</property>
-                    <property name="overlay-scrolling">False</property>
                     <property name="propagate-natural-height">True</property>
                     <child>
                       <object class="GtkTreeView" id="ViewRSITreeView">
@@ -2930,6 +2926,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
             <property name="vexpand">True</property>
             <property name="hscrollbar-policy">never</property>
             <property name="vscrollbar-policy">never</property>
+            <property name="shadow-type">in</property>
             <property name="min-content-width">200</property>
             <property name="min-content-height">500</property>
             <property name="propagate-natural-width">True</property>

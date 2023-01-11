@@ -209,7 +209,7 @@ static void set_bullion_entry_box(const char *entry_box_name_ch, double value,
                                   unsigned short digits_right) {
   gchar *temp = NULL;
   GtkWidget *EntryBox = GetWidget(entry_box_name_ch);
-  DoubleToNumStr(&temp, value, digits_right);
+  DoubleToFormattedStr(&temp, value, digits_right, NUM_STR);
   ToNumStr(temp); /* remove commas */
   gtk_entry_set_text(GTK_ENTRY(EntryBox), temp);
   /* If gold ounces entry box, grab focus */

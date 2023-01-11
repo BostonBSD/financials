@@ -116,79 +116,68 @@ static void rsi_set_columns() {
   GtkWidget *list = GetWidget("ViewRSITreeView");
 
   renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(
-      "Date", renderer, "text", RSI_COLUMN_ONE, "foreground",
-      RSI_FOREGROUND_COLOR, NULL);
+  column = gtk_tree_view_column_new_with_attributes("Date", renderer, "markup",
+                                                    RSI_COLUMN_ONE, NULL);
+  gtk_tree_view_column_set_resizable(column, true);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
+
+  renderer = gtk_cell_renderer_text_new();
+  column = gtk_tree_view_column_new_with_attributes("Price", renderer, "markup",
+                                                    RSI_COLUMN_TWO, NULL);
+  gtk_tree_view_column_set_resizable(column, true);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
+
+  renderer = gtk_cell_renderer_text_new();
+  column = gtk_tree_view_column_new_with_attributes("High", renderer, "markup",
+                                                    RSI_COLUMN_THREE, NULL);
+  gtk_tree_view_column_set_resizable(column, true);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
+
+  renderer = gtk_cell_renderer_text_new();
+  column = gtk_tree_view_column_new_with_attributes("Low", renderer, "markup",
+                                                    RSI_COLUMN_FOUR, NULL);
+  gtk_tree_view_column_set_resizable(column, true);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
+
+  renderer = gtk_cell_renderer_text_new();
+  column = gtk_tree_view_column_new_with_attributes("Open", renderer, "markup",
+                                                    RSI_COLUMN_FIVE, NULL);
   gtk_tree_view_column_set_resizable(column, true);
   gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(
-      "Price", renderer, "text", RSI_COLUMN_TWO, "foreground",
-      RSI_FOREGROUND_COLOR, NULL);
+      "Prv Close", renderer, "markup", RSI_COLUMN_SIX, NULL);
   gtk_tree_view_column_set_resizable(column, true);
   gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(
-      "High", renderer, "text", RSI_COLUMN_THREE, "foreground",
-      RSI_FOREGROUND_COLOR, NULL);
+      "Chg ($)", renderer, "markup", RSI_COLUMN_SEVEN, NULL);
   gtk_tree_view_column_set_resizable(column, true);
   gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(
-      "Low", renderer, "text", RSI_COLUMN_FOUR, "foreground",
-      RSI_FOREGROUND_COLOR, NULL);
+      "Gain (%)", renderer, "markup", RSI_COLUMN_EIGHT, NULL);
   gtk_tree_view_column_set_resizable(column, true);
   gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(
-      "Opening", renderer, "text", RSI_COLUMN_FIVE, "foreground",
-      RSI_FOREGROUND_COLOR, NULL);
+      "Volume", renderer, "markup", RSI_COLUMN_NINE, NULL);
+  gtk_tree_view_column_set_resizable(column, true);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
+
+  renderer = gtk_cell_renderer_text_new();
+  column = gtk_tree_view_column_new_with_attributes("RSI", renderer, "markup",
+                                                    RSI_COLUMN_TEN, NULL);
   gtk_tree_view_column_set_resizable(column, true);
   gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(
-      "Prev Closing", renderer, "text", RSI_COLUMN_SIX, "foreground",
-      RSI_FOREGROUND_COLOR, NULL);
-  gtk_tree_view_column_set_resizable(column, true);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
-
-  renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(
-      "Chg ($)", renderer, "text", RSI_COLUMN_SEVEN, "foreground",
-      RSI_FOREGROUND_COLOR, NULL);
-  gtk_tree_view_column_set_resizable(column, true);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
-
-  renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(
-      "Gain (%)", renderer, "text", RSI_COLUMN_EIGHT, "foreground",
-      RSI_FOREGROUND_COLOR, NULL);
-  gtk_tree_view_column_set_resizable(column, true);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
-
-  renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(
-      "Volume", renderer, "text", RSI_COLUMN_NINE, "foreground",
-      RSI_FOREGROUND_COLOR, NULL);
-  gtk_tree_view_column_set_resizable(column, true);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
-
-  renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(
-      "RSI", renderer, "text", RSI_COLUMN_TEN, "foreground",
-      RSI_FOREGROUND_COLOR, NULL);
-  gtk_tree_view_column_set_resizable(column, true);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
-
-  renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(
-      "Indicator", renderer, "text", RSI_COLUMN_ELEVEN, "foreground",
-      RSI_FOREGROUND_COLOR, NULL);
+      "Indicator", renderer, "markup", RSI_COLUMN_ELEVEN, NULL);
   gtk_tree_view_column_set_resizable(column, true);
   gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 }
@@ -268,8 +257,7 @@ typedef struct {
   char *gain_ch;
   char *rsi_ch;
   char *volume_ch;
-  const char *indicator_ch; /* points to stack memory, do not free */
-  const char *fg_colr_ch;   /* points to stack memory, do not free */
+  char *indicator_ch;
 } rsi_strings;
 
 static bool rsi_calculate(char *line, rsi_strings *strings, int state) {
@@ -285,9 +273,6 @@ static bool rsi_calculate(char *line, rsi_strings *strings, int state) {
 
   double gain_f, prev_price_f, rsi_f, change_f;
   unsigned long volume_long;
-  const char *fg_colr_green_ch = "DarkGreen";
-  const char *fg_colr_red_ch = "DarkRed";
-  const char *fg_colr_black_ch = "Black";
 
   Chomp(line);
   char **csv_array = parse_csv(line);
@@ -309,29 +294,46 @@ static bool rsi_calculate(char *line, rsi_strings *strings, int state) {
     return false;
   }
 
-  /* The RsiIndicator return value is stored in the stack, do not free. */
-  strings->indicator_ch = RsiIndicator(rsi_f);
-  CopyString(&strings->date_ch, csv_array[0] ? csv_array[0] : "0000-00-00");
-  DoubleToMonStr(&strings->prev_closing_ch, prev_price_f, 3);
-  DoubleToMonStr(&strings->price_ch, cur_price_f, 3);
-  StringToMonStr(&strings->high_ch, csv_array[2] ? csv_array[2] : "0", 3);
-  StringToMonStr(&strings->low_ch, csv_array[3] ? csv_array[3] : "0", 3);
-  StringToMonStr(&strings->opening_ch, csv_array[1] ? csv_array[1] : "0", 3);
+  StringToStrPango(&strings->date_ch,
+                        csv_array[0] ? csv_array[0] : "0000-00-00", CHOCOLATE);
+  DoubleToFormattedStrPango(&strings->prev_closing_ch, prev_price_f, 2, MON_STR,
+                            BLACK);
+  DoubleToFormattedStrPango(&strings->price_ch, cur_price_f, 2, MON_STR, BLACK);
+  StringToStrPango(&strings->high_ch, csv_array[2] ? csv_array[2] : "0",
+                        STR_TO_MON_STR);
+  StringToStrPango(&strings->low_ch, csv_array[3] ? csv_array[3] : "0",
+                        STR_TO_MON_STR);
+  StringToStrPango(&strings->opening_ch, csv_array[1] ? csv_array[1] : "0",
+                        STR_TO_MON_STR);
   change_f = cur_price_f - prev_price_f;
-  DoubleToMonStr(&strings->change_ch, change_f, 3);
-  DoubleToPerStr(&strings->gain_ch, gain_f, 3);
-  DoubleToNumStr(&strings->rsi_ch, rsi_f, 3);
+  if (change_f > 0) {
+    DoubleToFormattedStrPango(&strings->change_ch, change_f, 2, MON_STR, GREEN);
+    DoubleToFormattedStrPango(&strings->gain_ch, gain_f, 2, PER_STR, GREEN);
+  } else if (change_f < 0) {
+    DoubleToFormattedStrPango(&strings->change_ch, change_f, 2, MON_STR, RED);
+    DoubleToFormattedStrPango(&strings->gain_ch, gain_f, 2, PER_STR, RED);
+  } else {
+    DoubleToFormattedStrPango(&strings->change_ch, change_f, 2, MON_STR, BLACK);
+    DoubleToFormattedStrPango(&strings->gain_ch, gain_f, 2, PER_STR, BLACK);
+  }
+  DoubleToFormattedStrPango(&strings->rsi_ch, rsi_f, 2, NUM_STR, BLACK);
   volume_long =
       (unsigned long)strtol(csv_array[6] ? csv_array[6] : "0", NULL, 10);
-  DoubleToNumStr(&strings->volume_ch, (double)volume_long, 0);
-  /* fg_colr_ch is stored in the stack, do not free. */
-  if (gain_f > 0) {
-    strings->fg_colr_ch = fg_colr_green_ch;
-  } else if (gain_f < 0) {
-    strings->fg_colr_ch = fg_colr_red_ch;
+  DoubleToFormattedStrPango(&strings->volume_ch, (double)volume_long, 0,
+                            NUM_STR, BLACK);
+
+  if (rsi_f >= 70.0f) {
+    StringToStrPango(&strings->indicator_ch, RsiIndicator(rsi_f), RED);
+  } else if (rsi_f >= 60.0f) {
+    StringToStrPango(&strings->indicator_ch, RsiIndicator(rsi_f), ORANGE);
+  } else if (rsi_f < 60.0f && rsi_f > 40.0f) {
+    StringToStrPango(&strings->indicator_ch, RsiIndicator(rsi_f), GREY);
+  } else if (rsi_f > 30.0f) {
+    StringToStrPango(&strings->indicator_ch, RsiIndicator(rsi_f), CYAN);
   } else {
-    strings->fg_colr_ch = fg_colr_black_ch;
+    StringToStrPango(&strings->indicator_ch, RsiIndicator(rsi_f), GREEN);
   }
+
   free_csv_line(csv_array);
   return true;
 }
@@ -352,6 +354,7 @@ static void rsi_set_store_thd_cleanup(void *data) {
   free(rsi_strs->opening_ch);
   free(rsi_strs->change_ch);
   free(rsi_strs->prev_closing_ch);
+  free(rsi_strs->indicator_ch);
 }
 
 static void rsi_set_store(GtkListStore *store, const char *curl_data) {
@@ -389,13 +392,13 @@ static void rsi_set_store(GtkListStore *store, const char *curl_data) {
        The last [most recent] entry needs to be at the top. */
     gtk_list_store_prepend(store, &iter);
     gtk_list_store_set(
-        store, &iter, RSI_FOREGROUND_COLOR, rsi_strs.fg_colr_ch, RSI_COLUMN_ONE,
-        rsi_strs.date_ch, RSI_COLUMN_TWO, rsi_strs.price_ch, RSI_COLUMN_THREE,
-        rsi_strs.high_ch, RSI_COLUMN_FOUR, rsi_strs.low_ch, RSI_COLUMN_FIVE,
-        rsi_strs.opening_ch, RSI_COLUMN_SIX, rsi_strs.prev_closing_ch,
-        RSI_COLUMN_SEVEN, rsi_strs.change_ch, RSI_COLUMN_EIGHT,
-        rsi_strs.gain_ch, RSI_COLUMN_NINE, rsi_strs.volume_ch, RSI_COLUMN_TEN,
-        rsi_strs.rsi_ch, RSI_COLUMN_ELEVEN, rsi_strs.indicator_ch, -1);
+        store, &iter, RSI_COLUMN_ONE, rsi_strs.date_ch, RSI_COLUMN_TWO,
+        rsi_strs.price_ch, RSI_COLUMN_THREE, rsi_strs.high_ch, RSI_COLUMN_FOUR,
+        rsi_strs.low_ch, RSI_COLUMN_FIVE, rsi_strs.opening_ch, RSI_COLUMN_SIX,
+        rsi_strs.prev_closing_ch, RSI_COLUMN_SEVEN, rsi_strs.change_ch,
+        RSI_COLUMN_EIGHT, rsi_strs.gain_ch, RSI_COLUMN_NINE, rsi_strs.volume_ch,
+        RSI_COLUMN_TEN, rsi_strs.rsi_ch, RSI_COLUMN_ELEVEN,
+        rsi_strs.indicator_ch, -1);
   }
 
   fclose(fp);
@@ -406,10 +409,10 @@ GtkListStore *RSIMakeStore(const char *data_str) {
   GtkListStore *store;
 
   /* Set up the storage container with the number of columns and column type */
-  store = gtk_list_store_new(
-      RSI_N_COLUMNS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+  store = gtk_list_store_new(RSI_N_COLUMNS, G_TYPE_STRING, G_TYPE_STRING,
+                             G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+                             G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+                             G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 
   /* Add data to the storage container, pass in the data_str pointer. */
   rsi_set_store(store, data_str);

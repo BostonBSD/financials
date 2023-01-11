@@ -48,29 +48,25 @@ enum {
   GREEN,
   RED,
   BLUE,
+  GREY,
+  CYAN,
+  ORANGE,
+  CHOCOLATE,
   HEADING_ASST_TYPE_FORMAT,
   HEADING_UNLN_FORMAT,
+  STR_TO_MON_STR,
   GREEN_ITALIC,
   RED_ITALIC,
   BLUE_ITALIC,
   BLACK_ITALIC
 };
 
-enum {
-  NOT_ITALIC,
-  ITALIC,
-};
+enum { MON_STR, PER_STR, NUM_STR };
 
 void SetFont(const char *);
-void DoubleToMonStrPango(char **, const double, const unsigned short);
-void DoubleToPerStrPango(char **, const double, const unsigned short);
-void DoubleToNumStrPango(char **, const double, const unsigned short);
-void StringToStrPango(char **, const char *);
-void DoubleToMonStrPangoColor(char **, const double, const unsigned short,
-                              const unsigned int);
-void DoubleToPerStrPangoColor(char **, const double, const unsigned short,
-                              unsigned int);
-void StringToStrPangoColor(char **, const char *, const unsigned int);
+void DoubleToFormattedStrPango(char **, const double, const unsigned short,
+                               const unsigned int, const unsigned int);
+void StringToStrPango(char **, const char *, const unsigned int);
 
 /* sn_map */
 void AddSymbolToMap(const char *, const char *, symbol_name_map *);
@@ -89,13 +85,9 @@ void UpperCaseStr(char *);
 void Chomp(char *);
 void CopyString(char **, const char *);
 void ToNumStr(char *);
-size_t LengthMonetary(const double, const unsigned short);
-size_t LengthPercent(const double, const unsigned short);
-size_t LengthNumber(const double, const unsigned short);
 void StringToMonStr(char **, const char *, const unsigned short);
-void DoubleToMonStr(char **, const double, const unsigned short);
-void DoubleToPerStr(char **, const double, const unsigned short);
-void DoubleToNumStr(char **, const double, const unsigned short);
+void DoubleToFormattedStr(char **, const double, const unsigned short,
+                          const unsigned int);
 double StringToDouble(const char *);
 
 /* time_funcs */

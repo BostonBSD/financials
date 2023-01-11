@@ -227,6 +227,7 @@ static void *main_fetch_data_thd(void *data) {
       pthread_exit(NULL);
     }
 
+    /* Sleep to the end of the current second. */
     usleep(ClockSleepMicroSeconds());
     /* Find out how long cURL processing took. */
     time(&end_curl);
@@ -478,7 +479,6 @@ void *GUIThreadHandler_time_to_close(void *data) {
       pkg->SetHoliday();
       gdk_threads_add_idle(MainDisplayTimeRemaining, pkg);
 
-      /* Allow the thread to be canceled while sleeping. */
       pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
       sleep(pkg->SecondsToOpen());
       pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);

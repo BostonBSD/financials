@@ -58,50 +58,101 @@ static equity_folder
 /* Class Method (also called Function) Definitions */
 static void convert_equity_to_strings(stock *S, unsigned short digits_right) {
   /* Convert the double values into string values. */
-  DoubleToMonStrPango(&S->current_price_stock_mrkd_ch, S->current_price_stock_f,
-                      digits_right);
+  DoubleToFormattedStrPango(&S->current_price_stock_mrkd_ch,
+                            S->current_price_stock_f, digits_right, MON_STR,
+                            BLACK);
 
-  DoubleToMonStrPango(&S->high_stock_mrkd_ch, S->high_stock_f, digits_right);
+  DoubleToFormattedStrPango(&S->high_stock_mrkd_ch, S->high_stock_f,
+                            digits_right, MON_STR, BLACK);
 
-  DoubleToMonStrPango(&S->low_stock_mrkd_ch, S->low_stock_f, digits_right);
+  DoubleToFormattedStrPango(&S->low_stock_mrkd_ch, S->low_stock_f, digits_right,
+                            MON_STR, BLACK);
 
-  DoubleToMonStrPango(&S->opening_stock_mrkd_ch, S->opening_stock_f,
-                      digits_right);
+  DoubleToFormattedStrPango(&S->opening_stock_mrkd_ch, S->opening_stock_f,
+                            digits_right, MON_STR, BLACK);
 
-  DoubleToMonStrPango(&S->prev_closing_stock_mrkd_ch, S->prev_closing_stock_f,
-                      digits_right);
+  DoubleToFormattedStrPango(&S->prev_closing_stock_mrkd_ch,
+                            S->prev_closing_stock_f, digits_right, MON_STR,
+                            BLACK);
 
-  DoubleToMonStrPangoColor(&S->change_value_mrkd_ch, S->change_value_f,
-                           digits_right, NOT_ITALIC);
+  if (S->change_value_f > 0) {
+    DoubleToFormattedStrPango(&S->change_value_mrkd_ch, S->change_value_f,
+                              digits_right, MON_STR, GREEN);
+  } else if (S->change_value_f < 0) {
+    DoubleToFormattedStrPango(&S->change_value_mrkd_ch, S->change_value_f,
+                              digits_right, MON_STR, RED);
+  } else {
+    DoubleToFormattedStrPango(&S->change_value_mrkd_ch, S->change_value_f,
+                              digits_right, MON_STR, BLACK);
+  }
 
-  DoubleToNumStrPango(&S->num_shares_stock_mrkd_ch,
-                      (double)S->num_shares_stock_int, 0);
+  DoubleToFormattedStrPango(&S->num_shares_stock_mrkd_ch,
+                            (double)S->num_shares_stock_int, 0, NUM_STR, BLACK);
   switch (S->num_shares_stock_int) {
   case 0:
 
-    DoubleToMonStrPangoColor(&S->change_share_stock_mrkd_ch, S->change_share_f,
-                             digits_right, ITALIC);
+    if (S->change_share_f > 0) {
+      DoubleToFormattedStrPango(&S->change_share_stock_mrkd_ch,
+                                S->change_share_f, digits_right, MON_STR,
+                                GREEN_ITALIC);
 
-    DoubleToPerStrPangoColor(&S->change_percent_mrkd_ch, S->change_percent_f,
-                             digits_right, ITALIC);
+      DoubleToFormattedStrPango(&S->change_percent_mrkd_ch, S->change_percent_f,
+                                digits_right, PER_STR, GREEN_ITALIC);
 
-    StringToStrPangoColor(&S->symbol_stock_mrkd_ch, S->symbol_stock_ch, BLACK_ITALIC);
+    } else if (S->change_share_f < 0) {
+      DoubleToFormattedStrPango(&S->change_share_stock_mrkd_ch,
+                                S->change_share_f, digits_right, MON_STR,
+                                RED_ITALIC);
+
+      DoubleToFormattedStrPango(&S->change_percent_mrkd_ch, S->change_percent_f,
+                                digits_right, PER_STR, RED_ITALIC);
+
+    } else {
+      DoubleToFormattedStrPango(&S->change_share_stock_mrkd_ch,
+                                S->change_share_f, digits_right, MON_STR,
+                                BLACK_ITALIC);
+
+      DoubleToFormattedStrPango(&S->change_percent_mrkd_ch, S->change_percent_f,
+                                digits_right, PER_STR, BLACK_ITALIC);
+    }
+
+    StringToStrPango(&S->symbol_stock_mrkd_ch, S->symbol_stock_ch,
+                          BLACK_ITALIC);
     break;
   default:
 
-    DoubleToMonStrPangoColor(&S->change_share_stock_mrkd_ch, S->change_share_f,
-                             digits_right, NOT_ITALIC);
+    if (S->change_share_f > 0) {
+      DoubleToFormattedStrPango(&S->change_share_stock_mrkd_ch,
+                                S->change_share_f, digits_right, MON_STR,
+                                GREEN);
 
-    DoubleToPerStrPangoColor(&S->change_percent_mrkd_ch, S->change_percent_f,
-                             digits_right, NOT_ITALIC);
+      DoubleToFormattedStrPango(&S->change_percent_mrkd_ch, S->change_percent_f,
+                                digits_right, PER_STR, GREEN);
 
-    StringToStrPangoColor(&S->symbol_stock_mrkd_ch, S->symbol_stock_ch, BLUE);
+    } else if (S->change_share_f < 0) {
+      DoubleToFormattedStrPango(&S->change_share_stock_mrkd_ch,
+                                S->change_share_f, digits_right, MON_STR, RED);
+
+      DoubleToFormattedStrPango(&S->change_percent_mrkd_ch, S->change_percent_f,
+                                digits_right, PER_STR, RED);
+
+    } else {
+      DoubleToFormattedStrPango(&S->change_share_stock_mrkd_ch,
+                                S->change_share_f, digits_right, MON_STR,
+                                BLACK);
+
+      DoubleToFormattedStrPango(&S->change_percent_mrkd_ch, S->change_percent_f,
+                                digits_right, PER_STR, BLACK);
+    }
+
+    StringToStrPango(&S->symbol_stock_mrkd_ch, S->symbol_stock_ch, BLUE);
     break;
   }
 
   /* The total current investment in this equity. */
-  DoubleToMonStrPango(&S->current_investment_stock_mrkd_ch,
-                      S->current_investment_stock_f, digits_right);
+  DoubleToFormattedStrPango(&S->current_investment_stock_mrkd_ch,
+                            S->current_investment_stock_f, digits_right,
+                            MON_STR, BLACK);
 }
 
 static void ToStrings(unsigned short digits_right) {
@@ -112,17 +163,36 @@ static void ToStrings(unsigned short digits_right) {
   }
 
   /* The total equity portfolio value. */
-  DoubleToMonStrPango(&F->stock_port_value_ch, F->stock_port_value_f,
-                      digits_right);
+  DoubleToFormattedStrPango(&F->stock_port_value_ch, F->stock_port_value_f,
+                            digits_right, MON_STR, BLACK);
 
-  /* The equity portfolio's change in value. */
-  DoubleToMonStrPangoColor(&F->stock_port_value_chg_ch,
-                           F->stock_port_value_chg_f, digits_right, NOT_ITALIC);
+  if (F->stock_port_value_chg_f > 0) {
+    /* The equity portfolio's change in value. */
+    DoubleToFormattedStrPango(&F->stock_port_value_chg_ch,
+                              F->stock_port_value_chg_f, digits_right, MON_STR,
+                              GREEN);
 
-  /* The change in total investment in equity as a percentage. */
-  DoubleToPerStrPangoColor(&F->stock_port_value_p_chg_ch,
-                           F->stock_port_value_p_chg_f, digits_right,
-                           NOT_ITALIC);
+    /* The change in total investment in equity as a percentage. */
+    DoubleToFormattedStrPango(&F->stock_port_value_p_chg_ch,
+                              F->stock_port_value_p_chg_f, digits_right,
+                              PER_STR, GREEN);
+  } else if (F->stock_port_value_chg_f < 0) {
+    DoubleToFormattedStrPango(&F->stock_port_value_chg_ch,
+                              F->stock_port_value_chg_f, digits_right, MON_STR,
+                              RED);
+
+    DoubleToFormattedStrPango(&F->stock_port_value_p_chg_ch,
+                              F->stock_port_value_p_chg_f, digits_right,
+                              PER_STR, RED);
+  } else {
+    DoubleToFormattedStrPango(&F->stock_port_value_chg_ch,
+                              F->stock_port_value_chg_f, digits_right, MON_STR,
+                              BLACK);
+
+    DoubleToFormattedStrPango(&F->stock_port_value_p_chg_ch,
+                              F->stock_port_value_p_chg_f, digits_right,
+                              PER_STR, BLACK);
+  }
 }
 
 static void equity_calculations(stock *S) {
@@ -273,8 +343,8 @@ static void AddStock(const char *symbol, const char *shares)
   /* Add The Shares To the stock object */
   F->Equity[F->size]->num_shares_stock_int =
       (unsigned int)strtol(shares ? shares : "0", NULL, 10);
-  DoubleToNumStrPango(&F->Equity[F->size]->num_shares_stock_mrkd_ch,
-                      (double)F->Equity[F->size]->num_shares_stock_int, 0);
+  DoubleToFormattedStrPango(&F->Equity[F->size]->num_shares_stock_mrkd_ch,
+                      (double)F->Equity[F->size]->num_shares_stock_int, 0, NUM_STR, BLACK);
 
   /* Add The Stock Symbol To the stock object */
   /* This string is used to process the stock. */
@@ -283,11 +353,11 @@ static void AddStock(const char *symbol, const char *shares)
   switch (F->Equity[F->size]->num_shares_stock_int) {
     /* This string is used on TreeViews. */
   case 0:
-    StringToStrPangoColor(&F->Equity[F->size]->symbol_stock_mrkd_ch, symbol,
+    StringToStrPango(&F->Equity[F->size]->symbol_stock_mrkd_ch, symbol,
                           BLACK_ITALIC);
     break;
   default:
-    StringToStrPangoColor(&F->Equity[F->size]->symbol_stock_mrkd_ch, symbol,
+    StringToStrPango(&F->Equity[F->size]->symbol_stock_mrkd_ch, symbol,
                           BLUE);
     break;
   }
@@ -409,10 +479,10 @@ static void SetSecurityNames(void *data) {
     }
 
     if (F->Equity[g]->num_shares_stock_int) {
-      StringToStrPangoColor(&F->Equity[g]->security_name_mrkd_ch,
+      StringToStrPango(&F->Equity[g]->security_name_mrkd_ch,
                             security_name ? security_name : "", BLUE);
     } else {
-      StringToStrPangoColor(&F->Equity[g]->security_name_mrkd_ch,
+      StringToStrPango(&F->Equity[g]->security_name_mrkd_ch,
                             security_name ? security_name : "", BLACK_ITALIC);
     }
 

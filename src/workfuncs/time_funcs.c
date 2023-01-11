@@ -501,15 +501,13 @@ bool MarketOpen()
   int hour = (NY_tz.tm_hour) % 24;
   int min = NY_tz.tm_min;
   int weekday = NY_tz.tm_wday;
-  int hour_open_NY = OPEN_HOUR;
-  int hour_closed_NY = CLOSING_HOUR;
 
   /* If today isn't Sat or Sun */
   /* 6 % 6 == 0, 0 % 6 == 0 */
   if (weekday % 6 != 0) {
     /* If it is currently normal operating hours */
-    if ((hour > hour_open_NY || (hour == hour_open_NY && min >= OPEN_MINUTE)) &&
-        hour < hour_closed_NY) {
+    if ((hour > OPEN_HOUR || (hour == OPEN_HOUR && min >= OPEN_MINUTE)) &&
+        hour < CLOSING_HOUR) {
       /* If today is not a holiday */
       if (!CheckHoliday(NY_tz)) {
         /* The market is open */

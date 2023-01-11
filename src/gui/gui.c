@@ -694,7 +694,7 @@ void GuiStart(void *data)
   /* Add hyperlink markup to the About window labels. */
   about_set_label();
 
-  /* Make sure the main label and treeview header fonts are set */
+  /* Make sure the main labels and treeview header fonts are set */
   MainSetFonts(data);
 
   /* Connect callback functions to corresponding GUI signals. */

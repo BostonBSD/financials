@@ -120,329 +120,7 @@ static char *style_attr(const char *style_type) {
   return attr;
 }
 
-void DoubleToMonStrPango(char **dst, const double num,
-                         const unsigned short digits_right)
-/* Take in a string buffer, a double, and the number of digits
-   to the right of the decimal point, convert to a monetary format
-   Pango Markup string, grouping the digits according to the locale
-   [dec points or commas].
-
-   Reallocs memory to fit the output string.
-
-   Take care that *dst is not an unallocated ptr address.
-   Set *dst = NULL first.*/
-{
-  if (!dst)
-    return;
-  if (dst[0] == NULL)
-    dst[0] = malloc(1);
-
-  char *num_ch = NULL;
-  /* Get the monetary string from the number */
-  DoubleToMonStr(&num_ch, num, digits_right);
-
-  /* Set the attributes */
-  char *font = font_attr(font_name);
-  char *fg = fg_attr("Black");
-  char *wght = wght_attr("Medium");
-  const char *format = "<span %s %s %s>%s</span>";
-
-  /* Create the marked up string from the attributes and the monetary string */
-  create_markup(dst, format, font, fg, wght, num_ch);
-
-  free(num_ch);
-  free(font);
-  free(fg);
-  free(wght);
-}
-
-void DoubleToNumStrPango(char **dst, const double num,
-                         const unsigned short digits_right)
-/* Take in a string buffer, a double, and the number of digits
-   to the right of the decimal point, convert to a number format
-   Pango Markup string, grouping the digits according to the locale
-   [dec points or commas].
-
-   Reallocs memory to fit the output string.
-
-   Take care that *dst is not an unallocated ptr address.
-   Set *dst = NULL first.*/
-{
-  if (!dst)
-    return;
-  if (dst[0] == NULL)
-    dst[0] = malloc(1);
-
-  char *num_ch = NULL;
-  /* Get the number string from the number */
-  DoubleToNumStr(&num_ch, num, digits_right);
-
-  /* Set the attributes */
-  char *font = font_attr(font_name);
-  char *fg = fg_attr("Black");
-  char *wght = wght_attr("Medium");
-  const char *format = "<span %s %s %s>%s</span>";
-
-  /* Create the marked up string from the attributes and the number string */
-  create_markup(dst, format, font, fg, wght, num_ch);
-
-  free(num_ch);
-  free(font);
-  free(fg);
-  free(wght);
-}
-
-static void double_to_mon_str_pango_color_ext(char **dst, const double num,
-                                              const unsigned short digits_right,
-                                              const unsigned int color)
-/* Take in a string buffer, a double, and the number of digits
-   to the right of the decimal point, convert to a monetary format
-   Pango Markup string, grouping the digits according to the locale
-   [dec points or commas].
-
-   Reallocs memory to fit the output string.
-
-   Take care that *dst is not an unallocated ptr address.
-   Set *dst = NULL first. */
-{
-  if (!dst || digits_right > 3)
-    return;
-  if (dst[0] == NULL)
-    dst[0] = malloc(1);
-
-  char *num_ch = NULL;
-  DoubleToMonStr(&num_ch, num, digits_right);
-
-  char *font = font_attr(font_name);
-  char *fg = NULL;
-  char *wght = NULL;
-  char *style = NULL;
-  const char *format_reg = "<span %s %s %s>%s</span>";
-  const char *format_itl = "<span %s %s %s %s>%s</span>";
-  const char *format;
-
-  /* Create the full string concatenating the end tag and the number
-     to the start tag. */
-
-  switch (color) {
-  case NO_COLOR:
-    fg = fg_attr("Black");
-    wght = wght_attr("Medium");
-    format = format_reg;
-    create_markup(dst, format, font, fg, wght, num_ch);
-    break;
-  case BLACK:
-    fg = fg_attr("Black");
-    wght = wght_attr("Medium");
-    format = format_reg;
-    create_markup(dst, format, font, fg, wght, num_ch);
-    break;
-  case RED:
-    fg = fg_attr("DarkRed");
-    wght = wght_attr("Medium");
-    format = format_reg;
-    create_markup(dst, format, font, fg, wght, num_ch);
-    break;
-  case GREEN:
-    fg = fg_attr("DarkGreen");
-    wght = wght_attr("Medium");
-    format = format_reg;
-    create_markup(dst, format, font, fg, wght, num_ch);
-    break;
-  case BLUE:
-    fg = fg_attr("MidnightBlue");
-    wght = wght_attr("Demi-Bold");
-    format = format_reg;
-    create_markup(dst, format, font, fg, wght, num_ch);
-    break;
-  case BLACK_ITALIC:
-    fg = fg_attr("Black");
-    wght = wght_attr("Medium");
-    style = style_attr("italic");
-    format = format_itl;
-    create_markup(dst, format, font, fg, wght, style, num_ch);
-    break;
-  case RED_ITALIC:
-    fg = fg_attr("DarkRed");
-    wght = wght_attr("Medium");
-    style = style_attr("italic");
-    format = format_itl;
-    create_markup(dst, format, font, fg, wght, style, num_ch);
-    break;
-  default: /* GREEN_ITALIC */
-    fg = fg_attr("DarkGreen");
-    wght = wght_attr("Medium");
-    style = style_attr("italic");
-    format = format_itl;
-    create_markup(dst, format, font, fg, wght, style, num_ch);
-    break;
-  }
-
-  free(num_ch);
-  if (font)
-    free(font);
-  if (fg)
-    free(fg);
-  if (wght)
-    free(wght);
-  if (style)
-    free(style);
-}
-
-void DoubleToMonStrPangoColor(char **dst, const double num,
-                              const unsigned short digits_right,
-                              const unsigned int italic) {
-  unsigned int color;
-
-  switch (italic) {
-  case NOT_ITALIC:
-    if (num == 0) {
-      color = BLACK;
-    } else if (num > 0) {
-      color = GREEN;
-    } else {
-      color = RED;
-    }
-    break;
-  default: /* ITALIC */
-    if (num == 0) {
-      color = BLACK_ITALIC;
-    } else if (num > 0) {
-      color = GREEN_ITALIC;
-    } else {
-      color = RED_ITALIC;
-    }
-    break;
-  }
-
-  double_to_mon_str_pango_color_ext(dst, num, digits_right, color);
-}
-
-static void double_to_per_str_pango_color_ext(char **dst, const double num,
-                                              const unsigned short digits_right,
-                                              const unsigned int color)
-/* Take in a string buffer, a double, and the number of digits
-   to the right of the decimal point, convert to a percent format
-   Pango Markup string, grouping the digits according to the locale
-   [dec points or commas].
-
-   Reallocs memory to fit the output string.
-
-   Take care that *dst is not an unallocated ptr address.
-   Set *dst = NULL first.*/
-{
-  if (!dst || digits_right > 3)
-    return;
-  if (dst[0] == NULL)
-    dst[0] = malloc(1);
-
-  char *num_ch = NULL;
-  DoubleToPerStr(&num_ch, num, digits_right);
-
-  char *font = font_attr(font_name);
-  char *fg = NULL;
-  char *wght = NULL;
-  char *style = NULL;
-  const char *format_reg = "<span %s %s %s>%s</span>";
-  const char *format_itl = "<span %s %s %s %s>%s</span>";
-  const char *format;
-
-  switch (color) {
-  case NO_COLOR:
-    fg = fg_attr("Black");
-    wght = wght_attr("Medium");
-    format = format_reg;
-    create_markup(dst, format, font, fg, wght, num_ch);
-    break;
-  case BLACK:
-    fg = fg_attr("Black");
-    wght = wght_attr("Medium");
-    format = format_reg;
-    create_markup(dst, format, font, fg, wght, num_ch);
-    break;
-  case RED:
-    fg = fg_attr("DarkRed");
-    wght = wght_attr("Medium");
-    format = format_reg;
-    create_markup(dst, format, font, fg, wght, num_ch);
-    break;
-  case GREEN:
-    fg = fg_attr("DarkGreen");
-    wght = wght_attr("Medium");
-    format = format_reg;
-    create_markup(dst, format, font, fg, wght, num_ch);
-    break;
-  case BLUE:
-    fg = fg_attr("MidnightBlue");
-    wght = wght_attr("Demi-Bold");
-    format = format_reg;
-    create_markup(dst, format, font, fg, wght, num_ch);
-    break;
-  case BLACK_ITALIC:
-    fg = fg_attr("Black");
-    wght = wght_attr("Medium");
-    style = style_attr("italic");
-    format = format_itl;
-    create_markup(dst, format, font, fg, wght, style, num_ch);
-    break;
-  case RED_ITALIC:
-    fg = fg_attr("DarkRed");
-    wght = wght_attr("Medium");
-    style = style_attr("italic");
-    format = format_itl;
-    create_markup(dst, format, font, fg, wght, style, num_ch);
-    break;
-  default: /* GREEN_ITALIC */
-    fg = fg_attr("DarkGreen");
-    wght = wght_attr("Medium");
-    style = style_attr("italic");
-    format = format_itl;
-    create_markup(dst, format, font, fg, wght, style, num_ch);
-    break;
-  }
-
-  free(num_ch);
-  if (font)
-    free(font);
-  if (fg)
-    free(fg);
-  if (wght)
-    free(wght);
-  if (style)
-    free(style);
-}
-
-void DoubleToPerStrPangoColor(char **dst, const double num,
-                              const unsigned short digits_right,
-                              const unsigned int italic) {
-  unsigned int color;
-
-  switch (italic) {
-  case NOT_ITALIC:
-    if (num == 0) {
-      color = BLACK;
-    } else if (num > 0) {
-      color = GREEN;
-    } else {
-      color = RED;
-    }
-    break;
-  default: /* ITALIC */
-    if (num == 0) {
-      color = BLACK_ITALIC;
-    } else if (num > 0) {
-      color = GREEN_ITALIC;
-    } else {
-      color = RED_ITALIC;
-    }
-    break;
-  }
-
-  double_to_per_str_pango_color_ext(dst, num, digits_right, color);
-}
-
-void StringToStrPangoColor(char **dst, const char *src,
-                           const unsigned int color)
+void StringToStrPango(char **dst, const char *src, const unsigned int color)
 /* Take in a string buffer and a src string, convert to Pango Markup
    string.
 
@@ -462,74 +140,106 @@ void StringToStrPangoColor(char **dst, const char *src,
   char *undln = NULL;
   char *undln_colr = NULL;
   char *style = NULL;
-  const char *format_reg = "<span %s %s %s>%s</span>";
-  const char *format_itl = "<span %s %s %s %s>%s</span>";
-  const char *format_undln = "<span %s %s %s %s %s>%s</span>";
+  char *tmp = NULL;
+  const char *format_three = "<span %s %s>%s</span>";
+  const char *format_four = "<span %s %s %s>%s</span>";
+  const char *format_five = "<span %s %s %s %s>%s</span>";
+  const char *format_six = "<span %s %s %s %s %s>%s</span>";
   const char *format;
 
   switch (color) {
   case NO_COLOR:
-    fg = fg_attr("Black");
     wght = wght_attr("Medium");
-    format = format_reg;
-    create_markup(dst, format, font, fg, wght, src);
+    format = format_three;
+    create_markup(dst, format, font, wght, src);
     break;
   case BLACK:
     fg = fg_attr("Black");
     wght = wght_attr("Medium");
-    format = format_reg;
+    format = format_four;
     create_markup(dst, format, font, fg, wght, src);
     break;
   case RED:
     fg = fg_attr("DarkRed");
     wght = wght_attr("Medium");
-    format = format_reg;
+    format = format_four;
     create_markup(dst, format, font, fg, wght, src);
     break;
   case GREEN:
     fg = fg_attr("DarkGreen");
     wght = wght_attr("Medium");
-    format = format_reg;
+    format = format_four;
     create_markup(dst, format, font, fg, wght, src);
     break;
   case BLUE:
-    fg = fg_attr("RoyalBlue");
-    wght = wght_attr("Bold");
-    format = format_reg;
+    fg = fg_attr("MidnightBlue");
+    wght = wght_attr("Medium");
+    format = format_four;
+    create_markup(dst, format, font, fg, wght, src);
+    break;
+  case GREY:
+    fg = fg_attr("DarkSlateGrey");
+    wght = wght_attr("Medium");
+    format = format_four;
+    create_markup(dst, format, font, fg, wght, src);
+    break;
+  case CYAN:
+    fg = fg_attr("DarkCyan");
+    wght = wght_attr("Medium");
+    format = format_four;
+    create_markup(dst, format, font, fg, wght, src);
+    break;
+  case ORANGE:
+    fg = fg_attr("OrangeRed");
+    wght = wght_attr("Medium");
+    format = format_four;
+    create_markup(dst, format, font, fg, wght, src);
+    break;
+  case CHOCOLATE:
+    fg = fg_attr("Chocolate");
+    wght = wght_attr("Medium");
+    format = format_four;
     create_markup(dst, format, font, fg, wght, src);
     break;
   case BLACK_ITALIC:
     fg = fg_attr("Black");
     wght = wght_attr("Medium");
     style = style_attr("italic");
-    format = format_itl;
+    format = format_five;
     create_markup(dst, format, font, fg, wght, style, src);
     break;
   case RED_ITALIC:
     fg = fg_attr("DarkRed");
     wght = wght_attr("Medium");
     style = style_attr("italic");
-    format = format_itl;
+    format = format_five;
     create_markup(dst, format, font, fg, wght, style, src);
     break;
   case GREEN_ITALIC:
     fg = fg_attr("DarkGreen");
     wght = wght_attr("Medium");
     style = style_attr("italic");
-    format = format_itl;
+    format = format_five;
     create_markup(dst, format, font, fg, wght, style, src);
     break;
   case BLUE_ITALIC:
-    fg = fg_attr("SteelBlue");
+    fg = fg_attr("RoyalBlue");
     wght = wght_attr("Bold");
     style = style_attr("italic");
-    format = format_itl;
+    format = format_five;
     create_markup(dst, format, font, fg, wght, style, src);
+    break;
+  case STR_TO_MON_STR:
+    StringToMonStr(&tmp, src, 2);
+    fg = fg_attr("Black");
+    wght = wght_attr("Medium");
+    format = format_four;
+    create_markup(dst, format, font, fg, wght, tmp);
     break;
   case HEADING_ASST_TYPE_FORMAT:
     fg = fg_attr("DarkSlateGray");
     wght = wght_attr("Demi-Bold");
-    format = format_reg;
+    format = format_four;
     create_markup(dst, format, font, fg, wght, src);
     break;
   default: /* HEADING_UNLN_FORMAT */
@@ -537,7 +247,7 @@ void StringToStrPangoColor(char **dst, const char *src,
     wght = wght_attr("Demi-Bold");
     undln = undln_attr("single");
     undln_colr = undln__colr_attr("SaddleBrown");
-    format = format_undln;
+    format = format_six;
     create_markup(dst, format, font, fg, wght, undln, undln_colr, src);
     break;
   }
@@ -554,4 +264,33 @@ void StringToStrPangoColor(char **dst, const char *src,
     free(undln_colr);
   if (style)
     free(style);
+  if (tmp)
+    free(tmp);
+}
+
+void DoubleToFormattedStrPango(char **dst, const double num,
+                               const unsigned short digits_right,
+                               const unsigned int format_type,
+                               const unsigned int color)
+/* Take in a string buffer, a double, the number of digits
+   to the right of the decimal point, a format type, and a color.
+
+   Convert to a formatted Pango Markup string, grouping the digits according to
+   the locale [dec points or commas].
+
+   Reallocs memory to fit the output string.
+
+   Take care that *dst is not an unallocated ptr address.
+   Set *dst = NULL first.
+
+   The type macros are; MON_STR, PER_STR, NUM_STR.
+   The available colors can be found in the enum definition.
+
+   The macro enums are defined in workfuncs.h.
+*/
+{
+  char *tmp = NULL;
+  DoubleToFormattedStr(&tmp, num, digits_right, format_type);
+  StringToStrPango(dst, tmp, color);
+  free(tmp);
 }

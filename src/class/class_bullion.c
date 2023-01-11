@@ -59,38 +59,62 @@ static metal *
 static void convert_bullion_to_strings(bullion *B,
                                        unsigned short digits_right) {
   /* Basic metal data */
-  DoubleToNumStrPango(&B->ounce_mrkd_ch, B->ounce_f, 4);
+  DoubleToFormattedStrPango(&B->ounce_mrkd_ch, B->ounce_f, 4, NUM_STR, BLACK);
 
-  DoubleToMonStrPango(&B->premium_mrkd_ch, B->premium_f, digits_right);
+  DoubleToFormattedStrPango(&B->premium_mrkd_ch, B->premium_f, digits_right,
+                            MON_STR, BLACK);
 
-  DoubleToMonStrPango(&B->prev_closing_metal_mrkd_ch, B->prev_closing_metal_f,
-                      digits_right);
+  DoubleToFormattedStrPango(&B->prev_closing_metal_mrkd_ch,
+                            B->prev_closing_metal_f, digits_right, MON_STR,
+                            BLACK);
 
-  DoubleToMonStrPango(&B->high_metal_mrkd_ch, B->high_metal_f, digits_right);
+  DoubleToFormattedStrPango(&B->high_metal_mrkd_ch, B->high_metal_f,
+                            digits_right, MON_STR, BLACK);
 
-  DoubleToMonStrPango(&B->low_metal_mrkd_ch, B->low_metal_f, digits_right);
+  DoubleToFormattedStrPango(&B->low_metal_mrkd_ch, B->low_metal_f, digits_right,
+                            MON_STR, BLACK);
 
-  DoubleToMonStrPango(&B->spot_price_mrkd_ch, B->spot_price_f, digits_right);
+  DoubleToFormattedStrPango(&B->spot_price_mrkd_ch, B->spot_price_f,
+                            digits_right, MON_STR, BLACK);
 
-  DoubleToMonStrPango(&B->premium_mrkd_ch, B->premium_f, digits_right);
+  DoubleToFormattedStrPango(&B->premium_mrkd_ch, B->premium_f, digits_right,
+                            MON_STR, BLACK);
 
   /* The total invested in this metal */
-  DoubleToMonStrPango(&B->port_value_mrkd_ch, B->port_value_f, digits_right);
+  DoubleToFormattedStrPango(&B->port_value_mrkd_ch, B->port_value_f,
+                            digits_right, MON_STR, BLACK);
 
   /* The change in spot price per ounce. */
-  DoubleToMonStrPangoColor(&B->change_ounce_mrkd_ch, B->change_ounce_f,
-                           digits_right, NOT_ITALIC);
+  DoubleToFormattedStrPango(&B->change_ounce_mrkd_ch, B->change_ounce_f,
+                            digits_right, MON_STR, BLACK);
 
   /* The change in total investment in this metal. */
-  DoubleToMonStrPangoColor(&B->change_value_mrkd_ch, B->change_value_f,
-                           digits_right, NOT_ITALIC);
+  if (B->change_value_f > 0) {
+    DoubleToFormattedStrPango(&B->change_value_mrkd_ch, B->change_value_f,
+                              digits_right, MON_STR, GREEN);
+  } else if (B->change_value_f < 0) {
+    DoubleToFormattedStrPango(&B->change_value_mrkd_ch, B->change_value_f,
+                              digits_right, MON_STR, RED);
+  } else {
+    DoubleToFormattedStrPango(&B->change_value_mrkd_ch, B->change_value_f,
+                              digits_right, MON_STR, BLACK);
+  }
 
   /* The change in total investment in this metal as a percentage. */
-  DoubleToPerStrPangoColor(&B->change_percent_mrkd_ch, B->change_percent_f,
-                           digits_right, NOT_ITALIC);
+  if (B->change_percent_f > 0) {
+    DoubleToFormattedStrPango(&B->change_percent_mrkd_ch, B->change_percent_f,
+                              digits_right, PER_STR, GREEN);
+  } else if (B->change_percent_f < 0) {
+    DoubleToFormattedStrPango(&B->change_percent_mrkd_ch, B->change_percent_f,
+                              digits_right, PER_STR, RED);
+  } else {
+    DoubleToFormattedStrPango(&B->change_percent_mrkd_ch, B->change_percent_f,
+                              digits_right, PER_STR, BLACK);
+  }
 
   /* The raw change in bullion as a percentage. */
-  DoubleToPerStr(&B->change_percent_raw_ch, B->change_percent_raw_f, 2);
+  DoubleToFormattedStr(&B->change_percent_raw_ch, B->change_percent_raw_f, 2,
+                       PER_STR);
 }
 
 static void ToStrings(unsigned short digits_right) {
@@ -103,21 +127,43 @@ static void ToStrings(unsigned short digits_right) {
     convert_bullion_to_strings(M->Palladium, digits_right);
 
   /* The total investment in bullion. */
-  DoubleToMonStrPango(&M->bullion_port_value_mrkd_ch, M->bullion_port_value_f,
-                      digits_right);
+  DoubleToFormattedStrPango(&M->bullion_port_value_mrkd_ch,
+                            M->bullion_port_value_f, digits_right, PER_STR,
+                            BLACK);
 
   /* The change in total investment in bullion. */
-  DoubleToMonStrPangoColor(&M->bullion_port_value_chg_mrkd_ch,
-                           M->bullion_port_value_chg_f, digits_right,
-                           NOT_ITALIC);
+  if (M->bullion_port_value_chg_f > 0) {
+    DoubleToFormattedStrPango(&M->bullion_port_value_chg_mrkd_ch,
+                              M->bullion_port_value_chg_f, digits_right,
+                              MON_STR, GREEN);
+  } else if (M->bullion_port_value_chg_f < 0) {
+    DoubleToFormattedStrPango(&M->bullion_port_value_chg_mrkd_ch,
+                              M->bullion_port_value_chg_f, digits_right,
+                              MON_STR, RED);
+  } else {
+    DoubleToFormattedStrPango(&M->bullion_port_value_chg_mrkd_ch,
+                              M->bullion_port_value_chg_f, digits_right,
+                              MON_STR, BLACK);
+  }
 
   /* The change in total investment in bullion as a percentage. */
-  DoubleToPerStrPangoColor(&M->bullion_port_value_p_chg_mrkd_ch,
-                           M->bullion_port_value_p_chg_f, digits_right,
-                           NOT_ITALIC);
+  if (M->bullion_port_value_p_chg_f > 0) {
+    DoubleToFormattedStrPango(&M->bullion_port_value_p_chg_mrkd_ch,
+                              M->bullion_port_value_p_chg_f, digits_right,
+                              PER_STR, GREEN);
+  } else if (M->bullion_port_value_p_chg_f < 0) {
+    DoubleToFormattedStrPango(&M->bullion_port_value_p_chg_mrkd_ch,
+                              M->bullion_port_value_p_chg_f, digits_right,
+                              PER_STR, RED);
+  } else {
+    DoubleToFormattedStrPango(&M->bullion_port_value_p_chg_mrkd_ch,
+                              M->bullion_port_value_p_chg_f, digits_right,
+                              PER_STR, BLACK);
+  }
 
   /* The Gold to Silver Ratio */
-  DoubleToNumStr(&M->gold_silver_ratio_ch, M->gold_silver_ratio_f, 2);
+  DoubleToFormattedStr(&M->gold_silver_ratio_ch, M->gold_silver_ratio_f, 2,
+                       NUM_STR);
 }
 
 static double stake(const double ounces, const double prem,

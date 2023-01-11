@@ -580,8 +580,8 @@ static void set_clock_header_fonts(void *data) {
   portfolio_packet *pkg = (portfolio_packet *)data;
 
   PangoAttrList *attrlist = pango_attr_list_new();
-  PangoFontDescription *font_desc = pango_font_description_from_string(
-      pkg->meta_class->main_font_ch);
+  PangoFontDescription *font_desc =
+      pango_font_description_from_string(pkg->meta_class->main_font_ch);
 
   PangoAttribute *attr = pango_attr_font_desc_new(font_desc);
   pango_attr_list_insert(attrlist, attr);
@@ -646,8 +646,8 @@ static void set_indice_header_fonts(void *data) {
   /* Need to free/destroy attrlist. */
   PangoAttrList *attrlist = pango_attr_list_new();
 
-  PangoFontDescription *font_desc = pango_font_description_from_string(
-      pkg->meta_class->main_font_ch);
+  PangoFontDescription *font_desc =
+      pango_font_description_from_string(pkg->meta_class->main_font_ch);
 
   /* attr does not take ownership of font_desc, need to destroy font_desc */
   PangoAttribute *attr = pango_attr_font_desc_new(font_desc);
@@ -674,7 +674,7 @@ static void set_indice_header_fonts(void *data) {
   pango_attr_list_unref(attrlist);
 }
 
-void MainSetFonts(void *data){
+void MainSetFonts(void *data) {
   /* Set the clock label fonts */
   set_clock_header_fonts(data);
 
@@ -682,7 +682,7 @@ void MainSetFonts(void *data){
   set_indice_header_fonts(data);
 
   /* Make sure the treeview heading fonts are set */
-  portfolio_packet *pkg = (portfolio_packet*)data;
+  portfolio_packet *pkg = (portfolio_packet *)data;
   pkg->meta_class->ToStringsHeadings();
 }
 
@@ -759,8 +759,8 @@ static void set_indices_labels(void *data) {
   };
 
   label = GetWidget("GoldValue");
-  DoubleToMonStr(&spot, M->Gold->spot_price_f, 2);
-  DoubleToMonStr(&chg_ounce, M->Gold->change_ounce_f, 2);
+  DoubleToFormattedStr(&spot, M->Gold->spot_price_f, 2, MON_STR);
+  DoubleToFormattedStr(&chg_ounce, M->Gold->change_ounce_f, 2, MON_STR);
   markup = g_markup_printf_escaped(format, spot, chg_ounce,
                                    M->Gold->change_percent_raw_ch);
   gtk_label_set_markup(GTK_LABEL(label), markup);
@@ -773,8 +773,8 @@ static void set_indices_labels(void *data) {
   };
 
   label = GetWidget("SilverValue");
-  DoubleToMonStr(&spot, M->Silver->spot_price_f, 2);
-  DoubleToMonStr(&chg_ounce, M->Silver->change_ounce_f, 2);
+  DoubleToFormattedStr(&spot, M->Silver->spot_price_f, 2, MON_STR);
+  DoubleToFormattedStr(&chg_ounce, M->Silver->change_ounce_f, 2, MON_STR);
   markup = g_markup_printf_escaped(format, spot, chg_ounce,
                                    M->Silver->change_percent_raw_ch);
   gtk_label_set_markup(GTK_LABEL(label), markup);
@@ -794,8 +794,8 @@ static void set_indices_labels(void *data) {
   /* Need to free/destroy attrlist. */
   PangoAttrList *attrlist = pango_attr_list_new();
 
-  PangoFontDescription *font_desc = pango_font_description_from_string(
-      pkg->meta_class->main_font_ch);
+  PangoFontDescription *font_desc =
+      pango_font_description_from_string(pkg->meta_class->main_font_ch);
 
   /* attr does not take ownership of font_desc, need to destroy font_desc */
   PangoAttribute *attr = pango_attr_font_desc_new(font_desc);
@@ -912,8 +912,8 @@ int MainDisplayTime(void *data) {
   g_free(markup);
 
   PangoAttrList *attrlist = pango_attr_list_new();
-  PangoFontDescription *font_desc = pango_font_description_from_string(
-      pkg->meta_class->main_font_ch);
+  PangoFontDescription *font_desc =
+      pango_font_description_from_string(pkg->meta_class->main_font_ch);
   PangoAttribute *attr = pango_attr_font_desc_new(font_desc);
   pango_attr_list_insert(attrlist, attr);
   gtk_label_set_attributes((GtkLabel *)NewYorkTimeLabel, attrlist);
@@ -955,8 +955,8 @@ int MainDisplayTimeRemaining(void *data) {
     g_free(markup);
 
     PangoAttrList *attrlist = pango_attr_list_new();
-    PangoFontDescription *font_desc = pango_font_description_from_string(
-        package->meta_class->main_font_ch);
+    PangoFontDescription *font_desc =
+        pango_font_description_from_string(package->meta_class->main_font_ch);
     PangoAttribute *attr = pango_attr_font_desc_new(font_desc);
     pango_attr_list_insert(attrlist, attr);
     gtk_label_set_attributes((GtkLabel *)TimeRemLabel, attrlist);
