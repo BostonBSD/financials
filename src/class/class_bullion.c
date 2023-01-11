@@ -84,30 +84,34 @@ static void convert_bullion_to_strings(bullion *B,
   DoubleToFormattedStrPango(&B->port_value_mrkd_ch, B->port_value_f,
                             digits_right, MON_STR, BLACK);
 
-  /* The change in spot price per ounce. */
-  DoubleToFormattedStrPango(&B->change_ounce_mrkd_ch, B->change_ounce_f,
-                            digits_right, MON_STR, BLACK);
+  if (B->change_ounce_f > 0) {
+    /* The change in spot price per ounce. */
+    DoubleToFormattedStrPango(&B->change_ounce_mrkd_ch, B->change_ounce_f,
+                              digits_right, MON_STR, GREEN);
 
-  /* The change in total investment in this metal. */
-  if (B->change_value_f > 0) {
+    /* The change in total investment in this metal. */
     DoubleToFormattedStrPango(&B->change_value_mrkd_ch, B->change_value_f,
                               digits_right, MON_STR, GREEN);
-  } else if (B->change_value_f < 0) {
-    DoubleToFormattedStrPango(&B->change_value_mrkd_ch, B->change_value_f,
-                              digits_right, MON_STR, RED);
-  } else {
-    DoubleToFormattedStrPango(&B->change_value_mrkd_ch, B->change_value_f,
-                              digits_right, MON_STR, BLACK);
-  }
 
-  /* The change in total investment in this metal as a percentage. */
-  if (B->change_percent_f > 0) {
+    /* The change in total investment in this metal as a percentage. */
     DoubleToFormattedStrPango(&B->change_percent_mrkd_ch, B->change_percent_f,
                               digits_right, PER_STR, GREEN);
-  } else if (B->change_percent_f < 0) {
+  } else if (B->change_value_f < 0) {
+    DoubleToFormattedStrPango(&B->change_ounce_mrkd_ch, B->change_ounce_f,
+                              digits_right, MON_STR, RED);
+
+    DoubleToFormattedStrPango(&B->change_value_mrkd_ch, B->change_value_f,
+                              digits_right, MON_STR, RED);
+
     DoubleToFormattedStrPango(&B->change_percent_mrkd_ch, B->change_percent_f,
                               digits_right, PER_STR, RED);
   } else {
+    DoubleToFormattedStrPango(&B->change_ounce_mrkd_ch, B->change_ounce_f,
+                              digits_right, MON_STR, BLACK);
+
+    DoubleToFormattedStrPango(&B->change_value_mrkd_ch, B->change_value_f,
+                              digits_right, MON_STR, BLACK);
+
     DoubleToFormattedStrPango(&B->change_percent_mrkd_ch, B->change_percent_f,
                               digits_right, PER_STR, BLACK);
   }

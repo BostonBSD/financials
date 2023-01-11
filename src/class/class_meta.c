@@ -66,15 +66,38 @@ static void ToStringsPortfolio() {
                             Met->portfolio_port_value_f,
                             Met->decimal_places_shrt, MON_STR, BLACK);
 
-  /* The change in total portfolio value. */
-  DoubleToFormattedStrPango(&Met->portfolio_port_value_chg_mrkd_ch,
-                            Met->portfolio_port_value_chg_f,
-                            Met->decimal_places_shrt, MON_STR, BLACK);
+  if (Met->portfolio_port_value_chg_f > 0) {
 
-  /* The change in total portfolio value as a percentage. */
-  DoubleToFormattedStrPango(&Met->portfolio_port_value_p_chg_mrkd_ch,
-                            Met->portfolio_port_value_p_chg_f,
-                            Met->decimal_places_shrt, PER_STR, BLACK);
+    /* The change in total portfolio value. */
+    DoubleToFormattedStrPango(&Met->portfolio_port_value_chg_mrkd_ch,
+                              Met->portfolio_port_value_chg_f,
+                              Met->decimal_places_shrt, MON_STR, GREEN);
+
+    /* The change in total portfolio value as a percentage. */
+    DoubleToFormattedStrPango(&Met->portfolio_port_value_p_chg_mrkd_ch,
+                              Met->portfolio_port_value_p_chg_f,
+                              Met->decimal_places_shrt, PER_STR, GREEN);
+
+  } else if (Met->portfolio_port_value_chg_f < 0) {
+
+    DoubleToFormattedStrPango(&Met->portfolio_port_value_chg_mrkd_ch,
+                              Met->portfolio_port_value_chg_f,
+                              Met->decimal_places_shrt, MON_STR, RED);
+
+    DoubleToFormattedStrPango(&Met->portfolio_port_value_p_chg_mrkd_ch,
+                              Met->portfolio_port_value_p_chg_f,
+                              Met->decimal_places_shrt, PER_STR, RED);
+
+  } else {
+
+    DoubleToFormattedStrPango(&Met->portfolio_port_value_chg_mrkd_ch,
+                              Met->portfolio_port_value_chg_f,
+                              Met->decimal_places_shrt, MON_STR, BLACK);
+
+    DoubleToFormattedStrPango(&Met->portfolio_port_value_p_chg_mrkd_ch,
+                              Met->portfolio_port_value_p_chg_f,
+                              Met->decimal_places_shrt, PER_STR, BLACK);
+  }
 }
 
 static void CalculatePortfolio(void *data) {
