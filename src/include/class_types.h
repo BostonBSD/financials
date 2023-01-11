@@ -71,12 +71,11 @@ typedef struct {
   char *bullion;
   char *metal;
   char *ounces;
-  char *spot_price;
   char *premium;
   char *high;
   char *low;
   char *prev_closing;
-  char *chg_ounce;
+  char *chg;
   char *gain_sym;
   char *total;
   char *gain_per;
@@ -89,7 +88,6 @@ typedef struct {
   char *shares;
   char *price;
   char *opening;
-  char *chg_share;
   char *asset;
   char *value;
   char *cash;

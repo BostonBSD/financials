@@ -117,7 +117,7 @@ static void convert_equity_to_strings(stock *S, unsigned short digits_right) {
     }
 
     StringToStrPango(&S->symbol_stock_mrkd_ch, S->symbol_stock_ch,
-                          BLACK_ITALIC);
+                     BLACK_ITALIC);
     break;
   default:
 
@@ -344,7 +344,8 @@ static void AddStock(const char *symbol, const char *shares)
   F->Equity[F->size]->num_shares_stock_int =
       (unsigned int)strtol(shares ? shares : "0", NULL, 10);
   DoubleToFormattedStrPango(&F->Equity[F->size]->num_shares_stock_mrkd_ch,
-                      (double)F->Equity[F->size]->num_shares_stock_int, 0, NUM_STR, BLACK);
+                            (double)F->Equity[F->size]->num_shares_stock_int, 0,
+                            NUM_STR, BLACK);
 
   /* Add The Stock Symbol To the stock object */
   /* This string is used to process the stock. */
@@ -354,11 +355,10 @@ static void AddStock(const char *symbol, const char *shares)
     /* This string is used on TreeViews. */
   case 0:
     StringToStrPango(&F->Equity[F->size]->symbol_stock_mrkd_ch, symbol,
-                          BLACK_ITALIC);
+                     BLACK_ITALIC);
     break;
   default:
-    StringToStrPango(&F->Equity[F->size]->symbol_stock_mrkd_ch, symbol,
-                          BLUE);
+    StringToStrPango(&F->Equity[F->size]->symbol_stock_mrkd_ch, symbol, BLUE);
     break;
   }
   F->size++;
@@ -480,10 +480,10 @@ static void SetSecurityNames(void *data) {
 
     if (F->Equity[g]->num_shares_stock_int) {
       StringToStrPango(&F->Equity[g]->security_name_mrkd_ch,
-                            security_name ? security_name : "", BLUE);
+                       security_name ? security_name : "", BLUE);
     } else {
       StringToStrPango(&F->Equity[g]->security_name_mrkd_ch,
-                            security_name ? security_name : "", BLACK_ITALIC);
+                       security_name ? security_name : "", BLACK_ITALIC);
     }
 
     if (security_name) {

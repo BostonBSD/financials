@@ -295,16 +295,16 @@ static bool rsi_calculate(char *line, rsi_strings *strings, int state) {
   }
 
   StringToStrPango(&strings->date_ch,
-                        csv_array[0] ? csv_array[0] : "0000-00-00", CHOCOLATE);
+                   csv_array[0] ? csv_array[0] : "0000-00-00", CHOCOLATE);
   DoubleToFormattedStrPango(&strings->prev_closing_ch, prev_price_f, 2, MON_STR,
                             BLACK);
   DoubleToFormattedStrPango(&strings->price_ch, cur_price_f, 2, MON_STR, BLACK);
   StringToStrPango(&strings->high_ch, csv_array[2] ? csv_array[2] : "0",
-                        STR_TO_MON_STR);
+                   STR_TO_MON_STR);
   StringToStrPango(&strings->low_ch, csv_array[3] ? csv_array[3] : "0",
-                        STR_TO_MON_STR);
+                   STR_TO_MON_STR);
   StringToStrPango(&strings->opening_ch, csv_array[1] ? csv_array[1] : "0",
-                        STR_TO_MON_STR);
+                   STR_TO_MON_STR);
   change_f = cur_price_f - prev_price_f;
   if (change_f > 0) {
     DoubleToFormattedStrPango(&strings->change_ch, change_f, 2, MON_STR, GREEN);

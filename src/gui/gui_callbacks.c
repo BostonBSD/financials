@@ -221,8 +221,7 @@ void GUICallbackHandler_pref_font_button(GtkFontButton *widget, void *data) {
   pthread_t thread_id;
 
   free(D->main_font_ch);
-  D->main_font_ch =
-      gtk_font_chooser_get_font(GTK_FONT_CHOOSER(widget));
+  D->main_font_ch = gtk_font_chooser_get_font(GTK_FONT_CHOOSER(widget));
   /* Set the pango_formatting.c font variable. */
   SetFont(D->main_font_ch);
 

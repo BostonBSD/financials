@@ -212,12 +212,11 @@ static GtkListStore *main_primary_store(void *data) {
     gtk_list_store_set(
         store, &iter, GUI_TYPE, "bullion_total", GUI_SYMBOL, "", GUI_COLUMN_ONE,
         pri_h_mkd->metal, GUI_COLUMN_TWO, pri_h_mkd->ounces, GUI_COLUMN_THREE,
-        pri_h_mkd->spot_price, GUI_COLUMN_FOUR, pri_h_mkd->premium,
-        GUI_COLUMN_FIVE, pri_h_mkd->high, GUI_COLUMN_SIX, pri_h_mkd->low,
-        GUI_COLUMN_SEVEN, pri_h_mkd->prev_closing, GUI_COLUMN_EIGHT,
-        pri_h_mkd->chg_ounce, GUI_COLUMN_NINE, pri_h_mkd->gain_sym,
-        GUI_COLUMN_TEN, pri_h_mkd->total, GUI_COLUMN_ELEVEN,
-        pri_h_mkd->gain_per, -1);
+        pri_h_mkd->price, GUI_COLUMN_FOUR, pri_h_mkd->premium, GUI_COLUMN_FIVE,
+        pri_h_mkd->high, GUI_COLUMN_SIX, pri_h_mkd->low, GUI_COLUMN_SEVEN,
+        pri_h_mkd->prev_closing, GUI_COLUMN_EIGHT, pri_h_mkd->chg,
+        GUI_COLUMN_NINE, pri_h_mkd->gain_sym, GUI_COLUMN_TEN, pri_h_mkd->total,
+        GUI_COLUMN_ELEVEN, pri_h_mkd->gain_per, -1);
 
     if (M->Gold->ounce_f) {
       gtk_list_store_append(store, &iter);
@@ -304,7 +303,7 @@ static GtkListStore *main_primary_store(void *data) {
         pri_h_mkd->symbol, GUI_COLUMN_TWO, pri_h_mkd->shares, GUI_COLUMN_THREE,
         pri_h_mkd->price, GUI_COLUMN_FOUR, pri_h_mkd->high, GUI_COLUMN_FIVE,
         pri_h_mkd->low, GUI_COLUMN_SIX, pri_h_mkd->opening, GUI_COLUMN_SEVEN,
-        pri_h_mkd->prev_closing, GUI_COLUMN_EIGHT, pri_h_mkd->chg_share,
+        pri_h_mkd->prev_closing, GUI_COLUMN_EIGHT, pri_h_mkd->chg,
         GUI_COLUMN_NINE, pri_h_mkd->gain_sym, GUI_COLUMN_TEN, pri_h_mkd->total,
         GUI_COLUMN_ELEVEN, pri_h_mkd->gain_per, -1);
 

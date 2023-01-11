@@ -189,7 +189,7 @@ static void *main_fetch_data_thd(void *data) {
   looping_time(&end_time, &current_time, &seconds_per_iteration, pkg);
 
   while (end_time > current_time) {
-    time(&start_curl);    
+    time(&start_curl);
 
     /* This mutex prevents the program from crashing if an
        MAIN_EXIT, EQUITY_OK_BTN, or API_OK_BTN thread is run
