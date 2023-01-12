@@ -47,9 +47,7 @@ void GuiStart(void *);
 int CompletionSet(void *, uintptr_t);
 
 /* gui_main */
-void MainSetFonts(void *);
-void MainSetClockHeaderFonts(void *);
-void MainSetIndiceHeaderFonts(void *);
+int MainSetFonts(void *);
 int MainPrimaryTreeview(void *);
 int MainDefaultTreeview(void *);
 int MainFetchBTNLabel(void *);

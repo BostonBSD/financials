@@ -132,7 +132,7 @@ static void ToStrings(unsigned short digits_right) {
 
   /* The total investment in bullion. */
   DoubleToFormattedStrPango(&M->bullion_port_value_mrkd_ch,
-                            M->bullion_port_value_f, digits_right, PER_STR,
+                            M->bullion_port_value_f, digits_right, MON_STR,
                             BLACK);
 
   /* The change in total investment in bullion. */

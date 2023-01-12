@@ -205,6 +205,10 @@ static void *add_api_data_font_thd(void *data) {
   packet->ToStrings();
   packet->equity_folder_class->SetSecurityNames(packet);
 
+  /* Make sure font is set on the main window
+     labels and the treeview headers. */
+  gdk_threads_add_idle(MainSetFonts, packet);
+
   if (packet->IsDefaultView()) {
     gdk_threads_add_idle(MainDefaultTreeview, packet);
   } else {
@@ -229,10 +233,6 @@ void GUICallbackHandler_pref_font_button(GtkFontButton *widget, void *data) {
   api_data *api_d = api_data_init("Main_TrVw_Font", D->main_font_ch);
   pthread_create(&thread_id, NULL, add_api_data_font_thd, api_d);
   pthread_detach(thread_id);
-
-  /* Make sure font is set on the main window
-     labels and the treeview headers. */
-  MainSetFonts(packet);
 }
 
 gboolean GUICallbackHandler_pref_clock_switch(GtkSwitch *Switch, bool state) {

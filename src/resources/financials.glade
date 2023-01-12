@@ -2382,7 +2382,8 @@ POSSIBILITY OF SUCH DAMAGE.</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
-            <property name="font">Sans 12</property>
+            <property name="tooltip-text" translatable="yes">Change the font setting</property>
+            <property name="font"/>
             <property name="language">en-us</property>
             <property name="preview-text"/>
           </object>
@@ -2848,8 +2849,8 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                 </attributes>
               </object>
             </child>
-            <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
             <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+            <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
           </object>
           <packing>
             <property name="expand">False</property>

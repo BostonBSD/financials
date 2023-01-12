@@ -673,7 +673,7 @@ static void set_indice_header_fonts(void *data) {
   pango_attr_list_unref(attrlist);
 }
 
-void MainSetFonts(void *data) {
+int MainSetFonts(void *data) {
   /* Set the clock label fonts */
   set_clock_header_fonts(data);
 
@@ -683,6 +683,8 @@ void MainSetFonts(void *data) {
   /* Make sure the treeview heading fonts are set */
   portfolio_packet *pkg = (portfolio_packet *)data;
   pkg->meta_class->ToStringsHeadings();
+
+  return 0;
 }
 
 static void set_indices_labels(void *data) {

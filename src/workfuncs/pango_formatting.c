@@ -40,7 +40,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/macros.h"
 #include "../include/workfuncs.h"
 
-/* Font and size file global. */
+/* Font name file global. */
 static const char *font_name;
 
 void SetFont(const char *fnt) { font_name = fnt; }
@@ -63,6 +63,12 @@ static void create_markup(char **str, const char *fmt, ...)
   if (str[0] == NULL)
     str[0] = malloc(1);
   char *tmp = realloc(str[0], len + 1);
+
+  if (tmp == NULL) {
+    printf("Not Enough Memory, realloc returned NULL.\n");
+    exit(EXIT_FAILURE);
+  }
+
   str[0] = tmp;
 
   /* Reset the arg pointer. */
@@ -121,8 +127,8 @@ static char *style_attr(const char *style_type) {
 }
 
 void StringToStrPango(char **dst, const char *src, const unsigned int color)
-/* Take in a string buffer and a src string, convert to Pango Markup
-   string.
+/* Take in a string buffer, a src string, and a color macro, convert to Pango
+   Markup string.
 
    Reallocs memory to fit the output string.
 
@@ -223,13 +229,15 @@ void StringToStrPango(char **dst, const char *src, const unsigned int color)
     create_markup(dst, format, font, fg, wght, style, src);
     break;
   case BLUE_ITALIC:
-    fg = fg_attr("RoyalBlue");
-    wght = wght_attr("Bold");
+    fg = fg_attr("MidnightBlue");
+    wght = wght_attr("Medium");
     style = style_attr("italic");
     format = format_five;
     create_markup(dst, format, font, fg, wght, style, src);
     break;
   case STR_TO_MON_STR:
+    /* This is a special conversion, make sure the string can be converted to a
+     * double */
     StringToMonStr(&tmp, src, 2);
     fg = fg_attr("Black");
     wght = wght_attr("Medium");
