@@ -51,7 +51,9 @@ Will compile and run on Fedora 37, however, there is a glib issue and it won't o
 
 I started this project to learn C [coming from a C++ background] and Gtk.  
 
-I can relicense my code under the GPL if anyone would like to fork this project [you could license it yourself under a GPL project, the BSD license allows for this; so long as the BSD license is complied with].  As we all know, being less offensive is stronger than making subversive attempts at derailment, which is why I try to accomodate both licenses.
+I can relicense my code under the GPL if anyone would like to fork this project [you could license it yourself under a GPL project, the BSD license allows for this; so long as the BSD license is complied with].  
+
+As we all know, being less offensive is stronger than making subversive attempts at derailment, which is why I try to accomodate both licenses.
 
 ----------------------------------------------------------
 
