@@ -41,6 +41,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/gui_types.h"
 #include "../include/multicurl.h"
 #include "../include/sqlite.h"
+#include "../include/workfuncs.h"
 
 char *GetSecurityName(char *s, const symbol_name_map *sn_map)
 /* Look for a Security Name using the Symbol as a key value.
@@ -145,6 +146,36 @@ static bool check_symbol(const char *s)
   }
 
   return true;
+}
+
+static void substitute_warrant_and_unit_symbols(char **symbol) {
+  char *tmp = NULL;
+  unsigned short len;
+
+  if (symbol[0] == NULL)
+    return;
+  /* Warrants */
+  if (strstr(symbol[0], ".W")) {
+    len = strlen(symbol[0]) + 2;
+    tmp = realloc(symbol[0], len);
+    symbol[0] = tmp;
+    tmp = strchr(symbol[0], (int)'.');
+    *tmp = 0;
+    tmp = strdup(symbol[0]);
+    snprintf(symbol[0], len, "%s%s", tmp, "-WT");
+    free(tmp);
+  }
+  /* Units */
+  if (strstr(symbol[0], ".U")) {
+    len = strlen(symbol[0]) + 2;
+    tmp = realloc(symbol[0], len);
+    symbol[0] = tmp;
+    tmp = strchr(symbol[0], (int)'.');
+    *tmp = 0;
+    tmp = strdup(symbol[0]);
+    snprintf(symbol[0], len, "%s%s", tmp, "-UN");
+    free(tmp);
+  }
 }
 
 void AddSymbolToMap(const char *symbol, const char *name,
@@ -299,7 +330,7 @@ static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
   meta *D = pkg->GetMetaClass();
 
   char *line = malloc(1024), *line_start;
-  char *symbol_token, *name_token;
+  char *symbol_token, *name_token, *tmp_symbol;
   line_start = line;
 
   symbol_name_map *sn_map = (symbol_name_map *)malloc(sizeof(*sn_map));
@@ -351,12 +382,19 @@ static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
         continue;
       }
 
+      /* Warrant and Unit symbols are different on Yahoo!
+         Make appropriate changes, if needed. */
+      tmp_symbol = strdup(symbol_token ? symbol_token : "");
+      substitute_warrant_and_unit_symbols(&tmp_symbol);
+
       /* Extract the security name from the line. */
       name_token = strsep(&line, "|");
 
       /* Add the symbol and the name to the symbol-name map. */
       if (symbol_token && name_token)
-        AddSymbolToMap(symbol_token, name_token, sn_map);
+        AddSymbolToMap(tmp_symbol, name_token, sn_map);
+
+      free(tmp_symbol);
 
       /* strsep moves the line pointer, we need to reset it so the pointer
        * memory can be reused */

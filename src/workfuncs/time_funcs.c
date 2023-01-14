@@ -121,14 +121,14 @@ char *WhichHoliday(struct tm NY_tz) {
     if (NY_tz.tm_wday == MON && NY_tz.tm_mday > 1 && NY_tz.tm_mday <= 3)
       return "Market Closed - New Years Holiday";
 
-    /* Presidents Day */
-    if (NY_tz.tm_wday == MON && NY_tz.tm_mday >= 15 && NY_tz.tm_mday <= 21)
-      return "Market Closed - Presidents Day";
-    break;
-  case FEB:
     /* Martin Luther King Junior Day */
     if (NY_tz.tm_wday == MON && NY_tz.tm_mday >= 15 && NY_tz.tm_mday <= 21)
       return "Market Closed - Martin Luther King Jr. Day";
+    break;
+  case FEB:
+    /* Presidents Day */
+    if (NY_tz.tm_wday == MON && NY_tz.tm_mday >= 15 && NY_tz.tm_mday <= 21)
+      return "Market Closed - Presidents Day";
     break;
   case MAY:
     /* Memorial Day */
@@ -201,12 +201,12 @@ bool CheckHoliday(struct tm NY_tz) {
     if (NY_tz.tm_wday == MON && NY_tz.tm_mday > 1 && NY_tz.tm_mday <= 3)
       return true;
 
-    /* Presidents Day */
+    /* Martin Luther King Junior Day */
     if (NY_tz.tm_wday == MON && NY_tz.tm_mday >= 15 && NY_tz.tm_mday <= 21)
       return true;
     break;
   case FEB:
-    /* Martin Luther King Junior Day */
+    /* Presidents Day */
     if (NY_tz.tm_wday == MON && NY_tz.tm_mday >= 15 && NY_tz.tm_mday <= 21)
       return true;
     break;

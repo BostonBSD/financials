@@ -188,6 +188,14 @@ int RSISetSNLabel(void *data) {
 
   GtkWidget *Label = GetWidget("ViewRSIStockSymbolLabel");
 
+  short len = strlen(sec_name ? sec_name : "");
+  if (len >= 96) {
+    sec_name[95] = 0;
+    char *ch = strchr(sec_name, (int)',');
+    if (ch != NULL)
+      *ch = 0;
+  }
+
   gtk_label_set_text(GTK_LABEL(Label), sec_name ? sec_name : "");
   if (sec_name)
     g_free(sec_name);
