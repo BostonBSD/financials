@@ -66,23 +66,6 @@ double CalcRsi(double avg_gain, double avg_loss) {
   return (100 - (100 / (1 + rs)));
 }
 
-const char *RsiIndicator(double rsi)
-/* Return an indicator string. Do not free return value (faster using stack
-   memory). */
-{
-  if (rsi >= 70) {
-    return "Overbought";
-  } else if (rsi >= 60 && rsi < 70) {
-    return "Overbought Warning";
-  } else if (rsi > 40 && rsi < 60) {
-    return "Neutral";
-  } else if (rsi > 30 && rsi <= 40) {
-    return "Oversold Warning";
-  } else {
-    return "Oversold";
-  }
-}
-
 static void rsi_url_period(time_t *currenttime, time_t *starttime) {
 
   /* Number of Seconds in a Year Plus Three Weeks */

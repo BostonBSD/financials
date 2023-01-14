@@ -147,13 +147,13 @@ static void rsi_set_columns() {
 
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(
-      "Prv Close", renderer, "markup", RSI_COLUMN_SIX, NULL);
+      "Pr. Close", renderer, "markup", RSI_COLUMN_SIX, NULL);
   gtk_tree_view_column_set_resizable(column, true);
   gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
   renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(
-      "Chg ($)", renderer, "markup", RSI_COLUMN_SEVEN, NULL);
+  column = gtk_tree_view_column_new_with_attributes("Chg", renderer, "markup",
+                                                    RSI_COLUMN_SEVEN, NULL);
   gtk_tree_view_column_set_resizable(column, true);
   gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
@@ -164,8 +164,8 @@ static void rsi_set_columns() {
   gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
   renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(
-      "Volume", renderer, "markup", RSI_COLUMN_NINE, NULL);
+  column = gtk_tree_view_column_new_with_attributes("Vol.", renderer, "markup",
+                                                    RSI_COLUMN_NINE, NULL);
   gtk_tree_view_column_set_resizable(column, true);
   gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
@@ -323,15 +323,15 @@ static bool rsi_calculate(char *line, rsi_strings *strings, int state) {
                             NUM_STR, BLACK);
 
   if (rsi_f >= 70.0f) {
-    StringToStrPango(&strings->indicator_ch, RsiIndicator(rsi_f), RED);
+    StringToStrPango(&strings->indicator_ch, "Overbought", RED);
   } else if (rsi_f >= 60.0f) {
-    StringToStrPango(&strings->indicator_ch, RsiIndicator(rsi_f), ORANGE);
+    StringToStrPango(&strings->indicator_ch, "Overbought Warning", ORANGE);
   } else if (rsi_f < 60.0f && rsi_f > 40.0f) {
-    StringToStrPango(&strings->indicator_ch, RsiIndicator(rsi_f), GREY);
+    StringToStrPango(&strings->indicator_ch, "Neutral", GREY);
   } else if (rsi_f > 30.0f) {
-    StringToStrPango(&strings->indicator_ch, RsiIndicator(rsi_f), CYAN);
+    StringToStrPango(&strings->indicator_ch, "Oversold Warning", CYAN);
   } else {
-    StringToStrPango(&strings->indicator_ch, RsiIndicator(rsi_f), GREEN);
+    StringToStrPango(&strings->indicator_ch, "Oversold", GREEN);
   }
 
   free_csv_line(csv_array);

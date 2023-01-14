@@ -92,8 +92,6 @@ double StringToDouble(const char *);
 
 /* time_funcs */
 void NYTime(int *, int *);
-char *MonthNameStr(int);
-char *WeekDayStr(int);
 bool TimeToClose(int *, int *, int *);
 unsigned int SecondsToOpen();
 struct tm NYTimeComponents();
@@ -109,6 +107,5 @@ double CalcGain(double, double);
 void Summation(double, double *, double *);
 void CalcAvg(double, double *, double *);
 double CalcRsi(double, double);
-const char *RsiIndicator(double);
 
 #endif /* WORKFUNCS_HEADER_H */
