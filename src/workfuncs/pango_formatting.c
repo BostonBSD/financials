@@ -151,89 +151,75 @@ void StringToStrPango(char **dst, const char *src, const unsigned int color)
   const char *format_four = "<span %s %s %s>%s</span>";
   const char *format_five = "<span %s %s %s %s>%s</span>";
   const char *format_six = "<span %s %s %s %s %s>%s</span>";
-  const char *format;
 
   switch (color) {
   case NO_COLOR:
     wght = wght_attr("Medium");
-    format = format_three;
-    create_markup(dst, format, font, wght, src);
+    create_markup(dst, format_three, font, wght, src);
     break;
   case BLACK:
     fg = fg_attr("Black");
     wght = wght_attr("Medium");
-    format = format_four;
-    create_markup(dst, format, font, fg, wght, src);
+    create_markup(dst, format_four, font, fg, wght, src);
     break;
   case RED:
     fg = fg_attr("DarkRed");
     wght = wght_attr("Medium");
-    format = format_four;
-    create_markup(dst, format, font, fg, wght, src);
+    create_markup(dst, format_four, font, fg, wght, src);
     break;
   case GREEN:
     fg = fg_attr("DarkGreen");
     wght = wght_attr("Medium");
-    format = format_four;
-    create_markup(dst, format, font, fg, wght, src);
+    create_markup(dst, format_four, font, fg, wght, src);
     break;
   case BLUE:
     fg = fg_attr("MidnightBlue");
     wght = wght_attr("Medium");
-    format = format_four;
-    create_markup(dst, format, font, fg, wght, src);
+    create_markup(dst, format_four, font, fg, wght, src);
     break;
   case GREY:
     fg = fg_attr("DarkSlateGrey");
     wght = wght_attr("Medium");
-    format = format_four;
-    create_markup(dst, format, font, fg, wght, src);
+    create_markup(dst, format_four, font, fg, wght, src);
     break;
   case CYAN:
     fg = fg_attr("DarkCyan");
     wght = wght_attr("Medium");
-    format = format_four;
-    create_markup(dst, format, font, fg, wght, src);
+    create_markup(dst, format_four, font, fg, wght, src);
     break;
   case ORANGE:
     fg = fg_attr("OrangeRed");
     wght = wght_attr("Medium");
-    format = format_four;
-    create_markup(dst, format, font, fg, wght, src);
+    create_markup(dst, format_four, font, fg, wght, src);
     break;
   case CHOCOLATE:
     fg = fg_attr("Chocolate");
     wght = wght_attr("Medium");
-    format = format_four;
-    create_markup(dst, format, font, fg, wght, src);
+    create_markup(dst, format_four, font, fg, wght, src);
     break;
   case BLACK_ITALIC:
     fg = fg_attr("Black");
     wght = wght_attr("Medium");
     style = style_attr("italic");
-    format = format_five;
-    create_markup(dst, format, font, fg, wght, style, src);
+    create_markup(dst, format_five, font, fg, wght, style, src);
     break;
   case RED_ITALIC:
     fg = fg_attr("DarkRed");
     wght = wght_attr("Medium");
     style = style_attr("italic");
-    format = format_five;
-    create_markup(dst, format, font, fg, wght, style, src);
+    create_markup(dst, format_five, font, fg, wght, style, src);
     break;
   case GREEN_ITALIC:
     fg = fg_attr("DarkGreen");
     wght = wght_attr("Medium");
     style = style_attr("italic");
-    format = format_five;
-    create_markup(dst, format, font, fg, wght, style, src);
+    create_markup(dst, format_five, font, fg, wght, style, src);
     break;
   case BLUE_ITALIC:
     fg = fg_attr("MidnightBlue");
     wght = wght_attr("Medium");
     style = style_attr("italic");
-    format = format_five;
-    create_markup(dst, format, font, fg, wght, style, src);
+    create_markup(dst, format_five, font, fg, wght, style, src);
     break;
   case STR_TO_MON_STR:
     /* This is a special conversion, make sure the string can be converted to a
@@ -241,22 +227,19 @@ void StringToStrPango(char **dst, const char *src, const unsigned int color)
     StringToMonStr(&tmp, src, 2);
     fg = fg_attr("Black");
     wght = wght_attr("Medium");
-    format = format_four;
-    create_markup(dst, format, font, fg, wght, tmp);
+    create_markup(dst, format_four, font, fg, wght, tmp);
     break;
   case HEADING_ASST_TYPE_FORMAT:
     fg = fg_attr("DarkSlateGray");
     wght = wght_attr("Demi-Bold");
-    format = format_four;
-    create_markup(dst, format, font, fg, wght, src);
+    create_markup(dst, format_four, font, fg, wght, src);
     break;
   default: /* HEADING_UNLN_FORMAT */
     fg = fg_attr("SaddleBrown");
     wght = wght_attr("Demi-Bold");
     undln = undln_attr("single");
     undln_colr = undln__colr_attr("SaddleBrown");
-    format = format_six;
-    create_markup(dst, format, font, fg, wght, undln, undln_colr, src);
+    create_markup(dst, format_six, font, fg, wght, undln, undln_colr, src);
     break;
   }
 

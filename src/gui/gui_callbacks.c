@@ -206,7 +206,7 @@ static void *add_api_data_font_thd(void *data) {
   packet->equity_folder_class->SetSecurityNames(packet);
 
   /* Make sure font is set on the main window
-     labels and the treeview headers. */
+     labels and the treeview header strings. */
   gdk_threads_add_idle(MainSetFonts, packet);
 
   if (packet->IsDefaultView()) {
@@ -391,13 +391,14 @@ void GUICallbackHandler_pref_hours_spinbutton(GtkEditable *spin_button) {
   const gchar *new = gtk_entry_get_text(GTK_ENTRY(spin_button));
   pthread_t thread_id;
 
+  /* Right now this value will be an integral, however it may change to a
+   * floating point in the future. */
+  double new_f = strtod(new, NULL);
   gboolean check =
-      (strtod(new, NULL) <= 7) & CheckIfStringDoublePositiveNumber(new);
+      (new_f <= 7) & CheckIfStringDoublePositiveNumber(new);
   check = check & (strlen(new) != 0);
   if (!check)
-    return;
-
-  double new_f = strtod(new, NULL);
+    return; 
 
   if (new_f != D->updates_hours_f) {
     D->updates_hours_f = new_f;

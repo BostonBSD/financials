@@ -161,6 +161,12 @@ static void create_index_url(char **url_ch, const char *symbol_ch) {
         strlen(YAHOO_URL_MIDDLE_ONE) + strlen(YAHOO_URL_MIDDLE_TWO) +
         strlen(YAHOO_URL_END) + 25;
   char *tmp = realloc(url_ch[0], len);
+
+  if (tmp == NULL) {
+    printf("Not Enough Memory, realloc returned NULL.\n");
+    exit(EXIT_FAILURE);
+  }
+
   url_ch[0] = tmp;
   snprintf(url_ch[0], len,
            YAHOO_URL_START "%s" YAHOO_URL_MIDDLE_ONE "%d" YAHOO_URL_MIDDLE_TWO
@@ -314,7 +320,11 @@ static void ExtractIndicesData() {
 
 static void ToStringsIndices() {
   meta *Met = MetaClassObject;
+  /* Note that these aren't pango formatted.
+     The pango tags are added in set_indices_labels()
+     in gui_main.c.
 
+     Formatting labels has a slightly different process than treeviews. */
   DoubleToFormattedStr(&Met->index_dow_value_ch, Met->index_dow_value_f, 2,
                        NUM_STR);
   DoubleToFormattedStr(&Met->index_dow_value_chg_ch, Met->index_dow_value_chg_f,
@@ -370,13 +380,12 @@ static default_heading default_headings = {"Bullion",
 
 static void format_primary_headings_pango(primary_heading *pri_h_mkd) {
 
-  StringToStrPango(&pri_h_mkd->bullion, primary_headings.bullion,
-                   HEADING_ASST_TYPE_FORMAT);
   StringToStrPango(&pri_h_mkd->metal, primary_headings.metal,
                    HEADING_UNLN_FORMAT);
   StringToStrPango(&pri_h_mkd->ounces, primary_headings.ounces,
                    HEADING_UNLN_FORMAT);
-
+  StringToStrPango(&pri_h_mkd->price, primary_headings.price,
+                   HEADING_UNLN_FORMAT);
   StringToStrPango(&pri_h_mkd->premium, primary_headings.premium,
                    HEADING_UNLN_FORMAT);
   StringToStrPango(&pri_h_mkd->high, primary_headings.high,
@@ -384,32 +393,21 @@ static void format_primary_headings_pango(primary_heading *pri_h_mkd) {
   StringToStrPango(&pri_h_mkd->low, primary_headings.low, HEADING_UNLN_FORMAT);
   StringToStrPango(&pri_h_mkd->prev_closing, primary_headings.prev_closing,
                    HEADING_UNLN_FORMAT);
-
   StringToStrPango(&pri_h_mkd->chg, primary_headings.chg, HEADING_UNLN_FORMAT);
   StringToStrPango(&pri_h_mkd->gain_sym, primary_headings.gain_sym,
                    HEADING_UNLN_FORMAT);
   StringToStrPango(&pri_h_mkd->total, primary_headings.total,
                    HEADING_UNLN_FORMAT);
-
   StringToStrPango(&pri_h_mkd->gain_per, primary_headings.gain_per,
                    HEADING_UNLN_FORMAT);
-  StringToStrPango(&pri_h_mkd->gold, primary_headings.gold, BLUE);
-  StringToStrPango(&pri_h_mkd->silver, primary_headings.silver, BLUE);
-
-  StringToStrPango(&pri_h_mkd->platinum, primary_headings.platinum, BLUE);
-  StringToStrPango(&pri_h_mkd->palladium, primary_headings.palladium, BLUE);
-  StringToStrPango(&pri_h_mkd->equity, primary_headings.equity,
-                   HEADING_ASST_TYPE_FORMAT);
 
   StringToStrPango(&pri_h_mkd->symbol, primary_headings.symbol,
                    HEADING_UNLN_FORMAT);
   StringToStrPango(&pri_h_mkd->shares, primary_headings.shares,
                    HEADING_UNLN_FORMAT);
-  StringToStrPango(&pri_h_mkd->price, primary_headings.price,
-                   HEADING_UNLN_FORMAT);
-
   StringToStrPango(&pri_h_mkd->opening, primary_headings.opening,
                    HEADING_UNLN_FORMAT);
+
   StringToStrPango(&pri_h_mkd->asset, primary_headings.asset,
                    HEADING_UNLN_FORMAT);
   StringToStrPango(&pri_h_mkd->value, primary_headings.value,
@@ -417,35 +415,44 @@ static void format_primary_headings_pango(primary_heading *pri_h_mkd) {
 
   StringToStrPango(&pri_h_mkd->cash, primary_headings.cash,
                    HEADING_ASST_TYPE_FORMAT);
+  StringToStrPango(&pri_h_mkd->bullion, primary_headings.bullion,
+                   HEADING_ASST_TYPE_FORMAT);
+  StringToStrPango(&pri_h_mkd->equity, primary_headings.equity,
+                   HEADING_ASST_TYPE_FORMAT);
   StringToStrPango(&pri_h_mkd->portfolio, primary_headings.portfolio,
                    HEADING_ASST_TYPE_FORMAT);
+
+  StringToStrPango(&pri_h_mkd->gold, primary_headings.gold, BLUE);
+  StringToStrPango(&pri_h_mkd->silver, primary_headings.silver, BLUE);
+  StringToStrPango(&pri_h_mkd->platinum, primary_headings.platinum, BLUE);
+  StringToStrPango(&pri_h_mkd->palladium, primary_headings.palladium, BLUE);
   StringToStrPango(&pri_h_mkd->no_assets, primary_headings.no_assets, BLUE);
 }
 
 static void format_default_headings_pango(default_heading *def_h_mkd) {
 
-  StringToStrPango(&def_h_mkd->bullion, default_headings.bullion,
-                   HEADING_ASST_TYPE_FORMAT);
   StringToStrPango(&def_h_mkd->metal, default_headings.metal,
                    HEADING_UNLN_FORMAT);
   StringToStrPango(&def_h_mkd->ounces, default_headings.ounces,
                    HEADING_UNLN_FORMAT);
   StringToStrPango(&def_h_mkd->premium, default_headings.premium,
                    HEADING_UNLN_FORMAT);
-  StringToStrPango(&def_h_mkd->gold, default_headings.gold, BLUE);
-  StringToStrPango(&def_h_mkd->silver, default_headings.silver, BLUE);
-  StringToStrPango(&def_h_mkd->platinum, default_headings.platinum, BLUE);
-  StringToStrPango(&def_h_mkd->palladium, default_headings.palladium, BLUE);
-
-  StringToStrPango(&def_h_mkd->equity, default_headings.equity,
-                   HEADING_ASST_TYPE_FORMAT);
   StringToStrPango(&def_h_mkd->symbol, default_headings.symbol,
                    HEADING_UNLN_FORMAT);
   StringToStrPango(&def_h_mkd->shares, default_headings.shares,
                    HEADING_UNLN_FORMAT);
 
+  StringToStrPango(&def_h_mkd->bullion, default_headings.bullion,
+                   HEADING_ASST_TYPE_FORMAT);
+  StringToStrPango(&def_h_mkd->equity, default_headings.equity,
+                   HEADING_ASST_TYPE_FORMAT);
   StringToStrPango(&def_h_mkd->cash, default_headings.cash,
                    HEADING_ASST_TYPE_FORMAT);
+
+  StringToStrPango(&def_h_mkd->gold, default_headings.gold, BLUE);
+  StringToStrPango(&def_h_mkd->silver, default_headings.silver, BLUE);
+  StringToStrPango(&def_h_mkd->platinum, default_headings.platinum, BLUE);
+  StringToStrPango(&def_h_mkd->palladium, default_headings.palladium, BLUE);
   StringToStrPango(&def_h_mkd->no_assets, default_headings.no_assets, BLUE);
 }
 
@@ -489,21 +496,23 @@ static void free_default_headings(default_heading *def_h_mkd) {
   free(def_h_mkd->bullion);
   free(def_h_mkd->metal);
   free(def_h_mkd->ounces);
+
   free(def_h_mkd->premium);
   free(def_h_mkd->gold);
   free(def_h_mkd->silver);
+
   free(def_h_mkd->platinum);
   free(def_h_mkd->palladium);
-
   free(def_h_mkd->equity);
+
   free(def_h_mkd->symbol);
   free(def_h_mkd->shares);
 }
 
 static void ToStringsHeadings() {
   meta *D = MetaClassObject;
-  format_primary_headings_pango(&D->pri_h_mkd);
   format_default_headings_pango(&D->def_h_mkd);
+  format_primary_headings_pango(&D->pri_h_mkd);
 }
 
 /* Class Init Functions */
@@ -583,9 +592,13 @@ meta *ClassInitMeta() {
   new_class->multicurl_rsi_hnd = curl_multi_init();
 
   new_class->INDEX_DOW_CURLDATA.memory = NULL;
+  new_class->INDEX_DOW_CURLDATA.size = 0;
   new_class->INDEX_NASDAQ_CURLDATA.memory = NULL;
+  new_class->INDEX_NASDAQ_CURLDATA.size = 0;
   new_class->INDEX_SP_CURLDATA.memory = NULL;
-  new_class->CRYPTO_BITCOIN_CURLDATA.memory = NULL;
+  new_class->INDEX_SP_CURLDATA.size = 0;
+  new_class->CRYPTO_BITCOIN_CURLDATA.memory = NULL; 
+  new_class->CRYPTO_BITCOIN_CURLDATA.size = 0;
 
   new_class->thread_id_clock = 0;
   new_class->thread_id_closing_time = 0;

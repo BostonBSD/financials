@@ -188,10 +188,10 @@ int RSISetSNLabel(void *data) {
 
   GtkWidget *Label = GetWidget("ViewRSIStockSymbolLabel");
 
-  short len = strlen(sec_name ? sec_name : "");
+  gushort len = strlen(sec_name ? sec_name : "");
   if (len >= 96) {
     sec_name[95] = 0;
-    char *ch = strchr(sec_name, (int)',');
+    gchar *ch = strchr(sec_name, (int)',');
     if (ch != NULL)
       *ch = 0;
   }
@@ -390,6 +390,9 @@ static void rsi_set_store(GtkListStore *store, const char *curl_data) {
        correct if we ignore the incomplete portion of data. */
     if (strstr(line, "null"))
       continue;
+    /* 404 replies start with an html tag after the header line. */
+    if (strstr(line, "<html>"))
+      break;
 
     /* Don't start adding rows until we get 14 days of data. */
     if (!rsi_calculate(line, &rsi_strs, RUN))

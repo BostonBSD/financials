@@ -342,7 +342,7 @@ static void error_msg(sqlite3 *db) {
 
 void SqliteProcessing(portfolio_packet *pkg) {
   /* There are two database files, one holds the config info,
-  the other holds the stock symbol-security name mapping. */
+  the other holds the stock symbol-name mapping. */
   equity_folder *F = pkg->GetEquityFolderClass();
   meta *D = pkg->GetMetaClass();
   window_data *W = pkg->GetWindowData();
@@ -355,7 +355,7 @@ void SqliteProcessing(portfolio_packet *pkg) {
   if (sqlite3_open(D->sqlite_symbol_name_db_path_ch, &db) != SQLITE_OK)
     error_msg(db);
 
-  /* Create the Symbol-Security Name table if it doesn't already exist. */
+  /* Create the symbolname table if it doesn't already exist. */
   char *sql_cmd = "CREATE TABLE IF NOT EXISTS symbolname(Id INTEGER PRIMARY "
                   "KEY, symbol TEXT NOT NULL, name TEXT NOT NULL);";
   if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)

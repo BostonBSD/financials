@@ -137,7 +137,7 @@ void ToNumStr(char *s)
    different currency symbol]. */
 {
   /* Read character by character until the null character is reached. */
-  for (int i = 0; s[i]; i++) {
+  for (unsigned int i = 0; s[i]; i++) {
     /* If s[i] is one of these characters */
     if (strchr("$,()%-+", (int)s[i])) {
       /* Read each character thereafter and */
@@ -154,14 +154,14 @@ void ToNumStr(char *s)
 
 void LowerCaseStr(char *s) {
   /* Convert the string to lowercase letters */
-  for (short i = 0; s[i]; i++) {
+  for (unsigned short i = 0; s[i]; i++) {
     s[i] = tolower(s[i]);
   }
 }
 
 void UpperCaseStr(char *s) {
   /* Convert the string to uppercase letters */
-  for (short i = 0; s[i]; i++) {
+  for (unsigned short i = 0; s[i]; i++) {
     s[i] = toupper(s[i]);
   }
 }
@@ -237,7 +237,7 @@ void StringToMonStr(char **dst, const char *src,
    If the src string cannot be converted to a double, undefined behavior.
 
    If *dst = NULL, will allocate memory.
-   If dst = NULL, src = NULL, or precision is > 3
+   If dst = NULL, src = NULL, or precision is > 4
    do nothing.
 
    Reallocs memory to fit the monetary string.
@@ -246,7 +246,7 @@ void StringToMonStr(char **dst, const char *src,
    Set *dst = NULL first.
    */
 {
-  if (!dst || !src || digits_right > 3)
+  if (!dst || !src || digits_right > 4)
     return;
   if (dst[0] == NULL)
     dst[0] = malloc(1);
@@ -264,26 +264,32 @@ void StringToMonStr(char **dst, const char *src,
 
   dst[0] = tmp;
 
+  /* Set the format string. */
+  switch (digits_right) {
+  case 0:
+    tmp = "%(.0n";
+    break;
+  case 1:
+    tmp = "%(.1n";
+    break;
+  case 2:
+    tmp = "%(.2n";
+    break;
+  case 3:
+    tmp = "%(.3n";
+    break;
+  default:
+    tmp = "%(.4n";
+    break;
+  }
+
   /* The C.UTF-8 locale does not have a monetary
      format and is the default in C.
   */
-  setlocale(LC_ALL, LOCALE);
 
   /* Set the string value. */
-  switch (digits_right) {
-  case 0:
-    strfmon(dst[0], len, "%(.0n", num);
-    break;
-  case 1:
-    strfmon(dst[0], len, "%(.1n", num);
-    break;
-  case 2:
-    strfmon(dst[0], len, "%(.2n", num);
-    break;
-  default:
-    strfmon(dst[0], len, "%(.3n", num);
-    break;
-  }
+  setlocale(LC_ALL, LOCALE);
+  strfmon(dst[0], len, tmp, num);
 }
 
 double StringToDouble(const char *str)
@@ -339,70 +345,69 @@ void DoubleToFormattedStr(char **dst, const double num,
 
   dst[0] = tmp;
 
-  const char *fmt;
   switch (format_type) {
   case MON_STR:
     switch (digits_right) {
     case 0:
-      fmt = "%(.0n";
+      tmp = "%(.0n";
       break;
     case 1:
-      fmt = "%(.1n";
+      tmp = "%(.1n";
       break;
     case 2:
-      fmt = "%(.2n";
+      tmp = "%(.2n";
       break;
     case 3:
-      fmt = "%(.3n";
+      tmp = "%(.3n";
       break;
     default:
-      fmt = "%(.4n";
+      tmp = "%(.4n";
       break;
     }
     setlocale(LC_ALL, LOCALE);
-    strfmon(dst[0], len, fmt, num);
+    strfmon(dst[0], len, tmp, num);
     break;
   case PER_STR:
     switch (digits_right) {
     case 0:
-      fmt = "%'.0lf%%";
+      tmp = "%'.0lf%%";
       break;
     case 1:
-      fmt = "%'.1lf%%";
+      tmp = "%'.1lf%%";
       break;
     case 2:
-      fmt = "%'.2lf%%";
+      tmp = "%'.2lf%%";
       break;
     case 3:
-      fmt = "%'.3lf%%";
+      tmp = "%'.3lf%%";
       break;
     default:
-      fmt = "%'.4lf%%";
+      tmp = "%'.4lf%%";
       break;
     }
     setlocale(LC_NUMERIC, LOCALE);
-    snprintf(dst[0], len, fmt, num);
+    snprintf(dst[0], len, tmp, num);
     break;
   case NUM_STR:
     switch (digits_right) {
     case 0:
-      fmt = "%'.0lf";
+      tmp = "%'.0lf";
       break;
     case 1:
-      fmt = "%'.1lf";
+      tmp = "%'.1lf";
       break;
     case 2:
-      fmt = "%'.2lf";
+      tmp = "%'.2lf";
       break;
     case 3:
-      fmt = "%'.3lf";
+      tmp = "%'.3lf";
       break;
     default:
-      fmt = "%'.4lf";
+      tmp = "%'.4lf";
       break;
     }
     setlocale(LC_NUMERIC, LOCALE);
-    snprintf(dst[0], len, fmt, num);
+    snprintf(dst[0], len, tmp, num);
     break;
   default:
     printf("DoubleToFormattedStr format_type out of range.\n");

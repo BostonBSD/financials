@@ -47,7 +47,7 @@ void Summation(double current_gain, double *avg_gain, double *avg_loss) {
   if (current_gain >= 0) {
     *avg_gain += current_gain;
   } else {
-    *avg_loss += -1 * current_gain;
+    *avg_loss += (-1 * current_gain);
   }
 }
 

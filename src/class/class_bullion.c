@@ -96,7 +96,7 @@ static void convert_bullion_to_strings(bullion *B,
     /* The change in total investment in this metal as a percentage. */
     DoubleToFormattedStrPango(&B->change_percent_mrkd_ch, B->change_percent_f,
                               digits_right, PER_STR, GREEN);
-  } else if (B->change_value_f < 0) {
+  } else if (B->change_ounce_f < 0) {
     DoubleToFormattedStrPango(&B->change_ounce_mrkd_ch, B->change_ounce_f,
                               digits_right, MON_STR, RED);
 
@@ -257,6 +257,12 @@ static void create_bullion_url(bullion *B, const char *symbol_ch) {
         strlen(YAHOO_URL_MIDDLE_ONE) + strlen(YAHOO_URL_MIDDLE_TWO) +
         strlen(YAHOO_URL_END) + 25;
   char *tmp = realloc(B->url_ch, len);
+
+  if (tmp == NULL) {
+    printf("Not Enough Memory, realloc returned NULL.\n");
+    exit(EXIT_FAILURE);
+  }
+
   B->url_ch = tmp;
   snprintf(B->url_ch, len,
            YAHOO_URL_START "%s" YAHOO_URL_MIDDLE_ONE "%d" YAHOO_URL_MIDDLE_TWO
@@ -390,6 +396,7 @@ static bullion *class_init_bullion() {
 
   new_class->YAHOO_hnd = curl_easy_init();
   new_class->CURLDATA.memory = NULL;
+  new_class->CURLDATA.size = 0;
 
   /* Return Our Initialized Class */
   return new_class;

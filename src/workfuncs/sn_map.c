@@ -67,7 +67,10 @@ char *GetSecurityName(char *s, const symbol_name_map *sn_map)
   }
 }
 
-void SNMapDestruct(symbol_name_map *sn_map) {
+void SNMapDestruct(symbol_name_map *sn_map)
+/* Frees and resets all members of the sn_map
+   object.  Does not free the sn_map object. */
+{
   if (sn_map == NULL)
     return;
 
