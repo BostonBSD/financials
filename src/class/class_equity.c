@@ -163,33 +163,33 @@ static void ToStrings(unsigned short digits_right) {
   }
 
   /* The total equity portfolio value. */
-  DoubleToFormattedStrPango(&F->stock_port_value_ch, F->stock_port_value_f,
+  DoubleToFormattedStrPango(&F->stock_port_value_mrkd_ch, F->stock_port_value_f,
                             digits_right, MON_STR, BLACK);
 
   if (F->stock_port_value_chg_f > 0) {
     /* The equity portfolio's change in value. */
-    DoubleToFormattedStrPango(&F->stock_port_value_chg_ch,
+    DoubleToFormattedStrPango(&F->stock_port_value_chg_mrkd_ch,
                               F->stock_port_value_chg_f, digits_right, MON_STR,
                               GREEN);
 
     /* The change in total investment in equity as a percentage. */
-    DoubleToFormattedStrPango(&F->stock_port_value_p_chg_ch,
+    DoubleToFormattedStrPango(&F->stock_port_value_p_chg_mrkd_ch,
                               F->stock_port_value_p_chg_f, digits_right,
                               PER_STR, GREEN);
   } else if (F->stock_port_value_chg_f < 0) {
-    DoubleToFormattedStrPango(&F->stock_port_value_chg_ch,
+    DoubleToFormattedStrPango(&F->stock_port_value_chg_mrkd_ch,
                               F->stock_port_value_chg_f, digits_right, MON_STR,
                               RED);
 
-    DoubleToFormattedStrPango(&F->stock_port_value_p_chg_ch,
+    DoubleToFormattedStrPango(&F->stock_port_value_p_chg_mrkd_ch,
                               F->stock_port_value_p_chg_f, digits_right,
                               PER_STR, RED);
   } else {
-    DoubleToFormattedStrPango(&F->stock_port_value_chg_ch,
+    DoubleToFormattedStrPango(&F->stock_port_value_chg_mrkd_ch,
                               F->stock_port_value_chg_f, digits_right, MON_STR,
                               BLACK);
 
-    DoubleToFormattedStrPango(&F->stock_port_value_p_chg_ch,
+    DoubleToFormattedStrPango(&F->stock_port_value_p_chg_mrkd_ch,
                               F->stock_port_value_p_chg_f, digits_right,
                               PER_STR, BLACK);
   }
@@ -513,21 +513,21 @@ static stock *class_init_equity() {
   new_class->change_percent_f = 0.0f;
   new_class->current_investment_stock_f = 0.0f;
 
-  new_class->current_price_stock_mrkd_ch = malloc(1);
-  new_class->high_stock_mrkd_ch = malloc(1);
-  new_class->low_stock_mrkd_ch = malloc(1);
-  new_class->opening_stock_mrkd_ch = malloc(1);
-  new_class->prev_closing_stock_mrkd_ch = malloc(1);
-  new_class->change_share_stock_mrkd_ch = malloc(1);
-  new_class->change_value_mrkd_ch = malloc(1);
-  new_class->change_percent_mrkd_ch = malloc(1);
-  new_class->current_investment_stock_mrkd_ch = malloc(1);
-  new_class->num_shares_stock_mrkd_ch = malloc(1);
-  new_class->symbol_stock_mrkd_ch = malloc(1);
+  new_class->current_price_stock_mrkd_ch = NULL;
+  new_class->high_stock_mrkd_ch = NULL;
+  new_class->low_stock_mrkd_ch = NULL;
+  new_class->opening_stock_mrkd_ch = NULL;
+  new_class->prev_closing_stock_mrkd_ch = NULL;
+  new_class->change_share_stock_mrkd_ch = NULL;
+  new_class->change_value_mrkd_ch = NULL;
+  new_class->change_percent_mrkd_ch = NULL;
+  new_class->current_investment_stock_mrkd_ch = NULL;
+  new_class->num_shares_stock_mrkd_ch = NULL;
+  new_class->symbol_stock_mrkd_ch = NULL;
   new_class->security_name_mrkd_ch = NULL;
 
-  new_class->symbol_stock_ch = strdup("NO_SYMBOL");
-  new_class->curl_url_stock_ch = strdup("http://");
+  new_class->symbol_stock_ch = NULL;
+  new_class->curl_url_stock_ch = NULL;
 
   new_class->easy_hnd = curl_easy_init();
   new_class->JSON.memory = NULL;
@@ -546,9 +546,9 @@ equity_folder *ClassInitEquityFolder() {
   new_class->size = 0;
 
   /* Initialize Variables */
-  new_class->stock_port_value_ch = malloc(1);
-  new_class->stock_port_value_chg_ch = malloc(1);
-  new_class->stock_port_value_p_chg_ch = malloc(1);
+  new_class->stock_port_value_mrkd_ch = NULL;
+  new_class->stock_port_value_chg_mrkd_ch = NULL;
+  new_class->stock_port_value_p_chg_mrkd_ch = NULL;
 
   new_class->stock_port_value_f = 0.0f;
   new_class->stock_port_value_chg_f = 0.0f;
@@ -666,12 +666,12 @@ void ClassDestructEquityFolder(equity_folder *F) {
   }
 
   /* Free Pointer Memory */
-  if (F->stock_port_value_ch)
-    free(F->stock_port_value_ch);
-  if (F->stock_port_value_chg_ch)
-    free(F->stock_port_value_chg_ch);
-  if (F->stock_port_value_p_chg_ch)
-    free(F->stock_port_value_p_chg_ch);
+  if (F->stock_port_value_mrkd_ch)
+    free(F->stock_port_value_mrkd_ch);
+  if (F->stock_port_value_chg_mrkd_ch)
+    free(F->stock_port_value_chg_mrkd_ch);
+  if (F->stock_port_value_p_chg_mrkd_ch)
+    free(F->stock_port_value_p_chg_mrkd_ch);
 
   if (F)
     free(F);

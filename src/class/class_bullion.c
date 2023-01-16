@@ -381,18 +381,18 @@ static bullion *class_init_bullion() {
 
   new_class->url_ch = NULL;
 
-  new_class->spot_price_mrkd_ch = malloc(1);
-  new_class->premium_mrkd_ch = malloc(1);
-  new_class->port_value_mrkd_ch = malloc(1);
-  new_class->ounce_mrkd_ch = malloc(1);
+  new_class->spot_price_mrkd_ch = NULL;
+  new_class->premium_mrkd_ch = NULL;
+  new_class->port_value_mrkd_ch = NULL;
+  new_class->ounce_mrkd_ch = NULL;
 
-  new_class->high_metal_mrkd_ch = malloc(1);
-  new_class->low_metal_mrkd_ch = malloc(1);
-  new_class->prev_closing_metal_mrkd_ch = malloc(1);
-  new_class->change_ounce_mrkd_ch = malloc(1);
-  new_class->change_value_mrkd_ch = malloc(1);
-  new_class->change_percent_mrkd_ch = malloc(1);
-  new_class->change_percent_raw_ch = malloc(1);
+  new_class->high_metal_mrkd_ch = NULL;
+  new_class->low_metal_mrkd_ch = NULL;
+  new_class->prev_closing_metal_mrkd_ch = NULL;
+  new_class->change_ounce_mrkd_ch = NULL;
+  new_class->change_value_mrkd_ch = NULL;
+  new_class->change_percent_mrkd_ch = NULL;
+  new_class->change_percent_raw_ch = NULL;
 
   new_class->YAHOO_hnd = curl_easy_init();
   new_class->CURLDATA.memory = NULL;
@@ -421,10 +421,10 @@ metal *ClassInitMetal() {
   new_class->bullion_port_value_p_chg_f = 0.0f;
   new_class->gold_silver_ratio_f = 0.0f;
 
-  new_class->bullion_port_value_mrkd_ch = malloc(1);
-  new_class->bullion_port_value_chg_mrkd_ch = malloc(1);
-  new_class->bullion_port_value_p_chg_mrkd_ch = malloc(1);
-  new_class->gold_silver_ratio_ch = malloc(1);
+  new_class->bullion_port_value_mrkd_ch = NULL;
+  new_class->bullion_port_value_chg_mrkd_ch = NULL;
+  new_class->bullion_port_value_p_chg_mrkd_ch = NULL;
+  new_class->gold_silver_ratio_ch = NULL;
 
   /* Connect Function Pointers To Function Definitions */
   new_class->ToStrings = ToStrings;

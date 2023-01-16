@@ -38,15 +38,15 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/sqlite.h"
 #include "../include/workfuncs.h"
 
-int AddRemCompletionSet(void *data) {
-  CompletionSet(data, GUI_COMPLETION_EQUITIES);
+int SecurityCompletionSet(void *data) {
+  CompletionSet(data, GUI_COMPLETION_SECURITY);
   return 0;
 }
 
-int AddRemCursorMove() {
-  GtkWidget *Button = GetWidget("AddRemoveSecurityOkBTN");
-  const gchar *symbol = GetEntryText("AddRemoveSecuritySymbolEntryBox");
-  const gchar *shares = GetEntryText("AddRemoveSecuritySharesEntryBox");
+int SecurityCursorMove() {
+  GtkWidget *Button = GetWidget("SecurityOkBTN");
+  const gchar *symbol = GetEntryText("SecuritySymbolEntryBox");
+  const gchar *shares = GetEntryText("SecuritySharesEntryBox");
 
   if (CheckValidString(symbol) && CheckValidString(shares) &&
       CheckIfStringLongPositiveNumber(shares)) {
@@ -71,15 +71,15 @@ static void remove_dash(char *s)
     ch[-1] = 0;
 }
 
-int AddRemComBoxChange(void *data) {
+int SecurityComBoxChange(void *data) {
   portfolio_packet *pkg = (portfolio_packet *)data;
   symbol_name_map *sn_map = pkg->GetSymNameMap();
 
-  GtkWidget *ComboBox = GetWidget("AddRemoveSecurityComboBox");
+  GtkWidget *ComboBox = GetWidget("SecurityComboBox");
   gint index = gtk_combo_box_get_active(GTK_COMBO_BOX(ComboBox));
 
-  GtkWidget *button = GetWidget("AddRemoveSecurityOkBTN");
-  GtkWidget *label = GetWidget("AddRemoveSecurityLabel");
+  GtkWidget *button = GetWidget("SecurityOkBTN");
+  GtkWidget *label = GetWidget("SecurityWindowLabel");
 
   if (index != 0) {
     gchar *symbol =
@@ -175,12 +175,12 @@ static void *add_security_ok(void *data) {
   portfolio_packet *package = (portfolio_packet *)data;
   meta *D = package->GetMetaClass();
 
-  gchar *symbol = strdup(GetEntryText("AddRemoveSecuritySymbolEntryBox"));
-  const gchar *shares = GetEntryText("AddRemoveSecuritySharesEntryBox");
+  gchar *symbol = strdup(GetEntryText("SecuritySymbolEntryBox"));
+  const gchar *shares = GetEntryText("SecuritySharesEntryBox");
 
   UpperCaseStr(symbol);
 
-  SqliteAddEquity(symbol, shares, D);
+  SqliteEquityAdd(symbol, shares, D);
   add_equity_to_folder(symbol, shares, package);
 
   g_free(symbol);
@@ -199,14 +199,14 @@ static void *remove_security_ok(void *data) {
   equity_folder *F = pkg->GetEquityFolderClass();
   meta *D = pkg->GetMetaClass();
 
-  GtkWidget *ComboBox = GetWidget("AddRemoveSecurityComboBox");
+  GtkWidget *ComboBox = GetWidget("SecurityComboBox");
   gint index = gtk_combo_box_get_active(GTK_COMBO_BOX(ComboBox));
   if (index == 0) {
     pthread_mutex_unlock(&mutex_working[FETCH_DATA_MUTEX]);
     pthread_exit(NULL);
   }
   if (index == 1) {
-    SqliteRemoveAllEquity(D);
+    SqliteEquityRemoveAll(D);
     /* Reset Equity Folder */
     F->Reset();
 
@@ -215,7 +215,7 @@ static void *remove_security_ok(void *data) {
   } else {
     gchar *symbol =
         gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(ComboBox));
-    SqliteRemoveEquity(symbol, D);
+    SqliteEquityRemove(symbol, D);
     F->RemoveStock(symbol);
     g_free(symbol);
 
@@ -234,8 +234,8 @@ static void *remove_security_ok(void *data) {
   pthread_exit(NULL);
 }
 
-int AddRemOk(void *data) {
-  GtkWidget *stack = GetWidget("AddRemoveSecurityStack");
+int SecurityOk(void *data) {
+  GtkWidget *stack = GetWidget("SecurityStack");
   const gchar *name = gtk_stack_get_visible_child_name(GTK_STACK(stack));
 
   pthread_t thread_id;
@@ -251,17 +251,17 @@ int AddRemOk(void *data) {
   return 0;
 }
 
-int AddRemShowHide(void *data) {
+int SecurityShowHide(void *data) {
   /* Unpack the package */
   portfolio_packet *package = (portfolio_packet *)data;
   equity_folder *F = package->GetEquityFolderClass();
 
-  GtkWidget *window = GetWidget("AddRemoveSecurity");
+  GtkWidget *window = GetWidget("SecurityWindow");
   gboolean visible = gtk_widget_is_visible(window);
 
-  GtkWidget *stack = GetWidget("AddRemoveSecurityStack");
-  GtkWidget *ComboBox = GetWidget("AddRemoveSecurityComboBox");
-  GtkWidget *Button = GetWidget("AddRemoveSecurityOkBTN");
+  GtkWidget *stack = GetWidget("SecurityStack");
+  GtkWidget *ComboBox = GetWidget("SecurityComboBox");
+  GtkWidget *Button = GetWidget("SecurityOkBTN");
 
   if (visible == false) {
     gtk_stack_set_visible_child_name(GTK_STACK(stack), "add");
@@ -270,11 +270,11 @@ int AddRemShowHide(void *data) {
     gtk_widget_set_sensitive(Button, false);
 
     /* Reset EntryBoxes */
-    GtkWidget *EntryBox = GetWidget("AddRemoveSecuritySymbolEntryBox");
+    GtkWidget *EntryBox = GetWidget("SecuritySymbolEntryBox");
     gtk_entry_set_text(GTK_ENTRY(EntryBox), "");
     gtk_widget_grab_focus(EntryBox);
 
-    EntryBox = GetWidget("AddRemoveSecuritySharesEntryBox");
+    EntryBox = GetWidget("SecuritySharesEntryBox");
     gtk_entry_set_text(GTK_ENTRY(EntryBox), "");
     g_object_set(G_OBJECT(EntryBox), "activates-default", TRUE, NULL);
 
@@ -282,7 +282,7 @@ int AddRemShowHide(void *data) {
     /* Temp. Disconnect combobox signal handler. */
     g_signal_handlers_disconnect_by_func(G_OBJECT(ComboBox),
                                          G_CALLBACK(GUICallbackHandler),
-                                         (void *)EQUITY_COMBO_BOX);
+                                         (void *)SECURITY_COMBO_BOX);
 
     gtk_combo_box_text_remove_all(GTK_COMBO_BOX_TEXT(ComboBox));
     gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(ComboBox), NULL,
@@ -298,7 +298,7 @@ int AddRemShowHide(void *data) {
                                 F->Equity[i]->symbol_stock_ch);
     }
 
-    GtkWidget *label = GetWidget("AddRemoveSecurityLabel");
+    GtkWidget *label = GetWidget("SecurityWindowLabel");
 
     gtk_label_set_label(GTK_LABEL(label), "");
 
@@ -306,7 +306,7 @@ int AddRemShowHide(void *data) {
 
     /* Reconnect combobox signal handler. */
     g_signal_connect(G_OBJECT(ComboBox), "changed",
-                     G_CALLBACK(GUICallbackHandler), (void *)EQUITY_COMBO_BOX);
+                     G_CALLBACK(GUICallbackHandler), (void *)SECURITY_COMBO_BOX);
 
     gtk_widget_set_visible(window, true);
 

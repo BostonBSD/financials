@@ -53,7 +53,16 @@ const gchar *GetEntryText(const char *name_ch) {
   return gtk_entry_get_text(GTK_ENTRY(EntryBox));
 }
 
-/* Set completion widgets for both the equities and rsi entry boxes. */
+void AddColumnToTreeview(const char *col_name, const int col_num,
+                         GtkWidget *treeview) {
+  GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(
+      col_name, renderer, "markup", col_num, NULL);
+  gtk_tree_view_column_set_resizable(column, true);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
+}
+
+/* Set completion widgets for both the security and history entry boxes. */
 static GtkListStore *completion_set_store(symbol_name_map *sn_map) {
   GtkListStore *store =
       gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
@@ -112,10 +121,10 @@ int CompletionSet(void *data, uintptr_t gui_completion_sig) {
     return 0;
 
   GtkWidget *EntryBox = NULL;
-  if (gui_completion_sig == GUI_COMPLETION_RSI) {
-    EntryBox = GetWidget("ViewRSISymbolEntryBox");
+  if (gui_completion_sig == GUI_COMPLETION_HISTORY) {
+    EntryBox = GetWidget("HistorySymbolEntryBox");
   } else {
-    EntryBox = GetWidget("AddRemoveSecuritySymbolEntryBox");
+    EntryBox = GetWidget("SecuritySymbolEntryBox");
   }
 
   GtkEntryCompletion *completion = gtk_entry_completion_new();
@@ -177,7 +186,7 @@ static struct {
   const char *shortcut;
 } commands[] = {{"Application Window", ""},
                 {"      File", "Ctrl - F"},
-                {"      RSI", "Ctrl - R"},
+                {"      History", "Ctrl - R"},
                 {"      Quit", "Ctrl - Q"},
                 {"", ""},
                 {"      Edit", "Ctrl - E"},
@@ -193,7 +202,7 @@ static struct {
                 {"", ""},
                 {"      Get Data", "Ctrl - D"},
                 {"", ""},
-                {"RSI Window", ""},
+                {"History Window", ""},
                 {"      Get Data", "Ctrl - D"},
                 {"      Close", "Ctrl - C"},
                 {"", ""},
@@ -207,7 +216,7 @@ static struct {
                 {"      Close", "Ctrl - C"}};
 
 static void hotkeys_set_treeview() {
-  GtkWidget *TreeView = GetWidget("ShortcutWindowTreeView");
+  GtkWidget *TreeView = GetWidget("HotkeysTreeView");
 
   GtkCellRenderer *renderer;
   GtkTreeViewColumn *column;
@@ -339,17 +348,17 @@ static void main_window_sig_connect(void *data) {
                    (void *)MAIN_FETCH_BTN);
   gtk_widget_grab_focus(GTK_WIDGET(object));
 
-  object = GetGObject("MainFileMenuRSI");
+  object = GetGObject("MainFileMenuHistory");
   g_signal_connect(object, "activate", G_CALLBACK(GUICallbackHandler),
-                   (void *)RSI_TOGGLE_BTN);
+                   (void *)HISTORY_TOGGLE_BTN);
 
   object = GetGObject("MainFileMenuQuit");
   g_signal_connect(object, "activate", G_CALLBACK(GUICallbackHandler),
                    (void *)MAIN_EXIT);
 
-  object = GetGObject("MainEditMenuAddRemoveSecurity");
+  object = GetGObject("MainEditMenuSecurity");
   g_signal_connect(object, "activate", G_CALLBACK(GUICallbackHandler),
-                   (void *)EQUITY_TOGGLE_BTN);
+                   (void *)SECURITY_TOGGLE_BTN);
 
   object = GetGObject("MainEditMenuBullion");
   g_signal_connect(object, "activate", G_CALLBACK(GUICallbackHandler),
@@ -363,11 +372,11 @@ static void main_window_sig_connect(void *data) {
   g_signal_connect(object, "activate", G_CALLBACK(GUICallbackHandler),
                    (void *)API_TOGGLE_BTN);
 
-  object = GetGObject("MainEditMenuPreferences");
+  object = GetGObject("MainEditMenuPref");
   g_signal_connect(object, "activate", G_CALLBACK(GUICallbackHandler),
                    (void *)PREF_TOGGLE_BTN);
 
-  object = GetGObject("MainHelpMenuKeyboardShortcuts");
+  object = GetGObject("MainHelpMenuHotkeys");
   g_signal_connect(object, "activate", G_CALLBACK(GUICallbackHandler),
                    (void *)HOTKEYS_TOGGLE_BTN);
 
@@ -375,44 +384,42 @@ static void main_window_sig_connect(void *data) {
   g_signal_connect(object, "activate", G_CALLBACK(GUICallbackHandler),
                    (void *)ABOUT_TOGGLE_BTN);
 
-  /* This is the main window's TreeView ( There was only one treeview when I
-   * started ). */
-  object = GetGObject("TreeView");
+  object = GetGObject("MainTreeView");
   g_signal_connect(object, "button-press-event",
                    G_CALLBACK(view_onButtonPressed), NULL);
 }
 
-static void securities_window_sig_connect() {
+static void security_window_sig_connect() {
   GObject *window, *object;
 
-  object = GetGObject("SecuritiesMenuClose");
+  object = GetGObject("SecurityMenuClose");
   g_signal_connect(object, "activate", G_CALLBACK(GUICallbackHandler),
-                   (void *)EQUITY_TOGGLE_BTN);
+                   (void *)SECURITY_TOGGLE_BTN);
 
-  window = GetGObject("AddRemoveSecurity");
+  window = GetGObject("SecurityWindow");
   g_signal_connect(window, "delete_event",
                    G_CALLBACK(GUICallbackHandler_hide_window_on_delete),
-                   (void *)EQUITY_TOGGLE_BTN);
+                   (void *)SECURITY_TOGGLE_BTN);
 
-  object = GetGObject("AddRemoveSecurityOkBTN");
+  object = GetGObject("SecurityOkBTN");
   g_signal_connect(object, "clicked", G_CALLBACK(GUICallbackHandler),
-                   (void *)EQUITY_OK_BTN);
+                   (void *)SECURITY_OK_BTN);
 
-  object = GetGObject("AddRemoveSecurityStack");
+  object = GetGObject("SecurityStack");
   g_signal_connect(object, "notify::visible-child",
-                   G_CALLBACK(GUICallbackHandler_add_rem_stack), NULL);
+                   G_CALLBACK(GUICallbackHandler_security_stack), NULL);
 
-  object = GetGObject("AddRemoveSecurityComboBox");
+  object = GetGObject("SecurityComboBox");
   g_signal_connect(object, "changed", G_CALLBACK(GUICallbackHandler),
-                   (void *)EQUITY_COMBO_BOX);
+                   (void *)SECURITY_COMBO_BOX);
 
-  object = GetGObject("AddRemoveSecuritySymbolEntryBox");
+  object = GetGObject("SecuritySymbolEntryBox");
   g_signal_connect(object, "changed", G_CALLBACK(GUICallbackHandler),
-                   (void *)EQUITY_CURSOR_MOVE);
+                   (void *)SECURITY_CURSOR_MOVE);
 
-  object = GetGObject("AddRemoveSecuritySharesEntryBox");
+  object = GetGObject("SecuritySharesEntryBox");
   g_signal_connect(object, "changed", G_CALLBACK(GUICallbackHandler),
-                   (void *)EQUITY_CURSOR_MOVE);
+                   (void *)SECURITY_CURSOR_MOVE);
 }
 
 static void bullion_window_sig_connect() {
@@ -422,49 +429,49 @@ static void bullion_window_sig_connect() {
   g_signal_connect(object, "activate", G_CALLBACK(GUICallbackHandler),
                    (void *)BUL_TOGGLE_BTN);
 
-  window = GetGObject("AddRemoveBullionWindow");
+  window = GetGObject("BullionWindow");
   g_signal_connect(window, "delete_event",
                    G_CALLBACK(GUICallbackHandler_hide_window_on_delete),
                    (void *)BUL_TOGGLE_BTN);
 
-  object = GetGObject("AddRemoveBullionOKBTN");
+  object = GetGObject("BullionOKBTN");
   g_signal_connect(object, "clicked", G_CALLBACK(GUICallbackHandler),
                    (void *)BUL_OK_BTN);
   gtk_widget_set_sensitive(GTK_WIDGET(object), false);
 
-  object = GetGObject("AddRemoveBullionGoldOuncesEntryBox");
+  object = GetGObject("BullionGoldOuncesEntryBox");
   g_signal_connect(object, "changed", G_CALLBACK(GUICallbackHandler),
                    (void *)BUL_CURSOR_MOVE);
 
-  object = GetGObject("AddRemoveBullionGoldPremiumEntryBox");
+  object = GetGObject("BullionGoldPremiumEntryBox");
   g_signal_connect(object, "changed", G_CALLBACK(GUICallbackHandler),
                    (void *)BUL_CURSOR_MOVE);
 
-  object = GetGObject("AddRemoveBullionSilverOuncesEntryBox");
+  object = GetGObject("BullionSilverOuncesEntryBox");
   g_signal_connect(object, "changed", G_CALLBACK(GUICallbackHandler),
                    (void *)BUL_CURSOR_MOVE);
 
-  object = GetGObject("AddRemoveBullionSilverPremiumEntryBox");
+  object = GetGObject("BullionSilverPremiumEntryBox");
   g_signal_connect(object, "changed", G_CALLBACK(GUICallbackHandler),
                    (void *)BUL_CURSOR_MOVE);
 
-  object = GetGObject("AddRemoveBullionPlatinumOuncesEntryBox");
+  object = GetGObject("BullionPlatinumOuncesEntryBox");
   g_signal_connect(object, "changed", G_CALLBACK(GUICallbackHandler),
                    (void *)BUL_CURSOR_MOVE);
 
-  object = GetGObject("AddRemoveBullionPlatinumPremiumEntryBox");
+  object = GetGObject("BullionPlatinumPremiumEntryBox");
   g_signal_connect(object, "changed", G_CALLBACK(GUICallbackHandler),
                    (void *)BUL_CURSOR_MOVE);
 
-  object = GetGObject("AddRemoveBullionPalladiumOuncesEntryBox");
+  object = GetGObject("BullionPalladiumOuncesEntryBox");
   g_signal_connect(object, "changed", G_CALLBACK(GUICallbackHandler),
                    (void *)BUL_CURSOR_MOVE);
 
-  object = GetGObject("AddRemoveBullionPalladiumPremiumEntryBox");
+  object = GetGObject("BullionPalladiumPremiumEntryBox");
   g_signal_connect(object, "changed", G_CALLBACK(GUICallbackHandler),
                    (void *)BUL_CURSOR_MOVE);
 
-  object = GetGObject("AddRemoveBullionComboBox");
+  object = GetGObject("BullionComboBox");
   g_signal_connect(object, "changed", G_CALLBACK(GUICallbackHandler),
                    (void *)BUL_COMBO_BOX);
 }
@@ -474,11 +481,11 @@ static void preferences_window_sig_connect(void *data) {
   meta *D = pkg->GetMetaClass();
   GObject *window, *object;
 
-  object = GetGObject("PreferencesMenuClose");
+  object = GetGObject("PrefMenuClose");
   g_signal_connect(object, "activate", G_CALLBACK(GUICallbackHandler),
                    (void *)PREF_TOGGLE_BTN);
 
-  window = GetGObject("PreferencesWindow");
+  window = GetGObject("PrefWindow");
   g_signal_connect(window, "delete_event",
                    G_CALLBACK(GUICallbackHandler_hide_window_on_delete),
                    (void *)PREF_TOGGLE_BTN);
@@ -531,60 +538,60 @@ static void api_window_sig_connect() {
   g_signal_connect(object, "activate", G_CALLBACK(GUICallbackHandler),
                    (void *)API_TOGGLE_BTN);
 
-  window = GetGObject("ChangeApiInfoWindow");
+  window = GetGObject("ApiWindow");
   g_signal_connect(window, "delete_event",
                    G_CALLBACK(GUICallbackHandler_hide_window_on_delete),
                    (void *)API_TOGGLE_BTN);
 
-  object = GetGObject("ChangeApiInfoOKBTN");
+  object = GetGObject("ApiOKBTN");
   g_signal_connect(object, "clicked", G_CALLBACK(GUICallbackHandler),
                    (void *)API_OK_BTN);
   gtk_widget_set_sensitive(GTK_WIDGET(object), false);
 
-  object = GetGObject("ChangeApiInfoEquityUrlEntryBox");
+  object = GetGObject("ApiEquityUrlEntryBox");
   g_signal_connect(object, "changed", G_CALLBACK(GUICallbackHandler),
                    (void *)API_CURSOR_MOVE);
 
-  object = GetGObject("ChangeApiInfoUrlKeyEntryBox");
+  object = GetGObject("ApiUrlKeyEntryBox");
   g_signal_connect(object, "changed", G_CALLBACK(GUICallbackHandler),
                    (void *)API_CURSOR_MOVE);
 
-  object = GetGObject("ChangeApiInfoNasdaqSymbolsUrlEntryBox");
+  object = GetGObject("ApiNasdaqSymbolsUrlEntryBox");
   g_signal_connect(object, "changed", G_CALLBACK(GUICallbackHandler),
                    (void *)API_CURSOR_MOVE);
 
-  object = GetGObject("ChangeApiInfoNYSESymbolsUrlEntryBox");
+  object = GetGObject("ApiNYSESymbolsUrlEntryBox");
   g_signal_connect(object, "changed", G_CALLBACK(GUICallbackHandler),
                    (void *)API_CURSOR_MOVE);
 }
 
-static void rsi_window_sig_connect(void *data) {
+static void history_window_sig_connect(void *data) {
   portfolio_packet *pkg = (portfolio_packet *)data;
   window_data *W = pkg->GetWindowData();
   GObject *window, *object;
 
-  window = GetGObject("ViewRSIWindow");
+  window = GetGObject("HistoryWindow");
   g_signal_connect(window, "delete_event",
                    G_CALLBACK(GUICallbackHandler_hide_window_on_delete),
-                   (void *)RSI_TOGGLE_BTN);
-  gtk_window_resize(GTK_WINDOW(window), W->rsi_width, W->rsi_height);
-  gtk_window_move(GTK_WINDOW(window), W->rsi_x_pos, W->rsi_y_pos);
+                   (void *)HISTORY_TOGGLE_BTN);
+  gtk_window_resize(GTK_WINDOW(window), W->history_width, W->history_height);
+  gtk_window_move(GTK_WINDOW(window), W->history_x_pos, W->history_y_pos);
 
   g_signal_connect(window, "configure-event",
                    G_CALLBACK(GUICallbackHandler_window_data),
-                   (void *)GUI_RSI_WINDOW);
+                   (void *)GUI_HISTORY_WINDOW);
 
-  object = GetGObject("RSIMenuCloseBTN");
+  object = GetGObject("HistoryMenuCloseBTN");
   g_signal_connect(object, "activate", G_CALLBACK(GUICallbackHandler),
-                   (void *)RSI_TOGGLE_BTN);
+                   (void *)HISTORY_TOGGLE_BTN);
 
-  object = GetGObject("ViewRSIFetchDataBTN");
+  object = GetGObject("HistoryFetchDataBTN");
   g_signal_connect(object, "clicked", G_CALLBACK(GUICallbackHandler),
-                   (void *)RSI_FETCH_BTN);
+                   (void *)HISTORY_FETCH_BTN);
 
-  object = GetGObject("ViewRSISymbolEntryBox");
+  object = GetGObject("HistorySymbolEntryBox");
   g_signal_connect(object, "changed", G_CALLBACK(GUICallbackHandler),
-                   (void *)RSI_CURSOR_MOVE);
+                   (void *)HISTORY_CURSOR_MOVE);
 }
 
 static void other_window_sig_connect() {
@@ -599,11 +606,11 @@ static void other_window_sig_connect() {
                    G_CALLBACK(GUICallbackHandler_hide_window_on_delete),
                    (void *)ABOUT_TOGGLE_BTN);
 
-  object = GetGObject("ShortcutsMenuClose");
+  object = GetGObject("HotkeysMenuClose");
   g_signal_connect(object, "activate", G_CALLBACK(GUICallbackHandler),
                    (void *)HOTKEYS_TOGGLE_BTN);
 
-  window = GetGObject("ShortcutWindow");
+  window = GetGObject("HotkeysWindow");
   g_signal_connect(window, "delete_event",
                    G_CALLBACK(GUICallbackHandler_hide_window_on_delete),
                    (void *)HOTKEYS_TOGGLE_BTN);
@@ -612,17 +619,17 @@ static void other_window_sig_connect() {
   g_signal_connect(object, "activate", G_CALLBACK(GUICallbackHandler),
                    (void *)CASH_TOGGLE_BTN);
 
-  window = GetGObject("AddRemoveCashWindow");
+  window = GetGObject("CashWindow");
   g_signal_connect(window, "delete_event",
                    G_CALLBACK(GUICallbackHandler_hide_window_on_delete),
                    (void *)CASH_TOGGLE_BTN);
 
-  object = GetGObject("AddRemoveCashOKBTN");
+  object = GetGObject("CashOKBTN");
   g_signal_connect(object, "clicked", G_CALLBACK(GUICallbackHandler),
                    (void *)CASH_OK_BTN);
   gtk_widget_set_sensitive(GTK_WIDGET(object), false);
 
-  object = GetGObject("AddRemoveCashValueSpinBTN");
+  object = GetGObject("CashSpinBTN");
   g_signal_connect(object, "changed", G_CALLBACK(GUICallbackHandler),
                    (void *)CASH_CURSOR_MOVE);
 }
@@ -631,11 +638,11 @@ static void gui_signal_connect(void *data)
 /* Connect widget signals to signal handlers. */
 {
   main_window_sig_connect(data);
-  securities_window_sig_connect();
+  security_window_sig_connect();
   bullion_window_sig_connect();
   preferences_window_sig_connect(data);
   api_window_sig_connect();
-  rsi_window_sig_connect(data);
+  history_window_sig_connect(data);
   other_window_sig_connect();
 }
 

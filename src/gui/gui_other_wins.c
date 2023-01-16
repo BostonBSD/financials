@@ -43,7 +43,7 @@ int PrefShowHide(void *data) {
   meta *D = package->GetMetaClass();
 
   /* get the GObject and cast as a GtkWidget */
-  GtkWidget *window = GetWidget("PreferencesWindow");
+  GtkWidget *window = GetWidget("PrefWindow");
   gboolean visible = gtk_widget_is_visible(window);
 
   if (visible) {
@@ -79,7 +79,7 @@ static void set_api_entry_box(const char *entry_box_name_ch,
   GtkWidget *EntryBox = GetWidget(entry_box_name_ch);
   gtk_entry_set_text(GTK_ENTRY(EntryBox), value_ch);
   /* If equity url entry box, grab focus */
-  if (strcasecmp(entry_box_name_ch, "ChangeApiInfoEquityUrlEntryBox") == 0)
+  if (strcasecmp(entry_box_name_ch, "ApiEquityUrlEntryBox") == 0)
     gtk_widget_grab_focus(EntryBox);
   g_object_set(G_OBJECT(EntryBox), "activates-default", TRUE, NULL);
 }
@@ -89,21 +89,19 @@ int APIShowHide(void *data) {
   portfolio_packet *package = (portfolio_packet *)data;
   meta *D = package->GetMetaClass();
 
-  GtkWidget *window = GetWidget("ChangeApiInfoWindow");
+  GtkWidget *window = GetWidget("ApiWindow");
   gboolean visible = gtk_widget_is_visible(window);
 
   if (visible) {
     gtk_widget_set_visible(window, false);
   } else {
-    GtkWidget *notebook = GetWidget("ChangeAPINotebook");
+    GtkWidget *notebook = GetWidget("APINotebook");
     gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), 0);
 
-    set_api_entry_box("ChangeApiInfoEquityUrlEntryBox", D->stock_url_ch);
-    set_api_entry_box("ChangeApiInfoUrlKeyEntryBox", D->curl_key_ch);
-    set_api_entry_box("ChangeApiInfoNasdaqSymbolsUrlEntryBox",
-                      D->Nasdaq_Symbol_url_ch);
-    set_api_entry_box("ChangeApiInfoNYSESymbolsUrlEntryBox",
-                      D->NYSE_Symbol_url_ch);
+    set_api_entry_box("ApiEquityUrlEntryBox", D->stock_url_ch);
+    set_api_entry_box("ApiUrlKeyEntryBox", D->curl_key_ch);
+    set_api_entry_box("ApiNasdaqSymbolsUrlEntryBox", D->Nasdaq_Symbol_url_ch);
+    set_api_entry_box("ApiNYSESymbolsUrlEntryBox", D->NYSE_Symbol_url_ch);
 
     gtk_widget_set_visible(window, true);
   }
@@ -113,7 +111,7 @@ int APIShowHide(void *data) {
 static void process_api_data(char *keyword, char *cur_value,
                              const char *new_value, meta *D) {
   if ((strcmp(cur_value, new_value) != 0)) {
-    SqliteAddAPIData(keyword, new_value, D);
+    SqliteAPIAdd(keyword, new_value, D);
     CopyString(&cur_value, new_value);
   }
 }
@@ -124,16 +122,16 @@ int APIOk(void *data) {
   equity_folder *F = package->GetEquityFolderClass();
   meta *D = package->GetMetaClass();
 
-  const gchar *new = GetEntryText("ChangeApiInfoEquityUrlEntryBox");
+  const gchar *new = GetEntryText("ApiEquityUrlEntryBox");
   process_api_data("Stock_URL", D->stock_url_ch, new, D);
 
-  new = GetEntryText("ChangeApiInfoUrlKeyEntryBox");
+  new = GetEntryText("ApiUrlKeyEntryBox");
   process_api_data("URL_KEY", D->curl_key_ch, new, D);
 
-  new = GetEntryText("ChangeApiInfoNasdaqSymbolsUrlEntryBox");
+  new = GetEntryText("ApiNasdaqSymbolsUrlEntryBox");
   process_api_data("Nasdaq_Symbol_URL", D->Nasdaq_Symbol_url_ch, new, D);
 
-  new = GetEntryText("ChangeApiInfoNYSESymbolsUrlEntryBox");
+  new = GetEntryText("ApiNYSESymbolsUrlEntryBox");
   process_api_data("NYSE_Symbol_URL", D->NYSE_Symbol_url_ch, new, D);
 
   /* Generate the Equity Request URLs. */
@@ -142,13 +140,12 @@ int APIOk(void *data) {
 }
 
 int APICursorMove() {
-  GtkWidget *Button = GetWidget("ChangeApiInfoOKBTN");
+  GtkWidget *Button = GetWidget("ApiOKBTN");
 
-  const gchar *Equity_URL = GetEntryText("ChangeApiInfoEquityUrlEntryBox");
-  const gchar *URL_KEY = GetEntryText("ChangeApiInfoUrlKeyEntryBox");
-  const gchar *Nasdaq_URL =
-      GetEntryText("ChangeApiInfoNasdaqSymbolsUrlEntryBox");
-  const gchar *NYSE_URL = GetEntryText("ChangeApiInfoNYSESymbolsUrlEntryBox");
+  const gchar *Equity_URL = GetEntryText("ApiEquityUrlEntryBox");
+  const gchar *URL_KEY = GetEntryText("ApiUrlKeyEntryBox");
+  const gchar *Nasdaq_URL = GetEntryText("ApiNasdaqSymbolsUrlEntryBox");
+  const gchar *NYSE_URL = GetEntryText("ApiNYSESymbolsUrlEntryBox");
 
   gboolean check = CheckValidString(Equity_URL) & CheckValidString(URL_KEY);
   check = check & CheckValidString(Nasdaq_URL) & CheckValidString(NYSE_URL);
@@ -163,12 +160,12 @@ int APICursorMove() {
 }
 
 int BullionComBoxChange() {
-  GtkWidget *ComboBox = GetWidget("AddRemoveBullionComboBox");
+  GtkWidget *ComboBox = GetWidget("BullionComboBox");
   gint index = gtk_combo_box_get_active(GTK_COMBO_BOX(ComboBox));
-  GtkWidget *gold_frame = GetWidget("AddRemoveBullionGoldFrame");
-  GtkWidget *silver_frame = GetWidget("AddRemoveBullionSilverFrame");
-  GtkWidget *platinum_frame = GetWidget("AddRemoveBullionPlatinumFrame");
-  GtkWidget *palladium_frame = GetWidget("AddRemoveBullionPalladiumFrame");
+  GtkWidget *gold_frame = GetWidget("BullionGoldFrame");
+  GtkWidget *silver_frame = GetWidget("BullionSilverFrame");
+  GtkWidget *platinum_frame = GetWidget("BullionPlatinumFrame");
+  GtkWidget *palladium_frame = GetWidget("BullionPalladiumFrame");
 
   enum { GOLD, SILVER, PLATINUM };
 
@@ -213,7 +210,7 @@ static void set_bullion_entry_box(const char *entry_box_name_ch, double value,
   ToNumStr(temp); /* remove commas */
   gtk_entry_set_text(GTK_ENTRY(EntryBox), temp);
   /* If gold ounces entry box, grab focus */
-  if (strcasecmp(entry_box_name_ch, "AddRemoveBullionGoldOuncesEntryBox") == 0)
+  if (strcasecmp(entry_box_name_ch, "BullionGoldOuncesEntryBox") == 0)
     gtk_widget_grab_focus(EntryBox);
   g_object_set(G_OBJECT(EntryBox), "activates-default", TRUE, NULL);
   g_free(temp);
@@ -224,43 +221,40 @@ int BullionShowHide(void *data) {
   portfolio_packet *package = (portfolio_packet *)data;
   metal *M = package->GetMetalClass();
 
-  GtkWidget *window = GetWidget("AddRemoveBullionWindow");
+  GtkWidget *window = GetWidget("BullionWindow");
   gboolean visible = gtk_widget_is_visible(window);
 
   if (visible) {
     gtk_widget_set_visible(window, false);
   } else {
     /* Set EntryBoxes */
-    set_bullion_entry_box("AddRemoveBullionGoldOuncesEntryBox",
-                          M->Gold->ounce_f, 4);
-    set_bullion_entry_box("AddRemoveBullionGoldPremiumEntryBox",
-                          M->Gold->premium_f, 2);
+    set_bullion_entry_box("BullionGoldOuncesEntryBox", M->Gold->ounce_f, 4);
+    set_bullion_entry_box("BullionGoldPremiumEntryBox", M->Gold->premium_f, 2);
 
-    set_bullion_entry_box("AddRemoveBullionSilverOuncesEntryBox",
-                          M->Silver->ounce_f, 4);
-    set_bullion_entry_box("AddRemoveBullionSilverPremiumEntryBox",
-                          M->Silver->premium_f, 2);
+    set_bullion_entry_box("BullionSilverOuncesEntryBox", M->Silver->ounce_f, 4);
+    set_bullion_entry_box("BullionSilverPremiumEntryBox", M->Silver->premium_f,
+                          2);
 
-    set_bullion_entry_box("AddRemoveBullionPlatinumOuncesEntryBox",
-                          M->Platinum->ounce_f, 4);
-    set_bullion_entry_box("AddRemoveBullionPlatinumPremiumEntryBox",
+    set_bullion_entry_box("BullionPlatinumOuncesEntryBox", M->Platinum->ounce_f,
+                          4);
+    set_bullion_entry_box("BullionPlatinumPremiumEntryBox",
                           M->Platinum->premium_f, 2);
 
-    set_bullion_entry_box("AddRemoveBullionPalladiumOuncesEntryBox",
+    set_bullion_entry_box("BullionPalladiumOuncesEntryBox",
                           M->Palladium->ounce_f, 4);
-    set_bullion_entry_box("AddRemoveBullionPalladiumPremiumEntryBox",
+    set_bullion_entry_box("BullionPalladiumPremiumEntryBox",
                           M->Palladium->premium_f, 2);
 
-    GtkWidget *frame = GetWidget("AddRemoveBullionGoldFrame");
+    GtkWidget *frame = GetWidget("BullionGoldFrame");
     gtk_widget_set_visible(frame, true);
-    frame = GetWidget("AddRemoveBullionSilverFrame");
+    frame = GetWidget("BullionSilverFrame");
     gtk_widget_set_visible(frame, false);
-    frame = GetWidget("AddRemoveBullionPlatinumFrame");
+    frame = GetWidget("BullionPlatinumFrame");
     gtk_widget_set_visible(frame, false);
-    frame = GetWidget("AddRemoveBullionPalladiumFrame");
+    frame = GetWidget("BullionPalladiumFrame");
     gtk_widget_set_visible(frame, false);
 
-    GtkWidget *combobox = GetWidget("AddRemoveBullionComboBox");
+    GtkWidget *combobox = GetWidget("BullionComboBox");
     gtk_combo_box_set_active(GTK_COMBO_BOX(combobox), 0);
 
     gtk_widget_set_visible(window, true);
@@ -328,7 +322,7 @@ static bool process_bullion_data(const char *metal_ch,
       /* We need to fetch data for this bullion. */
       new_bullion = true;
     }
-    SqliteAddBullion(metal_ch, new_ounces_ch, new_premium_ch, D);
+    SqliteBullionAdd(metal_ch, new_ounces_ch, new_premium_ch, D);
     B->ounce_f = new_ounces_f;
     B->premium_f = new_premium_f;
   }
@@ -358,26 +352,26 @@ static bool process_bullion(const int metal_int, portfolio_packet *pkg) {
 
   switch (metal_int) {
   case GOLD:
-    ounce_entry_name_ch = "AddRemoveBullionGoldOuncesEntryBox";
-    premium_entry_name_ch = "AddRemoveBullionGoldPremiumEntryBox";
+    ounce_entry_name_ch = "BullionGoldOuncesEntryBox";
+    premium_entry_name_ch = "BullionGoldPremiumEntryBox";
     metal_ch = "gold";
     B = M->Gold;
     break;
   case SILVER:
-    ounce_entry_name_ch = "AddRemoveBullionSilverOuncesEntryBox";
-    premium_entry_name_ch = "AddRemoveBullionSilverPremiumEntryBox";
+    ounce_entry_name_ch = "BullionSilverOuncesEntryBox";
+    premium_entry_name_ch = "BullionSilverPremiumEntryBox";
     metal_ch = "silver";
     B = M->Silver;
     break;
   case PLATINUM:
-    ounce_entry_name_ch = "AddRemoveBullionPlatinumOuncesEntryBox";
-    premium_entry_name_ch = "AddRemoveBullionPlatinumPremiumEntryBox";
+    ounce_entry_name_ch = "BullionPlatinumOuncesEntryBox";
+    premium_entry_name_ch = "BullionPlatinumPremiumEntryBox";
     metal_ch = "platinum";
     B = M->Platinum;
     break;
   case PALLADIUM:
-    ounce_entry_name_ch = "AddRemoveBullionPalladiumOuncesEntryBox";
-    premium_entry_name_ch = "AddRemoveBullionPalladiumPremiumEntryBox";
+    ounce_entry_name_ch = "BullionPalladiumOuncesEntryBox";
+    premium_entry_name_ch = "BullionPalladiumPremiumEntryBox";
     metal_ch = "palladium";
     B = M->Palladium;
     break;
@@ -424,26 +418,22 @@ int BullionOk(void *data) {
 }
 
 int BullionCursorMove() {
-  GtkWidget *Button = GetWidget("AddRemoveBullionOKBTN");
+  GtkWidget *Button = GetWidget("BullionOKBTN");
 
-  const gchar *Gold_Ounces = GetEntryText("AddRemoveBullionGoldOuncesEntryBox");
-  const gchar *Gold_Premium =
-      GetEntryText("AddRemoveBullionGoldPremiumEntryBox");
+  const gchar *Gold_Ounces = GetEntryText("BullionGoldOuncesEntryBox");
+  const gchar *Gold_Premium = GetEntryText("BullionGoldPremiumEntryBox");
 
-  const gchar *Silver_Ounces =
-      GetEntryText("AddRemoveBullionSilverOuncesEntryBox");
-  const gchar *Silver_Premium =
-      GetEntryText("AddRemoveBullionSilverPremiumEntryBox");
+  const gchar *Silver_Ounces = GetEntryText("BullionSilverOuncesEntryBox");
+  const gchar *Silver_Premium = GetEntryText("BullionSilverPremiumEntryBox");
 
-  const gchar *Platinum_Ounces =
-      GetEntryText("AddRemoveBullionPlatinumOuncesEntryBox");
+  const gchar *Platinum_Ounces = GetEntryText("BullionPlatinumOuncesEntryBox");
   const gchar *Platinum_Premium =
-      GetEntryText("AddRemoveBullionPlatinumPremiumEntryBox");
+      GetEntryText("BullionPlatinumPremiumEntryBox");
 
   const gchar *Palladium_Ounces =
-      GetEntryText("AddRemoveBullionPalladiumOuncesEntryBox");
+      GetEntryText("BullionPalladiumOuncesEntryBox");
   const gchar *Palladium_Premium =
-      GetEntryText("AddRemoveBullionPalladiumPremiumEntryBox");
+      GetEntryText("BullionPalladiumPremiumEntryBox");
 
   gboolean valid_num = CheckIfStringDoublePositiveNumber(Gold_Ounces) &
                        CheckIfStringDoublePositiveNumber(Gold_Premium);
@@ -477,14 +467,14 @@ int CashShowHide(void *data) {
   portfolio_packet *package = (portfolio_packet *)data;
   meta *D = package->GetMetaClass();
 
-  GtkWidget *window = GetWidget("AddRemoveCashWindow");
+  GtkWidget *window = GetWidget("CashWindow");
   gboolean visible = gtk_widget_is_visible(window);
 
   if (visible) {
     gtk_widget_set_visible(window, false);
   } else {
     /* Set SpinButton's Value */
-    GtkWidget *spinbutton = GetWidget("AddRemoveCashValueSpinBTN");
+    GtkWidget *spinbutton = GetWidget("CashSpinBTN");
 
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(spinbutton), D->cash_f);
     g_object_set(G_OBJECT(spinbutton), "activates-default", TRUE, NULL);
@@ -500,20 +490,20 @@ int CashOk(void *data) {
   portfolio_packet *package = (portfolio_packet *)data;
   meta *D = package->GetMetaClass();
 
-  const gchar *new_value = GetEntryText("AddRemoveCashValueSpinBTN");
+  const gchar *new_value = GetEntryText("CashSpinBTN");
   double new_f = strtod(new_value, NULL);
 
   if (new_f != D->cash_f) {
     D->cash_f = new_f;
-    SqliteAddCash(new_value, D);
+    SqliteCashAdd(new_value, D);
   }
   return 0;
 }
 
 int CashCursorMove() {
-  GtkWidget *Button = GetWidget("AddRemoveCashOKBTN");
+  GtkWidget *Button = GetWidget("CashOKBTN");
 
-  const gchar *value = GetEntryText("AddRemoveCashValueSpinBTN");
+  const gchar *value = GetEntryText("CashSpinBTN");
 
   if (CheckIfStringDoublePositiveNumber(value) && CheckValidString(value)) {
     gtk_widget_set_sensitive(Button, true);
@@ -544,7 +534,7 @@ int AboutShowHide() {
 }
 
 int HotkeysShowHide() {
-  GtkWidget *window = GetWidget("ShortcutWindow");
+  GtkWidget *window = GetWidget("HotkeysWindow");
   gboolean visible = gtk_widget_is_visible(window);
 
   if (visible) {

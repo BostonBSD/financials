@@ -39,42 +39,42 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/mutex.h"
 #include "../include/workfuncs.h"
 
-int RSICompletionSet(void *data) {
-  CompletionSet(data, GUI_COMPLETION_RSI);
+int HistoryCompletionSet(void *data) {
+  CompletionSet(data, GUI_COMPLETION_HISTORY);
   return 0;
 }
 
-int RSIShowHide(void *data) {
+int HistoryShowHide(void *data) {
   portfolio_packet *pkg = (portfolio_packet *)data;
   window_data *W = pkg->GetWindowData();
 
   /* get the GObject and cast as a GtkWidget */
-  GtkWidget *window = GetWidget("ViewRSIWindow");
+  GtkWidget *window = GetWidget("HistoryWindow");
   gboolean visible = gtk_widget_is_visible(window);
 
   if (visible) {
     gtk_widget_set_visible(window, false);
-    gtk_window_resize(GTK_WINDOW(window), W->rsi_width, W->rsi_height);
-    gtk_window_move(GTK_WINDOW(window), W->rsi_x_pos, W->rsi_y_pos);
+    gtk_window_resize(GTK_WINDOW(window), W->history_width, W->history_height);
+    gtk_window_move(GTK_WINDOW(window), W->history_x_pos, W->history_y_pos);
   } else {
-    gtk_window_resize(GTK_WINDOW(window), W->rsi_width, W->rsi_height);
-    gtk_window_move(GTK_WINDOW(window), W->rsi_x_pos, W->rsi_y_pos);
+    gtk_window_resize(GTK_WINDOW(window), W->history_width, W->history_height);
+    gtk_window_move(GTK_WINDOW(window), W->history_x_pos, W->history_y_pos);
 
-    GtkWidget *Button = GetWidget("ViewRSIFetchDataBTN");
+    GtkWidget *Button = GetWidget("HistoryFetchDataBTN");
     gtk_widget_set_sensitive(Button, false);
     g_object_set(G_OBJECT(Button), "can-default", TRUE, "has-default", TRUE,
                  NULL);
 
     /* Reset EntryBox */
-    GtkWidget *EntryBox = GetWidget("ViewRSISymbolEntryBox");
+    GtkWidget *EntryBox = GetWidget("HistorySymbolEntryBox");
     gtk_entry_set_text(GTK_ENTRY(EntryBox), "");
     g_object_set(G_OBJECT(EntryBox), "activates-default", TRUE, NULL);
     gtk_widget_grab_focus(EntryBox);
 
-    GtkWidget *Label = GetWidget("ViewRSIStockSymbolLabel");
+    GtkWidget *Label = GetWidget("HistoryStockSymbolLabel");
     gtk_label_set_text(GTK_LABEL(Label), "");
 
-    GtkWidget *scrwindow = GetWidget("ViewRSIScrolledWindow");
+    GtkWidget *scrwindow = GetWidget("HistoryScrolledWindow");
     gtk_scrolled_window_set_vadjustment(GTK_SCROLLED_WINDOW(scrwindow), NULL);
 
     gtk_widget_set_visible(window, true);
@@ -82,9 +82,9 @@ int RSIShowHide(void *data) {
   return 0;
 }
 
-int RSICursorMove() {
-  const gchar *s = GetEntryText("ViewRSISymbolEntryBox");
-  GtkWidget *Button = GetWidget("ViewRSIFetchDataBTN");
+int HistoryCursorMove() {
+  const gchar *s = GetEntryText("HistorySymbolEntryBox");
+  GtkWidget *Button = GetWidget("HistoryFetchDataBTN");
 
   if (CheckValidString(s)) {
     gtk_widget_set_sensitive(Button, true);
@@ -95,9 +95,9 @@ int RSICursorMove() {
   return 0;
 }
 
-int RSITreeViewClear() {
+int HistoryTreeViewClear() {
   /* Clear the GtkTreeView. */
-  GtkWidget *treeview = GetWidget("ViewRSITreeView");
+  GtkWidget *treeview = GetWidget("HistoryTreeView");
   GtkTreeViewColumn *column;
   gushort n = gtk_tree_view_get_n_columns(GTK_TREE_VIEW(treeview));
 
@@ -110,83 +110,23 @@ int RSITreeViewClear() {
   return 0;
 }
 
-static void rsi_set_columns() {
-  GtkCellRenderer *renderer;
-  GtkTreeViewColumn *column;
-  GtkWidget *list = GetWidget("ViewRSITreeView");
+static char *col_names[HISTORY_N_COLUMNS] = {
+    "Date", "Price",    "High", "Low", "Open",     "Pr. Close",
+    "Chg",  "Gain (%)", "Vol.", "RSI", "Indicator"};
 
-  renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes("Date", renderer, "markup",
-                                                    RSI_COLUMN_ONE, NULL);
-  gtk_tree_view_column_set_resizable(column, true);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
+static void history_set_columns() {
+  GtkWidget *list = GetWidget("HistoryTreeView");
 
-  renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes("Price", renderer, "markup",
-                                                    RSI_COLUMN_TWO, NULL);
-  gtk_tree_view_column_set_resizable(column, true);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
-
-  renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes("High", renderer, "markup",
-                                                    RSI_COLUMN_THREE, NULL);
-  gtk_tree_view_column_set_resizable(column, true);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
-
-  renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes("Low", renderer, "markup",
-                                                    RSI_COLUMN_FOUR, NULL);
-  gtk_tree_view_column_set_resizable(column, true);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
-
-  renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes("Open", renderer, "markup",
-                                                    RSI_COLUMN_FIVE, NULL);
-  gtk_tree_view_column_set_resizable(column, true);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
-
-  renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(
-      "Pr. Close", renderer, "markup", RSI_COLUMN_SIX, NULL);
-  gtk_tree_view_column_set_resizable(column, true);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
-
-  renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes("Chg", renderer, "markup",
-                                                    RSI_COLUMN_SEVEN, NULL);
-  gtk_tree_view_column_set_resizable(column, true);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
-
-  renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(
-      "Gain (%)", renderer, "markup", RSI_COLUMN_EIGHT, NULL);
-  gtk_tree_view_column_set_resizable(column, true);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
-
-  renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes("Vol.", renderer, "markup",
-                                                    RSI_COLUMN_NINE, NULL);
-  gtk_tree_view_column_set_resizable(column, true);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
-
-  renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes("RSI", renderer, "markup",
-                                                    RSI_COLUMN_TEN, NULL);
-  gtk_tree_view_column_set_resizable(column, true);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
-
-  renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(
-      "Indicator", renderer, "markup", RSI_COLUMN_ELEVEN, NULL);
-  gtk_tree_view_column_set_resizable(column, true);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
+  for (gushort g = 0; g < HISTORY_N_COLUMNS; g++) {
+    AddColumnToTreeview(col_names[g], g, list);
+  }
 }
 
-int RSISetSNLabel(void *data) {
+int HistorySetSNLabel(void *data) {
   gchar *sec_name;
   data ? (sec_name = (gchar *)data) : (sec_name = NULL);
 
-  GtkWidget *Label = GetWidget("ViewRSIStockSymbolLabel");
+  GtkWidget *Label = GetWidget("HistoryStockSymbolLabel");
 
   gushort len = strlen(sec_name ? sec_name : "");
   if (len >= 96) {
@@ -203,7 +143,7 @@ int RSISetSNLabel(void *data) {
   return 0;
 }
 
-int RSIGetSymbol(char **s)
+int HistoryGetSymbol(char **s)
 /* Get the stock symbol from the EntryBox.
    Must free string buffer.
 
@@ -211,14 +151,14 @@ int RSIGetSymbol(char **s)
    Gtk outside the Gtk Main Loop.
 */
 {
-  s[0] = strdup(GetEntryText("ViewRSISymbolEntryBox"));
+  s[0] = strdup(GetEntryText("HistorySymbolEntryBox"));
   UpperCaseStr(s[0]);
 
   return 0;
 }
 
 enum { RUN, RESET };
-static bool rsi_ready(double gain_f, double *rsi_f, int state) {
+static bool history_rsi_ready(double gain_f, double *rsi_f, int state) {
   /* We need to remember the running averages
      and the counter between iterations. */
   static unsigned short c = 0;
@@ -232,19 +172,19 @@ static bool rsi_ready(double gain_f, double *rsi_f, int state) {
 
   /* For 13 days we sum the gains and losses. */
   if (c < 13) {
-    Summation(gain_f, &avg_gain_f, &avg_loss_f);
+    CalcSumRsi(gain_f, &avg_gain_f, &avg_loss_f);
   }
   /* On the 14th day we calculate the regular average and use that to seed a
    * running average. */
   else if (c == 13) {
-    Summation(gain_f, &avg_gain_f, &avg_loss_f);
+    CalcSumRsi(gain_f, &avg_gain_f, &avg_loss_f);
     avg_gain_f /= 14.0f;
     avg_loss_f /= 14.0f;
   }
   /* On the 15th day we start calculating the RSI. */
   else {
     /* Calculate the running average. */
-    CalcAvg(gain_f, &avg_gain_f, &avg_loss_f);
+    CalcRunAvgRsi(gain_f, &avg_gain_f, &avg_loss_f);
     /* Calculate the rsi. */
     *rsi_f = CalcRsi(avg_gain_f, avg_loss_f);
     c++;
@@ -266,16 +206,17 @@ typedef struct {
   char *rsi_ch;
   char *volume_ch;
   char *indicator_ch;
-} rsi_strings;
+} history_strings;
 
-static bool rsi_calculate(char *line, rsi_strings *strings, int state) {
+static bool history_rsi_calculate(char *line, history_strings *strings,
+                                  int state) {
   /* We need to remember the last closing price in the next iteration. */
   static double cur_price_f = 0.0f;
 
   if (state == RESET) {
     /* Reset the static variables. */
     cur_price_f = 0.0f;
-    rsi_ready(0.0, NULL, RESET);
+    history_rsi_ready(0.0, NULL, RESET);
     return false;
   }
 
@@ -296,7 +237,7 @@ static bool rsi_calculate(char *line, rsi_strings *strings, int state) {
   }
 
   gain_f = CalcGain(cur_price_f, prev_price_f);
-  if (!rsi_ready(gain_f, &rsi_f, RUN)) {
+  if (!history_rsi_ready(gain_f, &rsi_f, RUN)) {
     /* Until we get 14 days of data return false. */
     free_csv_line(csv_array);
     return false;
@@ -346,32 +287,32 @@ static bool rsi_calculate(char *line, rsi_strings *strings, int state) {
   return true;
 }
 
-static void rsi_set_store_thd_cleanup(void *data) {
-  rsi_strings *rsi_strs = (rsi_strings *)data;
+static void history_set_store_thd_cleanup(void *data) {
+  history_strings *history_strs = (history_strings *)data;
 
   /* Reset the static variables. */
-  rsi_calculate(NULL, NULL, RESET);
+  history_rsi_calculate(NULL, NULL, RESET);
 
-  free(rsi_strs->date_ch);
-  free(rsi_strs->gain_ch);
-  free(rsi_strs->rsi_ch);
-  free(rsi_strs->volume_ch);
-  free(rsi_strs->price_ch);
-  free(rsi_strs->high_ch);
-  free(rsi_strs->low_ch);
-  free(rsi_strs->opening_ch);
-  free(rsi_strs->change_ch);
-  free(rsi_strs->prev_closing_ch);
-  free(rsi_strs->indicator_ch);
+  free(history_strs->date_ch);
+  free(history_strs->gain_ch);
+  free(history_strs->rsi_ch);
+  free(history_strs->volume_ch);
+  free(history_strs->price_ch);
+  free(history_strs->high_ch);
+  free(history_strs->low_ch);
+  free(history_strs->opening_ch);
+  free(history_strs->change_ch);
+  free(history_strs->prev_closing_ch);
+  free(history_strs->indicator_ch);
 }
 
-static void rsi_set_store(GtkListStore *store, const char *curl_data) {
+static void history_set_store(GtkListStore *store, const char *curl_data) {
   if (curl_data == NULL) {
     return;
   }
 
-  rsi_strings rsi_strs = (rsi_strings){NULL};
-  pthread_cleanup_push(rsi_set_store_thd_cleanup, &rsi_strs);
+  history_strings history_strs = (history_strings){NULL};
+  pthread_cleanup_push(history_set_store_thd_cleanup, &history_strs);
 
   GtkTreeIter iter;
 
@@ -395,7 +336,7 @@ static void rsi_set_store(GtkListStore *store, const char *curl_data) {
       break;
 
     /* Don't start adding rows until we get 14 days of data. */
-    if (!rsi_calculate(line, &rsi_strs, RUN))
+    if (!history_rsi_calculate(line, &history_strs, RUN))
       continue;
 
     /* Add data to the storage container. */
@@ -403,39 +344,41 @@ static void rsi_set_store(GtkListStore *store, const char *curl_data) {
        The last [most recent] entry needs to be at the top. */
     gtk_list_store_prepend(store, &iter);
     gtk_list_store_set(
-        store, &iter, RSI_COLUMN_ONE, rsi_strs.date_ch, RSI_COLUMN_TWO,
-        rsi_strs.price_ch, RSI_COLUMN_THREE, rsi_strs.high_ch, RSI_COLUMN_FOUR,
-        rsi_strs.low_ch, RSI_COLUMN_FIVE, rsi_strs.opening_ch, RSI_COLUMN_SIX,
-        rsi_strs.prev_closing_ch, RSI_COLUMN_SEVEN, rsi_strs.change_ch,
-        RSI_COLUMN_EIGHT, rsi_strs.gain_ch, RSI_COLUMN_NINE, rsi_strs.volume_ch,
-        RSI_COLUMN_TEN, rsi_strs.rsi_ch, RSI_COLUMN_ELEVEN,
-        rsi_strs.indicator_ch, -1);
+        store, &iter, HISTORY_COLUMN_ONE, history_strs.date_ch,
+        HISTORY_COLUMN_TWO, history_strs.price_ch, HISTORY_COLUMN_THREE,
+        history_strs.high_ch, HISTORY_COLUMN_FOUR, history_strs.low_ch,
+        HISTORY_COLUMN_FIVE, history_strs.opening_ch, HISTORY_COLUMN_SIX,
+        history_strs.prev_closing_ch, HISTORY_COLUMN_SEVEN,
+        history_strs.change_ch, HISTORY_COLUMN_EIGHT, history_strs.gain_ch,
+        HISTORY_COLUMN_NINE, history_strs.volume_ch, HISTORY_COLUMN_TEN,
+        history_strs.rsi_ch, HISTORY_COLUMN_ELEVEN, history_strs.indicator_ch,
+        -1);
   }
 
   fclose(fp);
   pthread_cleanup_pop(1);
 }
 
-GtkListStore *RSIMakeStore(const char *data_str) {
+GtkListStore *HistoryMakeStore(const char *data_str) {
   GtkListStore *store;
 
   /* Set up the storage container with the number of columns and column type */
-  store = gtk_list_store_new(RSI_N_COLUMNS, G_TYPE_STRING, G_TYPE_STRING,
+  store = gtk_list_store_new(HISTORY_N_COLUMNS, G_TYPE_STRING, G_TYPE_STRING,
                              G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
                              G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
                              G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 
   /* Add data to the storage container, pass in the data_str pointer. */
-  rsi_set_store(store, data_str);
+  history_set_store(store, data_str);
   return store;
 }
 
-int RSIMakeTreeview(void *data) {
+int HistoryMakeTreeview(void *data) {
   GtkListStore *store = (GtkListStore *)data;
-  GtkWidget *list = GetWidget("ViewRSITreeView");
+  GtkWidget *list = GetWidget("HistoryTreeView");
 
   /* Set the columns for the new TreeView model */
-  rsi_set_columns();
+  history_set_columns();
 
   /* Add the store of data to the list. */
   gtk_tree_view_set_model(GTK_TREE_VIEW(list), GTK_TREE_MODEL(store));

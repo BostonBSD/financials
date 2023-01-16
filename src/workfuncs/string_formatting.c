@@ -130,10 +130,12 @@ void CopyString(char **dst, const char *src)
 
 void ToNumStr(char *s)
 /* Remove all dollar signs '$', commas ',', braces '(',
-   percent signs '%', '-' negative signs, and '+' plus
-   signs from a string. */
-/* This assumes a en_US locale, other locales would need to edit this function
-   or provide their own [other locales use commas and decimals differently,
+   percent signs '%', negative signs '-', and plus
+   signs '+'  from a string. */
+
+/* This assumes a en_US locale, other locales would
+   need to edit this function or provide their own
+   [other locales use commas and decimals differently,
    different currency symbol]. */
 {
   /* Read character by character until the null character is reached. */
@@ -141,7 +143,7 @@ void ToNumStr(char *s)
     /* If s[i] is one of these characters */
     if (strchr("$,()%-+", (int)s[i])) {
       /* Read each character thereafter and */
-      for (int j = i; s[j]; j++) {
+      for (unsigned int j = i; s[j]; j++) {
         /* Shift the array to the left one character [remove the character] */
         s[j] = s[j + 1];
       }
@@ -228,68 +230,6 @@ static size_t length_doub_string(const double n, const unsigned short dec_pts,
 
   /* The string length not including the null character. */
   return len;
-}
-
-void StringToMonStr(char **dst, const char *src,
-                    const unsigned short digits_right)
-/* Take in a string buffer, a number string, and the precision,
-   Convert the number string, src, to a monetary string, dst[0].
-   If the src string cannot be converted to a double, undefined behavior.
-
-   If *dst = NULL, will allocate memory.
-   If dst = NULL, src = NULL, or precision is > 4
-   do nothing.
-
-   Reallocs memory to fit the monetary string.
-
-   Take care that *dst is not an unallocated ptr address.
-   Set *dst = NULL first.
-   */
-{
-  if (!dst || !src || digits_right > 4)
-    return;
-  if (dst[0] == NULL)
-    dst[0] = malloc(1);
-
-  double num = strtod(src, NULL);
-  size_t len = length_doub_string(num, digits_right, MON_STR) + 1;
-
-  /* Adjust the string length */
-  char *tmp = realloc(dst[0], len);
-
-  if (tmp == NULL) {
-    printf("Not Enough Memory, realloc returned NULL.\n");
-    exit(EXIT_FAILURE);
-  }
-
-  dst[0] = tmp;
-
-  /* Set the format string. */
-  switch (digits_right) {
-  case 0:
-    tmp = "%(.0n";
-    break;
-  case 1:
-    tmp = "%(.1n";
-    break;
-  case 2:
-    tmp = "%(.2n";
-    break;
-  case 3:
-    tmp = "%(.3n";
-    break;
-  default:
-    tmp = "%(.4n";
-    break;
-  }
-
-  /* The C.UTF-8 locale does not have a monetary
-     format and is the default in C.
-  */
-
-  /* Set the string value. */
-  setlocale(LC_ALL, LOCALE);
-  strfmon(dst[0], len, tmp, num);
 }
 
 double StringToDouble(const char *str)
@@ -414,4 +354,27 @@ void DoubleToFormattedStr(char **dst, const double num,
     exit(EXIT_FAILURE);
     break;
   }
+}
+
+void StringToMonStr(char **dst, const char *src,
+                    const unsigned short digits_right)
+/* Take in a string buffer, a number string, and the precision,
+   Convert the number string, src, to a monetary string, dst[0].
+   If the src string cannot be converted to a double, undefined behavior.
+
+   If *dst = NULL, will allocate memory.
+   If dst = NULL, src = NULL, or precision is > 4
+   do nothing.
+
+   Reallocs memory to fit the monetary string.
+
+   Take care that *dst is not an unallocated ptr address.
+   Set *dst = NULL first.
+   */
+{
+  if (!dst || !src)
+    return;
+
+  double n = StringToDouble(src);
+  DoubleToFormattedStr(dst, n, digits_right, MON_STR);
 }

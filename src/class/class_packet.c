@@ -255,8 +255,8 @@ static void StopMultiCurlAll() {
   /* Symbol Name Fetch Multicurl Operation */
   D->StopSNMapCurl();
 
-  /* RSI Data Multicurl Operation */
-  D->StopRSICurl();
+  /* History Data Multicurl Operation */
+  D->StopHistoryCurl();
 
   /* Main Window Data Fetch Multicurl Operation */
   remove_main_curl_handles(packet);
@@ -271,10 +271,10 @@ static void SetWindowDataSql() {
   window_data *W = packet->GetWindowData();
 
   /* Save the Window Size and Location. */
-  SqliteAddMainWindowSize(W->main_width, W->main_height, D);
-  SqliteAddMainWindowPos(W->main_x_pos, W->main_y_pos, D);
-  SqliteAddRSIWindowSize(W->rsi_width, W->rsi_height, D);
-  SqliteAddRSIWindowPos(W->rsi_x_pos, W->rsi_y_pos, D);
+  SqliteMainWindowSizeAdd(W->main_width, W->main_height, D);
+  SqliteMainWindowPosAdd(W->main_x_pos, W->main_y_pos, D);
+  SqliteHistoryWindowSizeAdd(W->history_width, W->history_height, D);
+  SqliteHistoryWindowPosAdd(W->history_x_pos, W->history_y_pos, D);
 }
 
 static void *GetWindowData() { return &packet->meta_class->window_struct; }

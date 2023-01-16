@@ -102,10 +102,10 @@ unsigned int ClockSleepMicroSeconds();
 bool MarketOpen();
 
 /* working_functions */
-MemType *FetchRSIData(const char *, portfolio_packet *);
+MemType *FetchHistoryData(const char *, portfolio_packet *);
 double CalcGain(double, double);
-void Summation(double, double *, double *);
-void CalcAvg(double, double *, double *);
+void CalcSumRsi(double, double *, double *);
+void CalcRunAvgRsi(double, double *, double *);
 double CalcRsi(double, double);
 
 #endif /* WORKFUNCS_HEADER_H */

@@ -38,20 +38,21 @@ POSSIBILITY OF SUCH DAMAGE.
 
 void SqliteProcessing(portfolio_packet *);
 
-void SqliteAddEquity(const char *, const char *, meta *);
-void SqliteRemoveEquity(const char *, meta *);
-void SqliteRemoveAllEquity(meta *);
+void SqliteEquityAdd(const char *, const char *, meta *);
+void SqliteEquityRemove(const char *, meta *);
+void SqliteEquityRemoveAll(meta *);
 
-void SqliteAddBullion(const char *, const char *, const char *, meta *);
-void SqliteAddCash(const char *, meta *);
-void SqliteAddAPIData(const char *, const char *, meta *);
+void SqliteBullionAdd(const char *, const char *, const char *, meta *);
+void SqliteCashAdd(const char *, meta *);
+void SqliteAPIAdd(const char *, const char *, meta *);
+void SqlitePrefAdd(const char *, const char *, meta *);
 
-void SqliteAddMainWindowSize(unsigned short, unsigned short, meta *);
-void SqliteAddMainWindowPos(unsigned short, unsigned short, meta *);
-void SqliteAddRSIWindowSize(unsigned short, unsigned short, meta *);
-void SqliteAddRSIWindowPos(unsigned short, unsigned short, meta *);
+void SqliteMainWindowSizeAdd(unsigned short, unsigned short, meta *);
+void SqliteMainWindowPosAdd(unsigned short, unsigned short, meta *);
+void SqliteHistoryWindowSizeAdd(unsigned short, unsigned short, meta *);
+void SqliteHistoryWindowPosAdd(unsigned short, unsigned short, meta *);
 
-symbol_name_map *SqliteGetSymbolNameMap(meta *);
-void SqliteAddMap(symbol_name_map *, meta *);
+symbol_name_map *SqliteGetSNMap(meta *);
+void SqliteSNMapAdd(symbol_name_map *, meta *);
 
 #endif /* SQLITE_HEADER_H */

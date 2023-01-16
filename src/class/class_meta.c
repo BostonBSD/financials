@@ -123,13 +123,13 @@ static void CalculatePortfolio(void *data) {
       CalcGain(Met->portfolio_port_value_f, prev_total);
 }
 
-static void StopRSICurl() {
+static void StopHistoryCurl() {
   meta *Met = MetaClassObject;
 
-  curl_multi_wakeup(Met->multicurl_rsi_hnd);
+  curl_multi_wakeup(Met->multicurl_history_hnd);
   pthread_mutex_lock(&mutex_working[MULTICURL_NO_PROG_MUTEX]);
 
-  curl_multi_remove_handle(Met->multicurl_rsi_hnd, Met->rsi_hnd);
+  curl_multi_remove_handle(Met->multicurl_history_hnd, Met->history_hnd);
 
   pthread_mutex_unlock(&mutex_working[MULTICURL_NO_PROG_MUTEX]);
 }
@@ -532,26 +532,26 @@ meta *ClassInitMeta() {
   new_class->Nasdaq_Symbol_url_ch = strdup(NASDAQ_SYMBOL_URL);
   new_class->NYSE_Symbol_url_ch = strdup(NYSE_SYMBOL_URL);
 
-  new_class->cash_mrkd_ch = malloc(1);
-  new_class->portfolio_port_value_mrkd_ch = malloc(1);
-  new_class->portfolio_port_value_chg_mrkd_ch = malloc(1);
-  new_class->portfolio_port_value_p_chg_mrkd_ch = malloc(1);
+  new_class->cash_mrkd_ch = NULL;
+  new_class->portfolio_port_value_mrkd_ch = NULL;
+  new_class->portfolio_port_value_chg_mrkd_ch = NULL;
+  new_class->portfolio_port_value_p_chg_mrkd_ch = NULL;
 
-  new_class->index_dow_value_ch = malloc(1);
-  new_class->index_dow_value_chg_ch = malloc(1);
-  new_class->index_dow_value_p_chg_ch = malloc(1);
+  new_class->index_dow_value_ch = NULL;
+  new_class->index_dow_value_chg_ch = NULL;
+  new_class->index_dow_value_p_chg_ch = NULL;
 
-  new_class->index_nasdaq_value_ch = malloc(1);
-  new_class->index_nasdaq_value_chg_ch = malloc(1);
-  new_class->index_nasdaq_value_p_chg_ch = malloc(1);
+  new_class->index_nasdaq_value_ch = NULL;
+  new_class->index_nasdaq_value_chg_ch = NULL;
+  new_class->index_nasdaq_value_p_chg_ch = NULL;
 
-  new_class->index_sp_value_ch = malloc(1);
-  new_class->index_sp_value_chg_ch = malloc(1);
-  new_class->index_sp_value_p_chg_ch = malloc(1);
+  new_class->index_sp_value_ch = NULL;
+  new_class->index_sp_value_chg_ch = NULL;
+  new_class->index_sp_value_p_chg_ch = NULL;
 
-  new_class->crypto_bitcoin_value_ch = malloc(1);
-  new_class->crypto_bitcoin_value_chg_ch = malloc(1);
-  new_class->crypto_bitcoin_value_p_chg_ch = malloc(1);
+  new_class->crypto_bitcoin_value_ch = NULL;
+  new_class->crypto_bitcoin_value_chg_ch = NULL;
+  new_class->crypto_bitcoin_value_p_chg_ch = NULL;
 
   /* Set up the main treeview font */
   new_class->main_font_ch = strdup(MAIN_FONT);
@@ -579,7 +579,7 @@ meta *ClassInitMeta() {
   new_class->clocks_displayed_bool = true;
   new_class->main_win_default_view_bool = true;
 
-  new_class->rsi_hnd = curl_easy_init();
+  new_class->history_hnd = curl_easy_init();
   new_class->NASDAQ_completion_hnd = curl_easy_init();
   new_class->NYSE_completion_hnd = curl_easy_init();
 
@@ -589,7 +589,7 @@ meta *ClassInitMeta() {
   new_class->crypto_bitcoin_hnd = curl_easy_init();
 
   new_class->multicurl_cmpltn_hnd = curl_multi_init();
-  new_class->multicurl_rsi_hnd = curl_multi_init();
+  new_class->multicurl_history_hnd = curl_multi_init();
 
   new_class->INDEX_DOW_CURLDATA.memory = NULL;
   new_class->INDEX_DOW_CURLDATA.size = 0;
@@ -597,7 +597,7 @@ meta *ClassInitMeta() {
   new_class->INDEX_NASDAQ_CURLDATA.size = 0;
   new_class->INDEX_SP_CURLDATA.memory = NULL;
   new_class->INDEX_SP_CURLDATA.size = 0;
-  new_class->CRYPTO_BITCOIN_CURLDATA.memory = NULL; 
+  new_class->CRYPTO_BITCOIN_CURLDATA.memory = NULL;
   new_class->CRYPTO_BITCOIN_CURLDATA.size = 0;
 
   new_class->thread_id_clock = 0;
@@ -620,11 +620,11 @@ meta *ClassInitMeta() {
   new_class->home_dir_ch = strdup(pw->pw_dir);
 
   /* Append the sqlite db file paths to the end of the home directory path. */
-  size_t len = strlen(pw->pw_dir) + strlen(DB_FILE) + 1;
+  size_t len = snprintf(NULL, 0, "%s%s", pw->pw_dir, DB_FILE) + 1;
   new_class->sqlite_db_path_ch = (char *)malloc(len);
   snprintf(new_class->sqlite_db_path_ch, len, "%s%s", pw->pw_dir, DB_FILE);
 
-  len = strlen(pw->pw_dir) + strlen(SN_DB_FILE) + 1;
+  len = snprintf(NULL, 0, "%s%s", pw->pw_dir, SN_DB_FILE) + 1;
   new_class->sqlite_symbol_name_db_path_ch = (char *)malloc(len);
   snprintf(new_class->sqlite_symbol_name_db_path_ch, len, "%s%s", pw->pw_dir,
            SN_DB_FILE);
@@ -632,7 +632,7 @@ meta *ClassInitMeta() {
   /* Connect Function Pointers To Function Definitions */
   new_class->ToStringsPortfolio = ToStringsPortfolio;
   new_class->CalculatePortfolio = CalculatePortfolio;
-  new_class->StopRSICurl = StopRSICurl;
+  new_class->StopHistoryCurl = StopHistoryCurl;
   new_class->StopSNMapCurl = StopSNMapCurl;
   new_class->SetUpCurlIndicesData = SetUpCurlIndicesData;
   new_class->ExtractIndicesData = ExtractIndicesData;
@@ -731,8 +731,8 @@ void ClassDestructMeta(meta *meta_class) {
     curl_easy_cleanup(meta_class->NASDAQ_completion_hnd);
   if (meta_class->NYSE_completion_hnd)
     curl_easy_cleanup(meta_class->NYSE_completion_hnd);
-  if (meta_class->rsi_hnd)
-    curl_easy_cleanup(meta_class->rsi_hnd);
+  if (meta_class->history_hnd)
+    curl_easy_cleanup(meta_class->history_hnd);
 
   if (meta_class->index_dow_hnd)
     curl_easy_cleanup(meta_class->index_dow_hnd);
@@ -745,8 +745,8 @@ void ClassDestructMeta(meta *meta_class) {
 
   if (meta_class->multicurl_cmpltn_hnd)
     curl_multi_cleanup(meta_class->multicurl_cmpltn_hnd);
-  if (meta_class->multicurl_rsi_hnd)
-    curl_multi_cleanup(meta_class->multicurl_rsi_hnd);
+  if (meta_class->multicurl_history_hnd)
+    curl_multi_cleanup(meta_class->multicurl_history_hnd);
 
   FreeMemtype(&meta_class->INDEX_DOW_CURLDATA);
   FreeMemtype(&meta_class->INDEX_NASDAQ_CURLDATA);

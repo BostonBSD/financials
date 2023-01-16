@@ -183,6 +183,25 @@ static int api_callback(void *data, int argc, char **argv, char **ColName) {
     mdata->NYSE_Symbol_url_ch = strdup(argv[2] ? argv[2] : NYSE_SYMBOL_URL);
   }
 
+  pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
+
+  return 0;
+}
+
+static int pref_callback(void *data, int argc, char **argv, char **ColName) {
+  /* argv[0] is Id, argv[1] is Keyword, argv[2] is Data */
+  pthread_mutex_lock(&mutex_working[CLASS_MEMBER_MUTEX]);
+
+  if (argc != 3)
+    return 1;
+  if (strcmp(ColName[0], "Id") != 0)
+    return 1;
+  if (strcmp(ColName[1], "Keyword") != 0)
+    return 1;
+  if (strcmp(ColName[2], "Data") != 0)
+    return 1;
+
+  meta *mdata = (meta *)data;
   if (strcasecmp(argv[1], "Updates_Per_Min") == 0) {
     mdata->updates_per_min_f = strtod(argv[2] ? argv[2] : "6", NULL);
   }
@@ -212,7 +231,7 @@ static int api_callback(void *data, int argc, char **argv, char **ColName) {
     }
   }
 
-  if (strcasecmp(argv[1], "Main_TrVw_Font") == 0) {
+  if (strcasecmp(argv[1], "Main_Font") == 0) {
     free(mdata->main_font_ch);
     mdata->main_font_ch = strdup(argv[2] ? argv[2] : MAIN_FONT);
     SetFont(mdata->main_font_ch);
@@ -225,22 +244,22 @@ static int api_callback(void *data, int argc, char **argv, char **ColName) {
 
 static int main_wndwsz_callback(void *data, int argc, char **argv,
                                 char **ColName) {
-  /* argv[0] is Id, argv[1] is height, argv[2] is width */
+  /* argv[0] is Id, argv[1] is width, argv[2] is height */
   pthread_mutex_lock(&mutex_working[CLASS_MEMBER_MUTEX]);
 
   if (argc != 3)
     return 1;
   if (strcmp(ColName[0], "Id") != 0)
     return 1;
-  if (strcmp(ColName[1], "Height") != 0)
+  if (strcmp(ColName[1], "Width") != 0)
     return 1;
-  if (strcmp(ColName[2], "Width") != 0)
+  if (strcmp(ColName[2], "Height") != 0)
     return 1;
 
   window_data *window = (window_data *)data;
-  window->main_height =
-      (unsigned short)strtol(argv[1] ? argv[1] : "0", NULL, 10);
   window->main_width =
+      (unsigned short)strtol(argv[1] ? argv[1] : "0", NULL, 10);
+  window->main_height =
       (unsigned short)strtol(argv[2] ? argv[2] : "0", NULL, 10);
 
   pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
@@ -271,8 +290,8 @@ static int main_wndwpos_callback(void *data, int argc, char **argv,
   return 0;
 }
 
-static int rsi_wndwsz_callback(void *data, int argc, char **argv,
-                               char **ColName) {
+static int history_wndwsz_callback(void *data, int argc, char **argv,
+                                   char **ColName) {
   /* argv[0] is Id, argv[1] is height, argv[2] is width */
   pthread_mutex_lock(&mutex_working[CLASS_MEMBER_MUTEX]);
 
@@ -280,22 +299,23 @@ static int rsi_wndwsz_callback(void *data, int argc, char **argv,
     return 1;
   if (strcmp(ColName[0], "Id") != 0)
     return 1;
-  if (strcmp(ColName[1], "Height") != 0)
+  if (strcmp(ColName[1], "Width") != 0)
     return 1;
-  if (strcmp(ColName[2], "Width") != 0)
+  if (strcmp(ColName[2], "Height") != 0)
     return 1;
 
   window_data *window = (window_data *)data;
-  window->rsi_height =
+  window->history_width =
       (unsigned short)strtol(argv[1] ? argv[1] : "0", NULL, 10);
-  window->rsi_width = (unsigned short)strtol(argv[2] ? argv[2] : "0", NULL, 10);
+  window->history_height =
+      (unsigned short)strtol(argv[2] ? argv[2] : "0", NULL, 10);
 
   pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
   return 0;
 }
 
-static int rsi_wndwpos_callback(void *data, int argc, char **argv,
-                                char **ColName) {
+static int history_wndwpos_callback(void *data, int argc, char **argv,
+                                    char **ColName) {
   /* argv[0] is Id, argv[1] is X, argv[2] is Y */
   pthread_mutex_lock(&mutex_working[CLASS_MEMBER_MUTEX]);
 
@@ -309,8 +329,10 @@ static int rsi_wndwpos_callback(void *data, int argc, char **argv,
     return 1;
 
   window_data *window = (window_data *)data;
-  window->rsi_x_pos = (unsigned short)strtol(argv[1] ? argv[1] : "0", NULL, 10);
-  window->rsi_y_pos = (unsigned short)strtol(argv[2] ? argv[2] : "0", NULL, 10);
+  window->history_x_pos =
+      (unsigned short)strtol(argv[1] ? argv[1] : "0", NULL, 10);
+  window->history_y_pos =
+      (unsigned short)strtol(argv[2] ? argv[2] : "0", NULL, 10);
 
   pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
   return 0;
@@ -371,6 +393,12 @@ void SqliteProcessing(portfolio_packet *pkg) {
   if (sqlite3_open(D->sqlite_db_path_ch, &db) != SQLITE_OK)
     error_msg(db);
 
+  /* Create the prefdata table if it doesn't already exist. */
+  sql_cmd = "CREATE TABLE IF NOT EXISTS prefdata(Id INTEGER PRIMARY KEY, "
+            "Keyword TEXT NOT NULL, Data TEXT NOT NULL);";
+  if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
+    error_msg(db);
+
   /* Create the apidata table if it doesn't already exist. */
   sql_cmd = "CREATE TABLE IF NOT EXISTS apidata(Id INTEGER PRIMARY KEY, "
             "Keyword TEXT NOT NULL, Data TEXT NOT NULL);";
@@ -395,27 +423,28 @@ void SqliteProcessing(portfolio_packet *pkg) {
   if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
     error_msg(db);
 
-  /* Create the mainwindowsize table if it doesn't already exist. */
-  sql_cmd = "CREATE TABLE IF NOT EXISTS mainwindowsize(Id INTEGER PRIMARY KEY, "
-            "Height TEXT NOT NULL, Width TEXT NOT NULL);";
+  /* Create the mainwinsize table if it doesn't already exist. */
+  sql_cmd = "CREATE TABLE IF NOT EXISTS mainwinsize(Id INTEGER PRIMARY KEY, "
+            "Width TEXT NOT NULL, Height TEXT NOT NULL);";
   if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
     error_msg(db);
 
-  /* Create the mainwindowpos table if it doesn't already exist. */
-  sql_cmd = "CREATE TABLE IF NOT EXISTS mainwindowpos(Id INTEGER PRIMARY KEY, "
+  /* Create the mainwinpos table if it doesn't already exist. */
+  sql_cmd = "CREATE TABLE IF NOT EXISTS mainwinpos(Id INTEGER PRIMARY KEY, "
             "X TEXT NOT NULL, Y TEXT NOT NULL);";
   if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
     error_msg(db);
 
-  /* Create the rsiwindowsize table if it doesn't already exist. */
-  sql_cmd = "CREATE TABLE IF NOT EXISTS rsiwindowsize(Id INTEGER PRIMARY KEY, "
-            "Height TEXT NOT NULL, Width TEXT NOT NULL);";
+  /* Create the historywinsize table if it doesn't already exist. */
+  sql_cmd = "CREATE TABLE IF NOT EXISTS historywinsize(Id INTEGER PRIMARY KEY, "
+            "Width TEXT NOT NULL, Height TEXT NOT NULL);";
   if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
     error_msg(db);
 
-  /* Create the rsiwindowpos table if it doesn't already exist. */
-  sql_cmd = "CREATE TABLE IF NOT EXISTS rsiwindowpos(Id INTEGER PRIMARY KEY, X "
-            "TEXT NOT NULL, Y TEXT NOT NULL);";
+  /* Create the historywinpos table if it doesn't already exist. */
+  sql_cmd =
+      "CREATE TABLE IF NOT EXISTS historywinpos(Id INTEGER PRIMARY KEY, X "
+      "TEXT NOT NULL, Y TEXT NOT NULL);";
   if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
     error_msg(db);
 
@@ -423,6 +452,11 @@ void SqliteProcessing(portfolio_packet *pkg) {
   F->Reset();
 
   /* Populate class/struct instances with saved data. */
+  sql_cmd =
+      "SELECT * FROM prefdata;"; /* We always want this table selected first */
+  if (sqlite3_exec(db, sql_cmd, pref_callback, D, &err_msg) != SQLITE_OK)
+    error_msg(db);
+
   sql_cmd =
       "SELECT * FROM apidata;"; /* We always want this table selected first */
   if (sqlite3_exec(db, sql_cmd, api_callback, D, &err_msg) != SQLITE_OK)
@@ -440,21 +474,23 @@ void SqliteProcessing(portfolio_packet *pkg) {
   if (sqlite3_exec(db, sql_cmd, cash_callback, D, &err_msg) != SQLITE_OK)
     error_msg(db);
 
-  sql_cmd = "SELECT * FROM mainwindowsize;";
+  sql_cmd = "SELECT * FROM mainwinsize;";
   if (sqlite3_exec(db, sql_cmd, main_wndwsz_callback, W, &err_msg) != SQLITE_OK)
     error_msg(db);
 
-  sql_cmd = "SELECT * FROM mainwindowpos;";
+  sql_cmd = "SELECT * FROM mainwinpos;";
   if (sqlite3_exec(db, sql_cmd, main_wndwpos_callback, W, &err_msg) !=
       SQLITE_OK)
     error_msg(db);
 
-  sql_cmd = "SELECT * FROM rsiwindowsize;";
-  if (sqlite3_exec(db, sql_cmd, rsi_wndwsz_callback, W, &err_msg) != SQLITE_OK)
+  sql_cmd = "SELECT * FROM historywinsize;";
+  if (sqlite3_exec(db, sql_cmd, history_wndwsz_callback, W, &err_msg) !=
+      SQLITE_OK)
     error_msg(db);
 
-  sql_cmd = "SELECT * FROM rsiwindowpos;";
-  if (sqlite3_exec(db, sql_cmd, rsi_wndwpos_callback, W, &err_msg) != SQLITE_OK)
+  sql_cmd = "SELECT * FROM historywinpos;";
+  if (sqlite3_exec(db, sql_cmd, history_wndwpos_callback, W, &err_msg) !=
+      SQLITE_OK)
     error_msg(db);
 
   if (W->main_width == 0 || W->main_height == 0) {
@@ -468,15 +504,15 @@ void SqliteProcessing(portfolio_packet *pkg) {
     W->main_y_pos = 32;
   }
 
-  if (W->rsi_width == 0 || W->rsi_height == 0) {
+  if (W->history_width == 0 || W->history_height == 0) {
     /* The Original Production Size, if never run before */
-    W->rsi_width = 925;
-    W->rsi_height = 700;
+    W->history_width = 925;
+    W->history_height = 700;
   }
 
-  if (W->rsi_x_pos == 0 && W->rsi_y_pos == 0) {
-    W->rsi_x_pos = 0;
-    W->rsi_y_pos = 32;
+  if (W->history_x_pos == 0 && W->history_y_pos == 0) {
+    W->history_x_pos = 0;
+    W->history_y_pos = 32;
   }
 
   /* Close the sqlite database file. */
@@ -491,30 +527,30 @@ void SqliteProcessing(portfolio_packet *pkg) {
   F->GenerateURL(pkg);
 }
 
-void SqliteAddEquity(const char *symbol, const char *shares, meta *D) {
+void SqliteEquityAdd(const char *symbol, const char *shares, meta *D) {
   pthread_mutex_lock(&mutex_working[SQLITE_MUTEX]);
 
   unsigned short len;
   char *err_msg = 0;
   sqlite3 *db;
+  const char *del_fmt = "DELETE FROM equity WHERE Symbol = '%s';";
+  const char *ins_fmt = "INSERT INTO equity VALUES(null, '%s', '%s');";
 
   /* Open the sqlite database file. */
   if (sqlite3_open(D->sqlite_db_path_ch, &db) != SQLITE_OK)
     error_msg(db);
 
   /* Delete entry if already exists, then insert entry. */
-  len = strlen("DELETE FROM equity WHERE Symbol = '';") + strlen(symbol) + 1;
+  len = snprintf(NULL, 0, del_fmt, symbol) + 1;
   char *sql_cmd = (char *)malloc(len);
-  snprintf(sql_cmd, len, "DELETE FROM equity WHERE Symbol = '%s';", symbol);
+  snprintf(sql_cmd, len, del_fmt, symbol);
   if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
     error_msg(db);
 
-  len = strlen("INSERT INTO equity VALUES(null, '', '');") + strlen(symbol) +
-        strlen(shares) + 1;
+  len = snprintf(NULL, 0, ins_fmt, symbol, shares) + 1;
   char *tmp = realloc(sql_cmd, len);
   sql_cmd = tmp;
-  snprintf(sql_cmd, len, "INSERT INTO equity VALUES(null, '%s', '%s');", symbol,
-           shares);
+  snprintf(sql_cmd, len, ins_fmt, symbol, shares);
   if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
     error_msg(db);
   free(sql_cmd);
@@ -525,32 +561,31 @@ void SqliteAddEquity(const char *symbol, const char *shares, meta *D) {
   pthread_mutex_unlock(&mutex_working[SQLITE_MUTEX]);
 }
 
-void SqliteAddBullion(const char *metal_name, const char *ounces,
+void SqliteBullionAdd(const char *metal_name, const char *ounces,
                       const char *premium, meta *D) {
   pthread_mutex_lock(&mutex_working[SQLITE_MUTEX]);
 
   unsigned short len;
   char *err_msg = 0;
   sqlite3 *db;
+  const char *del_fmt = "DELETE FROM bullion WHERE Metal = '%s';";
+  const char *ins_fmt = "INSERT INTO bullion VALUES(null, '%s', '%s', '%s');";
 
   /* Open the sqlite database file. */
   if (sqlite3_open(D->sqlite_db_path_ch, &db) != SQLITE_OK)
     error_msg(db);
 
   /* Delete entry if already exists, then insert entry. */
-  len =
-      strlen("DELETE FROM bullion WHERE Metal = '';") + strlen(metal_name) + 1;
+  len = snprintf(NULL, 0, del_fmt, metal_name) + 1;
   char *sql_cmd = (char *)malloc(len);
-  snprintf(sql_cmd, len, "DELETE FROM bullion WHERE Metal = '%s';", metal_name);
+  snprintf(sql_cmd, len, del_fmt, metal_name);
   if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
     error_msg(db);
 
-  len = strlen("INSERT INTO bullion VALUES(null, '', '', '');") +
-        strlen(metal_name) + strlen(ounces) + strlen(premium) + 1;
+  len = snprintf(NULL, 0, ins_fmt, metal_name, ounces, premium) + 1;
   char *tmp = realloc(sql_cmd, len);
   sql_cmd = tmp;
-  snprintf(sql_cmd, len, "INSERT INTO bullion VALUES(null, '%s', '%s', '%s');",
-           metal_name, ounces, premium);
+  snprintf(sql_cmd, len, ins_fmt, metal_name, ounces, premium);
   if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
     error_msg(db);
   free(sql_cmd);
@@ -561,7 +596,39 @@ void SqliteAddBullion(const char *metal_name, const char *ounces,
   pthread_mutex_unlock(&mutex_working[SQLITE_MUTEX]);
 }
 
-void SqliteAddCash(const char *value, meta *D) {
+void SqliteCashAdd(const char *value, meta *D) {
+  pthread_mutex_lock(&mutex_working[SQLITE_MUTEX]);
+
+  unsigned short len;
+  char *err_msg = 0;
+  sqlite3 *db;
+  const char *del_fmt = "DELETE FROM cash WHERE Id = 1;";
+  const char *ins_fmt = "INSERT INTO cash VALUES(1, '%s');";
+
+  /* Open the sqlite database file. */
+  if (sqlite3_open(D->sqlite_db_path_ch, &db) != SQLITE_OK)
+    error_msg(db);
+
+  /* Delete entry if already exists, then insert entry. */
+  if (sqlite3_exec(db, del_fmt, 0, 0, &err_msg) != SQLITE_OK)
+    error_msg(db);
+
+  len = snprintf(NULL, 0, ins_fmt, value) + 1;
+  char *sql_cmd = (char *)malloc(len);
+  snprintf(sql_cmd, len, ins_fmt, value);
+  if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
+    error_msg(db);
+  free(sql_cmd);
+
+  /* Close the sqlite database file. */
+  sqlite3_close(db);
+
+  pthread_mutex_unlock(&mutex_working[SQLITE_MUTEX]);
+}
+
+static void sqlite_api_pref_add(const char *del_fmt, const char *ins_fmt,
+                                const char *keyword, const char *data,
+                                meta *D) {
   pthread_mutex_lock(&mutex_working[SQLITE_MUTEX]);
 
   unsigned short len;
@@ -573,47 +640,16 @@ void SqliteAddCash(const char *value, meta *D) {
     error_msg(db);
 
   /* Delete entry if already exists, then insert entry. */
-  if (sqlite3_exec(db, "DELETE FROM cash WHERE Id = 1;", 0, 0, &err_msg) !=
-      SQLITE_OK)
-    error_msg(db);
-
-  len = strlen("INSERT INTO cash VALUES(1, '');") + strlen(value) + 1;
+  len = snprintf(NULL, 0, del_fmt, keyword) + 1;
   char *sql_cmd = (char *)malloc(len);
-  snprintf(sql_cmd, len, "INSERT INTO cash VALUES(1, '%s');", value);
-  if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
-    error_msg(db);
-  free(sql_cmd);
-
-  /* Close the sqlite database file. */
-  sqlite3_close(db);
-
-  pthread_mutex_unlock(&mutex_working[SQLITE_MUTEX]);
-}
-
-void SqliteAddAPIData(const char *keyword, const char *data, meta *D) {
-  pthread_mutex_lock(&mutex_working[SQLITE_MUTEX]);
-
-  unsigned short len;
-  char *err_msg = 0;
-  sqlite3 *db;
-
-  /* Open the sqlite database file. */
-  if (sqlite3_open(D->sqlite_db_path_ch, &db) != SQLITE_OK)
-    error_msg(db);
-
-  /* Delete entry if already exists, then insert entry. */
-  len = strlen("DELETE FROM apidata WHERE Keyword = '';") + strlen(keyword) + 1;
-  char *sql_cmd = (char *)malloc(len);
-  snprintf(sql_cmd, len, "DELETE FROM apidata WHERE Keyword = '%s';", keyword);
+  snprintf(sql_cmd, len, del_fmt, keyword);
   if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
     error_msg(db);
 
-  len = strlen("INSERT INTO apidata VALUES(null, '', '');") + strlen(keyword) +
-        strlen(data) + 1;
+  len = snprintf(NULL, 0, ins_fmt, keyword, data) + 1;
   char *tmp = realloc(sql_cmd, len);
   sql_cmd = tmp;
-  snprintf(sql_cmd, len, "INSERT INTO apidata VALUES(null, '%s', '%s');",
-           keyword, data);
+  snprintf(sql_cmd, len, ins_fmt, keyword, data);
   if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
     error_msg(db);
   free(sql_cmd);
@@ -624,21 +660,34 @@ void SqliteAddAPIData(const char *keyword, const char *data, meta *D) {
   pthread_mutex_unlock(&mutex_working[SQLITE_MUTEX]);
 }
 
-void SqliteRemoveEquity(const char *symbol, meta *D) {
+void SqliteAPIAdd(const char *keyword, const char *data, meta *D) {
+  const char *del_fmt = "DELETE FROM apidata WHERE Keyword = '%s';";
+  const char *ins_fmt = "INSERT INTO apidata VALUES(null, '%s', '%s');";
+  sqlite_api_pref_add(del_fmt, ins_fmt, keyword, data, D);
+}
+
+void SqlitePrefAdd(const char *keyword, const char *data, meta *D) {
+  const char *del_fmt = "DELETE FROM prefdata WHERE Keyword = '%s';";
+  const char *ins_fmt = "INSERT INTO prefdata VALUES(null, '%s', '%s');";
+  sqlite_api_pref_add(del_fmt, ins_fmt, keyword, data, D);
+}
+
+void SqliteEquityRemove(const char *symbol, meta *D) {
   pthread_mutex_lock(&mutex_working[SQLITE_MUTEX]);
 
   unsigned short len;
   char *err_msg = 0;
   sqlite3 *db;
+  const char *del_fmt = "DELETE FROM equity WHERE Symbol = '%s';";
 
   /* Open the sqlite database file. */
   if (sqlite3_open(D->sqlite_db_path_ch, &db) != SQLITE_OK)
     error_msg(db);
 
   /* Delete entry if already exists. */
-  len = strlen("DELETE FROM equity WHERE Symbol = '';") + strlen(symbol) + 1;
+  len = snprintf(NULL, 0, del_fmt, symbol) + 1;
   char *sql_cmd = (char *)malloc(len);
-  snprintf(sql_cmd, len, "DELETE FROM equity WHERE Symbol = '%s';", symbol);
+  snprintf(sql_cmd, len, del_fmt, symbol);
   if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
     error_msg(db);
   free(sql_cmd);
@@ -649,7 +698,7 @@ void SqliteRemoveEquity(const char *symbol, meta *D) {
   pthread_mutex_unlock(&mutex_working[SQLITE_MUTEX]);
 }
 
-void SqliteRemoveAllEquity(meta *D) {
+void SqliteEquityRemoveAll(meta *D) {
   pthread_mutex_lock(&mutex_working[SQLITE_MUTEX]);
 
   char *err_msg = 0;
@@ -674,128 +723,62 @@ void SqliteRemoveAllEquity(meta *D) {
   pthread_mutex_unlock(&mutex_working[SQLITE_MUTEX]);
 }
 
-void SqliteAddMainWindowSize(unsigned short width, unsigned short height,
+void sqlite_window_data_add(const char *del_fmt, const char *ins_fmt,
+                            unsigned short w_x, unsigned short h_y, meta *D) {
+  pthread_mutex_lock(&mutex_working[SQLITE_MUTEX]);
+
+  unsigned short len;
+  char *err_msg = 0;
+  sqlite3 *db;
+
+  /* Open the sqlite database file. */
+  if (sqlite3_open(D->sqlite_db_path_ch, &db) != SQLITE_OK)
+    error_msg(db);
+
+  /* Delete entry if already exists, then insert entry. */
+  if (sqlite3_exec(db, del_fmt, 0, 0, &err_msg) != SQLITE_OK)
+    error_msg(db);
+
+  len = snprintf(NULL, 0, ins_fmt, w_x, h_y) + 1;
+  char *sql_cmd = (char *)malloc(len);
+  snprintf(sql_cmd, len, ins_fmt, w_x, h_y);
+  if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
+    error_msg(db);
+  free(sql_cmd);
+
+  /* Close the sqlite database file. */
+  sqlite3_close(db);
+
+  pthread_mutex_unlock(&mutex_working[SQLITE_MUTEX]);
+}
+
+void SqliteMainWindowSizeAdd(unsigned short width, unsigned short height,
                              meta *D) {
-  pthread_mutex_lock(&mutex_working[SQLITE_MUTEX]);
-
-  unsigned short len;
-  char *err_msg = 0;
-  sqlite3 *db;
-
-  /* Open the sqlite database file. */
-  if (sqlite3_open(D->sqlite_db_path_ch, &db) != SQLITE_OK)
-    error_msg(db);
-
-  /* Delete entry if already exists, then insert entry. */
-  if (sqlite3_exec(db, "DELETE FROM mainwindowsize WHERE Id = 1;", 0, 0,
-                   &err_msg) != SQLITE_OK)
-    error_msg(db);
-
-  len = strlen("INSERT INTO mainwindowsize VALUES(1, '', '');") + 64;
-  char *sql_cmd = (char *)malloc(len);
-  snprintf(sql_cmd, len, "INSERT INTO mainwindowsize VALUES(1, '%d', '%d');",
-           height, width);
-  if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
-    error_msg(db);
-  free(sql_cmd);
-
-  /* Close the sqlite database file. */
-  sqlite3_close(db);
-
-  pthread_mutex_unlock(&mutex_working[SQLITE_MUTEX]);
+  const char *del_fmt = "DELETE FROM mainwinsize WHERE Id = 1;";
+  const char *ins_fmt = "INSERT INTO mainwinsize VALUES(1, '%d', '%d');";
+  sqlite_window_data_add(del_fmt, ins_fmt, width, height, D);
 }
 
-void SqliteAddMainWindowPos(unsigned short x, unsigned short y, meta *D) {
-  pthread_mutex_lock(&mutex_working[SQLITE_MUTEX]);
-
-  unsigned short len;
-  char *err_msg = 0;
-  sqlite3 *db;
-
-  /* Open the sqlite database file. */
-  if (sqlite3_open(D->sqlite_db_path_ch, &db) != SQLITE_OK)
-    error_msg(db);
-
-  /* Delete entry if already exists, then insert entry. */
-  if (sqlite3_exec(db, "DELETE FROM mainwindowpos WHERE Id = 1;", 0, 0,
-                   &err_msg) != SQLITE_OK)
-    error_msg(db);
-
-  len = strlen("INSERT INTO mainwindowpos VALUES(1, '', '');") + 64;
-  char *sql_cmd = (char *)malloc(len);
-  snprintf(sql_cmd, len, "INSERT INTO mainwindowpos VALUES(1, '%d', '%d');", x,
-           y);
-  if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
-    error_msg(db);
-  free(sql_cmd);
-
-  /* Close the sqlite database file. */
-  sqlite3_close(db);
-
-  pthread_mutex_unlock(&mutex_working[SQLITE_MUTEX]);
+void SqliteMainWindowPosAdd(unsigned short x, unsigned short y, meta *D) {
+  const char *del_fmt = "DELETE FROM mainwinpos WHERE Id = 1;";
+  const char *ins_fmt = "INSERT INTO mainwinpos VALUES(1, '%d', '%d');";
+  sqlite_window_data_add(del_fmt, ins_fmt, x, y, D);
 }
 
-void SqliteAddRSIWindowSize(int width, int height, meta *D) {
-  pthread_mutex_lock(&mutex_working[SQLITE_MUTEX]);
-
-  unsigned short len;
-  char *err_msg = 0;
-  sqlite3 *db;
-
-  /* Open the sqlite database file. */
-  if (sqlite3_open(D->sqlite_db_path_ch, &db) != SQLITE_OK)
-    error_msg(db);
-
-  /* Delete entry if already exists, then insert entry. */
-  if (sqlite3_exec(db, "DELETE FROM rsiwindowsize WHERE Id = 1;", 0, 0,
-                   &err_msg) != SQLITE_OK)
-    error_msg(db);
-
-  len = strlen("INSERT INTO rsiwindowsize VALUES(1, '', '');") + 64;
-  char *sql_cmd = (char *)malloc(len);
-  snprintf(sql_cmd, len, "INSERT INTO rsiwindowsize VALUES(1, '%d', '%d');",
-           height, width);
-  if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
-    error_msg(db);
-  free(sql_cmd);
-
-  /* Close the sqlite database file. */
-  sqlite3_close(db);
-
-  pthread_mutex_unlock(&mutex_working[SQLITE_MUTEX]);
+void SqliteHistoryWindowSizeAdd(unsigned short width, unsigned short height,
+                                meta *D) {
+  const char *del_fmt = "DELETE FROM historywinsize WHERE Id = 1;";
+  const char *ins_fmt = "INSERT INTO historywinsize VALUES(1, '%d', '%d');";
+  sqlite_window_data_add(del_fmt, ins_fmt, width, height, D);
 }
 
-void SqliteAddRSIWindowPos(int x, int y, meta *D) {
-  pthread_mutex_lock(&mutex_working[SQLITE_MUTEX]);
-
-  unsigned short len;
-  char *err_msg = 0;
-  sqlite3 *db;
-
-  /* Open the sqlite database file. */
-  if (sqlite3_open(D->sqlite_db_path_ch, &db) != SQLITE_OK)
-    error_msg(db);
-
-  /* Delete entry if already exists, then insert entry. */
-  if (sqlite3_exec(db, "DELETE FROM rsiwindowpos WHERE Id = 1;", 0, 0,
-                   &err_msg) != SQLITE_OK)
-    error_msg(db);
-
-  len = strlen("INSERT INTO rsiwindowpos VALUES(1, '', '');") + 64;
-  char *sql_cmd = (char *)malloc(len);
-  snprintf(sql_cmd, len, "INSERT INTO rsiwindowpos VALUES(1, '%d', '%d');", x,
-           y);
-  if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
-    error_msg(db);
-  free(sql_cmd);
-
-  /* Close the sqlite database file. */
-  sqlite3_close(db);
-
-  pthread_mutex_unlock(&mutex_working[SQLITE_MUTEX]);
+void SqliteHistoryWindowPosAdd(unsigned short x, unsigned short y, meta *D) {
+  const char *del_fmt = "DELETE FROM historywinpos WHERE Id = 1;";
+  const char *ins_fmt = "INSERT INTO historywinpos VALUES(1, '%d', '%d');";
+  sqlite_window_data_add(del_fmt, ins_fmt, x, y, D);
 }
 
-symbol_name_map *SqliteGetSymbolNameMap(meta *D) {
+symbol_name_map *SqliteGetSNMap(meta *D) {
   pthread_mutex_lock(&mutex_working[SYMBOL_NAME_MAP_SQLITE_MUTEX]);
 
   char *err_msg = 0;
@@ -910,6 +893,7 @@ static void *add_mapping_to_database(void *data) {
     error_msg(db);
 
   /* Insert the mapping into the table. */
+  const char *ins_fmt = "INSERT INTO symbolname VALUES(null, '%s', '%s');";
   for (unsigned short g = 0; g < sn_map->size; g++) {
     if (sn_map->sn_container_arr[g] == NULL || sn_map->sn_container_arr == NULL)
       break;
@@ -917,12 +901,11 @@ static void *add_mapping_to_database(void *data) {
     /* Insert an escape apostrophy into the string where needed. */
     escape_apostrophy(&sn_map->sn_container_arr[g]->security_name);
 
-    len = strlen("INSERT INTO symbolname VALUES(null, '', '');") +
-          strlen(sn_map->sn_container_arr[g]->symbol) +
-          strlen(sn_map->sn_container_arr[g]->security_name) + 1;
+    len = snprintf(NULL, 0, ins_fmt, sn_map->sn_container_arr[g]->symbol,
+                   sn_map->sn_container_arr[g]->security_name) +
+          1;
     sql_cmd = (char *)malloc(len);
-    snprintf(sql_cmd, len, "INSERT INTO symbolname VALUES(null, '%s', '%s');",
-             sn_map->sn_container_arr[g]->symbol,
+    snprintf(sql_cmd, len, ins_fmt, sn_map->sn_container_arr[g]->symbol,
              sn_map->sn_container_arr[g]->security_name);
     if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
       error_msg(db);
@@ -943,7 +926,7 @@ static void *add_mapping_to_database(void *data) {
   pthread_exit(NULL);
 }
 
-void SqliteAddMap(symbol_name_map *sn_map, meta *D) {
+void SqliteSNMapAdd(symbol_name_map *sn_map, meta *D) {
   meta_map_container *mmc = malloc(sizeof(*mmc));
   mmc->map = sn_map;
   mmc->metadata = D;

@@ -63,25 +63,25 @@ void GUICallbackHandler(GtkWidget *widget, void *data)
     pthread_create(&thread_id, NULL, GUIThreadHandler_main_exit, packet);
     pthread_detach(thread_id);
     break;
-  case RSI_FETCH_BTN:
-    pthread_create(&thread_id, NULL, GUIThreadHandler_rsi_fetch, packet);
+  case HISTORY_FETCH_BTN:
+    pthread_create(&thread_id, NULL, GUIThreadHandler_history_fetch, packet);
     pthread_detach(thread_id);
     break;
   case ABOUT_TOGGLE_BTN:
     AboutShowHide();
     break;
-  case EQUITY_TOGGLE_BTN:
-    AddRemShowHide(packet);
+  case SECURITY_TOGGLE_BTN:
+    SecurityShowHide(packet);
     break;
-  case EQUITY_OK_BTN:
-    AddRemShowHide(packet);
-    AddRemOk(packet);
+  case SECURITY_OK_BTN:
+    SecurityShowHide(packet);
+    SecurityOk(packet);
     break;
-  case EQUITY_COMBO_BOX:
-    AddRemComBoxChange(packet);
+  case SECURITY_COMBO_BOX:
+    SecurityComBoxChange(packet);
     break;
-  case EQUITY_CURSOR_MOVE:
-    AddRemCursorMove();
+  case SECURITY_CURSOR_MOVE:
+    SecurityCursorMove();
     break;
   case BUL_TOGGLE_BTN:
     BullionShowHide(packet);
@@ -123,12 +123,12 @@ void GUICallbackHandler(GtkWidget *widget, void *data)
     pthread_create(&thread_id, NULL, GUIThreadHandler_sym_name_update, packet);
     pthread_detach(thread_id);
     break;
-  case RSI_TOGGLE_BTN:
-    RSITreeViewClear();
-    RSIShowHide(packet);
+  case HISTORY_TOGGLE_BTN:
+    HistoryTreeViewClear();
+    HistoryShowHide(packet);
     break;
-  case RSI_CURSOR_MOVE:
-    RSICursorMove();
+  case HISTORY_CURSOR_MOVE:
+    HistoryCursorMove();
     break;
   case HOTKEYS_TOGGLE_BTN:
     HotkeysShowHide();
@@ -138,14 +138,14 @@ void GUICallbackHandler(GtkWidget *widget, void *data)
   }
 }
 
-void GUICallbackHandler_add_rem_stack(GObject *gobject) {
+void GUICallbackHandler_security_stack(GObject *gobject) {
   GtkStack *stack = GTK_STACK(gobject);
   const gchar *name = gtk_stack_get_visible_child_name(stack);
 
-  GtkWidget *ComboBox = GetWidget("AddRemoveSecurityComboBox");
-  GtkWidget *EntryBoxSymbol = GetWidget("AddRemoveSecuritySymbolEntryBox");
-  GtkWidget *EntryBoxShares = GetWidget("AddRemoveSecuritySharesEntryBox");
-  GtkWidget *Button = GetWidget("AddRemoveSecurityOkBTN");
+  GtkWidget *ComboBox = GetWidget("SecurityComboBox");
+  GtkWidget *EntryBoxSymbol = GetWidget("SecuritySymbolEntryBox");
+  GtkWidget *EntryBoxShares = GetWidget("SecuritySharesEntryBox");
+  GtkWidget *Button = GetWidget("SecurityOkBTN");
 
   if (strcasecmp(name, "add") == 0) {
     gtk_combo_box_set_button_sensitivity(GTK_COMBO_BOX(ComboBox),
@@ -174,33 +174,33 @@ void GUICallbackHandler_add_rem_stack(GObject *gobject) {
 typedef struct {
   const char *keyword;
   const char *value;
-} api_data;
+} pref_data;
 
-static api_data *api_data_init(const char *keyword, const char *value) {
-  api_data *api_d = malloc(sizeof *api_d);
-  api_d->keyword = keyword;
-  api_d->value = value;
-  return api_d;
+static pref_data *pref_data_init(const char *keyword, const char *value) {
+  pref_data *pref_d = malloc(sizeof *pref_d);
+  pref_d->keyword = keyword;
+  pref_d->value = value;
+  return pref_d;
 }
 
 /* These thread funcs have mutexes that shouldn't be in the main loop, so we
  * make them threads instead. */
-static void *add_api_data_thd(void *data) {
-  api_data *api_d = (api_data *)data;
+static void *add_pref_data_thd(void *data) {
+  pref_data *pref_d = (pref_data *)data;
   meta *D = packet->GetMetaClass();
 
-  SqliteAddAPIData(api_d->keyword, api_d->value, D);
+  SqlitePrefAdd(pref_d->keyword, pref_d->value, D);
 
   /* Don't free the member strings */
-  free(api_d);
+  free(pref_d);
   pthread_exit(NULL);
 }
 
-static void *add_api_data_font_thd(void *data) {
-  api_data *api_d = (api_data *)data;
+static void *add_pref_data_font_thd(void *data) {
+  pref_data *pref_d = (pref_data *)data;
   meta *D = packet->GetMetaClass();
 
-  SqliteAddAPIData(api_d->keyword, api_d->value, D);
+  SqlitePrefAdd(pref_d->keyword, pref_d->value, D);
 
   packet->ToStrings();
   packet->equity_folder_class->SetSecurityNames(packet);
@@ -216,7 +216,7 @@ static void *add_api_data_font_thd(void *data) {
   }
 
   /* Don't free the member strings */
-  free(api_d);
+  free(pref_d);
   pthread_exit(NULL);
 }
 
@@ -230,8 +230,8 @@ void GUICallbackHandler_pref_font_button(GtkFontButton *widget, void *data) {
   SetFont(D->main_font_ch);
 
   /* Add the sqlite data */
-  api_data *api_d = api_data_init("Main_TrVw_Font", D->main_font_ch);
-  pthread_create(&thread_id, NULL, add_api_data_font_thd, api_d);
+  pref_data *pref_d = pref_data_init("Main_Font", D->main_font_ch);
+  pthread_create(&thread_id, NULL, add_pref_data_font_thd, pref_d);
   pthread_detach(thread_id);
 }
 
@@ -247,8 +247,8 @@ gboolean GUICallbackHandler_pref_clock_switch(GtkSwitch *Switch, bool state) {
 
   if (state) {
     /* Add the sqlite data */
-    api_data *api_d = api_data_init("Clocks_Displayed", "true");
-    pthread_create(&thread_id, NULL, add_api_data_thd, api_d);
+    pref_data *pref_d = pref_data_init("Clocks_Displayed", "true");
+    pthread_create(&thread_id, NULL, add_pref_data_thd, pref_d);
     pthread_detach(thread_id);
 
     /* Start clock threads */
@@ -264,8 +264,8 @@ gboolean GUICallbackHandler_pref_clock_switch(GtkSwitch *Switch, bool state) {
 
   } else {
     /* Add the sqlite data */
-    api_data *api_d = api_data_init("Clocks_Displayed", "false");
-    pthread_create(&thread_id, NULL, add_api_data_thd, api_d);
+    pref_data *pref_d = pref_data_init("Clocks_Displayed", "false");
+    pthread_create(&thread_id, NULL, add_pref_data_thd, pref_d);
     pthread_detach(thread_id);
 
     /* Cancel clock threads */
@@ -291,12 +291,12 @@ gboolean GUICallbackHandler_pref_indices_switch(GtkSwitch *Switch, bool state) {
      switch. */
   if (state) {
     /* Add the sqlite data */
-    api_data *api_d = api_data_init("Indices_Displayed", "true");
-    pthread_create(&thread_id, NULL, add_api_data_thd, api_d);
+    pref_data *pref_d = pref_data_init("Indices_Displayed", "true");
+    pthread_create(&thread_id, NULL, add_pref_data_thd, pref_d);
     pthread_detach(thread_id);
   } else {
-    api_data *api_d = api_data_init("Indices_Displayed", "false");
-    pthread_create(&thread_id, NULL, add_api_data_thd, api_d);
+    pref_data *pref_d = pref_data_init("Indices_Displayed", "false");
+    pthread_create(&thread_id, NULL, add_pref_data_thd, pref_d);
     pthread_detach(thread_id);
   }
   packet->SetIndicesDisplayed(state);
@@ -317,7 +317,7 @@ static void *pref_dec_places_thd(void *data) {
   char *value = (char *)data;
   meta *D = packet->GetMetaClass();
 
-  SqliteAddAPIData("Decimal_Places", value, D);
+  SqlitePrefAdd("Decimal_Places", value, D);
 
   packet->Calculate();
   packet->ToStrings();
@@ -352,7 +352,7 @@ static void *pref_up_min_thd(void *data) {
   char *value = (char *)data;
   meta *D = packet->GetMetaClass();
 
-  SqliteAddAPIData("Updates_Per_Min", value, D);
+  SqlitePrefAdd("Updates_Per_Min", value, D);
 
   free(value);
   pthread_exit(NULL);
@@ -375,13 +375,13 @@ void GUICallbackHandler_pref_up_min_combobox(GtkComboBox *ComboBox) {
 }
 
 static void *pref_hours_thd(void *data) {
-  api_data *api_d = (api_data *)data;
+  pref_data *pref_d = (pref_data *)data;
   meta *D = packet->GetMetaClass();
 
-  SqliteAddAPIData(api_d->keyword, api_d->value, D);
+  SqlitePrefAdd(pref_d->keyword, pref_d->value, D);
 
   /* Don't free the member strings */
-  free(api_d);
+  free(pref_d);
 
   pthread_exit(NULL);
 }
@@ -394,18 +394,17 @@ void GUICallbackHandler_pref_hours_spinbutton(GtkEditable *spin_button) {
   /* Right now this value will be an integral, however it may change to a
    * floating point in the future. */
   double new_f = strtod(new, NULL);
-  gboolean check =
-      (new_f <= 7) & CheckIfStringDoublePositiveNumber(new);
+  gboolean check = (new_f <= 7) & CheckIfStringDoublePositiveNumber(new);
   check = check & (strlen(new) != 0);
   if (!check)
-    return; 
+    return;
 
   if (new_f != D->updates_hours_f) {
     D->updates_hours_f = new_f;
 
     /* Add the data */
-    api_data *api_d = api_data_init("Updates_Hours", new);
-    pthread_create(&thread_id, NULL, pref_hours_thd, api_d);
+    pref_data *pref_d = pref_data_init("Updates_Hours", new);
+    pthread_create(&thread_id, NULL, pref_hours_thd, pref_d);
     pthread_detach(thread_id);
   }
 }
@@ -423,8 +422,8 @@ gboolean GUICallbackHandler_hide_window_on_delete(GtkWidget *window,
   case HOTKEYS_TOGGLE_BTN:
     HotkeysShowHide();
     break;
-  case EQUITY_TOGGLE_BTN:
-    AddRemShowHide(packet);
+  case SECURITY_TOGGLE_BTN:
+    SecurityShowHide(packet);
     break;
   case CASH_TOGGLE_BTN:
     CashShowHide(packet);
@@ -438,9 +437,9 @@ gboolean GUICallbackHandler_hide_window_on_delete(GtkWidget *window,
   case PREF_TOGGLE_BTN:
     PrefShowHide(packet);
     break;
-  case RSI_TOGGLE_BTN:
-    RSITreeViewClear();
-    RSIShowHide(packet);
+  case HISTORY_TOGGLE_BTN:
+    HistoryTreeViewClear();
+    HistoryShowHide(packet);
     break;
   }
   return gtk_widget_hide_on_delete(window);
@@ -471,12 +470,12 @@ gboolean GUICallbackHandler_window_data(GtkWidget *window, GdkEvent *event,
     W->main_x_pos = (int)x;
     W->main_y_pos = (int)y;
     break;
-  case GUI_RSI_WINDOW:
-    W->rsi_width = (int)width;
-    W->rsi_height = (int)height;
+  case GUI_HISTORY_WINDOW:
+    W->history_width = (int)width;
+    W->history_height = (int)height;
 
-    W->rsi_x_pos = (int)x;
-    W->rsi_y_pos = (int)y;
+    W->history_x_pos = (int)x;
+    W->history_y_pos = (int)y;
     break;
   }
 
@@ -498,10 +497,10 @@ gboolean GUICallbackHandler_select_comp(GtkEntryCompletion *completion,
   uintptr_t index_signal = (uintptr_t)data;
   GtkWidget *EntryBox = NULL;
 
-  if (index_signal == GUI_COMPLETION_RSI) {
-    EntryBox = GetWidget("ViewRSISymbolEntryBox");
+  if (index_signal == GUI_COMPLETION_HISTORY) {
+    EntryBox = GetWidget("HistorySymbolEntryBox");
   } else {
-    EntryBox = GetWidget("AddRemoveSecuritySymbolEntryBox");
+    EntryBox = GetWidget("SecuritySymbolEntryBox");
   }
 
   gchar *item;
@@ -530,10 +529,10 @@ gboolean GUICallbackHandler_cursor_comp(GtkEntryCompletion *completion,
   uintptr_t index_signal = (uintptr_t)data;
   GtkWidget *EntryBox = NULL;
 
-  if (index_signal == GUI_COMPLETION_RSI) {
-    EntryBox = GetWidget("ViewRSISymbolEntryBox");
+  if (index_signal == GUI_COMPLETION_HISTORY) {
+    EntryBox = GetWidget("HistorySymbolEntryBox");
   } else {
-    EntryBox = GetWidget("AddRemoveSecuritySymbolEntryBox");
+    EntryBox = GetWidget("SecuritySymbolEntryBox");
   }
 
   gchar *item;
@@ -550,18 +549,18 @@ gboolean GUICallbackHandler_cursor_comp(GtkEntryCompletion *completion,
   return true;
 }
 
-static void view_popup_menu_onViewRSIData(GtkWidget *menuitem, void *userdata) {
+static void view_popup_menu_onHistoryData(GtkWidget *menuitem, void *userdata) {
   if (menuitem == NULL)
     return;
   char *symbol = (char *)userdata;
 
-  GtkWidget *Window = GetWidget("ViewRSIWindow");
-  GtkWidget *EntryBox = GetWidget("ViewRSISymbolEntryBox");
-  GtkWidget *Button = GetWidget("ViewRSIFetchDataBTN");
+  GtkWidget *Window = GetWidget("HistoryWindow");
+  GtkWidget *EntryBox = GetWidget("HistorySymbolEntryBox");
+  GtkWidget *Button = GetWidget("HistoryFetchDataBTN");
   gboolean visible = gtk_widget_is_visible(Window);
 
   if (!visible)
-    RSIShowHide(packet);
+    HistoryShowHide(packet);
 
   gtk_entry_set_text(GTK_ENTRY(EntryBox), symbol);
   /* move the cursor to the end of the string */
@@ -605,7 +604,7 @@ static void *delete_bullion_thd(void *data) {
     zeroize_bullion(M->Palladium);
   }
 
-  SqliteAddBullion(metal_name, "0", "0", D);
+  SqliteBullionAdd(metal_name, "0", "0", D);
 
   if (packet->IsDefaultView()) {
     packet->ToStrings();
@@ -636,10 +635,10 @@ static void *delete_all_bullion_thd() {
   metal *M = packet->GetMetalClass();
   meta *D = packet->GetMetaClass();
 
-  SqliteAddBullion("gold", "0", "0", D);
-  SqliteAddBullion("silver", "0", "0", D);
-  SqliteAddBullion("platinum", "0", "0", D);
-  SqliteAddBullion("palladium", "0", "0", D);
+  SqliteBullionAdd("gold", "0", "0", D);
+  SqliteBullionAdd("silver", "0", "0", D);
+  SqliteBullionAdd("platinum", "0", "0", D);
+  SqliteBullionAdd("palladium", "0", "0", D);
 
   zeroize_bullion(M->Gold);
   zeroize_bullion(M->Silver);
@@ -676,7 +675,7 @@ static void *remove_stock_thd(void *data) {
   /* Prevents Program From Crashing During A Data Fetch Operation */
   pthread_mutex_lock(&mutex_working[FETCH_DATA_MUTEX]);
 
-  SqliteRemoveEquity(symbol, D);
+  SqliteEquityRemove(symbol, D);
   F->RemoveStock(symbol);
 
   pthread_mutex_unlock(&mutex_working[FETCH_DATA_MUTEX]);
@@ -712,7 +711,7 @@ static void *remove_all_stocks_thd() {
   /* Prevents Program From Crashing During A Data Fetch Operation */
   pthread_mutex_lock(&mutex_working[FETCH_DATA_MUTEX]);
 
-  SqliteRemoveAllEquity(D);
+  SqliteEquityRemoveAll(D);
   F->Reset();
 
   pthread_mutex_unlock(&mutex_working[FETCH_DATA_MUTEX]);
@@ -744,9 +743,9 @@ static void view_popup_menu_onAddRow(GtkWidget *menuitem, void *userdata) {
   char *type = (char *)userdata;
 
   if (strcmp(type, "equity") == 0) {
-    AddRemShowHide(packet);
+    SecurityShowHide(packet);
   } else if (strcmp(type, "equity_total") == 0) {
-    AddRemShowHide(packet);
+    SecurityShowHide(packet);
   } else if (strcmp(type, "bullion") == 0) {
     BullionShowHide(packet);
   } else if (strcmp(type, "bullion_total") == 0) {
@@ -817,9 +816,9 @@ gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event) {
         /* If the type is an equity enable row deletion. */
         {
           menu = gtk_menu_new();
-          menuitem = gtk_menu_item_new_with_label("View RSI Data");
+          menuitem = gtk_menu_item_new_with_label("View History");
           g_signal_connect(menuitem, "activate",
-                           G_CALLBACK(view_popup_menu_onViewRSIData),
+                           G_CALLBACK(view_popup_menu_onHistoryData),
                            D->rght_clk_data.symbol);
           gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
           g_object_ref_sink(G_OBJECT(menuitem));

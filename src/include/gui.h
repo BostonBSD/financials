@@ -43,6 +43,7 @@ POSSIBILITY OF SUCH DAMAGE.
 GtkWidget *GetWidget(const gchar *);
 GObject *GetGObject(const gchar *);
 const gchar *GetEntryText(const char *);
+void AddColumnToTreeview(const char *, const int, GtkWidget *);
 void GuiStart(void *);
 int CompletionSet(void *, uintptr_t);
 
@@ -55,15 +56,15 @@ int MainDisplayTime(void *);
 int MainDisplayTimeRemaining(void *);
 void MainProgBar(double *);
 int MainProgBarReset();
-int MainHideWindow();
+int MainHideWindows();
 int MainDisplayClocks(void *);
 
-/* gui_equity */
-int AddRemShowHide(void *);
-int AddRemOk(void *);
-int AddRemComBoxChange(void *);
-int AddRemCursorMove();
-int AddRemCompletionSet(void *);
+/* gui_security */
+int SecurityShowHide(void *);
+int SecurityOk(void *);
+int SecurityComBoxChange(void *);
+int SecurityCursorMove();
+int SecurityCompletionSet(void *);
 
 /* gui_other_wins */
 int PrefShowHide(void *);
@@ -82,19 +83,19 @@ int CashCursorMove();
 int AboutShowHide();
 int HotkeysShowHide();
 
-/* gui_rsi */
-int RSIShowHide(void *);
-int RSITreeViewClear();
-int RSIMakeTreeview(void *);
-int RSICursorMove();
-int RSICompletionSet(void *);
-int RSISetSNLabel(void *);
-int RSIGetSymbol(char **);
-GtkListStore *RSIMakeStore(const char *);
+/* gui_history */
+int HistoryShowHide(void *);
+int HistoryTreeViewClear();
+int HistoryMakeTreeview(void *);
+int HistoryCursorMove();
+int HistoryCompletionSet(void *);
+int HistorySetSNLabel(void *);
+int HistoryGetSymbol(char **);
+GtkListStore *HistoryMakeStore(const char *);
 
 /* GUI Callback Functions */
 void GUICallbackHandler(GtkWidget *, void *);
-void GUICallbackHandler_add_rem_stack(GObject *);
+void GUICallbackHandler_security_stack(GObject *);
 void GUICallbackHandler_pref_font_button(GtkFontButton *, void *);
 gboolean GUICallbackHandler_pref_clock_switch(GtkSwitch *, bool);
 gboolean GUICallbackHandler_pref_indices_switch(GtkSwitch *, bool);
@@ -115,7 +116,7 @@ void *GUIThreadHandler_api_ok(void *);
 void *GUIThreadHandler_cash_ok(void *);
 void *GUIThreadHandler_bul_ok(void *);
 void *GUIThreadHandler_main_fetch_data(void *);
-void *GUIThreadHandler_rsi_fetch(void *);
+void *GUIThreadHandler_history_fetch(void *);
 void *GUIThreadHandler_sym_name_update(void *);
 void *GUIThreadHandler_completion_set(void *);
 void *GUIThreadHandler_main_clock(void *);

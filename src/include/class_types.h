@@ -61,10 +61,10 @@ typedef struct {
   unsigned short main_width;
   unsigned short main_x_pos;
   unsigned short main_y_pos;
-  unsigned short rsi_height;
-  unsigned short rsi_width;
-  unsigned short rsi_x_pos;
-  unsigned short rsi_y_pos;
+  unsigned short history_height;
+  unsigned short history_width;
+  unsigned short history_x_pos;
+  unsigned short history_y_pos;
 } window_data;
 
 typedef struct {
@@ -280,19 +280,19 @@ typedef struct {
                                           treeview is displaying the default or
                                           the primary view. Default is true. */
 
-  CURL *rsi_hnd;               /* RSI Data cURL Easy Handle. */
-  CURL *NASDAQ_completion_hnd; /* RSI NASDAQ Symbol list cURL Easy Handle. */
-  CURL *NYSE_completion_hnd;   /* RSI NYSE Symbol list cURL Easy Handle. */
+  CURL *history_hnd;           /* History Data cURL Easy Handle. */
+  CURL *NASDAQ_completion_hnd; /* NASDAQ Symbol list cURL Easy Handle. */
+  CURL *NYSE_completion_hnd;   /* NYSE Symbol list cURL Easy Handle. */
 
   CURL *index_dow_hnd;      /* DJIA Index cURL Easy Handle. */
   CURL *index_nasdaq_hnd;   /* Nasdaq Index cURL Easy Handle. */
   CURL *index_sp_hnd;       /* S&P Index cURL Easy Handle. */
   CURL *crypto_bitcoin_hnd; /* Bitcoin cURL Easy Handle. */
 
-  CURLM *multicurl_cmpltn_hnd; /* Multicurl Handle for the No Prog Multicurl
-                                  function. */
-  CURLM *multicurl_rsi_hnd;    /* Multicurl Handle for the No Prog Multicurl
-                                  function. */
+  CURLM *multicurl_cmpltn_hnd;  /* Multicurl Handle for the No Prog Multicurl
+                                   function. */
+  CURLM *multicurl_history_hnd; /* Multicurl Handle for the No Prog Multicurl
+                               function. */
 
   MemType INDEX_DOW_CURLDATA;
   MemType INDEX_NASDAQ_CURLDATA;
@@ -310,7 +310,7 @@ typedef struct {
   */
   sub_func_b_t *ToStringsPortfolio;
   sub_func_b_t *CalculatePortfolio;
-  sub_func_b_t *StopRSICurl;
+  sub_func_b_t *StopHistoryCurl;
   sub_func_b_t *StopSNMapCurl;
   sub_func_c_t *SetUpCurlIndicesData;
   sub_func_b_t *ExtractIndicesData;
@@ -362,10 +362,11 @@ typedef struct {
   unsigned short size : 8;
 
   /* Pango Markup language strings */
-  char *stock_port_value_ch;       /* Total value of equity holdings */
-  char *stock_port_value_chg_ch;   /* Total value of equity holdings change */
-  char *stock_port_value_p_chg_ch; /* Total value of equity holdings percent
-                                      change */
+  char *stock_port_value_mrkd_ch; /* Total value of equity holdings */
+  char
+      *stock_port_value_chg_mrkd_ch; /* Total value of equity holdings change */
+  char *stock_port_value_p_chg_mrkd_ch; /* Total value of equity holdings
+                                      percent change */
 
   /* Methods or Functions */
   sub_func_h_t *ToStrings;

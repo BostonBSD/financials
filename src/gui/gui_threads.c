@@ -192,7 +192,7 @@ static void *main_fetch_data_thd(void *data) {
     time(&start_curl);
 
     /* This mutex prevents the program from crashing if an
-       MAIN_EXIT, EQUITY_OK_BTN, or API_OK_BTN thread is run
+       MAIN_EXIT, SECURITY_OK_BTN, or API_OK_BTN thread is run
        concurrently with this thread. */
     pthread_mutex_lock(&mutex_working[FETCH_DATA_MUTEX]);
 
@@ -277,19 +277,19 @@ void *GUIThreadHandler_main_fetch_data(void *data)
 }
 
 typedef struct {
-  MemType *RSIOutput;
+  MemType *HistoryOutput;
   char *symbol;
-} rsi_cleanup;
+} history_cleanup;
 
-static void rsi_fetch_thd_cleanup(void *data) {
-  rsi_cleanup *thd_data = (rsi_cleanup *)data;
+static void history_fetch_thd_cleanup(void *data) {
+  history_cleanup *thd_data = (history_cleanup *)data;
   pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
-  pthread_mutex_unlock(&mutex_working[RSI_FETCH_MUTEX]);
+  pthread_mutex_unlock(&mutex_working[HISTORY_FETCH_MUTEX]);
   pthread_mutex_unlock(&mutex_working[MULTICURL_NO_PROG_MUTEX]);
 
-  if (thd_data->RSIOutput) {
-    FreeMemtype(thd_data->RSIOutput);
-    free(thd_data->RSIOutput);
+  if (thd_data->HistoryOutput) {
+    FreeMemtype(thd_data->HistoryOutput);
+    free(thd_data->HistoryOutput);
   }
 
   if (thd_data->symbol) {
@@ -297,47 +297,48 @@ static void rsi_fetch_thd_cleanup(void *data) {
   }
 }
 
-void *GUIThreadHandler_rsi_fetch(void *data) {
+void *GUIThreadHandler_history_fetch(void *data) {
   portfolio_packet *pkg = (portfolio_packet *)data;
 
-  rsi_cleanup rsi_thd_data = (rsi_cleanup){NULL};
+  history_cleanup history_thd_data = (history_cleanup){NULL};
   char *sec_name = NULL;
   GtkListStore *store = NULL;
 
-  pthread_cleanup_push(rsi_fetch_thd_cleanup, &rsi_thd_data);
-  /* Prevents multiple concurrent RSI fetch requests. */
-  pthread_mutex_lock(&mutex_working[RSI_FETCH_MUTEX]);
+  pthread_cleanup_push(history_fetch_thd_cleanup, &history_thd_data);
+  /* Prevents multiple concurrent history fetch requests. */
+  pthread_mutex_lock(&mutex_working[HISTORY_FETCH_MUTEX]);
 
   /* Get the symbol string */
-  RSIGetSymbol(&rsi_thd_data.symbol);
+  HistoryGetSymbol(&history_thd_data.symbol);
 
   /* Get the security name from the symbol map. */
   pthread_mutex_lock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
-  sec_name = GetSecurityName(rsi_thd_data.symbol, pkg->meta_class->sym_map);
+  sec_name = GetSecurityName(history_thd_data.symbol, pkg->meta_class->sym_map);
   pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
 
   /* Perform multicurl, doesn't block the gtk main loop. */
-  rsi_thd_data.RSIOutput = FetchRSIData(rsi_thd_data.symbol, pkg);
-  if (pkg->IsCurlCanceled() || rsi_thd_data.RSIOutput == NULL) {
-    /* The sec_name string is freed in RSISetSNLabel */
-    gdk_threads_add_idle(RSISetSNLabel, sec_name);
-    gdk_threads_add_idle(RSITreeViewClear, NULL);
+  history_thd_data.HistoryOutput =
+      FetchHistoryData(history_thd_data.symbol, pkg);
+  if (pkg->IsCurlCanceled() || history_thd_data.HistoryOutput == NULL) {
+    /* The sec_name string is freed in HistorySetSNLabel */
+    gdk_threads_add_idle(HistorySetSNLabel, sec_name);
+    gdk_threads_add_idle(HistoryTreeViewClear, NULL);
     pthread_exit(NULL);
   }
 
   /* Clear the current TreeView model */
-  gdk_threads_add_idle(RSITreeViewClear, NULL);
+  gdk_threads_add_idle(HistoryTreeViewClear, NULL);
 
-  /* Perform RSI calculations and set the liststore. */
-  store = RSIMakeStore(rsi_thd_data.RSIOutput->memory);
+  /* Perform calculations and set the liststore. */
+  store = HistoryMakeStore(history_thd_data.HistoryOutput->memory);
 
   /* Set the security name label, this function runs inside the Gtk Loop.
-     The sec_name string is freed in RSISetSNLabel */
-  gdk_threads_add_idle(RSISetSNLabel, sec_name);
+     The sec_name string is freed in HistorySetSNLabel */
+  gdk_threads_add_idle(HistorySetSNLabel, sec_name);
 
-  /* Set and display the RSI treeview model. */
+  /* Set and display the history treeview model. */
   /* This will unref store */
-  gdk_threads_add_idle(RSIMakeTreeview, store);
+  gdk_threads_add_idle(HistoryMakeTreeview, store);
 
   pthread_cleanup_pop(1);
   pthread_exit(NULL);
@@ -376,10 +377,10 @@ void *GUIThreadHandler_sym_name_update(void *data) {
     pthread_exit(NULL);
 
   /* gdk_threads_add_idle is non-blocking, we need the mutex
-     in the RSICompletionSet and AddRemCompletionSet functions. */
+     in the HistoryCompletionSet and SecurityCompletionSet functions. */
   if (sym_map) {
-    gdk_threads_add_idle(RSICompletionSet, sym_map);
-    gdk_threads_add_idle(AddRemCompletionSet, sym_map);
+    gdk_threads_add_idle(HistoryCompletionSet, sym_map);
+    gdk_threads_add_idle(SecurityCompletionSet, sym_map);
 
     if (pkg->IsDefaultView())
       gdk_threads_add_idle(MainDefaultTreeview, pkg);
@@ -403,8 +404,8 @@ void *GUIThreadHandler_completion_set(void *data) {
      main loop, then create a GtkListStore and set it into
      a GtkEntryCompletion widget. */
 
-  /* This mutex prevents the program from crashing if an
-     MAIN_EXIT thread is run concurrently with this thread.
+  /* This mutex prevents the program from crashing if a
+     GUIThreadHandler_main_exit thread is run concurrently with this thread.
      This thread is only run once at application start.
   */
   pthread_mutex_lock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
@@ -420,8 +421,8 @@ void *GUIThreadHandler_completion_set(void *data) {
     pthread_exit(NULL);
 
   if (sym_map) {
-    gdk_threads_add_idle(RSICompletionSet, sym_map);
-    gdk_threads_add_idle(AddRemCompletionSet, sym_map);
+    gdk_threads_add_idle(HistoryCompletionSet, sym_map);
+    gdk_threads_add_idle(SecurityCompletionSet, sym_map);
   }
 
   /* Set the default treeview. */
@@ -527,7 +528,7 @@ void *GUIThreadHandler_main_exit(void *data) {
 
   /* Hide the windows. Prevents them from hanging open if a db write is in
    * progress. */
-  gdk_threads_add_idle(MainHideWindow, NULL);
+  gdk_threads_add_idle(MainHideWindows, NULL);
 
   /* This mutex prevents the program from crashing if a
      COMPLETION thread is run concurrently with this thread. */

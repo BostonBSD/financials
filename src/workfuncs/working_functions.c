@@ -43,7 +43,7 @@ double CalcGain(double cur_price, double prev_price) {
   return (100 * ((cur_price - prev_price) / prev_price));
 }
 
-void Summation(double current_gain, double *avg_gain, double *avg_loss) {
+void CalcSumRsi(double current_gain, double *avg_gain, double *avg_loss) {
   if (current_gain >= 0) {
     *avg_gain += current_gain;
   } else {
@@ -51,7 +51,7 @@ void Summation(double current_gain, double *avg_gain, double *avg_loss) {
   }
 }
 
-void CalcAvg(double current_gain, double *avg_gain, double *avg_loss) {
+void CalcRunAvgRsi(double current_gain, double *avg_gain, double *avg_loss) {
   if (current_gain >= 0) {
     *avg_gain = ((*avg_gain * 13) + current_gain) / 14;
     *avg_loss = ((*avg_loss * 13) + 0) / 14;
@@ -66,7 +66,7 @@ double CalcRsi(double avg_gain, double avg_loss) {
   return (100 - (100 / (1 + rs)));
 }
 
-static void rsi_url_period(time_t *currenttime, time_t *starttime) {
+static void history_url_period(time_t *currenttime, time_t *starttime) {
 
   /* Number of Seconds in a Year Plus Three Weeks */
   unsigned int period = 31557600 + (604800 * 3);
@@ -75,11 +75,11 @@ static void rsi_url_period(time_t *currenttime, time_t *starttime) {
   *starttime = *currenttime - (time_t)period;
 }
 
-static char *rsi_get_url(const char *symbol) {
+static char *history_get_url(const char *symbol) {
   time_t end, start;
   unsigned short len;
 
-  rsi_url_period(&end, &start);
+  history_url_period(&end, &start);
 
   len = strlen(symbol) + strlen(YAHOO_URL_START) +
         strlen(YAHOO_URL_MIDDLE_ONE) + strlen(YAHOO_URL_MIDDLE_TWO) +
@@ -93,17 +93,17 @@ static char *rsi_get_url(const char *symbol) {
   return url;
 }
 
-MemType *FetchRSIData(const char *symbol, portfolio_packet *pkg) {
+MemType *FetchHistoryData(const char *symbol, portfolio_packet *pkg) {
   meta *D = pkg->GetMetaClass();
   char *MyUrl = NULL;
   MemType *MyOutputStruct = (MemType *)malloc(sizeof(*MyOutputStruct));
   MyOutputStruct->memory = NULL;
   MyOutputStruct->size = 0;
 
-  MyUrl = rsi_get_url(symbol);
+  MyUrl = history_get_url(symbol);
 
-  SetUpCurlHandle(D->rsi_hnd, D->multicurl_rsi_hnd, MyUrl, MyOutputStruct);
-  if (PerformMultiCurl_no_prog(D->multicurl_rsi_hnd) != 0) {
+  SetUpCurlHandle(D->history_hnd, D->multicurl_history_hnd, MyUrl, MyOutputStruct);
+  if (PerformMultiCurl_no_prog(D->multicurl_history_hnd) != 0) {
     free(MyUrl);
     FreeMemtype(MyOutputStruct);
     free(MyOutputStruct);

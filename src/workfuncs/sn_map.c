@@ -371,7 +371,7 @@ static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
   fp[1] =
       fmemopen((void *)NYSE_Struct.memory, strlen(NYSE_Struct.memory) + 1, "r");
 
-  short k = 0;
+  unsigned short k = 0;
   while (k < 2) {
     /* Read the file stream one line at a time */
     /* Populate the Symbol-Name Array. The second list is added after the first
@@ -451,7 +451,7 @@ symbol_name_map *SymNameFetch(portfolio_packet *pkg)
   meta *D = pkg->GetMetaClass();
 
   /* Check the database */
-  symbol_name_map *sn_map = SqliteGetSymbolNameMap(D);
+  symbol_name_map *sn_map = SqliteGetSNMap(D);
 
   if (sn_map) {
     /* Sort the sn_map [it should already be sorted from the Db, but just to
@@ -492,7 +492,7 @@ symbol_name_map *SymNameFetchUpdate(portfolio_packet *pkg,
 
     /* Add the symbol mapping to the db, sn_map_dup is freed in the sqlite
      * thread. */
-    SqliteAddMap(sn_map_dup, D);
+    SqliteSNMapAdd(sn_map_dup, D);
 
     /* Return the new symbol-name mapping */
     return sn_map_new;

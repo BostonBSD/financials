@@ -76,7 +76,7 @@ int MainProgBarReset() {
 
 static int main_tree_view_clr() {
   /* Clear the main window's GtkTreeView. */
-  GtkWidget *treeview = GetWidget("TreeView");
+  GtkWidget *treeview = GetWidget("MainTreeView");
   GtkTreeViewColumn *column;
   gushort n = gtk_tree_view_get_n_columns(GTK_TREE_VIEW(treeview));
 
@@ -92,7 +92,7 @@ static int main_tree_view_clr() {
 static int main_set_columns(int column_type) {
   GtkCellRenderer *renderer;
   GtkTreeViewColumn *column;
-  GtkWidget *list = GetWidget("TreeView");
+  GtkWidget *list = GetWidget("MainTreeView");
 
   /* A hidden column indicating the type of row [bullion, equity, blank space,
    * etc] */
@@ -111,74 +111,20 @@ static int main_set_columns(int column_type) {
   gtk_tree_view_column_set_visible(column, false);
   gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
-  renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(
-      "column_one", renderer, "markup", GUI_COLUMN_ONE, NULL);
-  gtk_tree_view_column_set_resizable(column, true);
-  gtk_tree_view_column_set_visible(column, true);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
-
-  renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(
-      "column_two", renderer, "markup", GUI_COLUMN_TWO, NULL);
-  gtk_tree_view_column_set_resizable(column, true);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
-
-  renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(
-      "column_three", renderer, "markup", GUI_COLUMN_THREE, NULL);
-  gtk_tree_view_column_set_resizable(column, true);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
+  AddColumnToTreeview("column_one", GUI_COLUMN_ONE, list);
+  AddColumnToTreeview("column_two", GUI_COLUMN_TWO, list);
+  AddColumnToTreeview("column_three", GUI_COLUMN_THREE, list);
 
   if (column_type == GUI_COLUMN_PRIMARY) {
     /* if PRIMARY treeview */
-    renderer = gtk_cell_renderer_text_new();
-    column = gtk_tree_view_column_new_with_attributes(
-        "column_four", renderer, "markup", GUI_COLUMN_FOUR, NULL);
-    gtk_tree_view_column_set_resizable(column, true);
-    gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
-
-    renderer = gtk_cell_renderer_text_new();
-    column = gtk_tree_view_column_new_with_attributes(
-        "column_five", renderer, "markup", GUI_COLUMN_FIVE, NULL);
-    gtk_tree_view_column_set_resizable(column, true);
-    gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
-
-    renderer = gtk_cell_renderer_text_new();
-    column = gtk_tree_view_column_new_with_attributes(
-        "column_six", renderer, "markup", GUI_COLUMN_SIX, NULL);
-    gtk_tree_view_column_set_resizable(column, true);
-    gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
-
-    renderer = gtk_cell_renderer_text_new();
-    column = gtk_tree_view_column_new_with_attributes(
-        "column_seven", renderer, "markup", GUI_COLUMN_SEVEN, NULL);
-    gtk_tree_view_column_set_resizable(column, true);
-    gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
-
-    renderer = gtk_cell_renderer_text_new();
-    column = gtk_tree_view_column_new_with_attributes(
-        "column_eight", renderer, "markup", GUI_COLUMN_EIGHT, NULL);
-    gtk_tree_view_column_set_resizable(column, true);
-    gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
-
-    renderer = gtk_cell_renderer_text_new();
-    column = gtk_tree_view_column_new_with_attributes(
-        "column_nine", renderer, "markup", GUI_COLUMN_NINE, NULL);
-    gtk_tree_view_column_set_resizable(column, true);
-    gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
-
-    renderer = gtk_cell_renderer_text_new();
-    column = gtk_tree_view_column_new_with_attributes(
-        "column_ten", renderer, "markup", GUI_COLUMN_TEN, NULL);
-    gtk_tree_view_column_set_resizable(column, true);
-    gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
-
-    renderer = gtk_cell_renderer_text_new();
-    column = gtk_tree_view_column_new_with_attributes(
-        "column_eleven", renderer, "markup", GUI_COLUMN_ELEVEN, NULL);
-    gtk_tree_view_column_set_resizable(column, true);
-    gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
+    AddColumnToTreeview("column_four", GUI_COLUMN_FOUR, list);
+    AddColumnToTreeview("column_five", GUI_COLUMN_FIVE, list);
+    AddColumnToTreeview("column_six", GUI_COLUMN_SIX, list);
+    AddColumnToTreeview("column_seven", GUI_COLUMN_SEVEN, list);
+    AddColumnToTreeview("column_eight", GUI_COLUMN_EIGHT, list);
+    AddColumnToTreeview("column_nine", GUI_COLUMN_NINE, list);
+    AddColumnToTreeview("column_ten", GUI_COLUMN_TEN, list);
+    AddColumnToTreeview("column_eleven", GUI_COLUMN_ELEVEN, list);
   }
 
   return 0;
@@ -389,9 +335,9 @@ static GtkListStore *main_primary_store(void *data) {
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, GUI_TYPE, "equity_total", GUI_SYMBOL, "",
                        GUI_COLUMN_ONE, pri_h_mkd->equity, GUI_COLUMN_TWO,
-                       F->stock_port_value_ch, GUI_COLUMN_THREE,
-                       F->stock_port_value_chg_ch, GUI_COLUMN_FOUR,
-                       F->stock_port_value_p_chg_ch, -1);
+                       F->stock_port_value_mrkd_ch, GUI_COLUMN_THREE,
+                       F->stock_port_value_chg_mrkd_ch, GUI_COLUMN_FOUR,
+                       F->stock_port_value_p_chg_mrkd_ch, -1);
   }
 
   if (D->portfolio_port_value_f) {
@@ -599,6 +545,26 @@ static void set_clock_header_fonts(void *data) {
   MainDisplayTimeRemaining(pkg);
 }
 
+static void set_indice_header_label(const char *label_name,
+                                    const char *label_str,
+                                    PangoAttrList *attrlist) {
+  const char *format = "<span foreground='DarkSlateGrey'>%s</span>";
+
+  GtkWidget *label = GetWidget(label_name);
+  char *markup = g_markup_printf_escaped(format, label_str);
+  gtk_label_set_markup(GTK_LABEL(label), markup);
+  g_free(markup);
+  gtk_label_set_attributes((GtkLabel *)label, attrlist);
+}
+
+static struct {
+  const char *labelname;
+  const char *labelstr;
+} lbl_name_str[] = {{"DowLabel", "Dow"},       {"NasdaqLabel", "Nasdaq"},
+                    {"SPLabel", "S&P 500"},    {"BitcoinLabel", "Bitcoin"},
+                    {"GoldLabel", "Gold"},     {"SilverLabel", "Silver"},
+                    {"GSLabel", "Gold/Silver"}};
+
 static void set_indice_header_fonts(void *data) {
   portfolio_packet *pkg = (portfolio_packet *)data;
   /* Set the attribute list on the header labels */
@@ -615,49 +581,11 @@ static void set_indice_header_fonts(void *data) {
   pango_attr_list_insert(attrlist, attr);
 
   /* Set the markup on the index header labels */
-  const char *format = "<span foreground='DarkSlateGrey'>%s</span>";
-
-  GtkWidget *label = GetWidget("DowLabel");
-  char *markup = g_markup_printf_escaped(format, "Dow");
-  gtk_label_set_markup(GTK_LABEL(label), markup);
-  g_free(markup);
-  gtk_label_set_attributes((GtkLabel *)label, attrlist);
-
-  label = GetWidget("NasdaqLabel");
-  markup = g_markup_printf_escaped(format, "Nasdaq");
-  gtk_label_set_markup(GTK_LABEL(label), markup);
-  g_free(markup);
-  gtk_label_set_attributes((GtkLabel *)label, attrlist);
-
-  label = GetWidget("SPLabel");
-  markup = g_markup_printf_escaped(format, "S&P 500");
-  gtk_label_set_markup(GTK_LABEL(label), markup);
-  g_free(markup);
-  gtk_label_set_attributes((GtkLabel *)label, attrlist);
-
-  label = GetWidget("BitcoinLabel");
-  markup = g_markup_printf_escaped(format, "Bitcoin");
-  gtk_label_set_markup(GTK_LABEL(label), markup);
-  g_free(markup);
-  gtk_label_set_attributes((GtkLabel *)label, attrlist);
-
-  label = GetWidget("GoldLabel");
-  markup = g_markup_printf_escaped(format, "Gold");
-  gtk_label_set_markup(GTK_LABEL(label), markup);
-  g_free(markup);
-  gtk_label_set_attributes((GtkLabel *)label, attrlist);
-
-  label = GetWidget("SilverLabel");
-  markup = g_markup_printf_escaped(format, "Silver");
-  gtk_label_set_markup(GTK_LABEL(label), markup);
-  g_free(markup);
-  gtk_label_set_attributes((GtkLabel *)label, attrlist);
-
-  label = GetWidget("GSLabel");
-  markup = g_markup_printf_escaped(format, "Gold/Silver");
-  gtk_label_set_markup(GTK_LABEL(label), markup);
-  g_free(markup);
-  gtk_label_set_attributes((GtkLabel *)label, attrlist);
+  gushort size = sizeof lbl_name_str / sizeof lbl_name_str[0];
+  for (gushort g = 0; g < size; g++) {
+    set_indice_header_label(lbl_name_str[g].labelname, lbl_name_str[g].labelstr,
+                            attrlist);
+  }
 
   pango_font_description_free(font_desc);
   pango_attr_list_unref(attrlist);
@@ -675,6 +603,32 @@ int MainSetFonts(void *data) {
   pkg->meta_class->ToStringsHeadings();
 
   return 0;
+}
+
+static void set_indice_value_label(const char *label_name, const double chg_f,
+                                   const char *value, const char *chg,
+                                   const char *per_chg,
+                                   PangoAttrList *attrlist) {
+
+  const gchar *red_format =
+      "<span foreground='black'>%s\n</span><span foreground='darkred' "
+      "size='small'>%s, %s</span>";
+  const gchar *green_format =
+      "<span foreground='black'>%s\n</span><span foreground='darkgreen' "
+      "size='small'>%s, %s</span>";
+  const char *fmt;
+
+  if (chg_f >= 0) {
+    fmt = green_format;
+  } else {
+    fmt = red_format;
+  };
+
+  GtkWidget *label = GetWidget(label_name);
+  gchar *markup = g_markup_printf_escaped(fmt, value, chg, per_chg);
+  gtk_label_set_markup(GTK_LABEL(label), markup);
+  g_free(markup);
+  gtk_label_set_attributes((GtkLabel *)label, attrlist);
 }
 
 static void set_indices_labels(void *data) {
@@ -696,106 +650,41 @@ static void set_indices_labels(void *data) {
   /* attrlist takes ownership of attr, do not free attr */
   pango_attr_list_insert(attrlist, attr);
 
-  const gchar *red_format =
-      "<span foreground='black'>%s\n</span><span foreground='darkred' "
-      "size='small'>%s, %s</span>";
-  const gchar *green_format =
-      "<span foreground='black'>%s\n</span><span foreground='darkgreen' "
-      "size='small'>%s, %s</span>";
-  const gchar *format;
-  gchar *markup, *spot = malloc(1), *chg_ounce = malloc(1);
+  set_indice_value_label("DowIndexValue", D->index_dow_value_chg_f,
+                         D->index_dow_value_ch, D->index_dow_value_chg_ch,
+                         D->index_dow_value_p_chg_ch, attrlist);
 
-  if (D->index_dow_value_chg_f >= 0) {
-    format = green_format;
-  } else {
-    format = red_format;
-  };
+  set_indice_value_label("NasdaqIndexValue", D->index_nasdaq_value_chg_f,
+                         D->index_nasdaq_value_ch, D->index_nasdaq_value_chg_ch,
+                         D->index_nasdaq_value_p_chg_ch, attrlist);
 
-  GtkWidget *label = GetWidget("DowIndexValue");
-  markup = g_markup_printf_escaped(format, D->index_dow_value_ch,
-                                   D->index_dow_value_chg_ch,
-                                   D->index_dow_value_p_chg_ch);
-  gtk_label_set_markup(GTK_LABEL(label), markup);
-  g_free(markup);
-  gtk_label_set_attributes((GtkLabel *)label, attrlist);
+  set_indice_value_label("SPIndexValue", D->index_sp_value_chg_f,
+                         D->index_sp_value_ch, D->index_sp_value_chg_ch,
+                         D->index_sp_value_p_chg_ch, attrlist);
 
-  if (D->index_nasdaq_value_chg_f >= 0) {
-    format = green_format;
-  } else {
-    format = red_format;
-  };
+  set_indice_value_label("BitcoinValue", D->crypto_bitcoin_value_chg_f,
+                         D->crypto_bitcoin_value_ch,
+                         D->crypto_bitcoin_value_chg_ch,
+                         D->crypto_bitcoin_value_p_chg_ch, attrlist);
 
-  label = GetWidget("NasdaqIndexValue");
-  markup = g_markup_printf_escaped(format, D->index_nasdaq_value_ch,
-                                   D->index_nasdaq_value_chg_ch,
-                                   D->index_nasdaq_value_p_chg_ch);
-  gtk_label_set_markup(GTK_LABEL(label), markup);
-  g_free(markup);
-  gtk_label_set_attributes((GtkLabel *)label, attrlist);
+  gchar *spot = NULL, *chg_ounce = NULL;
 
-  if (D->index_sp_value_chg_f >= 0) {
-    format = green_format;
-  } else {
-    format = red_format;
-  };
-
-  label = GetWidget("SPIndexValue");
-  markup = g_markup_printf_escaped(format, D->index_sp_value_ch,
-                                   D->index_sp_value_chg_ch,
-                                   D->index_sp_value_p_chg_ch);
-  gtk_label_set_markup(GTK_LABEL(label), markup);
-  g_free(markup);
-  gtk_label_set_attributes((GtkLabel *)label, attrlist);
-
-  if (D->crypto_bitcoin_value_chg_f >= 0) {
-    format = green_format;
-  } else {
-    format = red_format;
-  };
-
-  label = GetWidget("BitcoinValue");
-  markup = g_markup_printf_escaped(format, D->crypto_bitcoin_value_ch,
-                                   D->crypto_bitcoin_value_chg_ch,
-                                   D->crypto_bitcoin_value_p_chg_ch);
-  gtk_label_set_markup(GTK_LABEL(label), markup);
-  g_free(markup);
-  gtk_label_set_attributes((GtkLabel *)label, attrlist);
-
-  if (M->Gold->change_ounce_f >= 0) {
-    format = green_format;
-  } else {
-    format = red_format;
-  };
-
-  label = GetWidget("GoldValue");
   DoubleToFormattedStr(&spot, M->Gold->spot_price_f, 2, MON_STR);
   DoubleToFormattedStr(&chg_ounce, M->Gold->change_ounce_f, 2, MON_STR);
-  markup = g_markup_printf_escaped(format, spot, chg_ounce,
-                                   M->Gold->change_percent_raw_ch);
-  gtk_label_set_markup(GTK_LABEL(label), markup);
-  g_free(markup);
-  gtk_label_set_attributes((GtkLabel *)label, attrlist);
+  set_indice_value_label("GoldValue", M->Gold->change_ounce_f, spot, chg_ounce,
+                         M->Gold->change_percent_raw_ch, attrlist);
 
-  if (M->Silver->change_ounce_f >= 0) {
-    format = green_format;
-  } else {
-    format = red_format;
-  };
-
-  label = GetWidget("SilverValue");
   DoubleToFormattedStr(&spot, M->Silver->spot_price_f, 2, MON_STR);
   DoubleToFormattedStr(&chg_ounce, M->Silver->change_ounce_f, 2, MON_STR);
-  markup = g_markup_printf_escaped(format, spot, chg_ounce,
-                                   M->Silver->change_percent_raw_ch);
-  gtk_label_set_markup(GTK_LABEL(label), markup);
-  g_free(markup);
+  set_indice_value_label("SilverValue", M->Silver->change_ounce_f, spot,
+                         chg_ounce, M->Silver->change_percent_raw_ch, attrlist);
+
   g_free(spot);
   g_free(chg_ounce);
-  gtk_label_set_attributes((GtkLabel *)label, attrlist);
 
-  label = GetWidget("GSValue");
-  markup = g_markup_printf_escaped("<span foreground='black'>%s</span>",
-                                   M->gold_silver_ratio_ch);
+  GtkWidget *label = GetWidget("GSValue");
+  gchar *markup = g_markup_printf_escaped("<span foreground='black'>%s</span>",
+                                          M->gold_silver_ratio_ch);
   gtk_label_set_markup(GTK_LABEL(label), markup);
   g_free(markup);
   gtk_label_set_attributes((GtkLabel *)label, attrlist);
@@ -812,7 +701,7 @@ int MainPrimaryTreeview(void *data) {
   set_indices_labels(data);
 
   GtkListStore *store = NULL;
-  GtkWidget *list = GetWidget("TreeView");
+  GtkWidget *list = GetWidget("MainTreeView");
 
   /* Clear the current TreeView */
   main_tree_view_clr();
@@ -844,7 +733,7 @@ static void hide_indices() {
 
 int MainDefaultTreeview(void *data) {
   GtkListStore *store = NULL;
-  GtkWidget *list = GetWidget("TreeView");
+  GtkWidget *list = GetWidget("MainTreeView");
 
   /* Hide the Indices */
   hide_indices();
@@ -942,7 +831,7 @@ int MainDisplayTimeRemaining(void *data) {
     gtk_label_set_markup(GTK_LABEL(TimeRemLabel), markup);
     g_free(markup);
   }
-  
+
   gtk_label_set_attributes((GtkLabel *)CloseLabel, attrlist);
   gtk_label_set_attributes((GtkLabel *)TimeRemLabel, attrlist);
 
@@ -952,29 +841,29 @@ int MainDisplayTimeRemaining(void *data) {
   return 0;
 }
 
-int MainHideWindow() {
+int MainHideWindows() {
   GtkWidget *window = GetWidget("MainWindow");
   gtk_widget_set_visible(window, false);
 
   window = GetWidget("AboutWindow");
   gtk_widget_set_visible(window, false);
 
-  window = GetWidget("AddRemoveBullionWindow");
+  window = GetWidget("BullionWindow");
   gtk_widget_set_visible(window, false);
 
-  window = GetWidget("AddRemoveCashWindow");
+  window = GetWidget("CashWindow");
   gtk_widget_set_visible(window, false);
 
-  window = GetWidget("ViewRSIWindow");
+  window = GetWidget("HistoryWindow");
   gtk_widget_set_visible(window, false);
 
-  window = GetWidget("AddRemoveSecurity");
+  window = GetWidget("SecurityWindow");
   gtk_widget_set_visible(window, false);
 
-  window = GetWidget("ShortcutWindow");
+  window = GetWidget("HotkeysWindow");
   gtk_widget_set_visible(window, false);
 
-  window = GetWidget("ChangeApiInfoWindow");
+  window = GetWidget("ApiWindow");
   gtk_widget_set_visible(window, false);
 
   return 0;
