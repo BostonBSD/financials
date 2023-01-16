@@ -15,7 +15,7 @@ MKDIR=mkdir -p
 OUT_DIR=../build
 # Compiling everything into one executable yields a more compact binary
 # than splitting into obj files [20% smaller], the recompilation time is 
-# arbitrary on the dev system.
+# negligible on the dev system.
 financials:
 	${MKDIR} ${OUT_DIR}
 	$(CC) -Ofast -s -lm -o $(OUT_DIR)/$@ $(SRC) $(CFLAGS) $(LIBS) $(WARN)
