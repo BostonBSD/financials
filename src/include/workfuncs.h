@@ -74,6 +74,7 @@ symbol_name_map *SymNameFetch(portfolio_packet *);
 symbol_name_map *SymNameFetchUpdate(portfolio_packet *, symbol_name_map *);
 char *GetSecurityName(char *, const symbol_name_map *);
 void SNMapDestruct(symbol_name_map *);
+void CreateHashTable(symbol_name_map *);
 
 /* string_formatting */
 bool CheckValidString(const char *);
@@ -102,6 +103,7 @@ unsigned int ClockSleepMicroSeconds();
 bool MarketOpen();
 
 /* working_functions */
+void GetYahooUrl(char **, const char *, unsigned int);
 MemType *FetchHistoryData(const char *, portfolio_packet *);
 double CalcGain(double, double);
 void CalcSumRsi(double, double *, double *);

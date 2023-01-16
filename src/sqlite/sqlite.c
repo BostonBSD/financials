@@ -84,6 +84,17 @@ static int cash_callback(void *data, int argc, char **argv, char **ColName) {
   return 0;
 }
 
+static void set_bul_values(bullion *B, const char *ounce_ch,
+                           const char *premium_ch,
+                           unsigned short digits_right) {
+  B->ounce_f = StringToDouble(ounce_ch);
+  DoubleToFormattedStrPango(&B->ounce_mrkd_ch, B->ounce_f, 4, NUM_STR, BLACK);
+
+  B->premium_f = StringToDouble(premium_ch);
+  DoubleToFormattedStrPango(&B->premium_mrkd_ch, B->premium_f, digits_right,
+                            MON_STR, BLACK);
+}
+
 static int bullion_callback(void *data, int argc, char **argv, char **ColName) {
   /* argv[0] is Id, argv[1] is Metal, argv[2] is Ounces, argv[3] is Premium */
   pthread_mutex_lock(&mutex_working[CLASS_MEMBER_MUTEX]);
@@ -104,45 +115,23 @@ static int bullion_callback(void *data, int argc, char **argv, char **ColName) {
   metal *m = pkg->GetMetalClass();
 
   if (strcasecmp(argv[1], "gold") == 0) {
-    m->Gold->ounce_f = StringToDouble(argv[2] ? argv[2] : "0");
-    DoubleToFormattedStrPango(&m->Gold->ounce_mrkd_ch, m->Gold->ounce_f, 4,
-                              NUM_STR, BLACK);
-
-    m->Gold->premium_f = StringToDouble(argv[3] ? argv[3] : "0");
-    DoubleToFormattedStrPango(&m->Gold->premium_mrkd_ch, m->Gold->premium_f,
-                              D->decimal_places_shrt, MON_STR, BLACK);
+    set_bul_values(m->Gold, argv[2] ? argv[2] : "0", argv[3] ? argv[3] : "0",
+                   D->decimal_places_shrt);
   }
 
   if (strcasecmp(argv[1], "silver") == 0) {
-    m->Silver->ounce_f = StringToDouble(argv[2] ? argv[2] : "0");
-    DoubleToFormattedStrPango(&m->Silver->ounce_mrkd_ch, m->Silver->ounce_f, 4,
-                              NUM_STR, BLACK);
-
-    m->Silver->premium_f = StringToDouble(argv[3] ? argv[3] : "0");
-    DoubleToFormattedStrPango(&m->Silver->premium_mrkd_ch, m->Silver->premium_f,
-                              D->decimal_places_shrt, MON_STR, BLACK);
+    set_bul_values(m->Silver, argv[2] ? argv[2] : "0", argv[3] ? argv[3] : "0",
+                   D->decimal_places_shrt);
   }
 
   if (strcasecmp(argv[1], "platinum") == 0) {
-    m->Platinum->ounce_f = StringToDouble(argv[2] ? argv[2] : "0");
-    DoubleToFormattedStrPango(&m->Platinum->ounce_mrkd_ch, m->Platinum->ounce_f,
-                              4, NUM_STR, BLACK);
-
-    m->Platinum->premium_f = StringToDouble(argv[3] ? argv[3] : "0");
-    DoubleToFormattedStrPango(&m->Platinum->premium_mrkd_ch,
-                              m->Platinum->premium_f, D->decimal_places_shrt,
-                              MON_STR, BLACK);
+    set_bul_values(m->Platinum, argv[2] ? argv[2] : "0",
+                   argv[3] ? argv[3] : "0", D->decimal_places_shrt);
   }
 
   if (strcasecmp(argv[1], "palladium") == 0) {
-    m->Palladium->ounce_f = StringToDouble(argv[2] ? argv[2] : "0");
-    DoubleToFormattedStrPango(&m->Palladium->ounce_mrkd_ch,
-                              m->Palladium->ounce_f, 4, NUM_STR, BLACK);
-
-    m->Palladium->premium_f = StringToDouble(argv[3] ? argv[3] : "0");
-    DoubleToFormattedStrPango(&m->Palladium->premium_mrkd_ch,
-                              m->Palladium->premium_f, D->decimal_places_shrt,
-                              MON_STR, BLACK);
+    set_bul_values(m->Palladium, argv[2] ? argv[2] : "0",
+                   argv[3] ? argv[3] : "0", D->decimal_places_shrt);
   }
 
   pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
@@ -351,7 +340,8 @@ static int symbol_name_callback(void *data, int argc, char **argv,
     return 1;
 
   symbol_name_map *sn_map = (symbol_name_map *)data;
-  AddSymbolToMap(argv[1], argv[2], sn_map);
+  AddSymbolToMap(argv[1] ? argv[1] : "Db Error", argv[2] ? argv[2] : "Db Error",
+                 sn_map);
 
   return 0;
 }
@@ -806,25 +796,7 @@ symbol_name_map *SqliteGetSNMap(meta *D) {
     sn_map = NULL;
   } else {
     /* Create a hashing table of the sn_map. */
-    sn_map->htab = (struct hsearch_data *)malloc(sizeof(struct hsearch_data));
-    /*zeroize the table.*/
-    memset(sn_map->htab, 0, sizeof(struct hsearch_data));
-
-    ENTRY e, *ep;
-    /* GNU suggests the table size be 25% larger than needed.  On FreeBSD table
-     * size is dynamic. */
-    size_t tab_size = (size_t)floor((double)(sn_map->size * 1.25));
-    hcreate_r(tab_size, sn_map->htab);
-    unsigned short s = 0;
-    while (s < sn_map->size) {
-      e.key = sn_map->sn_container_arr[s]->symbol;
-      e.data = sn_map->sn_container_arr[s];
-      if (hsearch_r(e, ENTER, &ep, sn_map->htab) == 0) {
-        fprintf(stderr, "entry failed\n");
-        exit(EXIT_FAILURE);
-      }
-      s++;
-    }
+    CreateHashTable(sn_map);
   }
 
   pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_SQLITE_MUTEX]);

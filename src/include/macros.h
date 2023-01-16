@@ -65,8 +65,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #define NEW_YORK_TIME_ZONE "America/New_York"
 #endif
 
-/* The Yahoo! URL Macros are used by bullion, meta indices, and RSI data fetch
- * functions */
+/* The Yahoo! URL Macros are used by the GetYahooUrl ()
+ * function */
 #ifndef YAHOO_URL_START
 #define YAHOO_URL_START "https://query1.finance.yahoo.com/v7/finance/download/"
 #endif

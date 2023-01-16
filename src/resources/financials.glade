@@ -1538,6 +1538,98 @@ POSSIBILITY OF SUCH DAMAGE.</property>
       </object>
     </child>
   </object>
+  <object class="GtkMenu" id="HotkeysMenu">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <child>
+      <object class="GtkMenuItem" id="HotkeysMenuClose">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="label" translatable="yes">_Close</property>
+        <property name="use-underline">True</property>
+        <accelerator key="c" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+      </object>
+    </child>
+  </object>
+  <object class="GtkWindow" id="HotkeysWindow">
+    <property name="can-focus">False</property>
+    <property name="can-default">True</property>
+    <property name="resizable">False</property>
+    <property name="default-width">-1</property>
+    <property name="default-height">-1</property>
+    <property name="destroy-with-parent">True</property>
+    <property name="icon">Stocks-icon.png</property>
+    <property name="skip-pager-hint">True</property>
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="baseline-position">top</property>
+        <child>
+          <object class="GtkScrolledWindow" id="ShortcutScrolledWindow">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="hexpand">True</property>
+            <property name="vexpand">True</property>
+            <property name="hscrollbar-policy">never</property>
+            <property name="vscrollbar-policy">never</property>
+            <property name="shadow-type">in</property>
+            <property name="min-content-width">200</property>
+            <property name="min-content-height">500</property>
+            <property name="propagate-natural-width">True</property>
+            <property name="propagate-natural-height">True</property>
+            <child>
+              <object class="GtkTreeView" id="HotkeysTreeView">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <child internal-child="selection">
+                  <object class="GtkTreeSelection"/>
+                </child>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+    <child type="titlebar">
+      <object class="GtkHeaderBar">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="show-close-button">True</property>
+        <child type="title">
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">Hotkeys</property>
+            <attributes>
+              <attribute name="font-desc" value="Oxygen-Sans 10"/>
+            </attributes>
+          </object>
+        </child>
+        <child>
+          <object class="GtkMenuButton">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="focus-on-click">False</property>
+            <property name="receives-default">True</property>
+            <property name="relief">none</property>
+            <property name="popup">HotkeysMenu</property>
+            <property name="use-popover">False</property>
+            <child>
+              <placeholder/>
+            </child>
+            <accelerator key="f" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
   <object class="GtkMenu" id="MainEditMenu">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
@@ -1681,13 +1773,14 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                           <object class="GtkGrid" id="MainClockGrid">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="valign">center</property>
                             <property name="hexpand">True</property>
-                            <property name="column-homogeneous">True</property>
                             <child>
                               <object class="GtkAspectFrame">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="halign">start</property>
+                                <property name="hexpand">True</property>
                                 <property name="label-xalign">0</property>
                                 <property name="shadow-type">none</property>
                                 <child>
@@ -1750,6 +1843,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="halign">end</property>
+                                <property name="hexpand">True</property>
                                 <property name="label-xalign">0</property>
                                 <property name="shadow-type">none</property>
                                 <child>
@@ -2860,8 +2954,8 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                 </attributes>
               </object>
             </child>
-            <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
             <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+            <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -2892,98 +2986,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
             <property name="receives-default">True</property>
             <property name="relief">none</property>
             <property name="popup">SecuritiesMenu</property>
-            <property name="use-popover">False</property>
-            <child>
-              <placeholder/>
-            </child>
-            <accelerator key="f" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-          </object>
-        </child>
-      </object>
-    </child>
-  </object>
-  <object class="GtkMenu" id="HotkeysMenu">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <child>
-      <object class="GtkMenuItem" id="HotkeysMenuClose">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="label" translatable="yes">_Close</property>
-        <property name="use-underline">True</property>
-        <accelerator key="c" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-      </object>
-    </child>
-  </object>
-  <object class="GtkWindow" id="HotkeysWindow">
-    <property name="can-focus">False</property>
-    <property name="can-default">True</property>
-    <property name="resizable">False</property>
-    <property name="default-width">-1</property>
-    <property name="default-height">-1</property>
-    <property name="destroy-with-parent">True</property>
-    <property name="icon">Stocks-icon.png</property>
-    <property name="skip-pager-hint">True</property>
-    <child>
-      <object class="GtkBox">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="orientation">vertical</property>
-        <property name="baseline-position">top</property>
-        <child>
-          <object class="GtkScrolledWindow" id="ShortcutScrolledWindow">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="hexpand">True</property>
-            <property name="vexpand">True</property>
-            <property name="hscrollbar-policy">never</property>
-            <property name="vscrollbar-policy">never</property>
-            <property name="shadow-type">in</property>
-            <property name="min-content-width">200</property>
-            <property name="min-content-height">500</property>
-            <property name="propagate-natural-width">True</property>
-            <property name="propagate-natural-height">True</property>
-            <child>
-              <object class="GtkTreeView" id="HotkeysTreeView">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <child internal-child="selection">
-                  <object class="GtkTreeSelection"/>
-                </child>
-              </object>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">True</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-      </object>
-    </child>
-    <child type="titlebar">
-      <object class="GtkHeaderBar">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
-        <property name="show-close-button">True</property>
-        <child type="title">
-          <object class="GtkLabel">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="label" translatable="yes">Hotkeys</property>
-            <attributes>
-              <attribute name="font-desc" value="Oxygen-Sans 10"/>
-            </attributes>
-          </object>
-        </child>
-        <child>
-          <object class="GtkMenuButton">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="focus-on-click">False</property>
-            <property name="receives-default">True</property>
-            <property name="relief">none</property>
-            <property name="popup">HotkeysMenu</property>
             <property name="use-popover">False</property>
             <child>
               <placeholder/>

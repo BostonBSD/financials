@@ -244,42 +244,19 @@ static void Calculate() {
     M->gold_silver_ratio_f = M->Gold->spot_price_f / M->Silver->spot_price_f;
 }
 
-static void create_bullion_url(bullion *B, const char *symbol_ch) {
-  time_t end_time, start_time;
-  unsigned short len;
-
-  time(&end_time);
-  /* The start time needs to be a week before the current time, so minus seven
-     days This compensates for weekends and holidays and ensures enough data. */
-  start_time = end_time - (86400 * 7);
-
-  len = strlen(symbol_ch) + strlen(YAHOO_URL_START) +
-        strlen(YAHOO_URL_MIDDLE_ONE) + strlen(YAHOO_URL_MIDDLE_TWO) +
-        strlen(YAHOO_URL_END) + 25;
-  char *tmp = realloc(B->url_ch, len);
-
-  if (tmp == NULL) {
-    printf("Not Enough Memory, realloc returned NULL.\n");
-    exit(EXIT_FAILURE);
-  }
-
-  B->url_ch = tmp;
-  snprintf(B->url_ch, len,
-           YAHOO_URL_START "%s" YAHOO_URL_MIDDLE_ONE "%d" YAHOO_URL_MIDDLE_TWO
-                           "%d" YAHOO_URL_END,
-           symbol_ch, (int)start_time, (int)end_time);
-}
-
 static int SetUpCurl(void *data) {
   portfolio_packet *pkg = (portfolio_packet *)data;
   metal *M = MetalClassObject;
 
-  create_bullion_url(M->Gold, "GC=F");
-  create_bullion_url(M->Silver, "SI=F");
+  /* The start time needs to be a week before the current time, so minus seven
+     days This compensates for weekends and holidays and ensures enough data. */
+  unsigned int period = (86400 * 7);
+  GetYahooUrl(&M->Gold->url_ch, "GC=F", period);
+  GetYahooUrl(&M->Silver->url_ch, "SI=F", period);
   if (M->Platinum->ounce_f > 0)
-    create_bullion_url(M->Platinum, "PL=F");
+    GetYahooUrl(&M->Platinum->url_ch, "PL=F", period);
   if (M->Palladium->ounce_f > 0)
-    create_bullion_url(M->Palladium, "PA=F");
+    GetYahooUrl(&M->Palladium->url_ch, "PA=F", period);
 
   SetUpCurlHandle(M->Silver->YAHOO_hnd, pkg->multicurl_main_hnd,
                   M->Silver->url_ch, &M->Silver->CURLDATA);

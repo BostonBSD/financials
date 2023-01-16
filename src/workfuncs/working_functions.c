@@ -66,50 +66,48 @@ double CalcRsi(double avg_gain, double avg_loss) {
   return (100 - (100 / (1 + rs)));
 }
 
-static void history_url_period(time_t *currenttime, time_t *starttime) {
-
-  /* Number of Seconds in a Year Plus Three Weeks */
-  unsigned int period = 31557600 + (604800 * 3);
-
-  time(currenttime);
-  *starttime = *currenttime - (time_t)period;
-}
-
-static char *history_get_url(const char *symbol) {
-  time_t end, start;
+void GetYahooUrl(char **url_ch, const char *symbol_ch, unsigned int period) {
+  time_t end_time, start_time;
   unsigned short len;
 
-  history_url_period(&end, &start);
+  time(&end_time);
+  start_time = end_time - (time_t)period;
 
-  len = strlen(symbol) + strlen(YAHOO_URL_START) +
-        strlen(YAHOO_URL_MIDDLE_ONE) + strlen(YAHOO_URL_MIDDLE_TWO) +
-        strlen(YAHOO_URL_END) + 25;
-  char *url = malloc(len);
-  snprintf(url, len,
-           YAHOO_URL_START "%s" YAHOO_URL_MIDDLE_ONE "%d" YAHOO_URL_MIDDLE_TWO
-                           "%d" YAHOO_URL_END,
-           symbol, (int)start, (int)end);
+  const char *fmt = YAHOO_URL_START
+      "%s" YAHOO_URL_MIDDLE_ONE "%d" YAHOO_URL_MIDDLE_TWO "%d" YAHOO_URL_END;
 
-  return url;
+  len = snprintf(NULL, 0, fmt, symbol_ch, (int)start_time, (int)end_time) + 1;
+  char *tmp = realloc(url_ch[0], len);
+
+  if (tmp == NULL) {
+    printf("Not Enough Memory, realloc returned NULL.\n");
+    exit(EXIT_FAILURE);
+  }
+
+  url_ch[0] = tmp;
+  snprintf(url_ch[0], len, fmt, symbol_ch, (int)start_time, (int)end_time);
 }
 
-MemType *FetchHistoryData(const char *symbol, portfolio_packet *pkg) {
+MemType *FetchHistoryData(const char *symbol_ch, portfolio_packet *pkg) {
   meta *D = pkg->GetMetaClass();
-  char *MyUrl = NULL;
+  char *MyUrl_ch = NULL;
   MemType *MyOutputStruct = (MemType *)malloc(sizeof(*MyOutputStruct));
   MyOutputStruct->memory = NULL;
   MyOutputStruct->size = 0;
 
-  MyUrl = history_get_url(symbol);
+  /* Number of Seconds in a Year Plus Three Weeks */
+  unsigned int period = 31557600 + (604800 * 3);
+  GetYahooUrl(&MyUrl_ch, symbol_ch, period);
 
-  SetUpCurlHandle(D->history_hnd, D->multicurl_history_hnd, MyUrl, MyOutputStruct);
+  SetUpCurlHandle(D->history_hnd, D->multicurl_history_hnd, MyUrl_ch,
+                  MyOutputStruct);
   if (PerformMultiCurl_no_prog(D->multicurl_history_hnd) != 0) {
-    free(MyUrl);
+    free(MyUrl_ch);
     FreeMemtype(MyOutputStruct);
     free(MyOutputStruct);
     return NULL;
   }
 
-  free(MyUrl);
+  free(MyUrl_ch);
   return MyOutputStruct;
 }

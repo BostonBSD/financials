@@ -147,43 +147,20 @@ static void StopSNMapCurl() {
   pthread_mutex_unlock(&mutex_working[MULTICURL_NO_PROG_MUTEX]);
 }
 
-static void create_index_url(char **url_ch, const char *symbol_ch) {
-  time_t end_time, start_time;
-  unsigned short len;
-
-  time(&end_time);
-  /* The start time needs to be a few days before the current time, so minus
-     seven days This compensates for weekends and holidays and ensures enough
-     data. */
-  start_time = end_time - (86400 * 7);
-
-  len = strlen(symbol_ch) + strlen(YAHOO_URL_START) +
-        strlen(YAHOO_URL_MIDDLE_ONE) + strlen(YAHOO_URL_MIDDLE_TWO) +
-        strlen(YAHOO_URL_END) + 25;
-  char *tmp = realloc(url_ch[0], len);
-
-  if (tmp == NULL) {
-    printf("Not Enough Memory, realloc returned NULL.\n");
-    exit(EXIT_FAILURE);
-  }
-
-  url_ch[0] = tmp;
-  snprintf(url_ch[0], len,
-           YAHOO_URL_START "%s" YAHOO_URL_MIDDLE_ONE "%d" YAHOO_URL_MIDDLE_TWO
-                           "%d" YAHOO_URL_END,
-           symbol_ch, (int)start_time, (int)end_time);
-}
-
 static int SetUpCurlIndicesData(void *data) {
   portfolio_packet *pkg = (portfolio_packet *)data;
   meta *Met = MetaClassObject;
   char *dow_url_ch = NULL, *nasdaq_url_ch = NULL, *sp_url_ch = NULL,
        *bitcoin_url_ch = NULL;
 
-  create_index_url(&dow_url_ch, "^dji");
-  create_index_url(&nasdaq_url_ch, "^ixic");
-  create_index_url(&sp_url_ch, "^gspc");
-  create_index_url(&bitcoin_url_ch, "btc-usd");
+  /* The start time needs to be a few days before the current time, so minus
+     seven days This compensates for weekends and holidays and ensures enough
+     data. */
+  unsigned int period = (86400 * 7);
+  GetYahooUrl(&dow_url_ch, "^dji", period);
+  GetYahooUrl(&nasdaq_url_ch, "^ixic", period);
+  GetYahooUrl(&sp_url_ch, "^gspc", period);
+  GetYahooUrl(&bitcoin_url_ch, "btc-usd", period);
 
   SetUpCurlHandle(Met->index_dow_hnd, pkg->multicurl_main_hnd, dow_url_ch,
                   &Met->INDEX_DOW_CURLDATA);

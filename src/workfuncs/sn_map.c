@@ -151,33 +151,30 @@ static bool check_symbol(const char *s)
   return true;
 }
 
-static void substitute_warrant_and_unit_symbols(char **symbol) {
+static void sub_symbol(char **symbol_ch, const char *postfix_ch) {
   char *tmp = NULL;
   unsigned short len;
 
-  if (symbol[0] == NULL)
+  len = strlen(symbol_ch[0]) + 2;
+  tmp = realloc(symbol_ch[0], len);
+  symbol_ch[0] = tmp;
+  tmp = strchr(symbol_ch[0], (int)'.');
+  *tmp = 0;
+  tmp = strdup(symbol_ch[0]);
+  snprintf(symbol_ch[0], len, "%s%s", tmp, postfix_ch);
+  free(tmp);
+}
+
+static void substitute_warrant_and_unit_symbols(char **symbol_ch) {
+  if (symbol_ch[0] == NULL)
     return;
   /* Warrants */
-  if (strstr(symbol[0], ".W")) {
-    len = strlen(symbol[0]) + 2;
-    tmp = realloc(symbol[0], len);
-    symbol[0] = tmp;
-    tmp = strchr(symbol[0], (int)'.');
-    *tmp = 0;
-    tmp = strdup(symbol[0]);
-    snprintf(symbol[0], len, "%s%s", tmp, "-WT");
-    free(tmp);
+  if (strstr(symbol_ch[0], ".W")) {
+    sub_symbol(symbol_ch, "-WT");
   }
   /* Units */
-  if (strstr(symbol[0], ".U")) {
-    len = strlen(symbol[0]) + 2;
-    tmp = realloc(symbol[0], len);
-    symbol[0] = tmp;
-    tmp = strchr(symbol[0], (int)'.');
-    *tmp = 0;
-    tmp = strdup(symbol[0]);
-    snprintf(symbol[0], len, "%s%s", tmp, "-UN");
-    free(tmp);
+  if (strstr(symbol_ch[0], ".U")) {
+    sub_symbol(symbol_ch, "-UN");
   }
 }
 
@@ -306,7 +303,7 @@ static void add_special_symbols(symbol_name_map *sn_map) {
   }
 }
 
-static void create_hash_table(symbol_name_map *sn_map) {
+void CreateHashTable(symbol_name_map *sn_map) {
   /* Create a hashing table of the sn_map->sn_container_arr elements */
   sn_map->htab = (struct hsearch_data *)malloc(sizeof(struct hsearch_data));
   /*zeroize the table.*/
@@ -409,11 +406,10 @@ static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
           fclose(fp[0]);
         if (fp[1])
           fclose(fp[1]);
-        FreeMemtype(&Nasdaq_Struct);
-        FreeMemtype(&NYSE_Struct);
         if (line)
           free(line);
-        create_hash_table(sn_map);
+        FreeMemtype(&Nasdaq_Struct);
+        FreeMemtype(&NYSE_Struct);        
         return sn_map;
       }
     }
@@ -433,7 +429,7 @@ static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
 
   /* Create a hashing table from the sn_container_arr, the symbol is the key
    * value. */
-  create_hash_table(sn_map);
+  CreateHashTable(sn_map);
 
   fclose(fp[0]);
   fclose(fp[1]);

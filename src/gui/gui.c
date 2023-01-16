@@ -217,27 +217,11 @@ static struct {
 
 static void hotkeys_set_treeview() {
   GtkWidget *TreeView = GetWidget("HotkeysTreeView");
-
-  GtkCellRenderer *renderer;
-  GtkTreeViewColumn *column;
   char *cmd_name_markup = NULL, *cmd_shortcut_markup = NULL;
 
   /* In order to display a model/store we need to set the TreeView Columns. */
-  renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes("column_one", renderer,
-                                                    "markup", 0, NULL);
-  gtk_tree_view_column_set_resizable(column, true);
-  gtk_tree_view_column_set_visible(column, true);
-  gtk_tree_view_column_set_min_width(column, 0);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(TreeView), column);
-
-  renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes("column_two", renderer,
-                                                    "markup", 1, NULL);
-  gtk_tree_view_column_set_resizable(column, true);
-  gtk_tree_view_column_set_visible(column, true);
-  gtk_tree_view_column_set_min_width(column, 0);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(TreeView), column);
+  AddColumnToTreeview("column_one", 0, TreeView);
+  AddColumnToTreeview("column_two", 1, TreeView);
 
   /* Here we set the rows for the 2 column store */
   GtkListStore *store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
