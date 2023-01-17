@@ -60,8 +60,6 @@ static void create_markup(char **str, const char *fmt, ...)
   va_end(arg_ptr);
 
   /* Realloc str[0] to the string size. */
-  if (str[0] == NULL)
-    str[0] = malloc(1);
   char *tmp = realloc(str[0], len + 1);
 
   if (tmp == NULL) {
@@ -137,8 +135,6 @@ void StringToStrPango(char **dst, const char *src, const unsigned int color)
 {
   if (!dst || !src)
     return;
-  if (dst[0] == NULL)
-    dst[0] = malloc(1);
 
   char *font = font_attr(font_name);
   char *fg = NULL;

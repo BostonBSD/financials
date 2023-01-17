@@ -113,8 +113,6 @@ void CopyString(char **dst, const char *src)
 {
   if (!dst || !src)
     return;
-  if (dst[0] == NULL)
-    dst[0] = malloc(1);
 
   size_t len = strlen(src) + 1;
   char *tmp = realloc(dst[0], len);
@@ -270,9 +268,6 @@ void DoubleToFormattedStr(char **dst, const double num,
 
   if (!dst || digits_right > 4)
     return;
-
-  if (dst[0] == NULL)
-    dst[0] = malloc(1);
 
   size_t len = length_doub_string(num, digits_right, format_type) + 1;
   /* Adjust the string length */

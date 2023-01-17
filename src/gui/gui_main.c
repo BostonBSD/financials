@@ -77,16 +77,7 @@ int MainProgBarReset() {
 static int main_tree_view_clr() {
   /* Clear the main window's GtkTreeView. */
   GtkWidget *treeview = GetWidget("MainTreeView");
-  GtkTreeViewColumn *column;
-  gushort n = gtk_tree_view_get_n_columns(GTK_TREE_VIEW(treeview));
-
-  while (n) {
-    n--;
-    column = gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), n);
-    gtk_tree_view_remove_column(GTK_TREE_VIEW(treeview), column);
-  }
-
-  return 0;
+  return TreeViewClear(treeview);
 }
 
 static int main_set_columns(int column_type) {

@@ -41,17 +41,9 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/macros.h"
 #include "../include/sqlite.h"
 
-static void config_dir_processing(const char *home_dir)
-/* Check if the "~/.config" and "~/.config/financials" directories exist.
-   if they do not exist then create them. */
-{
+static void try_dir(const char *path) {
   DIR *dp;
   int status;
-
-  /* Append the .config directory to the end of home directory path. */
-  unsigned short len = strlen(home_dir) + strlen(CONFIG_DIR) + 1;
-  char *path = (char *)malloc(len);
-  snprintf(path, len, "%s%s", home_dir, CONFIG_DIR);
 
   errno = 0;
   if ((dp = opendir(path)) == NULL) {
@@ -78,37 +70,32 @@ static void config_dir_processing(const char *home_dir)
     if (closedir(dp) == -1)
       perror("closedir");
   }
-  free(path);
+}
+
+static void config_dir_processing(const char *home_dir)
+/* Check if the "~/.config" and "~/.config/financials" directories exist.
+   if they do not exist then create them. */
+{
+  /* Append the .config directory to the end of home directory path. */
+  unsigned short len = snprintf(NULL, 0, "%s%s", home_dir, CONFIG_DIR) + 1;
+  char *path = (char *)malloc(len);
+  snprintf(path, len, "%s%s", home_dir, CONFIG_DIR);
+
+  try_dir(path);
 
   /* Append the config file directory to the end of the home directory path. */
-  len = strlen(home_dir) + strlen(CONFIG_FILE_DIR) + 1;
-  path = (char *)malloc(len);
+  len = snprintf(NULL, 0, "%s%s", home_dir, CONFIG_FILE_DIR) + 1;
+  char *tmp = (char *)realloc(path, len);
+
+  if (tmp == NULL) {
+    printf("Not Enough Memory, realloc returned NULL.\n");
+    exit(EXIT_FAILURE);
+  }
+
+  path = tmp;
   snprintf(path, len, "%s%s", home_dir, CONFIG_FILE_DIR);
 
-  if ((dp = opendir(path)) == NULL) {
-    switch (errno) {
-    case EACCES:
-      printf("Permission denied\n");
-      exit(EXIT_FAILURE);
-      break;
-    case ENOENT:
-      /* Make a directory with read/write/search permissions for owner and
-         group, and with read/search permissions for others. */
-      status = mkdir(path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-      if (status != 0) {
-        printf("Make directory failed: %s\nStatus Code: %d\n", path, status);
-        exit(EXIT_FAILURE);
-      }
-      break;
-    case ENOTDIR:
-      printf("'%s' is not a directory\n", path);
-      exit(EXIT_FAILURE);
-      break;
-    }
-  } else {
-    if (closedir(dp) == -1)
-      perror("closedir");
-  }
+  try_dir(path);
   free(path);
 }
 

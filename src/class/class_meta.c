@@ -241,24 +241,8 @@ static void extract_index_data(char *index, MemType *Data) {
     return;
   }
 
-  char line[1024];
-  char **csv_array;
-
-  /* Yahoo! updates bitcoin when the equities markets are closed.
-     The while loop iterates to the end of file to get the latest data. */
   double prev_closing = 0.0f, cur_price = 0.0f;
-  while (fgets(line, 1024, fp) != NULL) {
-    prev_closing = cur_price;
-    /* Sometimes the API gives us a null value for certain days.
-       using the closing price from the day prior gives us a more accurate
-       gain value. */
-    if (strstr(line, "null") || strstr(line, "Date"))
-      continue;
-    Chomp(line);
-    csv_array = parse_csv(line);
-    cur_price = strtod(csv_array[4] ? csv_array[4] : "0", NULL);
-    free_csv_line(csv_array);
-  };
+  char *line = ExtractYahooData(fp, &prev_closing, &cur_price);
 
   if (strcmp(index, "dow") == 0) {
     Met->index_dow_value_f = cur_price;
@@ -283,6 +267,7 @@ static void extract_index_data(char *index, MemType *Data) {
   }
 
   fclose(fp);
+  free(line);
   FreeMemtype(Data);
 }
 

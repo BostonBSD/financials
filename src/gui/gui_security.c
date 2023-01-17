@@ -306,7 +306,8 @@ int SecurityShowHide(void *data) {
 
     /* Reconnect combobox signal handler. */
     g_signal_connect(G_OBJECT(ComboBox), "changed",
-                     G_CALLBACK(GUICallbackHandler), (void *)SECURITY_COMBO_BOX);
+                     G_CALLBACK(GUICallbackHandler),
+                     (void *)SECURITY_COMBO_BOX);
 
     gtk_widget_set_visible(window, true);
 

@@ -243,9 +243,15 @@ static void GenerateURL(void *data) {
   /* Cycle through the list of equities. */
   for (unsigned short c = 0; c < F->size; c++) {
     /* Generate the request URL for this equity. */
-    len = strlen(Met->stock_url_ch) + strlen(F->Equity[c]->symbol_stock_ch) +
-          strlen(Met->curl_key_ch) + 1;
+    len = snprintf(NULL, 0, "%s%s%s", Met->stock_url_ch,
+                   F->Equity[c]->symbol_stock_ch, Met->curl_key_ch) +
+          1;
     char *tmp = realloc(F->Equity[c]->curl_url_stock_ch, len);
+
+    if (tmp == NULL) {
+      printf("Not Enough Memory, realloc returned NULL.\n");
+      exit(EXIT_FAILURE);
+    }
 
     F->Equity[c]->curl_url_stock_ch = tmp;
     snprintf(F->Equity[c]->curl_url_stock_ch, len, "%s%s%s", Met->stock_url_ch,

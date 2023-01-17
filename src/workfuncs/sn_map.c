@@ -409,7 +409,7 @@ static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
         if (line)
           free(line);
         FreeMemtype(&Nasdaq_Struct);
-        FreeMemtype(&NYSE_Struct);        
+        FreeMemtype(&NYSE_Struct);
         return sn_map;
       }
     }

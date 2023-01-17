@@ -39,7 +39,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 static GtkBuilder *builder;
 
-/* Three Convenience Functions */
+/* Five Convenience Functions */
 GtkWidget *GetWidget(const gchar *widget_name_ch) {
   return GTK_WIDGET(gtk_builder_get_object(builder, widget_name_ch));
 }
@@ -62,8 +62,24 @@ void AddColumnToTreeview(const char *col_name, const int col_num,
   gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 }
 
+int TreeViewClear(GtkWidget *treeview) {
+  /* Clear the GtkTreeView. */
+  GtkTreeViewColumn *column;
+  gushort n = gtk_tree_view_get_n_columns(GTK_TREE_VIEW(treeview));
+
+  while (n) {
+    n--;
+    column = gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), n);
+    gtk_tree_view_remove_column(GTK_TREE_VIEW(treeview), column);
+  }
+
+  return 0;
+}
+
 /* Set completion widgets for both the security and history entry boxes. */
 static GtkListStore *completion_set_store(symbol_name_map *sn_map) {
+  if (sn_map == NULL)
+    return NULL;
   GtkListStore *store =
       gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
   GtkTreeIter iter;

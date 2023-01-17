@@ -170,14 +170,9 @@ static void ToStrings(unsigned short digits_right) {
                        NUM_STR);
 }
 
-static double stake(const double ounces, const double prem,
-                    const double price) {
-  return ((prem + price) * ounces);
-}
-
 static void bullion_calculations(bullion *B) {
   /* The total invested in this metal */
-  B->port_value_f = stake(B->ounce_f, B->premium_f, B->spot_price_f);
+  B->port_value_f = (B->spot_price_f + B->premium_f) * B->ounce_f;
 
   /* The change in spot price per ounce. */
   B->change_ounce_f = B->spot_price_f - B->prev_closing_metal_f;
@@ -295,24 +290,9 @@ static void extract_bullion_data(bullion *B) {
     return;
   }
 
-  char line[1024];
   char **csv_array;
-
-  /* Yahoo! sometimes updates bullion when the equities markets are closed.
-     The while loop iterates to the end of file to get the latest data. */
   double prev_closing = 0.0f, cur_price = 0.0f;
-  while (fgets(line, 1024, fp) != NULL) {
-    prev_closing = cur_price;
-    /* Sometimes the API gives us a null value for certain days.
-       using the closing price from the day prior gives us a more accurate
-       gain value. */
-    if (strstr(line, "null") || strstr(line, "Date"))
-      continue;
-    Chomp(line);
-    csv_array = parse_csv(line);
-    cur_price = strtod(csv_array[4] ? csv_array[4] : "0", NULL);
-    free_csv_line(csv_array);
-  };
+  char *line = ExtractYahooData(fp, &prev_closing, &cur_price);
 
   Chomp(line);
   csv_array = parse_csv(line);
@@ -322,6 +302,7 @@ static void extract_bullion_data(bullion *B) {
   B->spot_price_f = cur_price;
 
   free_csv_line(csv_array);
+  free(line);
   fclose(fp);
   FreeMemtype(&B->CURLDATA);
 }

@@ -98,16 +98,7 @@ int HistoryCursorMove() {
 int HistoryTreeViewClear() {
   /* Clear the GtkTreeView. */
   GtkWidget *treeview = GetWidget("HistoryTreeView");
-  GtkTreeViewColumn *column;
-  gushort n = gtk_tree_view_get_n_columns(GTK_TREE_VIEW(treeview));
-
-  while (n) {
-    n--;
-    column = gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), n);
-    gtk_tree_view_remove_column(GTK_TREE_VIEW(treeview), column);
-  }
-
-  return 0;
+  return TreeViewClear(treeview);
 }
 
 static char *col_names[HISTORY_N_COLUMNS] = {

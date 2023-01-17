@@ -44,6 +44,7 @@ GtkWidget *GetWidget(const gchar *);
 GObject *GetGObject(const gchar *);
 const gchar *GetEntryText(const char *);
 void AddColumnToTreeview(const char *, const int, GtkWidget *);
+int TreeViewClear(GtkWidget *);
 void GuiStart(void *);
 int CompletionSet(void *, uintptr_t);
 

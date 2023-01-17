@@ -36,8 +36,10 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <string.h>
 
 #include "../include/class_types.h"
+#include "../include/csv.h"
 #include "../include/macros.h"
 #include "../include/multicurl.h"
+#include "../include/workfuncs.h"
 
 double CalcGain(double cur_price, double prev_price) {
   return (100 * ((cur_price - prev_price) / prev_price));
@@ -64,6 +66,39 @@ void CalcRunAvgRsi(double current_gain, double *avg_gain, double *avg_loss) {
 double CalcRsi(double avg_gain, double avg_loss) {
   double rs = avg_gain / avg_loss;
   return (100 - (100 / (1 + rs)));
+}
+
+char *ExtractYahooData(FILE *fp, double *prev_closing_f, double *cur_price_f)
+/* Take in a file pointer, and references to two doubles; prev_closing_f and
+   cur_price_f.  Will populate the last closing price and the current price.
+
+   Returns the last line of the file stream.
+   Must free return value.
+
+   Useful for finding the current stats on a security/index/commodity from
+   Yahoo! finance.
+*/
+{
+  char line[1024];
+  char **csv_array;
+
+  /* Yahoo! sometimes updates data when the equities markets are closed.
+     The while loop iterates to the end of file to get the latest data. */
+  *prev_closing_f = 0.0f;
+  *cur_price_f = 0.0f;
+  while (fgets(line, 1024, fp) != NULL) {
+    *prev_closing_f = *cur_price_f;
+    /* Sometimes the API gives us a null value for certain days.
+       using the closing price from the day prior gives us a more accurate
+       gain value. */
+    if (strstr(line, "null") || strstr(line, "Date"))
+      continue;
+    Chomp(line);
+    csv_array = parse_csv(line);
+    *cur_price_f = strtod(csv_array[4] ? csv_array[4] : "0", NULL);
+    free_csv_line(csv_array);
+  };
+  return strdup(line);
 }
 
 void GetYahooUrl(char **url_ch, const char *symbol_ch, unsigned int period) {

@@ -103,6 +103,7 @@ unsigned int ClockSleepMicroSeconds();
 bool MarketOpen();
 
 /* working_functions */
+char *ExtractYahooData(FILE *, double *, double *);
 void GetYahooUrl(char **, const char *, unsigned int);
 MemType *FetchHistoryData(const char *, portfolio_packet *);
 double CalcGain(double, double);
