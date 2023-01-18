@@ -35,7 +35,8 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "../include/class_types.h" /* portfolio_packet, equity_folder, metal, meta, window_data */
 #include "../include/globals.h" /* portfolio_packet packet */
-#include "../include/mutex.h"   /* pthread_mutex_t mutex_working */
+#include "../include/macros.h"
+#include "../include/mutex.h" /* pthread_mutex_t mutex_working */
 #include "../include/sqlite.h"
 #include "../include/workfuncs.h" /* LowerCaseStr () */
 
@@ -43,11 +44,7 @@ void GUICallbackHandler(GtkWidget *widget, void *data)
 /* The widget callback functions block the gui loop until they return,
    therefore we do not want a pthread_join statement in this function. */
 {
-  /* The Gtk3.0 callback function prototype includes a widget parameter,
-     which we do not use, the following statement prevents a compiler
-     warning/error. */
-  if (!(widget))
-    return;
+  UNUSED(widget)
 
   pthread_t thread_id;
 
@@ -220,7 +217,7 @@ static void *add_pref_data_font_thd(void *data) {
   pthread_exit(NULL);
 }
 
-void GUICallbackHandler_pref_font_button(GtkFontButton *widget, void *data) {
+void GUICallbackHandler_pref_font_button(GtkFontButton *widget) {
   meta *D = packet->GetMetaClass();
   pthread_t thread_id;
 
@@ -236,6 +233,8 @@ void GUICallbackHandler_pref_font_button(GtkFontButton *widget, void *data) {
 }
 
 gboolean GUICallbackHandler_pref_clock_switch(GtkSwitch *Switch, bool state) {
+  UNUSED(Switch)
+
   meta *D = packet->GetMetaClass();
   pthread_t thread_id;
 
@@ -284,6 +283,8 @@ gboolean GUICallbackHandler_pref_clock_switch(GtkSwitch *Switch, bool state) {
 }
 
 gboolean GUICallbackHandler_pref_indices_switch(GtkSwitch *Switch, bool state) {
+  UNUSED(Switch)
+
   pthread_t thread_id;
 
   /* Visually, the underlying state is represented by the trough color of the
@@ -411,8 +412,8 @@ void GUICallbackHandler_pref_hours_spinbutton(GtkEditable *spin_button) {
 
 gboolean GUICallbackHandler_hide_window_on_delete(GtkWidget *window,
                                                   GdkEvent *event, void *data) {
-  if (!(event))
-    return gtk_widget_hide_on_delete(window);
+  UNUSED(event)
+
   uintptr_t index_signal = (uintptr_t)data;
 
   switch (index_signal) {
@@ -452,8 +453,8 @@ gboolean GUICallbackHandler_window_data(GtkWidget *window, GdkEvent *event,
      slightly less accurate than the gtk_window_get_position function, so we're
      not using the GdkEvent data type.
   */
-  if (!(event))
-    return false;
+  UNUSED(event)
+
   gint width, height, x, y;
   gtk_window_get_size(GTK_WINDOW(window), &width, &height);
   gtk_window_get_position(GTK_WINDOW(window), &x, &y);
@@ -490,8 +491,7 @@ gboolean GUICallbackHandler_select_comp(GtkEntryCompletion *completion,
                                         void *data)
 /* activated when an item is selected from the completion list */
 {
-  if (!(completion))
-    return true;
+  UNUSED(completion)
 
   /* We're using data as a value rather than a pointer. */
   uintptr_t index_signal = (uintptr_t)data;
@@ -522,8 +522,7 @@ gboolean GUICallbackHandler_cursor_comp(GtkEntryCompletion *completion,
                                         void *data)
 /* activated when an item is highlighted from the completion list */
 {
-  if (!(completion))
-    return true;
+  UNUSED(completion)
 
   /* We're using data as a value rather than a pointer. */
   uintptr_t index_signal = (uintptr_t)data;
@@ -550,8 +549,8 @@ gboolean GUICallbackHandler_cursor_comp(GtkEntryCompletion *completion,
 }
 
 static void view_popup_menu_onHistoryData(GtkWidget *menuitem, void *userdata) {
-  if (menuitem == NULL)
-    return;
+  UNUSED(menuitem)
+
   char *symbol = (char *)userdata;
 
   GtkWidget *Window = GetWidget("HistoryWindow");
@@ -569,10 +568,7 @@ static void view_popup_menu_onHistoryData(GtkWidget *menuitem, void *userdata) {
   gtk_button_clicked(GTK_BUTTON(Button));
 }
 
-static void view_popup_menu_onViewSummary(GtkWidget *menuitem) {
-  if (menuitem == NULL)
-    return;
-
+static void view_popup_menu_onViewSummary() {
   GtkWidget *Button = GetWidget("FetchDataBTN");
   if (packet->IsFetchingData())
     gtk_button_clicked(GTK_BUTTON(Button));
@@ -622,8 +618,8 @@ static void *delete_bullion_thd(void *data) {
 
 static void view_popup_menu_onDeleteBullion(GtkWidget *menuitem,
                                             void *userdata) {
-  if (menuitem == NULL)
-    return;
+  UNUSED(menuitem)
+
   const gchar *metal_name = (gchar *)userdata;
 
   pthread_t thread_id;
@@ -658,10 +654,7 @@ static void *delete_all_bullion_thd() {
   pthread_exit(NULL);
 }
 
-static void view_popup_menu_onDeleteAllBullion(GtkWidget *menuitem) {
-  if (menuitem == NULL)
-    return;
-
+static void view_popup_menu_onDeleteAllBullion() {
   pthread_t thread_id;
   pthread_create(&thread_id, NULL, delete_all_bullion_thd, NULL);
   pthread_detach(thread_id);
@@ -695,8 +688,8 @@ static void *remove_stock_thd(void *data) {
 
 static void view_popup_menu_onDeleteEquity(GtkWidget *menuitem,
                                            void *userdata) {
-  if (menuitem == NULL)
-    return;
+  UNUSED(menuitem)
+
   const gchar *symbol = (gchar *)userdata;
 
   pthread_t thread_id;
@@ -728,18 +721,15 @@ static void *remove_all_stocks_thd() {
   pthread_exit(NULL);
 }
 
-static void view_popup_menu_onDeleteAllEquity(GtkWidget *menuitem) {
-  if (menuitem == NULL)
-    return;
-
+static void view_popup_menu_onDeleteAllEquity() {
   pthread_t thread_id;
   pthread_create(&thread_id, NULL, remove_all_stocks_thd, NULL);
   pthread_detach(thread_id);
 }
 
 static void view_popup_menu_onAddRow(GtkWidget *menuitem, void *userdata) {
-  if (menuitem == NULL)
-    return;
+  UNUSED(menuitem)
+
   char *type = (char *)userdata;
 
   if (strcmp(type, "equity") == 0) {

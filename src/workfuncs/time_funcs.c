@@ -420,7 +420,6 @@ static void days_in_month_and_year(struct tm NY_tz, short *days_in_month,
 static void date_adjustment(struct tm *NY_tz) {
   short hour = (short)((NY_tz->tm_hour) % 24);
   short weekday = (short)NY_tz->tm_wday;
-  short hour_open_NY, hour_closed_NY;
   short days_in_mon, days_in_year, day_adjustment;
   short day_of_month = (short)NY_tz->tm_mday;
   short day_of_year = (short)NY_tz->tm_yday;
@@ -429,10 +428,6 @@ static void date_adjustment(struct tm *NY_tz) {
 
   days_in_month_and_year(*NY_tz, &days_in_mon, &days_in_year);
 
-  hour_open_NY = OPEN_HOUR;
-  hour_closed_NY = CLOSING_HOUR; /* The early close on Black Friday will yield a
-                                    holiday = true */
-
   day_adjustment = 0;
   switch (weekday) {
   case SUN:
@@ -440,14 +435,16 @@ static void date_adjustment(struct tm *NY_tz) {
     break;
   case FRI:
     /* It is past 16:00 EST/EDST or today is a holiday. */
-    if (hour >= hour_closed_NY || CheckHoliday(*NY_tz))
+    /* The early close on Black Friday will yield a
+                                    holiday = true */
+    if (hour >= CLOSING_HOUR || CheckHoliday(*NY_tz))
       day_adjustment = 3;
     break;
   case SAT:
     day_adjustment = 2;
     break;
   default: /* MON, TUES, WEDS, THURS */
-    if (hour >= hour_closed_NY || CheckHoliday(*NY_tz))
+    if (hour >= CLOSING_HOUR || CheckHoliday(*NY_tz))
       day_adjustment = 1;
     break;
   };
@@ -472,7 +469,7 @@ static void date_adjustment(struct tm *NY_tz) {
   }
 
   /* The market always opens at 09:30:00 EST/EDST */
-  NY_tz->tm_hour = (int)hour_open_NY;
+  NY_tz->tm_hour = OPEN_HOUR;
   NY_tz->tm_min = OPEN_MINUTE;
   NY_tz->tm_sec = 0;
   /* Let mktime () determine whether to use daylight savings time or not. */

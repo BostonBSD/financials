@@ -33,6 +33,11 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef MACROS_HEADER_H
 #define MACROS_HEADER_H
 
+/* To suppress unused argument warnings. */
+#ifndef UNUSED
+#define UNUSED(x) (void)x;
+#endif
+
 /* SQLite config db file location (from the user's home directory). */
 #ifndef CONFIG_DIR
 #define CONFIG_DIR "/.config"

@@ -118,8 +118,10 @@ char **parse_csv(const char *line) {
     case '\"':
       fQuote = 1;
       continue;
-    case '\0':
+    case '\0': /* I had to add the magical comment below to suppress warnings.
+                  BostonBSD */
       fEnd = 1;
+      // fall through
     case ',':
       *tptr = '\0';
       *bptr = strdup(tmp);

@@ -171,9 +171,9 @@ static void substitute_warrant_and_unit_symbols(char **symbol_ch) {
   /* Warrants */
   if (strstr(symbol_ch[0], ".W")) {
     sub_symbol(symbol_ch, "-WT");
-  }
-  /* Units */
-  if (strstr(symbol_ch[0], ".U")) {
+
+    /* Units */
+  } else if (strstr(symbol_ch[0], ".U")) {
     sub_symbol(symbol_ch, "-UN");
   }
 }
@@ -275,10 +275,10 @@ static const symbol_to_security_name_container special_syms[] = {
     {"ZT=F", "Treasury Note ( 2-Year U.S. ) Futures"},
 
     /* Bond Rates */
-    {"^IRX", "Treasury Bill ( 13 Weeks )"},
-    {"^FVX", "Treasury Bond Yield ( 5 Years )"},
-    {"^TNX", "Treasury Bond Yield ( 10 Years )"},
-    {"^TYX", "Treasury Bond Yield ( 30 Years )"},
+    {"^IRX", "Treasury Bill ( 13 Weeks U.S. )"},
+    {"^FVX", "Treasury Bond Yield ( 5 Years U.S. )"},
+    {"^TNX", "Treasury Bond Yield ( 10 Years U.S. )"},
+    {"^TYX", "Treasury Bond Yield ( 30 Years U.S. )"},
 
     /* Crypto Coins/Tokens/Stablecoins/Etcetera */
     {"BTC-USD", "Bitcoin ( US Dollars )"},

@@ -34,6 +34,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "../include/class_types.h" /* portfolio_packet, window_data */
 #include "../include/gui.h"
+#include "../include/macros.h"
 #include "../include/mutex.h"
 #include "../include/workfuncs.h"
 
@@ -103,7 +104,10 @@ static GtkListStore *completion_set_store(symbol_name_map *sn_map) {
 }
 
 static gboolean completion_match(GtkEntryCompletion *completion,
-                                 const gchar *key, GtkTreeIter *iter) {
+                                 const gchar *key, GtkTreeIter *iter,
+                                 void *data) {
+  UNUSED(data)
+
   GtkTreeModel *model = gtk_entry_completion_get_model(completion);
   gchar *item_symb, *item_name;
   /* We are finding matches based off of column 0 and 1, however,
@@ -223,6 +227,8 @@ static struct {
                 {"      Close", "Ctrl - C"},
                 {"", ""},
                 {"Preferences Window", ""},
+                {"      Show Clocks", "Ctrl - Z"},
+                {"      Show Indices", "Ctrl - X"},
                 {"      Get Symbols", "Ctrl - S"},
                 {"      Close", "Ctrl - C"},
                 {"", ""},
@@ -245,7 +251,7 @@ static void hotkeys_set_treeview() {
 
   const char *fmt =
       "<span font_desc='Cantarell Regular 10' foreground='black'>%s</span>";
-  for (int i = 0; i < G_N_ELEMENTS(commands); i++) {
+  for (unsigned int i = 0; i < G_N_ELEMENTS(commands); i++) {
     /* We mark them up slightly first. */
     cmd_name_markup = g_markup_printf_escaped(fmt, commands[i].name);
     cmd_shortcut_markup = g_markup_printf_escaped(fmt, commands[i].shortcut);

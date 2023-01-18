@@ -9,7 +9,7 @@ SRC=$(MAIN_SRC) $(LIB_INT_SRC) $(GUI_SRC) $(CLASS_SRC) $(WK_SRC)
 
 CFLAGS=`pkg-config --cflags gtk+-3.0 json-glib-1.0 glib-2.0 libcurl sqlite3`
 LIBS=`pkg-config --libs gtk+-3.0 json-glib-1.0 glib-2.0 libcurl sqlite3`
-WARN=-Wall 
+WARN=-Wall -Wextra -Wno-missing-field-initializers
 
 MKDIR=mkdir -p
 OUT_DIR=../build
@@ -19,3 +19,4 @@ OUT_DIR=../build
 financials:
 	${MKDIR} ${OUT_DIR}
 	$(CC) -Ofast -s -lm -o $(OUT_DIR)/$@ $(SRC) $(CFLAGS) $(LIBS) $(WARN)
+	
