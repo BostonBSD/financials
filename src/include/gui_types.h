@@ -32,19 +32,25 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef GUI_TYPES_HEADER_H
 #define GUI_TYPES_HEADER_H
 
-#include <search.h> /* struct hsearch_data */
+#include <glib.h>
 
 /* Structs and Enums */
 typedef struct { /* A mapping between sec symbols and sec names */
-  char *symbol;
-  char *security_name;
+  gchar *symbol;
+  gchar *security_name;
 } symbol_to_security_name_container;
 
 typedef struct { /* A handle to the symbol-name mapping array. */
   symbol_to_security_name_container **sn_container_arr;
-  struct hsearch_data *htab;
-  unsigned short size;
+  GHashTable *hash_table;
+  gushort size;
 } symbol_name_map;
+
+typedef struct { /* A container to pass a string and a font name between
+                    threads. */
+  gchar *string;
+  gchar *font;
+} string_font;
 
 /* Window Signals */
 enum { GUI_MAIN_WINDOW, GUI_HISTORY_WINDOW };

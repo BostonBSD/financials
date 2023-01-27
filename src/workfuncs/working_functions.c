@@ -30,22 +30,14 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <time.h>
-
-#include <stdlib.h>
-#include <string.h>
-
 #include "../include/class_types.h"
-#include "../include/csv.h"
 #include "../include/macros.h"
-#include "../include/multicurl.h"
-#include "../include/workfuncs.h"
 
-double CalcGain(double cur_price, double prev_price) {
+gdouble CalcGain(gdouble cur_price, gdouble prev_price) {
   return (100 * ((cur_price - prev_price) / prev_price));
 }
 
-void CalcSumRsi(double current_gain, double *avg_gain, double *avg_loss) {
+void CalcSumRsi(gdouble current_gain, gdouble *avg_gain, gdouble *avg_loss) {
   if (current_gain >= 0) {
     *avg_gain += current_gain;
   } else {
@@ -53,7 +45,7 @@ void CalcSumRsi(double current_gain, double *avg_gain, double *avg_loss) {
   }
 }
 
-void CalcRunAvgRsi(double current_gain, double *avg_gain, double *avg_loss) {
+void CalcRunAvgRsi(gdouble current_gain, gdouble *avg_gain, gdouble *avg_loss) {
   if (current_gain >= 0) {
     *avg_gain = ((*avg_gain * 13) + current_gain) / 14;
     *avg_loss = ((*avg_loss * 13) + 0) / 14;
@@ -63,12 +55,12 @@ void CalcRunAvgRsi(double current_gain, double *avg_gain, double *avg_loss) {
   }
 }
 
-double CalcRsi(double avg_gain, double avg_loss) {
-  double rs = avg_gain / avg_loss;
+gdouble CalcRsi(gdouble avg_gain, gdouble avg_loss) {
+  gdouble rs = avg_gain / avg_loss;
   return (100 - (100 / (1 + rs)));
 }
 
-char *ExtractYahooData(FILE *fp, double *prev_closing_f, double *cur_price_f)
+gchar *ExtractYahooData(FILE *fp, gdouble *prev_closing_f, gdouble *cur_price_f)
 /* Take in a file pointer, and references to two doubles; prev_closing_f and
    cur_price_f.  Will populate the last closing price and the current price.
 
@@ -79,40 +71,58 @@ char *ExtractYahooData(FILE *fp, double *prev_closing_f, double *cur_price_f)
    Yahoo! finance.
 */
 {
-  char line[1024];
-  char **csv_array;
+  gchar line[1024];
+  gchar **csv_array;
 
   /* Yahoo! sometimes updates data when the equities markets are closed.
      The while loop iterates to the end of file to get the latest data. */
   *prev_closing_f = 0.0f;
   *cur_price_f = 0.0f;
   while (fgets(line, 1024, fp) != NULL) {
+    g_strchomp(line);
+
     *prev_closing_f = *cur_price_f;
     /* Sometimes the API gives us a null value for certain days.
        using the closing price from the day prior gives us a more accurate
        gain value. */
-    if (strstr(line, "null") || strstr(line, "Date"))
+    /* If we have an empty line, continue. */
+    if (g_strrstr(line, "null") || g_strrstr(line, "Date") || line[0] == '\0')
       continue;
-    Chomp(line);
-    csv_array = parse_csv(line);
-    *cur_price_f = strtod(csv_array[4] ? csv_array[4] : "0", NULL);
-    free_csv_line(csv_array);
+
+    /* Invalid replies start with a tag. */
+    if (g_strrstr(line, "<")) {
+      return NULL;
+    }
+
+    csv_array = g_strsplit(line, ",", -1);
+    if (g_strv_length(csv_array) < 7) {
+      g_strfreev(csv_array);
+      return NULL;
+    }
+    *cur_price_f = g_strtod(csv_array[4] ? csv_array[4] : "0", NULL);
+    g_strfreev(csv_array);
   };
-  return strdup(line);
+  return (gchar *)g_strdup(line);
 }
 
-void GetYahooUrl(char **url_ch, const char *symbol_ch, unsigned int period) {
-  time_t end_time, start_time;
-  unsigned short len;
+static gint64 unix_time_sec() {
+  /* Return the unix time in seconds; rounded down to the nearest second */
+  gint64 time_usec = g_get_real_time();
+  return (time_usec - (time_usec % G_TIME_SPAN_SECOND)) / G_TIME_SPAN_SECOND;
+}
 
-  time(&end_time);
-  start_time = end_time - (time_t)period;
+void GetYahooUrl(gchar **url_ch, const gchar *symbol_ch, guint period) {
+  gint64 end_time, start_time;
+  gushort len;
 
-  const char *fmt = YAHOO_URL_START
-      "%s" YAHOO_URL_MIDDLE_ONE "%d" YAHOO_URL_MIDDLE_TWO "%d" YAHOO_URL_END;
+  end_time = unix_time_sec();
+  start_time = end_time - (gint64)period;
 
-  len = snprintf(NULL, 0, fmt, symbol_ch, (int)start_time, (int)end_time) + 1;
-  char *tmp = realloc(url_ch[0], len);
+  const gchar *fmt = YAHOO_URL_START
+      "%s" YAHOO_URL_MIDDLE_ONE "%ld" YAHOO_URL_MIDDLE_TWO "%ld" YAHOO_URL_END;
+
+  len = g_snprintf(NULL, 0, fmt, symbol_ch, start_time, end_time) + 1;
+  gchar *tmp = g_realloc(url_ch[0], len);
 
   if (tmp == NULL) {
     printf("Not Enough Memory, realloc returned NULL.\n");
@@ -120,29 +130,5 @@ void GetYahooUrl(char **url_ch, const char *symbol_ch, unsigned int period) {
   }
 
   url_ch[0] = tmp;
-  snprintf(url_ch[0], len, fmt, symbol_ch, (int)start_time, (int)end_time);
-}
-
-MemType *FetchHistoryData(const char *symbol_ch, portfolio_packet *pkg) {
-  meta *D = pkg->GetMetaClass();
-  char *MyUrl_ch = NULL;
-  MemType *MyOutputStruct = (MemType *)malloc(sizeof(*MyOutputStruct));
-  MyOutputStruct->memory = NULL;
-  MyOutputStruct->size = 0;
-
-  /* Number of Seconds in a Year Plus Three Weeks */
-  unsigned int period = 31557600 + (604800 * 3);
-  GetYahooUrl(&MyUrl_ch, symbol_ch, period);
-
-  SetUpCurlHandle(D->history_hnd, D->multicurl_history_hnd, MyUrl_ch,
-                  MyOutputStruct);
-  if (PerformMultiCurl_no_prog(D->multicurl_history_hnd) != 0) {
-    free(MyUrl_ch);
-    FreeMemtype(MyOutputStruct);
-    free(MyOutputStruct);
-    return NULL;
-  }
-
-  free(MyUrl_ch);
-  return MyOutputStruct;
+  g_snprintf(url_ch[0], len, fmt, symbol_ch, start_time, end_time);
 }

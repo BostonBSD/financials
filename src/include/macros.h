@@ -40,19 +40,15 @@ POSSIBILITY OF SUCH DAMAGE.
 
 /* SQLite config db file location (from the user's home directory). */
 #ifndef CONFIG_DIR
-#define CONFIG_DIR "/.config"
-#endif
-
-#ifndef CONFIG_FILE_DIR
-#define CONFIG_FILE_DIR CONFIG_DIR "/financials"
+#define CONFIG_DIR "/financials"
 #endif
 
 #ifndef DB_FILE
-#define DB_FILE CONFIG_FILE_DIR "/financials.db"
+#define DB_FILE CONFIG_DIR "/financials.db"
 #endif
 
 #ifndef SN_DB_FILE
-#define SN_DB_FILE CONFIG_FILE_DIR "/financials_symbols.db"
+#define SN_DB_FILE CONFIG_DIR "/financials_symbols.db"
 #endif
 
 /* The main treeview font. */
@@ -85,7 +81,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 #ifndef YAHOO_URL_END
-#define YAHOO_URL_END "&interval=1d&events=history&includeAdjustedClose=true"
+#define YAHOO_URL_END "&interval=1d&events=history&includeAdjustedClose=TRUE"
 #endif
 
 /* The symbol URL macros are used by the ClassInitMeta () [class_meta.c] and

@@ -34,7 +34,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/gui.h"
 #include "../include/workfuncs.h"
 
-int MainFetchBTNLabel(void *data) {
+gint MainFetchBTNLabel(gpointer data) {
   portfolio_packet *pkg = (portfolio_packet *)data;
   GtkWidget *label = GetWidget("FetchDataBtnLabel");
 
@@ -47,8 +47,8 @@ int MainFetchBTNLabel(void *data) {
   return 0;
 }
 
-static int main_prog_bar(void *data) {
-  double *fraction = (double *)data;
+static gint main_prog_bar(gpointer data) {
+  gdouble *fraction = (gdouble *)data;
 
   GtkWidget *ProgressBar = GetWidget("ProgressBar");
   gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(ProgressBar), *fraction);
@@ -56,7 +56,7 @@ static int main_prog_bar(void *data) {
   return 0;
 }
 
-void MainProgBar(double *fraction)
+void MainProgBar(gdouble *fraction)
 /* Because this function is accessed outside the main
    loop thread, we can only pass pointers through. */
 {
@@ -67,20 +67,20 @@ void MainProgBar(double *fraction)
   gdk_threads_add_idle(main_prog_bar, fraction);
 }
 
-int MainProgBarReset() {
+gint MainProgBarReset() {
   GtkWidget *ProgressBar = GetWidget("ProgressBar");
   gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(ProgressBar), 0.0f);
 
   return 0;
 }
 
-static int main_tree_view_clr() {
+static gint main_tree_view_clr() {
   /* Clear the main window's GtkTreeView. */
   GtkWidget *treeview = GetWidget("MainTreeView");
   return TreeViewClear(treeview);
 }
 
-static int main_set_columns(int column_type) {
+static gint main_set_columns(gint column_type) {
   GtkCellRenderer *renderer;
   GtkTreeViewColumn *column;
   GtkWidget *list = GetWidget("MainTreeView");
@@ -90,7 +90,7 @@ static int main_set_columns(int column_type) {
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes("type_text", renderer,
                                                     "text", GUI_TYPE, NULL);
-  gtk_tree_view_column_set_visible(column, false);
+  gtk_tree_view_column_set_visible(column, FALSE);
   gtk_tree_view_column_set_min_width(column, 0);
   gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
@@ -99,7 +99,7 @@ static int main_set_columns(int column_type) {
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes("symbol_text", renderer,
                                                     "text", GUI_SYMBOL, NULL);
-  gtk_tree_view_column_set_visible(column, false);
+  gtk_tree_view_column_set_visible(column, FALSE);
   gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
   AddColumnToTreeview("column_one", GUI_COLUMN_ONE, list);
@@ -121,9 +121,9 @@ static int main_set_columns(int column_type) {
   return 0;
 }
 
-static int main_prmry_add_bul_store(bullion *B, const char *unmarked_name_ch,
-                                    const char *marked_name_ch,
-                                    GtkListStore *store, GtkTreeIter *iter) {
+static gint main_prmry_add_bul_store(bullion *B, const gchar *unmarked_name_ch,
+                                     const gchar *marked_name_ch,
+                                     GtkListStore *store, GtkTreeIter *iter) {
   gtk_list_store_append(store, iter);
   gtk_list_store_set(
       store, iter, GUI_TYPE, "bullion", GUI_SYMBOL, unmarked_name_ch,
@@ -137,7 +137,7 @@ static int main_prmry_add_bul_store(bullion *B, const char *unmarked_name_ch,
   return 0;
 }
 
-static GtkListStore *main_primary_store(void *data) {
+static GtkListStore *main_primary_store(gpointer data) {
   /* Unpack the class package */
   portfolio_packet *package = (portfolio_packet *)data;
   metal *M = package->GetMetalClass();
@@ -147,7 +147,7 @@ static GtkListStore *main_primary_store(void *data) {
 
   GtkListStore *store = NULL;
   GtkTreeIter iter;
-  bool no_assets = true;
+  gboolean no_assets = TRUE;
 
   /* Set up the storage container with the number of columns and column type */
   store = gtk_list_store_new(
@@ -194,7 +194,7 @@ static GtkListStore *main_primary_store(void *data) {
     gtk_list_store_set(store, &iter, GUI_TYPE, "blank_space_primary",
                        GUI_SYMBOL, "", -1);
 
-    no_assets = false;
+    no_assets = FALSE;
   }
 
   if (F->size) {
@@ -212,8 +212,8 @@ static GtkListStore *main_primary_store(void *data) {
         GUI_COLUMN_NINE, pri_h_mkd->gain_sym, GUI_COLUMN_TEN, pri_h_mkd->total,
         GUI_COLUMN_ELEVEN, pri_h_mkd->gain_per, -1);
 
-    unsigned short c;
-    unsigned short g = 0;
+    guint8 c;
+    guint8 g = 0;
 
     /* Iterate through the equities twice.
        Add equities that have shares first.
@@ -259,7 +259,7 @@ static GtkListStore *main_primary_store(void *data) {
     gtk_list_store_set(store, &iter, GUI_TYPE, "blank_space_primary",
                        GUI_SYMBOL, "", -1);
 
-    no_assets = false;
+    no_assets = FALSE;
   }
 
   if (D->cash_f || M->bullion_port_value_f || F->stock_port_value_f) {
@@ -277,7 +277,7 @@ static GtkListStore *main_primary_store(void *data) {
                        GUI_COLUMN_ONE, pri_h_mkd->cash, GUI_COLUMN_TWO,
                        D->cash_mrkd_ch, -1);
 
-    no_assets = false;
+    no_assets = FALSE;
   }
 
   if (M->bullion_port_value_f) {
@@ -325,14 +325,14 @@ static GtkListStore *main_primary_store(void *data) {
   }
 
   /* Indicate that the default view is not displayed. */
-  package->SetDefaultView(false);
+  package->SetDefaultView(FALSE);
 
   return store;
 }
 
-static int main_def_add_bul_store(bullion *B, const char *unmarked_name_ch,
-                                  const char *marked_name_ch,
-                                  GtkListStore *store, GtkTreeIter *iter) {
+static gint main_def_add_bul_store(bullion *B, const gchar *unmarked_name_ch,
+                                   const gchar *marked_name_ch,
+                                   GtkListStore *store, GtkTreeIter *iter) {
   gtk_list_store_append(store, iter);
   gtk_list_store_set(store, iter, GUI_TYPE, "bullion", GUI_SYMBOL,
                      unmarked_name_ch, GUI_COLUMN_ONE, marked_name_ch,
@@ -341,7 +341,7 @@ static int main_def_add_bul_store(bullion *B, const char *unmarked_name_ch,
   return 0;
 }
 
-static GtkListStore *main_default_store(void *data) {
+static GtkListStore *main_default_store(gpointer data) {
   /* Unpack the class package */
   portfolio_packet *package = (portfolio_packet *)data;
   metal *M = package->GetMetalClass();
@@ -349,7 +349,7 @@ static GtkListStore *main_default_store(void *data) {
   meta *D = package->GetMetaClass();
   default_heading *def_h_mkd = package->GetDefaultHeadings();
 
-  bool no_assets = true;
+  gboolean no_assets = TRUE;
 
   GtkListStore *store = NULL;
   GtkTreeIter iter;
@@ -390,7 +390,7 @@ static GtkListStore *main_default_store(void *data) {
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, GUI_TYPE, "blank_space_default",
                        GUI_SYMBOL, "", GUI_COLUMN_ONE, "", -1);
-    no_assets = false;
+    no_assets = FALSE;
   }
 
   if (F->size) {
@@ -402,8 +402,8 @@ static GtkListStore *main_default_store(void *data) {
     gtk_list_store_set(store, &iter, GUI_TYPE, "equity_total", GUI_SYMBOL, "",
                        GUI_COLUMN_ONE, def_h_mkd->symbol, GUI_COLUMN_TWO,
                        def_h_mkd->shares, -1);
-    unsigned short c;
-    unsigned short g = 0;
+    guint8 c;
+    guint8 g = 0;
 
     /* Iterate through the equities twice.
        Add equities that have shares first.
@@ -436,7 +436,7 @@ static GtkListStore *main_default_store(void *data) {
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, GUI_TYPE, "blank_space_default",
                        GUI_SYMBOL, "", GUI_COLUMN_ONE, "", -1);
-    no_assets = false;
+    no_assets = FALSE;
   }
 
   if (D->cash_f) {
@@ -447,7 +447,7 @@ static GtkListStore *main_default_store(void *data) {
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, GUI_TYPE, "blank_space_default",
                        GUI_SYMBOL, "", GUI_COLUMN_ONE, "", -1);
-    no_assets = false;
+    no_assets = FALSE;
   }
 
   if (no_assets) {
@@ -462,12 +462,12 @@ static GtkListStore *main_default_store(void *data) {
   }
 
   /* Indicate that the default view is displayed. */
-  package->SetDefaultView(true);
+  package->SetDefaultView(TRUE);
 
   return store;
 }
 
-static void show_indices(void *data) {
+static void show_indices(gpointer data) {
   /* Unpack the class package */
   portfolio_packet *package = (portfolio_packet *)data;
   meta *D = package->GetMetaClass();
@@ -478,82 +478,55 @@ static void show_indices(void *data) {
                                 D->index_bar_revealed_bool);
 }
 
-static void set_clock_header_fonts(void *data) {
+static void set_clock_header(gpointer data) {
   portfolio_packet *pkg = (portfolio_packet *)data;
+  const gchar *fmt_header = "<span foreground='Black'>%s</span>";
 
-  PangoAttrList *attrlist = pango_attr_list_new();
-  PangoFontDescription *font_desc =
-      pango_font_description_from_string(pkg->meta_class->main_font_ch);
-
-  PangoAttribute *attr = pango_attr_font_desc_new(font_desc);
-  pango_attr_list_insert(attrlist, attr);
-
-  /* Set clock heading labels with attrlist */
+  /* Set clock heading label */
   GtkWidget *label = GetWidget("NewYorkTimeLabel");
-  gtk_label_set_attributes((GtkLabel *)label, attrlist);
+  SetFormattedLabel(label, fmt_header, pkg->meta_class->font_ch,
+                    "New York Time");
   label = GetWidget("MarketCloseLabel");
-  gtk_label_set_attributes((GtkLabel *)label, attrlist);
-
-  pango_font_description_free(font_desc);
-  pango_attr_list_unref(attrlist);
+  SetFormattedLabel(label, fmt_header, pkg->meta_class->font_ch,
+                    "Market Closed");
 
   /* make sure font is set on the clock value labels */
-  MainDisplayTime(pkg);
-  MainDisplayTimeRemaining(pkg);
+  MainSetClocks(pkg);
 }
 
-static void set_indice_header_label(const char *label_name,
-                                    const char *label_str,
-                                    PangoAttrList *attrlist) {
-  const char *format = "<span foreground='DarkSlateGrey'>%s</span>";
+static void set_indice_header_font(const gchar *label_name,
+                                   const gchar *label_str, const gchar *font) {
+  const gchar *format = "<span foreground='DarkSlateGrey'>%s</span>";
 
   GtkWidget *label = GetWidget(label_name);
-  char *markup = g_markup_printf_escaped(format, label_str);
-  gtk_label_set_markup(GTK_LABEL(label), markup);
-  g_free(markup);
-  gtk_label_set_attributes((GtkLabel *)label, attrlist);
+  SetFormattedLabel(label, format, font, label_str);
 }
 
 static struct {
-  const char *labelname;
-  const char *labelstr;
+  const gchar *labelname;
+  const gchar *labelstr;
 } lbl_name_str[] = {{"DowLabel", "Dow"},       {"NasdaqLabel", "Nasdaq"},
                     {"SPLabel", "S&P 500"},    {"BitcoinLabel", "Bitcoin"},
                     {"GoldLabel", "Gold"},     {"SilverLabel", "Silver"},
                     {"GSLabel", "Gold/Silver"}};
 
-static void set_indice_header_fonts(void *data) {
+static void set_indice_header(gpointer data) {
   portfolio_packet *pkg = (portfolio_packet *)data;
-  /* Set the attribute list on the header labels */
 
-  /* Need to free/destroy attrlist. */
-  PangoAttrList *attrlist = pango_attr_list_new();
-
-  PangoFontDescription *font_desc =
-      pango_font_description_from_string(pkg->meta_class->main_font_ch);
-
-  /* attr does not take ownership of font_desc, need to free font_desc */
-  PangoAttribute *attr = pango_attr_font_desc_new(font_desc);
-  /* attrlist takes ownership of attr, do not free attr */
-  pango_attr_list_insert(attrlist, attr);
-
-  /* Set the markup on the index header labels */
+  /* Format the index header labels */
   gushort size = sizeof lbl_name_str / sizeof lbl_name_str[0];
   for (gushort g = 0; g < size; g++) {
-    set_indice_header_label(lbl_name_str[g].labelname, lbl_name_str[g].labelstr,
-                            attrlist);
+    set_indice_header_font(lbl_name_str[g].labelname, lbl_name_str[g].labelstr,
+                           pkg->meta_class->font_ch);
   }
-
-  pango_font_description_free(font_desc);
-  pango_attr_list_unref(attrlist);
 }
 
-int MainSetFonts(void *data) {
+gint MainSetFonts(gpointer data) {
   /* Set the clock label fonts */
-  set_clock_header_fonts(data);
+  set_clock_header(data);
 
   /* Make sure the font is set on the indice header labels */
-  set_indice_header_fonts(data);
+  set_indice_header(data);
 
   /* Make sure the treeview heading fonts are set */
   portfolio_packet *pkg = (portfolio_packet *)data;
@@ -562,9 +535,9 @@ int MainSetFonts(void *data) {
   return 0;
 }
 
-static void set_indice_value_label(const char *label_name, const double chg_f,
-                                   const char *value, const char *chg,
-                                   const char *per_chg,
+static void set_indice_value_label(const gchar *label_name, const gdouble chg_f,
+                                   const gchar *value, const gchar *chg,
+                                   const gchar *per_chg,
                                    PangoAttrList *attrlist) {
 
   const gchar *red_format =
@@ -573,7 +546,7 @@ static void set_indice_value_label(const char *label_name, const double chg_f,
   const gchar *green_format =
       "<span foreground='black'>%s\n</span><span foreground='darkgreen' "
       "size='small'>%s, %s</span>";
-  const char *fmt;
+  const gchar *fmt;
 
   if (chg_f >= 0) {
     fmt = green_format;
@@ -588,7 +561,7 @@ static void set_indice_value_label(const char *label_name, const double chg_f,
   gtk_label_set_attributes((GtkLabel *)label, attrlist);
 }
 
-static void set_indices_labels(void *data) {
+static void set_indices_labels(gpointer data) {
   /* Unpack the class package */
   portfolio_packet *pkg = (portfolio_packet *)data;
   meta *D = pkg->GetMetaClass();
@@ -600,7 +573,7 @@ static void set_indices_labels(void *data) {
   PangoAttrList *attrlist = pango_attr_list_new();
 
   PangoFontDescription *font_desc =
-      pango_font_description_from_string(pkg->meta_class->main_font_ch);
+      pango_font_description_from_string(pkg->meta_class->font_ch);
 
   /* attr does not take ownership of font_desc, need to destroy font_desc */
   PangoAttribute *attr = pango_attr_font_desc_new(font_desc);
@@ -650,7 +623,7 @@ static void set_indices_labels(void *data) {
   pango_attr_list_unref(attrlist);
 }
 
-int MainPrimaryTreeview(void *data) {
+gint MainPrimaryTreeview(gpointer data) {
   /* Show the Indices Labels */
   show_indices(data);
 
@@ -685,10 +658,10 @@ int MainPrimaryTreeview(void *data) {
 
 static void hide_indices() {
   GtkWidget *revealer = GetWidget("MainIndicesRevealer");
-  gtk_revealer_set_reveal_child(GTK_REVEALER(revealer), false);
+  gtk_revealer_set_reveal_child(GTK_REVEALER(revealer), FALSE);
 }
 
-int MainDefaultTreeview(void *data) {
+gint MainDefaultTreeview(gpointer data) {
   GtkListStore *store = NULL;
   GtkWidget *list = GetWidget("MainTreeView");
 
@@ -717,120 +690,96 @@ int MainDefaultTreeview(void *data) {
   return 0;
 }
 
-int MainDisplayTime(void *data) {
-  portfolio_packet *pkg = (portfolio_packet *)data;
-  GtkWidget *NewYorkTimeLabel = GetWidget("NYTimeLabel");
-  int ny_h, ny_m;
-  char time_ch[10];
-  char *format = "<span foreground='DimGray'>%s</span>";
-
-  /* Get the current New York time */
-  NYTime(&ny_h, &ny_m);
+static gint main_display_time(const gchar *fmt, const gchar *font,
+                              const gint ny_h, const gint ny_m) {
+  GtkWidget *NYTimeValLabel = GetWidget("NYTimeLabel");
+  gchar time_ch[10];
 
   /* Set the New York time label */
-  snprintf(time_ch, 10, "%02d:%02d", ny_h, ny_m);
-  char *markup = g_markup_printf_escaped(format, time_ch);
-
-  /* gtk_label_set_markup resets the attribute list, so we need to
-     set the markup and attribute list each time this func is called.
-     gtk_label_set_markup doesn't display the font tag correctly,
-     gtk_label_set_attributes doesn't display the color correctly, so we need to
-     do both setting markup first then the attrib list. */
-  gtk_label_set_markup(GTK_LABEL(NewYorkTimeLabel), markup);
-  g_free(markup);
-
-  PangoAttrList *attrlist = pango_attr_list_new();
-  PangoFontDescription *font_desc =
-      pango_font_description_from_string(pkg->meta_class->main_font_ch);
-  PangoAttribute *attr = pango_attr_font_desc_new(font_desc);
-  pango_attr_list_insert(attrlist, attr);
-  gtk_label_set_attributes((GtkLabel *)NewYorkTimeLabel, attrlist);
-
-  pango_font_description_free(font_desc);
-  pango_attr_list_unref(attrlist);
-
+  g_snprintf(time_ch, 10, "%02d:%02d", ny_h, ny_m);
+  SetFormattedLabel(NYTimeValLabel, fmt, font, time_ch);
   return 0;
 }
 
-int MainDisplayTimeRemaining(void *data) {
-  /* Unpack the package */
-  portfolio_packet *package = (portfolio_packet *)data;
-
+static gint main_display_time_remaining(const gchar *fmt, const gchar *font,
+                                        const gint h, const gint m,
+                                        const gint s, const gboolean isclosed,
+                                        const gboolean holiday,
+                                        const gchar *holiday_str) {
   GtkWidget *CloseLabel = GetWidget("MarketCloseLabel");
   GtkWidget *TimeRemLabel = GetWidget("TimeLeftLabel");
-  int h, m, s;
-  char time_left_ch[10];
-  bool isclosed;
-  struct tm NY_Time;
-  char *format = "<span foreground='DimGray'>%s</span>";
-  char *markup;
-
-  PangoAttrList *attrlist = pango_attr_list_new();
-  PangoFontDescription *font_desc =
-      pango_font_description_from_string(package->meta_class->main_font_ch);
-  PangoAttribute *attr = pango_attr_font_desc_new(font_desc);
-  pango_attr_list_insert(attrlist, attr);
-
-  isclosed = TimeToClose(&h, &m, &s);
+  const gchar *fmt_header = "<span foreground='Black'>%s</span>";
+  gchar time_left_ch[10];
 
   if (isclosed) {
-    if (package->IsHoliday()) {
-      NY_Time = NYTimeComponents();
-      gtk_label_set_text(GTK_LABEL(CloseLabel), WhichHoliday(NY_Time));
+    if (holiday) {
+      SetFormattedLabel(CloseLabel, fmt_header, font,
+                        holiday_str ? holiday_str : "");
     } else {
-      gtk_label_set_text(GTK_LABEL(CloseLabel), "Market Closed");
+      SetFormattedLabel(CloseLabel, fmt_header, font, "Market Closed");
     }
     gtk_label_set_text(GTK_LABEL(TimeRemLabel), "");
   } else {
-    gtk_label_set_text(GTK_LABEL(CloseLabel), "Market Closes In");
-    snprintf(time_left_ch, 10, "%02d:%02d:%02d", h, m, s);
-    markup = g_markup_printf_escaped(format, time_left_ch);
-    gtk_label_set_markup(GTK_LABEL(TimeRemLabel), markup);
-    g_free(markup);
+    SetFormattedLabel(CloseLabel, fmt_header, font, "Market Closes In");
+    g_snprintf(time_left_ch, 10, "%02d:%02d:%02d", h, m, s);
+    SetFormattedLabel(TimeRemLabel, fmt, font, time_left_ch);
   }
+  return 0;
+}
 
-  gtk_label_set_attributes((GtkLabel *)CloseLabel, attrlist);
-  gtk_label_set_attributes((GtkLabel *)TimeRemLabel, attrlist);
+gint MainSetClocks(gpointer data) {
+  portfolio_packet *pkg = (portfolio_packet *)data;
+  const gchar *fmt = "<span foreground='DimGray'>%s</span>";
+  gint h_left, m_left, s_left, h_cur, m_cur;
+  gchar *holiday_str = NULL;
+  gboolean holiday;
+  gboolean isclosed = GetTimeData(&holiday, &holiday_str, &h_left, &m_left,
+                                  &s_left, &h_cur, &m_cur);
+  pkg->SetClosed(isclosed);
 
-  pango_font_description_free(font_desc);
-  pango_attr_list_unref(attrlist);
+  main_display_time(fmt, pkg->meta_class->font_ch, h_cur, m_cur);
+  main_display_time_remaining(fmt, pkg->meta_class->font_ch, h_left, m_left,
+                              s_left, isclosed, holiday, holiday_str);
 
   return 0;
 }
 
-int MainHideWindows() {
+gint MainHideWindows() {
   GtkWidget *window = GetWidget("MainWindow");
-  gtk_widget_set_visible(window, false);
+  gtk_widget_set_visible(window, FALSE);
 
   window = GetWidget("AboutWindow");
-  gtk_widget_set_visible(window, false);
+  gtk_widget_set_visible(window, FALSE);
 
   window = GetWidget("BullionWindow");
-  gtk_widget_set_visible(window, false);
+  gtk_widget_set_visible(window, FALSE);
 
   window = GetWidget("CashWindow");
-  gtk_widget_set_visible(window, false);
+  gtk_widget_set_visible(window, FALSE);
 
   window = GetWidget("HistoryWindow");
-  gtk_widget_set_visible(window, false);
+  gtk_widget_set_visible(window, FALSE);
 
   window = GetWidget("SecurityWindow");
-  gtk_widget_set_visible(window, false);
+  gtk_widget_set_visible(window, FALSE);
 
   window = GetWidget("HotkeysWindow");
-  gtk_widget_set_visible(window, false);
+  gtk_widget_set_visible(window, FALSE);
 
   window = GetWidget("ApiWindow");
-  gtk_widget_set_visible(window, false);
+  gtk_widget_set_visible(window, FALSE);
 
   return 0;
 }
 
-int MainDisplayClocks(void *data) {
-  portfolio_packet *pkg = (portfolio_packet *)data;
-
+gint MainDisplayClocks() {
   GtkWidget *revealer = GetWidget("MainClockRevealer");
-  gtk_revealer_set_reveal_child(GTK_REVEALER(revealer),
-                                pkg->IsClockDisplayed());
+  gtk_revealer_set_reveal_child(GTK_REVEALER(revealer), TRUE);
+  return 0;
+}
+
+gint MainHideClocks() {
+  GtkWidget *revealer = GetWidget("MainClockRevealer");
+  gtk_revealer_set_reveal_child(GTK_REVEALER(revealer), FALSE);
   return 0;
 }

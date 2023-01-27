@@ -33,18 +33,23 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef MUTEX_HEADER_H
 #define MUTEX_HEADER_H
 
-#include <pthread.h>
+#include <glib.h>
 
 /* System mutex enum */
 enum {
   CLASS_MEMBER_MUTEX,
   CLASS_CALCULATE_MUTEX,
+  CLASS_EXTRACT_DATA_MUTEX,
   CLASS_TOSTRINGS_MUTEX,
+  CLOCKS_COND_MUTEX,
+  CLOCKS_HANDLER_MUTEX,
   FETCH_DATA_MUTEX,
+  FETCH_DATA_COND_MUTEX,
   FETCH_DATA_HANDLER_MUTEX,
   HISTORY_FETCH_MUTEX,
   MULTICURL_PROG_MUTEX,
   MULTICURL_NO_PROG_MUTEX,
+  MULTICURL_REM_HAND_MUTEX,
   SYMBOL_NAME_MAP_MUTEX,
   SYMBOL_NAME_MAP_SQLITE_MUTEX,
   SQLITE_MUTEX,
@@ -52,6 +57,6 @@ enum {
 };
 
 /* Globals */
-extern pthread_mutex_t mutex_working[MUTEX_NUMBER]; /* A Posix Mutex Array */
+extern GMutex mutexes[MUTEX_NUMBER]; /* A Glib Mutex Array */
 
 #endif /* MUTEX_HEADER_H */

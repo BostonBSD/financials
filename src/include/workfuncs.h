@@ -33,13 +33,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef WORKFUNCS_HEADER_H
 #define WORKFUNCS_HEADER_H
 
-#include <stdbool.h> /* bool */
-
-#include <sys/time.h> /* struct tm  */
-
 #include "class_types.h"     /* equity_folder, metal, meta, portfolio_packet */
 #include "gui_types.h"       /* symbol_name_map */
-#include "multicurl_types.h" /* MemType */
 
 /* pango_formatting */
 enum {
@@ -63,52 +58,48 @@ enum {
 
 enum { MON_STR, PER_STR, NUM_STR };
 
-void SetFont(const char *);
-void DoubleToFormattedStrPango(char **, const double, const unsigned short,
-                               const unsigned int, const unsigned int);
-void StringToStrPango(char **, const char *, const unsigned int);
+void SetFont(const gchar *fnt);
+void DoubleToFormattedStrPango(gchar **dst, const gdouble num,
+                               const guint8 digits_right,
+                               const guint format_type, const guint color);
+void StringToStrPango(gchar **dst, const gchar *src, const guint color);
 
 /* sn_map */
-void AddSymbolToMap(const char *, const char *, symbol_name_map *);
-symbol_name_map *SymNameFetch(portfolio_packet *);
-symbol_name_map *SymNameFetchUpdate(portfolio_packet *, symbol_name_map *);
-char *GetSecurityName(char *, const symbol_name_map *);
-void SNMapDestruct(symbol_name_map *);
-void CreateHashTable(symbol_name_map *);
+void AddSymbolToMap(const gchar *symbol, const gchar *name,
+                    symbol_name_map *sn_map);
+symbol_name_map *SymNameFetch(portfolio_packet *pkg);
+symbol_name_map *SymNameFetchUpdate(portfolio_packet *pkg,
+                                    symbol_name_map *sn_map);
+gchar *GetSecurityName(gchar *s, const symbol_name_map *sn_map);
+void SNMapDestruct(symbol_name_map *sn_map);
+void CreateHashTable(symbol_name_map *sn_map);
 
 /* string_formatting */
-bool CheckValidString(const char *);
-bool CheckIfStringDoubleNumber(const char *);
-bool CheckIfStringDoublePositiveNumber(const char *);
-bool CheckIfStringLongPositiveNumber(const char *);
-void LowerCaseStr(char *);
-void UpperCaseStr(char *);
-void Chomp(char *);
-void CopyString(char **, const char *);
-void ToNumStr(char *);
-void StringToMonStr(char **, const char *, const unsigned short);
-void DoubleToFormattedStr(char **, const double, const unsigned short,
-                          const unsigned int);
-double StringToDouble(const char *);
+gboolean CheckValidString(const gchar *string);
+gboolean CheckIfStringDoubleNumber(const gchar *string);
+gboolean CheckIfStringDoublePositiveNumber(const gchar *string);
+gboolean CheckIfStringLongPositiveNumber(const gchar *string);
+void CopyString(gchar **dst, const gchar *src);
+void ToNumStr(gchar *s);
+void StringToMonStr(gchar **dst, const gchar *src, const guint8 digits_right);
+void DoubleToFormattedStr(gchar **dst, const gdouble num,
+                          const guint8 digits_right, const guint format_type);
+gdouble StringToDouble(const gchar *str);
 
 /* time_funcs */
-void NYTime(int *, int *);
-bool TimeToClose(int *, int *, int *);
-unsigned int SecondsToOpen();
-struct tm NYTimeComponents();
-char *WhichHoliday(struct tm);
-bool CheckHoliday(struct tm);
-unsigned int ClockSleepSeconds();
-unsigned int ClockSleepMicroSeconds();
-bool MarketOpen();
+guint64 ClockSleepMinute();
+guint64 ClockSleepSecond();
+gboolean GetTimeData(gboolean *holiday, gchar **holiday_str, gint *h_r,
+                     gint *m_r, gint *s_r, gint *h_cur, gint *m_cur);
+gboolean MarketClosed();
 
 /* working_functions */
-char *ExtractYahooData(FILE *, double *, double *);
-void GetYahooUrl(char **, const char *, unsigned int);
-MemType *FetchHistoryData(const char *, portfolio_packet *);
-double CalcGain(double, double);
-void CalcSumRsi(double, double *, double *);
-void CalcRunAvgRsi(double, double *, double *);
-double CalcRsi(double, double);
+gdouble CalcGain(gdouble cur_price, gdouble prev_price);
+void CalcSumRsi(gdouble current_gain, gdouble *avg_gain, gdouble *avg_loss);
+void CalcRunAvgRsi(gdouble current_gain, gdouble *avg_gain, gdouble *avg_loss);
+gdouble CalcRsi(gdouble avg_gain, gdouble avg_loss);
+gchar *ExtractYahooData(FILE *fp, gdouble *prev_closing_f,
+                        gdouble *cur_price_f);
+void GetYahooUrl(gchar **url_ch, const gchar *symbol_ch, guint period);
 
 #endif /* WORKFUNCS_HEADER_H */

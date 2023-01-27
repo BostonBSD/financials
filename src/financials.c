@@ -34,23 +34,20 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "include/workfuncs.h"
 
 /* PascalCase for public functions, snake_case for private functions.
-   The handler functions are PascalCase with snake_case postfixed for greater
+   The handler functions are PascalCase with snake_case suffix for greater
    clarity, these are public functions.
 
    In the class files, PascalCase names are class methods, snake_case names
    are private [static to that file]. */
 
-pthread_mutex_t mutex_working[MUTEX_NUMBER]; /* A Posix Mutex Array */
+GMutex mutexes[MUTEX_NUMBER]; /* A Glib Mutex Array */
 
 static void mutex_init()
 /* Initialize Mutexes */
 {
-  short g = 0;
+  gushort g = 0;
   while (g < MUTEX_NUMBER) {
-    if (pthread_mutex_init(&mutex_working[g], NULL) != 0) {
-      printf("\nPosix mutex init has failed\n");
-      exit(EXIT_FAILURE);
-    }
+    g_mutex_init(&mutexes[g]);
     g++;
   }
 }
@@ -58,9 +55,9 @@ static void mutex_init()
 static void mutex_destruct()
 /* Free Mutex Resources */
 {
-  short g = 0;
+  gushort g = 0;
   while (g < MUTEX_NUMBER) {
-    pthread_mutex_destroy(&mutex_working[g]);
+    g_mutex_clear(&mutexes[g]);
     g++;
   }
 }
@@ -74,24 +71,14 @@ static void class_package_init()
 static void class_package_destruct()
 /* Free Memory */
 {
-  pthread_mutex_lock(&mutex_working[CLASS_MEMBER_MUTEX]);
+  g_mutex_lock(&mutexes[CLASS_MEMBER_MUTEX]);
 
   ClassDestructPortfolioPacket(packet);
 
-  pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
+  g_mutex_unlock(&mutexes[CLASS_MEMBER_MUTEX]);
 }
 
-static void set_new_york_time_zone()
-/* Set the process time zone to New York */
-{
-  setenv("TZ", NEW_YORK_TIME_ZONE, 1);
-  tzset();
-}
-
-int main(int argc, char *argv[]) {
-  /* Set the process time zone to New York */
-  set_new_york_time_zone();
-
+gint main(gint argc, gchar *argv[]) {
   /* Initialize some of our class instances */
   /* This needs to be initialized before ReadConfig */
   class_package_init();

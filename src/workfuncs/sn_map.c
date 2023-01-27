@@ -29,13 +29,6 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
 IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
-#define _GNU_SOURCE /* hcreate_r, hsearch_r, hdestroy_r; these are GNU         \
-                       extensions on GNU/Linux, this macro needs to be defined \
-                       before all header files [on GNU systems]. */
-#include <math.h>
-#include <search.h>
-#include <stdlib.h>
-#include <string.h>
 
 #include "../include/class_types.h"
 #include "../include/gui_types.h"
@@ -43,27 +36,36 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/sqlite.h"
 #include "../include/workfuncs.h"
 
-char *GetSecurityName(char *s, const symbol_name_map *sn_map)
+gchar *GetSecurityName(gchar *s, const symbol_name_map *sn_map)
 /* Look for a Security Name using the Symbol as a key value.
    Must free return value. */
 {
   symbol_to_security_name_container *item = NULL;
-  ENTRY e, *ep;
   if (sn_map == NULL)
     return NULL;
 
-  e.key = s;
-  if (hsearch_r(e, FIND, &ep, sn_map->htab) == 0) {
-    ep = NULL;
-  }
-  item = ep ? ep->data : NULL;
+  item = (symbol_to_security_name_container *)g_hash_table_lookup(
+      sn_map->hash_table, s);
 
   if (item) {
     /* The item pointer is not freed. It points to an item in the
        sn_container_arr array and not a duplicate. */
-    return strdup(item->security_name);
+    return g_strdup(item->security_name);
   } else {
     return NULL;
+  }
+}
+
+void CreateHashTable(symbol_name_map *sn_map) {
+  /* Create a hashing table of the sn_map->sn_container_arr elements */
+  sn_map->hash_table = g_hash_table_new(g_str_hash, g_str_equal);
+
+  gushort s = 0;
+  while (s < sn_map->size) {
+    /* The symbol is the key value. */
+    g_hash_table_insert(sn_map->hash_table, sn_map->sn_container_arr[s]->symbol,
+                        sn_map->sn_container_arr[s]);
+    s++;
   }
 }
 
@@ -74,35 +76,31 @@ void SNMapDestruct(symbol_name_map *sn_map)
   if (sn_map == NULL)
     return;
 
-  /* Destroy the table data and free htab */
-  /* hdestroy_r does not free the key and data pointers, they are stored in the
-   * sn_container_arr; (GNU and FreeBSD...FreeBSD needs to update their man
-   * page). */
-  if (sn_map->htab) {
-    hdestroy_r(sn_map->htab);
-    free(sn_map->htab);
-    sn_map->htab = NULL;
-  }
-
   if (sn_map->sn_container_arr) {
-    for (unsigned short i = 0; i < sn_map->size; i++) {
+    for (gushort i = 0; i < sn_map->size; i++) {
       /* Free the string members */
-      free(sn_map->sn_container_arr[i]->symbol);
+      g_free(sn_map->sn_container_arr[i]->symbol);
       sn_map->sn_container_arr[i]->symbol = NULL;
-      free(sn_map->sn_container_arr[i]->security_name);
+      g_free(sn_map->sn_container_arr[i]->security_name);
       sn_map->sn_container_arr[i]->security_name = NULL;
       /* Free the memory that the address is pointing to */
-      free(sn_map->sn_container_arr[i]);
+      g_free(sn_map->sn_container_arr[i]);
       sn_map->sn_container_arr[i] = NULL;
     }
     /* Free the array of pointer addresses */
-    free(sn_map->sn_container_arr);
+    g_free(sn_map->sn_container_arr);
     sn_map->sn_container_arr = NULL;
     sn_map->size = 0;
   }
+
+  /* Destroy the table data and free hash_table */
+  if (sn_map->hash_table) {
+    g_hash_table_destroy(sn_map->hash_table);
+    sn_map->hash_table = NULL;
+  }
 }
 
-static int alpha_asc_sec_name(const void *a, const void *b)
+static gint alpha_asc_sec_name(gconstpointer a, gconstpointer b)
 /* This is a callback function for stdlib sorting functions.
    It compares symbol_to_security_name_container in alphabetically
    ascending order, by the stock symbol data member.  Swapping only
@@ -116,19 +114,19 @@ static int alpha_asc_sec_name(const void *a, const void *b)
   symbol_to_security_name_container **bb =
       (symbol_to_security_name_container **)b;
 
-  /* Compare the symbol data members ignoring for case. */
-  return strcasecmp(aa[0]->symbol, bb[0]->symbol);
+  /* Compare the symbol data members. */
+  return g_strcmp0(aa[0]->symbol, bb[0]->symbol);
 }
 
 /* Symbols we don't want. */
-static const char *bad_syms[] = {"Symbol", "File Creation Time",
-                                 "TEST",   "ZXYZ.A",
-                                 "ZZT",    "ZEXIT",
-                                 "ZIEXT",  "ZVZZC",
-                                 "ZVV",    "ZXIET",
-                                 "ZBZX"};
+static const gchar *bad_syms[] = {"Symbol", "File Creation Time",
+                                  "TEST",   "ZXYZ.A",
+                                  "ZZT",    "ZEXIT",
+                                  "ZIEXT",  "ZVZZC",
+                                  "ZVV",    "ZXIET",
+                                  "ZBZX"};
 
-static bool check_symbol(const char *s)
+static gboolean check_symbol(const gchar *s)
 /* Depository share symbols include dollar signs, which we don't want [Yahoo!
    doesn't recognize symbols with $ signs]. The first line of the file includes
    the "Symbol" string, which we don't want. The last line of the file includes
@@ -136,54 +134,51 @@ static bool check_symbol(const char *s)
    stocks, which we don't want.
 */
 {
-  if (strpbrk(s, "$"))
-    return false;
+  if (g_strrstr(s, "$"))
+    return FALSE;
 
-  unsigned short g = 0, size = sizeof bad_syms / sizeof bad_syms[0];
+  gushort g = 0, size = sizeof bad_syms / sizeof bad_syms[0];
 
   while (g < size) {
-    if (strstr(s, bad_syms[g])) {
-      return false;
+    if (g_strrstr(s, bad_syms[g])) {
+      return FALSE;
     }
     g++;
   }
 
-  return true;
+  return TRUE;
 }
 
-static void sub_symbol(char **symbol_ch, const char *postfix_ch) {
-  char *tmp = NULL;
-  unsigned short len;
+static void sub_symbol(gchar **symbol_ch, const gchar *suffix_ch) {
+  gchar *tmp = NULL;
 
-  len = strlen(symbol_ch[0]) + 2;
-  tmp = realloc(symbol_ch[0], len);
-  symbol_ch[0] = tmp;
-  tmp = strchr(symbol_ch[0], (int)'.');
+  tmp = g_utf8_strchr(symbol_ch[0], -1, (gunichar)'.');
   *tmp = 0;
-  tmp = strdup(symbol_ch[0]);
-  snprintf(symbol_ch[0], len, "%s%s", tmp, postfix_ch);
-  free(tmp);
+  tmp = g_strdup(symbol_ch[0]);
+  g_free(symbol_ch[0]);
+  symbol_ch[0] = g_strconcat(tmp, suffix_ch, NULL);
+  g_free(tmp);
 }
 
-static void substitute_warrant_and_unit_symbols(char **symbol_ch) {
+static void substitute_warrant_and_unit_symbols(gchar **symbol_ch) {
   if (symbol_ch[0] == NULL)
     return;
   /* Warrants */
-  if (strstr(symbol_ch[0], ".W")) {
+  if (g_strrstr(symbol_ch[0], ".W")) {
     sub_symbol(symbol_ch, "-WT");
 
     /* Units */
-  } else if (strstr(symbol_ch[0], ".U")) {
+  } else if (g_strrstr(symbol_ch[0], ".U")) {
     sub_symbol(symbol_ch, "-UN");
   }
 }
 
-void AddSymbolToMap(const char *symbol, const char *name,
+void AddSymbolToMap(const gchar *symbol, const gchar *name,
                     symbol_name_map *sn_map) {
   /* Increase the array to hold another pointer address */
-  symbol_to_security_name_container **tmp =
-      realloc(sn_map->sn_container_arr,
-              sizeof(symbol_to_security_name_container *) * (sn_map->size + 1));
+  symbol_to_security_name_container **tmp = g_realloc(
+      sn_map->sn_container_arr,
+      sizeof(symbol_to_security_name_container *) * (sn_map->size + 1));
 
   if (tmp == NULL) {
     printf("Not Enough Memory, realloc returned NULL.\n");
@@ -193,25 +188,26 @@ void AddSymbolToMap(const char *symbol, const char *name,
   sn_map->sn_container_arr = tmp;
   /* Allocate memory for an object and add the address of it to the array */
   sn_map->sn_container_arr[sn_map->size] =
-      malloc(sizeof(symbol_to_security_name_container));
+      g_malloc(sizeof(symbol_to_security_name_container));
   /* Populate a data member with the symbol string */
   sn_map->sn_container_arr[sn_map->size]->symbol =
-      strdup(symbol ? symbol : "EOF Incomplete Symbol List");
+      g_strdup(symbol ? symbol : "EOF Incomplete Symbol List");
   /* Populate a data member with the name string and increment the size */
   sn_map->sn_container_arr[sn_map->size++]->security_name =
-      strdup(name ? name : "EOF Incomplete Symbol List");
+      g_strdup(name ? name : "EOF Incomplete Symbol List");
 }
 
 static symbol_name_map *sym_name_map_dup(symbol_name_map *sn_map)
 /* Create a duplicate symbol_name_map. */
 {
-  symbol_name_map *sn_map_dup = (symbol_name_map *)malloc(sizeof(*sn_map_dup));
-  sn_map_dup->sn_container_arr = malloc(1);
+  symbol_name_map *sn_map_dup =
+      (symbol_name_map *)g_malloc(sizeof(*sn_map_dup));
+  sn_map_dup->sn_container_arr = g_malloc(1);
   sn_map_dup->size = 0;
-  /* Not using the hash table here. */
-  sn_map_dup->htab = NULL;
+  /* Not using the hash table. */
+  sn_map_dup->hash_table = NULL;
 
-  for (unsigned short g = 0; g < sn_map->size; g++) {
+  for (gushort g = 0; g < sn_map->size; g++) {
     AddSymbolToMap(sn_map->sn_container_arr[g]->symbol,
                    sn_map->sn_container_arr[g]->security_name, sn_map_dup);
   }
@@ -295,48 +291,26 @@ static const symbol_to_security_name_container special_syms[] = {
     {"MATIC-USD", "Polygon Coin ( US Dollars )"}};
 
 static void add_special_symbols(symbol_name_map *sn_map) {
-  unsigned short size = (sizeof special_syms) / (sizeof special_syms[0]);
+  gushort size = (sizeof special_syms) / (sizeof special_syms[0]);
 
-  for (unsigned short i = 0; i < size; i++) {
+  for (gushort i = 0; i < size; i++) {
     AddSymbolToMap(special_syms[i].symbol, special_syms[i].security_name,
                    sn_map);
   }
 }
 
-void CreateHashTable(symbol_name_map *sn_map) {
-  /* Create a hashing table of the sn_map->sn_container_arr elements */
-  sn_map->htab = (struct hsearch_data *)malloc(sizeof(struct hsearch_data));
-  /*zeroize the table.*/
-  memset(sn_map->htab, 0, sizeof(struct hsearch_data));
 
-  ENTRY e, *ep;
-  /* GNU suggests the table size be 25% larger than needed.  On FreeBSD table
-   * size is dynamic. */
-  size_t tab_size = (size_t)floor((double)(sn_map->size * 1.25));
-  hcreate_r(tab_size, sn_map->htab);
-  unsigned short s = 0;
-  while (s < sn_map->size) {
-    /* The symbol is the key value. */
-    e.key = sn_map->sn_container_arr[s]->symbol;
-    e.data = sn_map->sn_container_arr[s];
-    if (hsearch_r(e, ENTER, &ep, sn_map->htab) == 0) {
-      fprintf(stderr, "hash table entry failed\n");
-      exit(EXIT_FAILURE);
-    }
-    s++;
-  }
-}
 static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
   meta *D = pkg->GetMetaClass();
 
-  char *line = malloc(1024), *line_start;
-  char *symbol_token, *name_token, *tmp_symbol;
-  line_start = line;
+  gchar line[1024];
+  gchar **token_array;
+  gchar *symbol_token, *name_token, *tmp_symbol;
 
-  symbol_name_map *sn_map = (symbol_name_map *)malloc(sizeof(*sn_map));
-  sn_map->sn_container_arr = malloc(1);
+  symbol_name_map *sn_map = (symbol_name_map *)g_malloc(sizeof(*sn_map));
+  sn_map->sn_container_arr = g_malloc(1);
   sn_map->size = 0;
-  sn_map->htab = NULL;
+  sn_map->hash_table = NULL;
 
   MemType Nasdaq_Struct, NYSE_Struct;
   Nasdaq_Struct.memory = NULL;
@@ -353,52 +327,69 @@ static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
     FreeMemtype(&Nasdaq_Struct);
     FreeMemtype(&NYSE_Struct);
     if (sn_map->sn_container_arr)
-      free(sn_map->sn_container_arr);
+      g_free(sn_map->sn_container_arr);
     if (sn_map)
-      free(sn_map);
-    if (line)
-      free(line);
+      g_free(sn_map);
     return NULL;
   }
 
   /* Convert a String to a File Pointer Stream for Reading */
   FILE *fp[2];
-  fp[0] = fmemopen((void *)Nasdaq_Struct.memory,
-                   strlen(Nasdaq_Struct.memory) + 1, "r");
-  fp[1] =
-      fmemopen((void *)NYSE_Struct.memory, strlen(NYSE_Struct.memory) + 1, "r");
+  fp[0] = fmemopen((gpointer)Nasdaq_Struct.memory,
+                   g_utf8_strlen(Nasdaq_Struct.memory, -1) + 1, "r");
+  fp[1] = fmemopen((gpointer)NYSE_Struct.memory,
+                   g_utf8_strlen(NYSE_Struct.memory, -1) + 1, "r");
 
-  unsigned short k = 0;
+  guint8 k = 0;
   while (k < 2) {
     /* Read the file stream one line at a time */
     /* Populate the Symbol-Name Array. The second list is added after the first
      * list. */
     while (fgets(line, 1024, fp[k]) != NULL) {
+      g_strchomp(line);
 
-      /* Extract the symbol from the line. */
-      symbol_token = strsep(&line, "|");
-      if (check_symbol(symbol_token) == false) {
-        line = line_start;
+      /* If we have an empty line, continue. */
+      if (line[0] == '\0')
+        continue;
+
+      /* Invalid replies start with a tag. */
+      if (g_strrstr(line, "<")) {
+        if (fp[0])
+          fclose(fp[0]);
+        if (fp[1])
+          fclose(fp[1]);
+        FreeMemtype(&Nasdaq_Struct);
+        FreeMemtype(&NYSE_Struct);
+
+        if (sn_map) {
+          SNMapDestruct(sn_map);
+          g_free(sn_map);
+        }
+        return NULL;
+      }
+
+      /* Get the symbol and the name from the line. */
+      token_array = g_strsplit(line, "|", -1);
+      symbol_token = token_array[0] ? token_array[0] : "";
+      name_token = token_array[1] ? token_array[1] : "";
+
+      /* Check if the symbol is valid. */
+      if (check_symbol(symbol_token) == FALSE) {
+        g_strfreev(token_array);
         continue;
       }
 
       /* Warrant and Unit symbols are different on Yahoo!
          Make appropriate changes, if needed. */
-      tmp_symbol = strdup(symbol_token ? symbol_token : "");
+      tmp_symbol = g_strdup(symbol_token);
       substitute_warrant_and_unit_symbols(&tmp_symbol);
-
-      /* Extract the security name from the line. */
-      name_token = strsep(&line, "|");
 
       /* Add the symbol and the name to the symbol-name map. */
       if (symbol_token && name_token)
         AddSymbolToMap(tmp_symbol, name_token, sn_map);
 
-      free(tmp_symbol);
-
-      /* strsep moves the line pointer, we need to reset it so the pointer
-       * memory can be reused */
-      line = line_start;
+      g_free(tmp_symbol);
+      g_strfreev(token_array);
 
       /* If we are exiting the application, return immediately. */
       if (pkg->IsCurlCanceled()) {
@@ -406,17 +397,18 @@ static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
           fclose(fp[0]);
         if (fp[1])
           fclose(fp[1]);
-        if (line)
-          free(line);
         FreeMemtype(&Nasdaq_Struct);
         FreeMemtype(&NYSE_Struct);
-        return sn_map;
+        if (sn_map) {
+          SNMapDestruct(sn_map);
+          g_free(sn_map);
+        }
+        return NULL;
       }
     }
     k++;
 
   } /* end while loop */
-  free(line);
 
   /* Add special symbols such as indices, commodities, bonds, and crypto to the
    * map. */
@@ -480,7 +472,7 @@ symbol_name_map *SymNameFetchUpdate(portfolio_packet *pkg,
     /* Free the current symbol to security name mapping array. */
     if (sn_map) {
       SNMapDestruct(sn_map);
-      free(sn_map);
+      g_free(sn_map);
     }
 
     /* Create a duplicate symbol-name map */

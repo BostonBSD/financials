@@ -30,9 +30,6 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <stdlib.h>
-#include <string.h>
-
 #include "../include/gui.h" /* MainProgBar func */
 #include "../include/multicurl_types.h"
 #include "../include/mutex.h"
@@ -43,17 +40,43 @@ void FreeMemtype(MemType *mem_data) {
   /* Reset the MemType members, doesn't free the
      object pointer. */
   if (mem_data->memory) {
-    free(mem_data->memory);
+    g_free(mem_data->memory);
     mem_data->memory = NULL;
   }
   mem_data->size = 0;
 }
 
+gushort remove_handles(CURLM *mh) {
+  CURLMsg *msg = NULL;
+  CURL *hnd = NULL;
+  CURLcode rc = 0;
+  gint msgs_left = 0;
+  gushort return_value = 0;
+
+  /* This portion of the code will remove the easy handles from the
+   * mulltihandle. */
+  while ((msg = curl_multi_info_read(mh, &msgs_left))) {
+    if (msg->msg == CURLMSG_DONE) {
+      hnd = msg->easy_handle;
+      rc = msg->data.result;
+      if (rc != CURLE_OK) {
+        fprintf(stderr, "CURL code: %d\n", msg->data.result);
+        return_value++;
+      }
+      curl_multi_remove_handle(mh, hnd);
+    } else {
+      fprintf(stderr, "error: after curl_multi_info_read(), CURLMsg=%d\n",
+              msg->msg);
+    }
+  }
+  return return_value;
+}
+
 /* This callback function example can be found here:
    https://everything.curl.dev/libcurl/callbacks/write
 */
-static size_t write_callback(char *ptr, size_t size, size_t nmemb,
-                             void *userdata)
+static gsize write_callback(gchar *ptr, gsize size, gsize nmemb,
+                            gpointer userdata)
 /* cURL callback function [read in datastream to memory]
    This prototype is provided by cURL, with an argument at the end for our data
    structure.
@@ -61,11 +84,11 @@ static size_t write_callback(char *ptr, size_t size, size_t nmemb,
    data stream; *ptr. */
 {
   /* The number of bytes in the datastream [there is no NULL char] */
-  size_t realsize = size * nmemb;
+  gsize realsize = size * nmemb;
 
   MemType *mem = (MemType *)userdata;
-  char *tmp = realloc(mem->memory, mem->size + realsize +
-                                       1); /* We add 1 for the NULL char. */
+  gchar *tmp = g_realloc(mem->memory, mem->size + realsize +
+                                          1); /* We add 1 for the NULL char. */
 
   if (tmp == NULL) {
     printf("Not Enough Memory, realloc returned NULL.\n");
@@ -88,7 +111,7 @@ static size_t write_callback(char *ptr, size_t size, size_t nmemb,
   return realsize;
 }
 
-void *SetUpCurlHandle(CURL *hnd, CURLM *mh, char *url, MemType *output)
+gpointer SetUpCurlHandle(CURL *hnd, CURLM *mh, gchar *url, MemType *output)
 /* Take in an easy handle pointer address, a multihandle pointer address, a URL,
    and a struct pointer address, add easy handle to multi handle. */
 {
@@ -98,7 +121,7 @@ void *SetUpCurlHandle(CURL *hnd, CURLM *mh, char *url, MemType *output)
     FreeMemtype(output); /* Resets the output members, doesn't free the output
                             pointer. */
   output->memory =
-      malloc(1);    /* Initialize the memory component of the structure. */
+      g_malloc(1);  /* Initialize the memory component of the structure. */
   output->size = 0; /* Initialize the size component of the structure. */
 
   if (hnd) {
@@ -119,7 +142,7 @@ void *SetUpCurlHandle(CURL *hnd, CURLM *mh, char *url, MemType *output)
     /* The callback function to write data to. */
     curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, write_callback);
     /* Send the address of the data struct to callback func. */
-    curl_easy_setopt(hnd, CURLOPT_WRITEDATA, (void *)output);
+    curl_easy_setopt(hnd, CURLOPT_WRITEDATA, (gpointer)output);
     /* Connection timeout after 5 seconds. */
     curl_easy_setopt(hnd, CURLOPT_CONNECTTIMEOUT_MS, 5000);
     /* Total data transfer timeout after 10 seconds,
@@ -131,7 +154,7 @@ void *SetUpCurlHandle(CURL *hnd, CURLM *mh, char *url, MemType *output)
 
     curl_multi_add_handle(mh, hnd);
   } else {
-    free(output->memory);
+    g_free(output->memory);
     printf("cURL Library Failed, curl_easy_init() returned NULL.\n");
     exit(EXIT_FAILURE);
   }
@@ -140,7 +163,7 @@ void *SetUpCurlHandle(CURL *hnd, CURLM *mh, char *url, MemType *output)
   return NULL;
 }
 
-unsigned short PerformMultiCurl(CURLM *mh, double size)
+gushort PerformMultiCurl(CURLM *mh, gdouble size)
 /* Take in a multi handle pointer and the number of easy handles,
    request data from remote server asynchronously. Update the main
    window progress bar during transfer.
@@ -154,21 +177,17 @@ unsigned short PerformMultiCurl(CURLM *mh, double size)
     exit(EXIT_FAILURE);
   }
 
-  CURLMsg *msg = NULL;
-  CURL *hnd = NULL;
-  CURLcode rc = 0;
   CURLMcode mc = 0;
-  int still_running = 0;
-  int msgs_left = 0;
-  unsigned short return_value = 0;
-  double fraction = 0.0f;
+  gint still_running = 0;
+  gushort return_value = 0;
+  gdouble fraction = 0.0f;
 
   do {
-    int numfds = 0;
+    gint numfds = 0;
 
     /* This will prevent other threads from interupting the transfer
        [they need to use the same mutex for this to work]. */
-    pthread_mutex_lock(&mutex_working[MULTICURL_PROG_MUTEX]);
+    g_mutex_lock(&mutexes[MULTICURL_PROG_MUTEX]);
 
     mc = curl_multi_perform(mh, &still_running);
 
@@ -179,7 +198,7 @@ unsigned short PerformMultiCurl(CURLM *mh, double size)
 
     /* This will allow other threads to interupt the transfer without
        causing cURL to fail [they need to use the same mutex]. */
-    pthread_mutex_unlock(&mutex_working[MULTICURL_PROG_MUTEX]);
+    g_mutex_unlock(&mutexes[MULTICURL_PROG_MUTEX]);
 
     if (mc != CURLM_OK) {
       fprintf(stderr, "curl_multi returned %d\n", (int)mc);
@@ -198,28 +217,21 @@ unsigned short PerformMultiCurl(CURLM *mh, double size)
      Prevents data corruption through pointer passing.
   */
 
-  /* This portion of the code will remove the easy handles from the
-   * mulltihandle. */
-  while ((msg = curl_multi_info_read(mh, &msgs_left))) {
-    if (msg->msg == CURLMSG_DONE) {
-      hnd = msg->easy_handle;
-      rc = msg->data.result;
-      if (rc != CURLE_OK) {
-        fprintf(stderr, "CURL code: %d\n", msg->data.result);
-        return_value++;
-      }
-      curl_multi_remove_handle(mh, hnd);
-    } else {
-      fprintf(stderr, "error: after curl_multi_info_read(), CURLMsg=%d\n",
-              msg->msg);
-    }
+  /* We don't want to remove handles if they're already being
+     removed elsewhere. */
+  if (g_mutex_trylock(&mutexes[MULTICURL_REM_HAND_MUTEX])) {
+
+    /* Remove the easy handles from the mulltihandle. */
+    return_value = remove_handles(mh);
+
+    g_mutex_unlock(&mutexes[MULTICURL_REM_HAND_MUTEX]);
   }
 
   curl_global_cleanup();
   return return_value;
 }
 
-unsigned short PerformMultiCurl_no_prog(CURLM *mh)
+gushort PerformMultiCurl_no_prog(CURLM *mh)
 /* Take in a multi handle pointer, request data from remote server
    asynchronously. Doesn't update any gui widgets during transfer.
 
@@ -232,20 +244,16 @@ unsigned short PerformMultiCurl_no_prog(CURLM *mh)
     exit(EXIT_FAILURE);
   }
 
-  CURLMsg *msg = NULL;
-  CURL *hnd = NULL;
-  CURLcode rc = 0;
   CURLMcode mc = 0;
-  int still_running = 0;
-  int msgs_left = 0;
-  unsigned short return_value = 0;
+  gint still_running = 0;
+  gushort return_value = 0;
 
   do {
-    int numfds = 0;
+    gint numfds = 0;
 
     /* This will prevent other threads from interupting the transfer
        [they need to use the same mutex for this to work]. */
-    pthread_mutex_lock(&mutex_working[MULTICURL_NO_PROG_MUTEX]);
+    g_mutex_lock(&mutexes[MULTICURL_NO_PROG_MUTEX]);
 
     mc = curl_multi_perform(mh, &still_running);
 
@@ -256,7 +264,7 @@ unsigned short PerformMultiCurl_no_prog(CURLM *mh)
 
     /* This will allow other threads to interupt the transfer without
        causing cURL to fail [they need to use the same mutex]. */
-    pthread_mutex_unlock(&mutex_working[MULTICURL_NO_PROG_MUTEX]);
+    g_mutex_unlock(&mutexes[MULTICURL_NO_PROG_MUTEX]);
 
     if (mc != CURLM_OK) {
       fprintf(stderr, "curl_multi returned %d\n", (int)mc);
@@ -266,22 +274,8 @@ unsigned short PerformMultiCurl_no_prog(CURLM *mh)
     /* if there are still transfers, loop! */
   } while (still_running);
 
-  /* This portion of the code will remove the easy handles from the
-   * mulltihandle. */
-  while ((msg = curl_multi_info_read(mh, &msgs_left))) {
-    if (msg->msg == CURLMSG_DONE) {
-      hnd = msg->easy_handle;
-      rc = msg->data.result;
-      if (rc != CURLE_OK) {
-        fprintf(stderr, "CURL code: %d\n", msg->data.result);
-        return_value++;
-      }
-      curl_multi_remove_handle(mh, hnd);
-    } else {
-      fprintf(stderr, "error: after curl_multi_info_read(), CURLMsg=%d\n",
-              msg->msg);
-    }
-  }
+  /* Remove the easy handles from the mulltihandle. */
+  return_value = remove_handles(mh);
 
   curl_global_cleanup();
   return return_value;

@@ -1,0 +1,233 @@
+/*
+Copyright (c) 2022-2023 BostonBSD. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+    (1) Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+
+    (2) Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in
+    the documentation and/or other materials provided with the
+    distribution.
+
+    (3)The name of the author may not be used to
+    endorse or promote products derived from this software without
+    specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+*/
+#include "../include/class_types.h" /* portfolio_packet, meta */
+#include "../include/gui.h"
+#include "../include/macros.h"
+
+void AddColumnToTreeview(const gchar *col_name, const gint col_num,
+                         GtkWidget *treeview) {
+  GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(
+      col_name, renderer, "markup", col_num, NULL);
+  gtk_tree_view_column_set_resizable(column, TRUE);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
+}
+
+int TreeViewClear(GtkWidget *treeview) {
+  /* Clear the GtkTreeView. */
+  GtkTreeViewColumn *column;
+  gushort n = gtk_tree_view_get_n_columns(GTK_TREE_VIEW(treeview));
+
+  while (n) {
+    n--;
+    column = gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), n);
+    gtk_tree_view_remove_column(GTK_TREE_VIEW(treeview), column);
+  }
+
+  return 0;
+}
+
+gint SetFormattedLabel(GtkWidget *label, const gchar *fmt, const gchar *font,
+                       const gchar *text) {
+  /* Set a formatted label, can only set format strings with one string
+   * argument. */
+  PangoAttrList *attrlist = pango_attr_list_new();
+  PangoFontDescription *font_desc = pango_font_description_from_string(font);
+  PangoAttribute *attr = pango_attr_font_desc_new(font_desc);
+  pango_attr_list_insert(attrlist, attr);
+
+  gchar *markup = g_markup_printf_escaped(fmt, text);
+
+  /* gtk_label_set_markup resets the attribute list, so we need to
+     set the markup and attribute list each time this func is called.
+     gtk_label_set_markup doesn't display the font tag correctly,
+     gtk_label_set_attributes doesn't display the color correctly, so we need to
+     do both setting markup first then the attrlist. */
+  gtk_label_set_markup(GTK_LABEL(label), markup);
+  g_free(markup);
+
+  gtk_label_set_attributes(GTK_LABEL(label), attrlist);
+
+  pango_font_description_free(font_desc);
+  pango_attr_list_unref(attrlist);
+
+  return 0;
+}
+
+/* Set completion widgets for both the security and history entry boxes. */
+static GtkListStore *completion_set_store(symbol_name_map *sn_map) {
+  if (sn_map == NULL)
+    return NULL;
+  GtkListStore *store =
+      gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+  GtkTreeIter iter;
+
+  gchar item[35];
+  /* Populate the GtkListStore with the string of stock symbols in column 0,
+     stock names in column 1, and symbols & names in column 2. */
+  for (gushort i = 0; i < sn_map->size; i++) {
+    g_snprintf(item, 35, "%s - %s", sn_map->sn_container_arr[i]->symbol,
+               sn_map->sn_container_arr[i]->security_name);
+
+    gtk_list_store_append(store, &iter);
+    /* Completion is going to match off of columns 0 and 1, but display column 2
+     */
+    /* Completion matches based off of the symbol or the company name, inserts
+     * the symbol, displays both */
+    gtk_list_store_set(store, &iter, 0, sn_map->sn_container_arr[i]->symbol, 1,
+                       sn_map->sn_container_arr[i]->security_name, 2, item, -1);
+  }
+  return store;
+}
+
+static gboolean completion_match(GtkEntryCompletion *completion,
+                                 const gchar *key, GtkTreeIter *iter,
+                                 gpointer data) {
+  UNUSED(data)
+
+  GtkTreeModel *model = gtk_entry_completion_get_model(completion);
+  gchar *item_symb, *item_name;
+  /* We are finding matches based off of column 0 and 1, however,
+     we display column 2 in our 3 column model */
+  gtk_tree_model_get(model, iter, 0, &item_symb, 1, &item_name, -1);
+  gboolean ans = FALSE, symbol_match = TRUE, name_match = TRUE;
+
+  gushort N = 0;
+  while (key[N]) {
+    /* Only compare new key char if prev char was a match. */
+    if (symbol_match)
+      symbol_match = (g_ascii_tolower(key[N]) == g_ascii_tolower(item_symb[N]));
+    if (name_match)
+      name_match = (g_ascii_tolower(key[N]) == g_ascii_tolower(item_name[N]));
+    /* Break the loop if both the symbol and the name are not a match. */
+    if ((symbol_match == FALSE) && (name_match == FALSE))
+      break;
+    N++;
+  }
+
+  /* if either the symbol or the name match the key value, return TRUE. */
+  ans = symbol_match || name_match;
+  g_free(item_symb);
+  g_free(item_name);
+
+  return ans;
+}
+
+gint CompletionSet(gpointer data, guintptr gui_completion_sig) {
+  if (data == NULL)
+    return 0;
+
+  GtkWidget *EntryBox = NULL;
+  if (gui_completion_sig == GUI_COMPLETION_HISTORY) {
+    EntryBox = GetWidget("HistorySymbolEntryBox");
+  } else {
+    EntryBox = GetWidget("SecuritySymbolEntryBox");
+  }
+
+  GtkEntryCompletion *completion = gtk_entry_completion_new();
+  GtkListStore *store = completion_set_store((symbol_name_map *)data);
+  gtk_entry_completion_set_model(completion, GTK_TREE_MODEL(store));
+  g_object_unref(G_OBJECT(store));
+
+  gtk_entry_completion_set_match_func(
+      completion, (GtkEntryCompletionMatchFunc)completion_match, NULL, NULL);
+
+  /* Set entrybox completion widget. */
+  gtk_entry_set_completion(GTK_ENTRY(EntryBox), completion);
+
+  /* The text column to display is column 2 */
+  gtk_entry_completion_set_text_column(completion, 2);
+  gtk_entry_completion_set_inline_completion(completion, FALSE);
+  gtk_entry_completion_set_inline_selection(completion, TRUE);
+  gtk_entry_completion_set_popup_completion(completion, TRUE);
+  /* Must type at least two characters for completion to make suggestions,
+     reduces the number of results for single character keys. */
+  gtk_entry_completion_set_minimum_key_length(completion, 2);
+
+  /* Connect GtkEntryCompletion signals to callbacks */
+
+  /* The text column to insert is column 0
+     We use a callback on the 'match-selected' signal and insert the text from
+     column 0 instead of column 2 We use a callback on the 'cursor-on-match'
+     signal and insert the text from column 0 instead of column 2
+  */
+  g_signal_connect(G_OBJECT(completion), "match-selected",
+                   G_CALLBACK(GUICallback_select_comp),
+                   (gpointer)gui_completion_sig);
+  g_signal_connect(G_OBJECT(completion), "cursor-on-match",
+                   G_CALLBACK(GUICallback_cursor_comp),
+                   (gpointer)gui_completion_sig);
+
+  g_object_unref(G_OBJECT(completion));
+
+  return 0;
+}
+
+void StartCompletionThread(gpointer data) {
+  GThread *g_thread_id;
+
+  /* Set up the EntryBox Completion Widgets
+     This will populate the symbol to name mapping,
+     from an sqlite Db when the application loads.
+
+     The lists of symbol to name mappings need to be
+     downloaded by the user [in the preferences window]
+     if the db isn't already populated. */
+  g_thread_id = g_thread_new(NULL, GUIThread_completion_set, data);
+  g_thread_unref(g_thread_id);
+}
+
+void StartClockThread(gpointer data)
+/* Set the initial display of the clocks.
+   We don't want the revealer animation on startup. */
+{
+  portfolio_packet *pkg = (portfolio_packet *)data;
+  meta *D = pkg->GetMetaClass();
+
+  GtkWidget *revealer = GetWidget("MainClockRevealer");
+  if (pkg->IsClockDisplayed()) {
+    /* Start the clock threads. */
+    /* gdk_threads_add_idle (in these threads) creates a pending event for the
+       gtk_main loop. When the gtk_main loop starts the event will be processed.
+    */
+    g_cond_init(&D->gthread_clocks_cond);
+    D->gthread_clocks_id = g_thread_new(NULL, GUIThread_clock, pkg);
+  }
+
+  /* Revealer animation set to 0 milliseconds */
+  gtk_revealer_set_transition_duration(GTK_REVEALER(revealer), 0);
+  /* Show/Hide the clocks */
+  gtk_revealer_set_reveal_child(GTK_REVEALER(revealer),
+                                pkg->IsClockDisplayed());
+  /* Revealer animation set to 300 milliseconds */
+  gtk_revealer_set_transition_duration(GTK_REVEALER(revealer), 300);
+}

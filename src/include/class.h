@@ -41,9 +41,9 @@ meta *ClassInitMeta();
 void ClassInitPortfolioPacket();
 
 /* Class destruct prototypes. */
-void ClassDestructEquityFolder(equity_folder *);
-void ClassDestructMetal(metal *);
-void ClassDestructMeta(meta *);
-void ClassDestructPortfolioPacket(portfolio_packet *);
+void ClassDestructEquityFolder(equity_folder *F);
+void ClassDestructMetal(metal *metal_handle);
+void ClassDestructMeta(meta *meta_class);
+void ClassDestructPortfolioPacket(portfolio_packet *pkg);
 
 #endif /* CLASS_HEADER_H */

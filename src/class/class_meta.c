@@ -30,16 +30,8 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <stdlib.h>
-#include <string.h>
-
-#include <pwd.h>
-#include <unistd.h>
-
 #include "../include/class_types.h" /* Includes portfolio_packet, metal, meta, 
                                              and equity_folder class types */
-
-#include "../include/csv.h"
 #include "../include/macros.h"
 #include "../include/multicurl.h"
 #include "../include/mutex.h"
@@ -59,48 +51,48 @@ static void ToStringsPortfolio() {
 
   /* The cash value. */
   DoubleToFormattedStrPango(&Met->cash_mrkd_ch, Met->cash_f,
-                            Met->decimal_places_shrt, MON_STR, BLACK);
+                            Met->decimal_places_guint8, MON_STR, BLACK);
 
   /* The total portfolio value. */
   DoubleToFormattedStrPango(&Met->portfolio_port_value_mrkd_ch,
                             Met->portfolio_port_value_f,
-                            Met->decimal_places_shrt, MON_STR, BLACK);
+                            Met->decimal_places_guint8, MON_STR, BLACK);
 
   if (Met->portfolio_port_value_chg_f > 0) {
 
     /* The change in total portfolio value. */
     DoubleToFormattedStrPango(&Met->portfolio_port_value_chg_mrkd_ch,
                               Met->portfolio_port_value_chg_f,
-                              Met->decimal_places_shrt, MON_STR, GREEN);
+                              Met->decimal_places_guint8, MON_STR, GREEN);
 
     /* The change in total portfolio value as a percentage. */
     DoubleToFormattedStrPango(&Met->portfolio_port_value_p_chg_mrkd_ch,
                               Met->portfolio_port_value_p_chg_f,
-                              Met->decimal_places_shrt, PER_STR, GREEN);
+                              Met->decimal_places_guint8, PER_STR, GREEN);
 
   } else if (Met->portfolio_port_value_chg_f < 0) {
 
     DoubleToFormattedStrPango(&Met->portfolio_port_value_chg_mrkd_ch,
                               Met->portfolio_port_value_chg_f,
-                              Met->decimal_places_shrt, MON_STR, RED);
+                              Met->decimal_places_guint8, MON_STR, RED);
 
     DoubleToFormattedStrPango(&Met->portfolio_port_value_p_chg_mrkd_ch,
                               Met->portfolio_port_value_p_chg_f,
-                              Met->decimal_places_shrt, PER_STR, RED);
+                              Met->decimal_places_guint8, PER_STR, RED);
 
   } else {
 
     DoubleToFormattedStrPango(&Met->portfolio_port_value_chg_mrkd_ch,
                               Met->portfolio_port_value_chg_f,
-                              Met->decimal_places_shrt, MON_STR, BLACK);
+                              Met->decimal_places_guint8, MON_STR, BLACK);
 
     DoubleToFormattedStrPango(&Met->portfolio_port_value_p_chg_mrkd_ch,
                               Met->portfolio_port_value_p_chg_f,
-                              Met->decimal_places_shrt, PER_STR, BLACK);
+                              Met->decimal_places_guint8, PER_STR, BLACK);
   }
 }
 
-static void CalculatePortfolio(void *data) {
+static void CalculatePortfolio(gpointer data) {
   portfolio_packet *pkg = (portfolio_packet *)data;
   meta *Met = MetaClassObject;
   metal *M = pkg->GetMetalClass();
@@ -117,7 +109,7 @@ static void CalculatePortfolio(void *data) {
       F->stock_port_value_chg_f + M->bullion_port_value_chg_f;
 
   /* The change in total portfolio value as a percentage. */
-  double prev_total =
+  gdouble prev_total =
       Met->portfolio_port_value_f - Met->portfolio_port_value_chg_f;
   Met->portfolio_port_value_p_chg_f =
       CalcGain(Met->portfolio_port_value_f, prev_total);
@@ -127,36 +119,36 @@ static void StopHistoryCurl() {
   meta *Met = MetaClassObject;
 
   curl_multi_wakeup(Met->multicurl_history_hnd);
-  pthread_mutex_lock(&mutex_working[MULTICURL_NO_PROG_MUTEX]);
+  g_mutex_lock(&mutexes[MULTICURL_NO_PROG_MUTEX]);
 
   curl_multi_remove_handle(Met->multicurl_history_hnd, Met->history_hnd);
 
-  pthread_mutex_unlock(&mutex_working[MULTICURL_NO_PROG_MUTEX]);
+  g_mutex_unlock(&mutexes[MULTICURL_NO_PROG_MUTEX]);
 }
 
 static void StopSNMapCurl() {
   meta *Met = MetaClassObject;
 
   curl_multi_wakeup(Met->multicurl_cmpltn_hnd);
-  pthread_mutex_lock(&mutex_working[MULTICURL_NO_PROG_MUTEX]);
+  g_mutex_lock(&mutexes[MULTICURL_NO_PROG_MUTEX]);
 
   curl_multi_remove_handle(Met->multicurl_cmpltn_hnd,
                            Met->NASDAQ_completion_hnd);
   curl_multi_remove_handle(Met->multicurl_cmpltn_hnd, Met->NYSE_completion_hnd);
 
-  pthread_mutex_unlock(&mutex_working[MULTICURL_NO_PROG_MUTEX]);
+  g_mutex_unlock(&mutexes[MULTICURL_NO_PROG_MUTEX]);
 }
 
-static int SetUpCurlIndicesData(void *data) {
+static gint SetUpCurlIndicesData(gpointer data) {
   portfolio_packet *pkg = (portfolio_packet *)data;
   meta *Met = MetaClassObject;
-  char *dow_url_ch = NULL, *nasdaq_url_ch = NULL, *sp_url_ch = NULL,
-       *bitcoin_url_ch = NULL;
+  gchar *dow_url_ch = NULL, *nasdaq_url_ch = NULL, *sp_url_ch = NULL,
+        *bitcoin_url_ch = NULL;
 
   /* The start time needs to be a few days before the current time, so minus
      seven days This compensates for weekends and holidays and ensures enough
      data. */
-  unsigned int period = (86400 * 7);
+  guint period = (86400 * 7);
   GetYahooUrl(&dow_url_ch, "^dji", period);
   GetYahooUrl(&nasdaq_url_ch, "^ixic", period);
   GetYahooUrl(&sp_url_ch, "^gspc", period);
@@ -171,103 +163,77 @@ static int SetUpCurlIndicesData(void *data) {
   SetUpCurlHandle(Met->crypto_bitcoin_hnd, pkg->multicurl_main_hnd,
                   bitcoin_url_ch, &Met->CRYPTO_BITCOIN_CURLDATA);
 
-  free(dow_url_ch);
-  free(nasdaq_url_ch);
-  free(sp_url_ch);
-  free(bitcoin_url_ch);
+  g_free(dow_url_ch);
+  g_free(nasdaq_url_ch);
+  g_free(sp_url_ch);
+  g_free(bitcoin_url_ch);
 
   return 0;
 }
 
-static void extract_index_data(char *index, MemType *Data) {
+static void extract_index_data_reset(const gchar *index, MemType *Data) {
+  meta *Met = MetaClassObject;
+  if (g_strcmp0(index, "dow") == 0) {
+    Met->index_dow_value_f = 0.0f;
+    Met->index_dow_value_chg_f = 0.0f;
+    Met->index_dow_value_p_chg_f = 0.0f;
+  } else if (g_strcmp0(index, "nasdaq") == 0) {
+    Met->index_nasdaq_value_f = 0.0f;
+    Met->index_nasdaq_value_chg_f = 0.0f;
+    Met->index_nasdaq_value_p_chg_f = 0.0f;
+  } else if (g_strcmp0(index, "sp") == 0) {
+    Met->index_sp_value_f = 0.0f;
+    Met->index_sp_value_chg_f = 0.0f;
+    Met->index_sp_value_p_chg_f = 0.0f;
+  } else if (g_strcmp0(index, "bitcoin") == 0) {
+    Met->crypto_bitcoin_value_f = 0.0f;
+    Met->crypto_bitcoin_value_chg_f = 0.0f;
+    Met->crypto_bitcoin_value_p_chg_f = 0.0f;
+  }
+  FreeMemtype(Data);
+}
+
+static void extract_index_data(const gchar *index, MemType *Data) {
   meta *Met = MetaClassObject;
 
   if (Data->memory == NULL) {
-    if (strcmp(index, "dow") == 0) {
-      Met->index_dow_value_f = 0.0f;
-      Met->index_dow_value_chg_f = 0.0f;
-      Met->index_dow_value_p_chg_f = 0.0f;
-    }
-
-    if (strcmp(index, "nasdaq") == 0) {
-      Met->index_nasdaq_value_f = 0.0f;
-      Met->index_nasdaq_value_chg_f = 0.0f;
-      Met->index_nasdaq_value_p_chg_f = 0.0f;
-    }
-
-    if (strcmp(index, "sp") == 0) {
-      Met->index_sp_value_f = 0.0f;
-      Met->index_sp_value_chg_f = 0.0f;
-      Met->index_sp_value_p_chg_f = 0.0f;
-    }
-
-    if (strcmp(index, "bitcoin") == 0) {
-      Met->crypto_bitcoin_value_f = 0.0f;
-      Met->crypto_bitcoin_value_chg_f = 0.0f;
-      Met->crypto_bitcoin_value_p_chg_f = 0.0f;
-    }
+    extract_index_data_reset(index, Data);
     return;
   }
 
   /* Convert a String to a File Pointer Stream for Reading */
-  FILE *fp = fmemopen((void *)Data->memory, strlen(Data->memory) + 1, "r");
+  FILE *fp = fmemopen((gpointer)Data->memory,
+                      g_utf8_strlen(Data->memory, -1) + 1, "r");
 
   if (fp == NULL) {
-    if (strcmp(index, "dow") == 0) {
-      Met->index_dow_value_f = 0.0f;
-      Met->index_dow_value_chg_f = 0.0f;
-      Met->index_dow_value_p_chg_f = 0.0f;
-    }
-
-    if (strcmp(index, "nasdaq") == 0) {
-      Met->index_nasdaq_value_f = 0.0f;
-      Met->index_nasdaq_value_chg_f = 0.0f;
-      Met->index_nasdaq_value_p_chg_f = 0.0f;
-    }
-
-    if (strcmp(index, "sp") == 0) {
-      Met->index_sp_value_f = 0.0f;
-      Met->index_sp_value_chg_f = 0.0f;
-      Met->index_sp_value_p_chg_f = 0.0f;
-    }
-
-    if (strcmp(index, "bitcoin") == 0) {
-      Met->crypto_bitcoin_value_f = 0.0f;
-      Met->crypto_bitcoin_value_chg_f = 0.0f;
-      Met->crypto_bitcoin_value_p_chg_f = 0.0f;
-    }
-
-    FreeMemtype(Data);
+    extract_index_data_reset(index, Data);
     return;
   }
 
   double prev_closing = 0.0f, cur_price = 0.0f;
   char *line = ExtractYahooData(fp, &prev_closing, &cur_price);
+  if (line)
+    g_free(line);
 
-  if (strcmp(index, "dow") == 0) {
+  if (g_strcmp0(index, "dow") == 0) {
     Met->index_dow_value_f = cur_price;
     Met->index_dow_value_chg_f = cur_price - prev_closing;
     Met->index_dow_value_p_chg_f = CalcGain(cur_price, prev_closing);
-  }
-  if (strcmp(index, "nasdaq") == 0) {
+  } else if (g_strcmp0(index, "nasdaq") == 0) {
     Met->index_nasdaq_value_f = cur_price;
     Met->index_nasdaq_value_chg_f = cur_price - prev_closing;
     Met->index_nasdaq_value_p_chg_f = CalcGain(cur_price, prev_closing);
-  }
-  if (strcmp(index, "sp") == 0) {
+  } else if (g_strcmp0(index, "sp") == 0) {
     Met->index_sp_value_f = cur_price;
     Met->index_sp_value_chg_f = cur_price - prev_closing;
     Met->index_sp_value_p_chg_f = CalcGain(cur_price, prev_closing);
-  }
-
-  if (strcmp(index, "bitcoin") == 0) {
+  } else if (g_strcmp0(index, "bitcoin") == 0) {
     Met->crypto_bitcoin_value_f = cur_price;
     Met->crypto_bitcoin_value_chg_f = cur_price - prev_closing;
     Met->crypto_bitcoin_value_p_chg_f = CalcGain(cur_price, prev_closing);
   }
 
   fclose(fp);
-  free(line);
   FreeMemtype(Data);
 }
 
@@ -419,56 +385,56 @@ static void format_default_headings_pango(default_heading *def_h_mkd) {
 }
 
 static void free_primary_headings(primary_heading *pri_h_mkd) {
-  free(pri_h_mkd->bullion);
-  free(pri_h_mkd->metal);
-  free(pri_h_mkd->ounces);
+  g_free(pri_h_mkd->bullion);
+  g_free(pri_h_mkd->metal);
+  g_free(pri_h_mkd->ounces);
 
-  free(pri_h_mkd->premium);
-  free(pri_h_mkd->high);
-  free(pri_h_mkd->low);
+  g_free(pri_h_mkd->premium);
+  g_free(pri_h_mkd->high);
+  g_free(pri_h_mkd->low);
 
-  free(pri_h_mkd->prev_closing);
-  free(pri_h_mkd->chg);
-  free(pri_h_mkd->gain_sym);
+  g_free(pri_h_mkd->prev_closing);
+  g_free(pri_h_mkd->chg);
+  g_free(pri_h_mkd->gain_sym);
 
-  free(pri_h_mkd->total);
-  free(pri_h_mkd->gain_per);
-  free(pri_h_mkd->gold);
+  g_free(pri_h_mkd->total);
+  g_free(pri_h_mkd->gain_per);
+  g_free(pri_h_mkd->gold);
 
-  free(pri_h_mkd->silver);
-  free(pri_h_mkd->platinum);
-  free(pri_h_mkd->palladium);
+  g_free(pri_h_mkd->silver);
+  g_free(pri_h_mkd->platinum);
+  g_free(pri_h_mkd->palladium);
 
-  free(pri_h_mkd->equity);
-  free(pri_h_mkd->symbol);
-  free(pri_h_mkd->shares);
+  g_free(pri_h_mkd->equity);
+  g_free(pri_h_mkd->symbol);
+  g_free(pri_h_mkd->shares);
 
-  free(pri_h_mkd->price);
-  free(pri_h_mkd->opening);
-  free(pri_h_mkd->asset);
+  g_free(pri_h_mkd->price);
+  g_free(pri_h_mkd->opening);
+  g_free(pri_h_mkd->asset);
 
-  free(pri_h_mkd->value);
-  free(pri_h_mkd->cash);
-  free(pri_h_mkd->portfolio);
+  g_free(pri_h_mkd->value);
+  g_free(pri_h_mkd->cash);
+  g_free(pri_h_mkd->portfolio);
 
-  free(pri_h_mkd->no_assets);
+  g_free(pri_h_mkd->no_assets);
 }
 
 static void free_default_headings(default_heading *def_h_mkd) {
-  free(def_h_mkd->bullion);
-  free(def_h_mkd->metal);
-  free(def_h_mkd->ounces);
+  g_free(def_h_mkd->bullion);
+  g_free(def_h_mkd->metal);
+  g_free(def_h_mkd->ounces);
 
-  free(def_h_mkd->premium);
-  free(def_h_mkd->gold);
-  free(def_h_mkd->silver);
+  g_free(def_h_mkd->premium);
+  g_free(def_h_mkd->gold);
+  g_free(def_h_mkd->silver);
 
-  free(def_h_mkd->platinum);
-  free(def_h_mkd->palladium);
-  free(def_h_mkd->equity);
+  g_free(def_h_mkd->platinum);
+  g_free(def_h_mkd->palladium);
+  g_free(def_h_mkd->equity);
 
-  free(def_h_mkd->symbol);
-  free(def_h_mkd->shares);
+  g_free(def_h_mkd->symbol);
+  g_free(def_h_mkd->shares);
 }
 
 static void ToStringsHeadings() {
@@ -480,7 +446,7 @@ static void ToStringsHeadings() {
 /* Class Init Functions */
 meta *ClassInitMeta() {
   /* Allocate Memory For A New Class Object */
-  meta *new_class = (meta *)malloc(sizeof(*new_class));
+  meta *new_class = (meta *)g_malloc(sizeof(*new_class));
 
   /* Initialize Variables */
   new_class->sym_map = NULL;
@@ -489,10 +455,10 @@ meta *ClassInitMeta() {
   /* Initialize the main and rsi window size and locations to zero */
   new_class->window_struct = (window_data){0};
 
-  new_class->stock_url_ch = strdup(FINNHUB_URL);
-  new_class->curl_key_ch = strdup(FINNHUB_URL_TOKEN);
-  new_class->Nasdaq_Symbol_url_ch = strdup(NASDAQ_SYMBOL_URL);
-  new_class->NYSE_Symbol_url_ch = strdup(NYSE_SYMBOL_URL);
+  new_class->stock_url_ch = g_strdup(FINNHUB_URL);
+  new_class->curl_key_ch = g_strdup(FINNHUB_URL_TOKEN);
+  new_class->Nasdaq_Symbol_url_ch = g_strdup(NASDAQ_SYMBOL_URL);
+  new_class->NYSE_Symbol_url_ch = g_strdup(NYSE_SYMBOL_URL);
 
   new_class->cash_mrkd_ch = NULL;
   new_class->portfolio_port_value_mrkd_ch = NULL;
@@ -516,8 +482,17 @@ meta *ClassInitMeta() {
   new_class->crypto_bitcoin_value_p_chg_ch = NULL;
 
   /* Set up the main treeview font */
-  new_class->main_font_ch = strdup(MAIN_FONT);
-  SetFont(new_class->main_font_ch);
+  new_class->font_ch = g_strdup(MAIN_FONT);
+  SetFont(new_class->font_ch);
+
+  /* Set The User's Config Directory */
+  new_class->config_dir_ch = g_strdup(g_get_user_config_dir());
+
+  /* Append the sqlite db file paths to the end of the config directory path. */
+  new_class->sqlite_db_path_ch =
+      g_strconcat(new_class->config_dir_ch, DB_FILE, NULL);
+  new_class->sqlite_symbol_name_db_path_ch =
+      g_strconcat(new_class->config_dir_ch, SN_DB_FILE, NULL);
 
   /* The pango funcs require each dest string to point to allocated space
                 or NULL, they use realloc ( and possibly malloc if NULL ). */
@@ -531,15 +506,16 @@ meta *ClassInitMeta() {
   new_class->updates_per_min_f = 6.0f;
   new_class->updates_hours_f = 1.0f;
 
-  new_class->decimal_places_shrt = 2;
+  new_class->decimal_places_guint8 = 2;
 
-  new_class->fetching_data_bool = false;
-  new_class->holiday_bool = false;
-  new_class->multicurl_cancel_bool = false;
-  new_class->multicurl_cancel_main_bool = false;
-  new_class->index_bar_revealed_bool = true;
-  new_class->clocks_displayed_bool = true;
-  new_class->main_win_default_view_bool = true;
+  new_class->fetching_data_bool = FALSE;
+  new_class->market_closed_bool =
+      GetTimeData(NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+  new_class->multicurl_cancel_bool = FALSE;
+  new_class->multicurl_cancel_main_bool = FALSE;
+  new_class->index_bar_revealed_bool = TRUE;
+  new_class->clocks_displayed_bool = TRUE;
+  new_class->main_win_default_view_bool = TRUE;
 
   new_class->history_hnd = curl_easy_init();
   new_class->NASDAQ_completion_hnd = curl_easy_init();
@@ -553,6 +529,8 @@ meta *ClassInitMeta() {
   new_class->multicurl_cmpltn_hnd = curl_multi_init();
   new_class->multicurl_history_hnd = curl_multi_init();
 
+  g_cond_init(&new_class->gthread_main_fetch_cond);
+
   new_class->INDEX_DOW_CURLDATA.memory = NULL;
   new_class->INDEX_DOW_CURLDATA.size = 0;
   new_class->INDEX_NASDAQ_CURLDATA.memory = NULL;
@@ -561,35 +539,6 @@ meta *ClassInitMeta() {
   new_class->INDEX_SP_CURLDATA.size = 0;
   new_class->CRYPTO_BITCOIN_CURLDATA.memory = NULL;
   new_class->CRYPTO_BITCOIN_CURLDATA.size = 0;
-
-  new_class->thread_id_clock = 0;
-  new_class->thread_id_closing_time = 0;
-  new_class->thread_id_main_fetch_data = 0;
-
-  /* Set The User's Home Directory */
-  /* We need to get the path to the User's home directory: */
-  /* Get User ID (need to #include<pwd.h> and #include<unistd.h> for this) */
-  uid_t uid = getuid();
-
-  /* Get User Account Information For This ID */
-  struct passwd *pw = getpwuid(uid);
-
-  if (pw == NULL) {
-    printf("Gathering User Account Info Failed\n");
-    exit(EXIT_FAILURE);
-  }
-
-  new_class->home_dir_ch = strdup(pw->pw_dir);
-
-  /* Append the sqlite db file paths to the end of the home directory path. */
-  size_t len = snprintf(NULL, 0, "%s%s", pw->pw_dir, DB_FILE) + 1;
-  new_class->sqlite_db_path_ch = (char *)malloc(len);
-  snprintf(new_class->sqlite_db_path_ch, len, "%s%s", pw->pw_dir, DB_FILE);
-
-  len = snprintf(NULL, 0, "%s%s", pw->pw_dir, SN_DB_FILE) + 1;
-  new_class->sqlite_symbol_name_db_path_ch = (char *)malloc(len);
-  snprintf(new_class->sqlite_symbol_name_db_path_ch, len, "%s%s", pw->pw_dir,
-           SN_DB_FILE);
 
   /* Connect Function Pointers To Function Definitions */
   new_class->ToStringsPortfolio = ToStringsPortfolio;
@@ -615,79 +564,79 @@ void ClassDestructMeta(meta *meta_class) {
   free_default_headings(&meta_class->def_h_mkd);
 
   if (meta_class->rght_clk_data.type)
-    free(meta_class->rght_clk_data.type);
+    g_free(meta_class->rght_clk_data.type);
   if (meta_class->rght_clk_data.symbol)
-    free(meta_class->rght_clk_data.symbol);
+    g_free(meta_class->rght_clk_data.symbol);
   /* rght_clk_data is a variable and not a pointer, do not free.
      fyi; both variables and pointers are in heap memory, the variables are
      allocated with the struct pointer and freed with the struct pointer. */
 
   /* Free the symbol to security name mapping array. */
-  pthread_mutex_lock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
+  g_mutex_lock(&mutexes[SYMBOL_NAME_MAP_MUTEX]);
 
   if (meta_class->sym_map) {
     SNMapDestruct(meta_class->sym_map);
-    free(meta_class->sym_map);
+    g_free(meta_class->sym_map);
     meta_class->sym_map = NULL;
   }
 
-  pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
+  g_mutex_unlock(&mutexes[SYMBOL_NAME_MAP_MUTEX]);
 
   if (meta_class->stock_url_ch)
-    free(meta_class->stock_url_ch);
+    g_free(meta_class->stock_url_ch);
   if (meta_class->curl_key_ch)
-    free(meta_class->curl_key_ch);
+    g_free(meta_class->curl_key_ch);
   if (meta_class->Nasdaq_Symbol_url_ch)
-    free(meta_class->Nasdaq_Symbol_url_ch);
+    g_free(meta_class->Nasdaq_Symbol_url_ch);
   if (meta_class->NYSE_Symbol_url_ch)
-    free(meta_class->NYSE_Symbol_url_ch);
+    g_free(meta_class->NYSE_Symbol_url_ch);
 
   if (meta_class->cash_mrkd_ch)
-    free(meta_class->cash_mrkd_ch);
+    g_free(meta_class->cash_mrkd_ch);
   if (meta_class->portfolio_port_value_mrkd_ch)
-    free(meta_class->portfolio_port_value_mrkd_ch);
+    g_free(meta_class->portfolio_port_value_mrkd_ch);
   if (meta_class->portfolio_port_value_chg_mrkd_ch)
-    free(meta_class->portfolio_port_value_chg_mrkd_ch);
+    g_free(meta_class->portfolio_port_value_chg_mrkd_ch);
   if (meta_class->portfolio_port_value_p_chg_mrkd_ch)
-    free(meta_class->portfolio_port_value_p_chg_mrkd_ch);
+    g_free(meta_class->portfolio_port_value_p_chg_mrkd_ch);
 
   if (meta_class->index_dow_value_ch)
-    free(meta_class->index_dow_value_ch);
+    g_free(meta_class->index_dow_value_ch);
   if (meta_class->index_dow_value_chg_ch)
-    free(meta_class->index_dow_value_chg_ch);
+    g_free(meta_class->index_dow_value_chg_ch);
   if (meta_class->index_dow_value_p_chg_ch)
-    free(meta_class->index_dow_value_p_chg_ch);
+    g_free(meta_class->index_dow_value_p_chg_ch);
 
   if (meta_class->index_nasdaq_value_ch)
-    free(meta_class->index_nasdaq_value_ch);
+    g_free(meta_class->index_nasdaq_value_ch);
   if (meta_class->index_nasdaq_value_chg_ch)
-    free(meta_class->index_nasdaq_value_chg_ch);
+    g_free(meta_class->index_nasdaq_value_chg_ch);
   if (meta_class->index_nasdaq_value_p_chg_ch)
-    free(meta_class->index_nasdaq_value_p_chg_ch);
+    g_free(meta_class->index_nasdaq_value_p_chg_ch);
 
   if (meta_class->index_sp_value_ch)
-    free(meta_class->index_sp_value_ch);
+    g_free(meta_class->index_sp_value_ch);
   if (meta_class->index_sp_value_chg_ch)
-    free(meta_class->index_sp_value_chg_ch);
+    g_free(meta_class->index_sp_value_chg_ch);
   if (meta_class->index_sp_value_p_chg_ch)
-    free(meta_class->index_sp_value_p_chg_ch);
+    g_free(meta_class->index_sp_value_p_chg_ch);
 
   if (meta_class->crypto_bitcoin_value_ch)
-    free(meta_class->crypto_bitcoin_value_ch);
+    g_free(meta_class->crypto_bitcoin_value_ch);
   if (meta_class->crypto_bitcoin_value_chg_ch)
-    free(meta_class->crypto_bitcoin_value_chg_ch);
+    g_free(meta_class->crypto_bitcoin_value_chg_ch);
   if (meta_class->crypto_bitcoin_value_p_chg_ch)
-    free(meta_class->crypto_bitcoin_value_p_chg_ch);
+    g_free(meta_class->crypto_bitcoin_value_p_chg_ch);
 
-  if (meta_class->main_font_ch)
-    free(meta_class->main_font_ch);
+  if (meta_class->font_ch)
+    g_free(meta_class->font_ch);
 
-  if (meta_class->home_dir_ch)
-    free(meta_class->home_dir_ch);
+  if (meta_class->config_dir_ch)
+    g_free(meta_class->config_dir_ch);
   if (meta_class->sqlite_db_path_ch)
-    free(meta_class->sqlite_db_path_ch);
+    g_free(meta_class->sqlite_db_path_ch);
   if (meta_class->sqlite_symbol_name_db_path_ch)
-    free(meta_class->sqlite_symbol_name_db_path_ch);
+    g_free(meta_class->sqlite_symbol_name_db_path_ch);
 
   if (meta_class->NASDAQ_completion_hnd)
     curl_easy_cleanup(meta_class->NASDAQ_completion_hnd);
@@ -715,9 +664,11 @@ void ClassDestructMeta(meta *meta_class) {
   FreeMemtype(&meta_class->INDEX_SP_CURLDATA);
   FreeMemtype(&meta_class->CRYPTO_BITCOIN_CURLDATA);
 
+  g_cond_clear(&meta_class->gthread_main_fetch_cond);
+
   /* Free Memory From Class Object */
   if (meta_class) {
-    free(meta_class);
+    g_free(meta_class);
     meta_class = NULL;
   }
 }

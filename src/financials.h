@@ -33,13 +33,11 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef FINANCIALS_HEADER_H
 #define FINANCIALS_HEADER_H
 
-#include "include/mutex.h" /* pthread_mutex_t mutex_working[ MUTEX_NUMBER ], pthread_mutex_init (), 
-                                       pthread_mutex_destroy () */
 #include "include/class.h"   /* ClassDestructPortfolioPacket () and 
                                        ClassInitPortfolioPacket () functions */
 #include "include/config.h"  /* ReadConfig () */
 #include "include/globals.h" /* portfolio_packet *packet */
 #include "include/gui.h"     /* GuiStart () */
-#include "include/macros.h"
+#include "include/mutex.h"   /* GMutex mutexes[ MUTEX_NUMBER ] */
 
 #endif /* FINANCIALS_HEADER_H */

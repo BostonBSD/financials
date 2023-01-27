@@ -33,14 +33,15 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef MULTICURL_TYPES_HEADER_H
 #define MULTICURL_TYPES_HEADER_H
 
+#include <glib.h> 
 #include <curl/curl.h> /* CURL, CURLM */
 
 typedef struct MemType MemType;
 
 /* A data structure used to hold the result of the cURL request. */
 struct MemType {
-  size_t size;
-  char *memory;
+  gsize size;
+  gchar *memory;
 };
 
 #endif /* MULTICURL_TYPES_HEADER_H */

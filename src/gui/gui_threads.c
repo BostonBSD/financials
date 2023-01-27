@@ -31,48 +31,260 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 #include "../include/gui.h" /* Gtk header, types: symbol_name_map, cb_signal, etc */
 #include "../include/multicurl.h" /* FreeMemtype() */
-#include "../include/mutex.h"     /* pthread_mutex_t mutex_working */
+#include "../include/mutex.h"     /* GMutex mutexes */
 #include "../include/workfuncs.h" /* includes class_types.h [portfolio_packet, meta, etc] */
 
-static void api_ok_thd_cleanup(void *data) {
-  portfolio_packet *pkg = (portfolio_packet *)data;
+static gboolean cond_sleep(GCond *cond_var, GMutex *mutex, gint64 wait_time) {
+  g_mutex_lock(mutex);
+  wait_time += g_get_monotonic_time();
+  /* Sleep */
+  if (g_cond_wait_until(cond_var, mutex, wait_time)) {
+    /* if cond signaled */
+    g_mutex_unlock(mutex);
+    return TRUE;
+  }
 
-  pthread_mutex_unlock(&mutex_working[SQLITE_MUTEX]);
-  pthread_mutex_unlock(&mutex_working[FETCH_DATA_MUTEX]);
-  pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
-
-  gdk_threads_add_idle(APIShowHide, pkg);
+  g_mutex_unlock(mutex);
+  return FALSE;
 }
 
-void *GUIThreadHandler_api_ok(void *data) {
-  pthread_cleanup_push(api_ok_thd_cleanup, data);
-
-  portfolio_packet *pkg = (portfolio_packet *)data;
-
-  pthread_mutex_lock(&mutex_working[FETCH_DATA_MUTEX]);
-
-  APIOk(pkg);
-
-  pthread_cleanup_pop(1);
-  pthread_exit(NULL);
+static void cancel_thread(GCond *cond_var, GMutex *mutex) {
+  /* Signal thread to exit. */
+  g_mutex_lock(mutex);
+  g_cond_signal(cond_var);
+  g_mutex_unlock(mutex);
 }
 
-static void cash_ok_thd_cleanup(void *data) {
-  portfolio_packet *pkg = (portfolio_packet *)data;
-
-  pthread_mutex_unlock(&mutex_working[SQLITE_MUTEX]);
-  pthread_mutex_unlock(&mutex_working[CLASS_CALCULATE_MUTEX]);
-  pthread_mutex_unlock(&mutex_working[CLASS_TOSTRINGS_MUTEX]);
-
-  gdk_threads_add_idle(CashShowHide, pkg);
+static gint64 main_fetch_iter(portfolio_packet *pkg) {
+  /* The number of microseconds between data fetch operations. */
+  if (pkg->GetUpdatesPerMinute() <= 0.0f) {
+    return 0.0f;
+  } else {
+    return (gint64)(60.0f / pkg->GetUpdatesPerMinute()) * G_TIME_SPAN_SECOND;
+  }
 }
 
-void *GUIThreadHandler_cash_ok(void *data) {
-  pthread_cleanup_push(cash_ok_thd_cleanup, data);
+static gboolean main_fetch_sleep_init(gint64 start_curl,
+                                      portfolio_packet *pkg) {
+  meta *D = pkg->GetMetaClass();
+  gint64 micro_sec_per_iter = main_fetch_iter(pkg);
+  gint64 wait_time;
 
+  /* Find out how long cURL processing took. */
+  gint64 curl_proc_time = g_get_monotonic_time() - start_curl;
+
+  if (curl_proc_time < micro_sec_per_iter) {
+    /* Wait this many microseconds, accounts for cURL processing time. */
+    wait_time = micro_sec_per_iter - curl_proc_time;
+    return cond_sleep(&D->gthread_main_fetch_cond,
+                      &mutexes[FETCH_DATA_COND_MUTEX], wait_time);
+  } else if (micro_sec_per_iter == 0) {
+    /* Continuous updating for an unlimited number of API calls
+       per minute [subscription accounts]. */
+    wait_time = G_TIME_SPAN_SECOND;
+    return cond_sleep(&D->gthread_main_fetch_cond,
+                      &mutexes[FETCH_DATA_COND_MUTEX], wait_time);
+  }
+
+  /* Continue loop without sleeping */
+  return FALSE;
+}
+
+static gboolean main_fetch_awakens(gint64 start_curl, portfolio_packet *pkg) {
+  /* If hours to update is zero, the market is closed, or fetching was canceled;
+   * exit thread berore sleep. */
+  if (!pkg->GetHoursOfUpdates() || pkg->IsClosed() || !pkg->IsFetchingData())
+    return TRUE;
+
+  /* sleep, returns TRUE if cond signalled */
+  return main_fetch_sleep_init(start_curl, pkg);
+}
+
+static gint64 main_fetch_length(portfolio_packet *pkg) {
+  /* microseconds to keep looping. */
+  return (gint64)(3600 * pkg->GetHoursOfUpdates()) * G_TIME_SPAN_SECOND;
+}
+
+static gboolean main_fetch_check(gint64 start_fetch, portfolio_packet *pkg) {
+  gint64 length_fetch = main_fetch_length(pkg);
+  gint64 end_fetch = start_fetch + length_fetch;
+  if (end_fetch > g_get_monotonic_time())
+    return TRUE;
+
+  return FALSE;
+}
+
+static void main_fetch_exit(portfolio_packet *pkg) {
+  pkg->FreeMainCurlData();
+
+  /* Reset FetchingData flag. */
+  pkg->SetFetchingData(FALSE);
+
+  /* Reset the progressbar */
+  gdk_threads_add_idle(MainProgBarReset, NULL);
+
+  /* Reset Fetch Button label. */
+  gdk_threads_add_idle(MainFetchBTNLabel, pkg);
+  g_thread_exit(NULL);
+}
+
+static gpointer main_fetch_thd(gpointer data) {
   portfolio_packet *pkg = (portfolio_packet *)data;
 
-  CashOk(pkg);
+  gdk_threads_add_idle(MainFetchBTNLabel, pkg);
+
+  gint64 start_fetch = g_get_monotonic_time();
+  gint64 start_curl;
+
+  do {
+    start_curl = g_get_monotonic_time();
+
+    /* This mutex prevents the program from crashing if an
+       MAIN_EXIT, SECURITY_OK_BTN, or API_OK_BTN thread is run
+       concurrently with this thread. */
+    g_mutex_lock(&mutexes[FETCH_DATA_MUTEX]);
+    if (pkg->GetData()) {
+      g_mutex_unlock(&mutexes[FETCH_DATA_MUTEX]);
+      break;
+    }
+    g_mutex_unlock(&mutexes[FETCH_DATA_MUTEX]);
+
+    /* Reset the progressbar */
+    gdk_threads_add_idle(MainProgBarReset, NULL);
+
+    pkg->ExtractData();
+    pkg->Calculate();
+    pkg->ToStrings();
+
+    /* Set Gtk treeview. */
+    gdk_threads_add_idle(MainPrimaryTreeview, pkg);
+
+    if (main_fetch_awakens(start_curl, pkg))
+      break;
+  } while (main_fetch_check(start_fetch, pkg));
+
+  main_fetch_exit(pkg);
+  return NULL;
+}
+
+gpointer GUIThreadHandler_main_fetch_handler(gpointer data)
+/* A thread that handles the main_fetch_thd thread. */
+{
+  if (!g_mutex_trylock(&mutexes[FETCH_DATA_HANDLER_MUTEX]))
+    g_thread_exit(NULL);
+
+  portfolio_packet *pkg = (portfolio_packet *)data;
+  meta *D = pkg->GetMetaClass();
+
+  /* If the main_fetch_thd thread is currently running. */
+  if (pkg->IsFetchingData()) {
+    /* Reset FetchingData flag. */
+    pkg->SetFetchingData(FALSE);
+
+    /* Exit fetching data thread. */
+    cancel_thread(&D->gthread_main_fetch_cond, &mutexes[FETCH_DATA_COND_MUTEX]);
+    pkg->StopMultiCurlMain();
+    g_thread_join(D->gthread_main_fetch_id);
+
+    /* If the main_fetch_thd is not running. */
+  } else {
+    /* This flag needs to be set TRUE before g_thread_new. */
+    pkg->SetFetchingData(TRUE);
+
+    /* Create fetching data thread. */
+    g_cond_clear(&D->gthread_main_fetch_cond);
+    g_cond_init(&D->gthread_main_fetch_cond);
+    D->gthread_main_fetch_id = g_thread_new(NULL, main_fetch_thd, data);
+  }
+
+  g_mutex_unlock(&mutexes[FETCH_DATA_HANDLER_MUTEX]);
+  g_thread_exit(NULL);
+  return NULL;
+}
+
+gpointer GUIThread_clock(gpointer data) {
+  /*
+     Set the wallclock to the NY time.
+     Display whether the market is open or closed,
+     time remaining until closed, or if it is a holiday.
+  */
+  portfolio_packet *pkg = (portfolio_packet *)data;
+  meta *D = pkg->GetMetaClass();
+  gint64 wait_time;
+
+  while (D->clocks_displayed_bool) {
+    gdk_threads_add_idle(MainSetClocks, data);
+
+    /* Will take into account holidays,
+       including the black friday early close. */
+    if (D->market_closed_bool) {
+
+      /* Set Sleep until the end of the current minute. */
+      wait_time = ClockSleepMinute();
+      if (cond_sleep(&D->gthread_clocks_cond, &mutexes[CLOCKS_COND_MUTEX],
+                     wait_time))
+        break;
+    } else {
+
+      /* Set Sleep until the end of the current second. */
+      wait_time = ClockSleepSecond();
+      if (cond_sleep(&D->gthread_clocks_cond, &mutexes[CLOCKS_COND_MUTEX],
+                     wait_time))
+        break;
+    }
+  }
+
+  g_thread_exit(NULL);
+  return NULL;
+}
+
+gpointer GUIThreadHandler_clock_handler(gpointer data)
+/* A thread that handles the clock thread. */
+{
+  if (!g_mutex_trylock(&mutexes[CLOCKS_HANDLER_MUTEX]))
+    g_thread_exit(NULL);
+
+  portfolio_packet *pkg = (portfolio_packet *)data;
+  meta *D = pkg->GetMetaClass();
+
+  /* If the clock thread is currently running. */
+  if (pkg->IsClockDisplayed()) {
+    pkg->SetClockDisplayed(FALSE);
+
+    /* Exit clock thread. */
+    cancel_thread(&D->gthread_clocks_cond, &mutexes[CLOCKS_COND_MUTEX]);
+    g_thread_join(D->gthread_clocks_id);
+    g_cond_clear(&D->gthread_clocks_cond);
+
+    /* Hide revealer */
+    gdk_threads_add_idle(MainHideClocks, NULL);
+
+    /* Make sure the pref window clock switch is set correctly. */
+    gdk_threads_add_idle(PrefSetClockSwitch, data);
+
+    /* If the clock thread is not running. */
+  } else {
+    /* This flag needs to be set TRUE before g_thread_new. */
+    pkg->SetClockDisplayed(TRUE);
+
+    /* Create clock thread. */
+    g_cond_init(&D->gthread_clocks_cond);
+    D->gthread_clocks_id = g_thread_new(NULL, GUIThread_clock, data);
+
+    /* Show revealer */
+    gdk_threads_add_idle(MainDisplayClocks, NULL);
+
+    /* Make sure the pref window clock switch is set correctly. */
+    gdk_threads_add_idle(PrefSetClockSwitch, data);
+  }
+
+  g_mutex_unlock(&mutexes[CLOCKS_HANDLER_MUTEX]);
+  g_thread_exit(NULL);
+  return NULL;
+}
+
+gpointer GUIThread_recalculate(gpointer data) {
+  portfolio_packet *pkg = (portfolio_packet *)data;  
 
   /* Set Gtk treeview. */
   if (pkg->IsDefaultView()) {
@@ -84,320 +296,178 @@ void *GUIThreadHandler_cash_ok(void *data) {
     gdk_threads_add_idle(MainPrimaryTreeview, pkg);
   }
 
-  pthread_cleanup_pop(1);
-  pthread_exit(NULL);
+  g_thread_exit(NULL);
+  return NULL;
 }
 
-static void bul_ok_thd_cleanup(void *data) {
+gpointer GUIThread_api_ok(gpointer data) {
   portfolio_packet *pkg = (portfolio_packet *)data;
 
-  pthread_mutex_unlock(&mutex_working[SQLITE_MUTEX]);
-  pthread_mutex_unlock(&mutex_working[CLASS_CALCULATE_MUTEX]);
-  pthread_mutex_unlock(&mutex_working[CLASS_TOSTRINGS_MUTEX]);
+  g_mutex_lock(&mutexes[FETCH_DATA_MUTEX]);
 
-  gdk_threads_add_idle(BullionShowHide, pkg);
+  APIOk(pkg);
+
+  g_mutex_unlock(&mutexes[FETCH_DATA_MUTEX]);
+
+  g_thread_exit(NULL);
+  return NULL;
 }
 
-void *GUIThreadHandler_bul_ok(void *data) {
-  pthread_cleanup_push(bul_ok_thd_cleanup, data);
-
+gpointer GUIThread_bul_fetch(gpointer data) {
   portfolio_packet *pkg = (portfolio_packet *)data;
+  metal *M = pkg->GetMetalClass();
+  guint8 num_metals = 2;
+  if (M->Platinum->ounce_f > 0)
+    num_metals++;
+  if (M->Palladium->ounce_f > 0)
+    num_metals++;
 
-  BullionOk(pkg);
+  /* Ensures that pkg->multicurl_main_hnd is free to use. */
+  g_mutex_lock(&mutexes[CLASS_MEMBER_MUTEX]);
 
-  pthread_cleanup_pop(1);
-  pthread_exit(NULL);
-}
+  /* This func doesn't have a mutex. */
+  M->SetUpCurl(pkg);
 
-static void looping_time(time_t *end_time, time_t *current_time,
-                         double *seconds_per_iteration, portfolio_packet *pkg) {
-  double loop_val;
-
-  /* The number of seconds between data fetch operations. */
-  if (pkg->GetUpdatesPerMinute() <= 0.0f) {
-    *seconds_per_iteration = 0.0f;
-  } else {
-    *seconds_per_iteration = 60.0f / pkg->GetUpdatesPerMinute();
+  /* Perform the cURL requests. */
+  int return_code =
+      PerformMultiCurl(pkg->multicurl_main_hnd, (double)num_metals);
+  if (return_code) {
+    FreeMemtype(&M->Gold->CURLDATA);
+    FreeMemtype(&M->Silver->CURLDATA);
+    FreeMemtype(&M->Platinum->CURLDATA);
+    FreeMemtype(&M->Palladium->CURLDATA);
   }
 
-  /* Because loop_val is not always evenly divisible by the
-     seconds_per_iteration value, our loop will finish in an
-     approximate length of time plus the slack seconds. */
-  /* The number of seconds to keep looping. */
-  loop_val = 3600 * pkg->GetHoursOfUpdates();
-  /* If the hours to run is zero, run one loop iteration. */
-  if (loop_val == 0.0f)
-    loop_val = 1.0f;
-  time(current_time);
-  *end_time = *current_time + (time_t)loop_val;
-}
+  /* This func doesn't have a mutex. */
+  M->ExtractData();
 
-static void loop_sleep(time_t end_curl, time_t start_curl,
-                       double seconds_per_iteration) {
-  double diff = difftime(end_curl, start_curl);
-  /* Wait this many seconds, accounts for cURL processing time.
-     We have double to int casting truncation here. */
-  if (diff < seconds_per_iteration) {
-    sleep((unsigned int)(seconds_per_iteration - diff));
-  } else if (seconds_per_iteration == 0) {
-    /* Continuous updating for an unlimited number of API calls
-       per minute [subscription accounts]. */
-    sleep(1);
-  }
-}
+  g_mutex_unlock(&mutexes[CLASS_MEMBER_MUTEX]);
 
-static void main_fetch_data_thd_cleanup(void *data)
-/* Called when main_fetch_data_thd is canceled or exited. */
-{
-  portfolio_packet *pkg = (portfolio_packet *)data;
-
-  /* Make sure the thread mutexes are unlocked. */
-  pthread_mutex_unlock(&mutex_working[FETCH_DATA_MUTEX]);
-  pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
-  pthread_mutex_unlock(&mutex_working[CLASS_TOSTRINGS_MUTEX]);
-  pthread_mutex_unlock(&mutex_working[CLASS_CALCULATE_MUTEX]);
-  pthread_mutex_unlock(&mutex_working[MULTICURL_PROG_MUTEX]);
-
-  /* Remove easy handles from multihandle, reset curl data for each
-     item [equity, bullion, indice]. */
-  pkg->StopMultiCurlMain();
+  /* These funcs have mutexes */
+  pkg->Calculate();
+  pkg->ToStrings();
 
   /* Reset the progressbar */
   gdk_threads_add_idle(MainProgBarReset, NULL);
 
-  /* Reset FetchingData flag. */
-  pkg->SetFetchingData(false);
+  /* Update the main window treeview. */
+  gdk_threads_add_idle(MainPrimaryTreeview, data);
 
-  /* Reset Fetch Button label. */
-  gdk_threads_add_idle(MainFetchBTNLabel, pkg);
-}
-
-static void *main_fetch_data_thd(void *data) {
-  portfolio_packet *pkg = (portfolio_packet *)data;
-
-  pthread_cleanup_push(main_fetch_data_thd_cleanup, data);
-
-  gdk_threads_add_idle(MainFetchBTNLabel, pkg);
-
-  double seconds_per_iteration;
-  time_t current_time, end_time;
-  time_t start_curl, end_curl;
-
-  pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
-  pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
-
-  looping_time(&end_time, &current_time, &seconds_per_iteration, pkg);
-
-  while (end_time > current_time) {
-    time(&start_curl);
-
-    /* This mutex prevents the program from crashing if an
-       MAIN_EXIT, SECURITY_OK_BTN, or API_OK_BTN thread is run
-       concurrently with this thread. */
-    pthread_mutex_lock(&mutex_working[FETCH_DATA_MUTEX]);
-
-    pkg->GetData();
-
-    pthread_mutex_unlock(&mutex_working[FETCH_DATA_MUTEX]);
-
-    pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
-
-    if (pkg->IsMainCurlCanceled())
-      pthread_exit(NULL);
-
-    pkg->ExtractData();
-    pkg->Calculate();
-    pkg->ToStrings();
-
-    /* Reset the progressbar */
-    gdk_threads_add_idle(MainProgBarReset, NULL);
-
-    /* Set Gtk treeview. */
-    gdk_threads_add_idle(MainPrimaryTreeview, pkg);
-
-    /* Allow the thread to be canceled. */
-    /* FYI, gdk_threads_add_idle causes pthreads to throw
-       a Resource deadlock sigabrt error when canceling a thread.
-       so we don't enable cancelation until after those statements. */
-    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
-
-    /* If hours to update is zero or the market is closed;
-     * only loop once. */
-    if (!pkg->GetHoursOfUpdates() || !MarketOpen()) {
-      pthread_exit(NULL);
-    }
-
-    /* Sleep to the end of the current second. */
-    usleep(ClockSleepMicroSeconds());
-    /* Find out how long cURL processing took. */
-    time(&end_curl);
-
-    /* sleep */
-    loop_sleep(end_curl, start_curl, seconds_per_iteration);
-
-    /* Find the current epoch time. */
-    time(&current_time);
-  }
-
-  pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
-  pthread_cleanup_pop(1);
-  pthread_exit(NULL);
-}
-
-void *GUIThreadHandler_main_fetch_data(void *data)
-/* A thread that handles the main_fetch_data_thd thread. */
-{
-  /* if there is a concurrent thread waiting on a join or creating a thread,
-     exit this thread. */
-  if (pthread_mutex_trylock(&mutex_working[FETCH_DATA_HANDLER_MUTEX]))
-    pthread_exit(NULL);
-
-  portfolio_packet *pkg = (portfolio_packet *)data;
-  meta *D = pkg->GetMetaClass();
-
-  /* If the main_fetch_data_thd thread is currently running. */
-  if (pkg->IsFetchingData()) {
-    /* Cancel fetching data thread. */
-    pthread_cancel(D->thread_id_main_fetch_data);
-    pthread_join(D->thread_id_main_fetch_data, NULL);
-
-    /* If the fetching thread is not running. */
-  } else {
-    /* Create fetching data thread. */
-    pthread_create(&D->thread_id_main_fetch_data, NULL, main_fetch_data_thd,
-                   data);
-    pthread_detach(D->thread_id_main_fetch_data);
-
-    /* This flag needs to be set true before a mutex unlock. */
-    pkg->SetFetchingData(true);
-  }
-
-  pthread_mutex_unlock(&mutex_working[FETCH_DATA_HANDLER_MUTEX]);
-  pthread_exit(NULL);
+  g_thread_exit(NULL);
+  return NULL;
 }
 
 typedef struct {
   MemType *HistoryOutput;
-  char *symbol;
+  gchar *symbol;
 } history_cleanup;
 
-static void history_fetch_thd_cleanup(void *data) {
-  history_cleanup *thd_data = (history_cleanup *)data;
-  pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
-  pthread_mutex_unlock(&mutex_working[HISTORY_FETCH_MUTEX]);
-  pthread_mutex_unlock(&mutex_working[MULTICURL_NO_PROG_MUTEX]);
-
-  if (thd_data->HistoryOutput) {
-    FreeMemtype(thd_data->HistoryOutput);
-    free(thd_data->HistoryOutput);
+static void history_fetch_exit(history_cleanup *hist_data) {
+  if (hist_data->HistoryOutput) {
+    FreeMemtype(hist_data->HistoryOutput);
+    g_free(hist_data->HistoryOutput);
   }
 
-  if (thd_data->symbol) {
-    free(thd_data->symbol);
+  if (hist_data->symbol) {
+    g_free(hist_data->symbol);
   }
+
+  g_thread_exit(NULL);
 }
 
-void *GUIThreadHandler_history_fetch(void *data) {
+gpointer GUIThread_history_fetch(gpointer data) {
   portfolio_packet *pkg = (portfolio_packet *)data;
 
-  history_cleanup history_thd_data = (history_cleanup){NULL};
-  char *sec_name = NULL;
+  history_cleanup hstry_data = (history_cleanup){NULL};
+  string_font *str_font_container = g_malloc(sizeof *str_font_container);
   GtkListStore *store = NULL;
 
-  pthread_cleanup_push(history_fetch_thd_cleanup, &history_thd_data);
-  /* Prevents multiple concurrent history fetch requests. */
-  pthread_mutex_lock(&mutex_working[HISTORY_FETCH_MUTEX]);
+  /* Prevents concurrent history fetch requests. */
+  g_mutex_lock(&mutexes[HISTORY_FETCH_MUTEX]);
 
   /* Get the symbol string */
-  HistoryGetSymbol(&history_thd_data.symbol);
+  HistoryGetSymbol(&hstry_data.symbol);
 
   /* Get the security name from the symbol map. */
-  pthread_mutex_lock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
-  sec_name = GetSecurityName(history_thd_data.symbol, pkg->meta_class->sym_map);
-  pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
+  g_mutex_lock(&mutexes[SYMBOL_NAME_MAP_MUTEX]);
+  str_font_container->string =
+      GetSecurityName(hstry_data.symbol, pkg->meta_class->sym_map);
+  g_mutex_unlock(&mutexes[SYMBOL_NAME_MAP_MUTEX]);
+  str_font_container->font = g_strdup(pkg->meta_class->font_ch);
 
-  /* Perform multicurl, doesn't block the gtk main loop. */
-  history_thd_data.HistoryOutput =
-      FetchHistoryData(history_thd_data.symbol, pkg);
-  if (pkg->IsCurlCanceled() || history_thd_data.HistoryOutput == NULL) {
-    /* The sec_name string is freed in HistorySetSNLabel */
-    gdk_threads_add_idle(HistorySetSNLabel, sec_name);
+  /* Perform multicurl. */
+  hstry_data.HistoryOutput = FetchHistoryData(hstry_data.symbol, pkg);
+  if (pkg->IsCurlCanceled() || hstry_data.HistoryOutput == NULL) {
     gdk_threads_add_idle(HistoryTreeViewClear, NULL);
-    pthread_exit(NULL);
+    /* The str_font_container is freed in HistorySetSNLabel */
+    gdk_threads_add_idle(HistorySetSNLabel, str_font_container);
+    g_mutex_unlock(&mutexes[HISTORY_FETCH_MUTEX]);
+    history_fetch_exit(&hstry_data);
   }
 
   /* Clear the current TreeView model */
   gdk_threads_add_idle(HistoryTreeViewClear, NULL);
 
   /* Perform calculations and set the liststore. */
-  store = HistoryMakeStore(history_thd_data.HistoryOutput->memory);
-
-  /* Set the security name label, this function runs inside the Gtk Loop.
-     The sec_name string is freed in HistorySetSNLabel */
-  gdk_threads_add_idle(HistorySetSNLabel, sec_name);
+  store = HistoryMakeStore(hstry_data.HistoryOutput->memory);
 
   /* Set and display the history treeview model. */
-  /* This will unref store */
+  /* This will unref the store */
   gdk_threads_add_idle(HistoryMakeTreeview, store);
 
-  pthread_cleanup_pop(1);
-  pthread_exit(NULL);
+  /* Set the security name label.
+     The str_font_container is freed in HistorySetSNLabel */
+  gdk_threads_add_idle(HistorySetSNLabel, str_font_container);
+
+  g_mutex_unlock(&mutexes[HISTORY_FETCH_MUTEX]);
+
+  history_fetch_exit(&hstry_data);
+  return NULL;
 }
 
-static void sym_name_update_thd_cleanup() {
-  pthread_mutex_unlock(&mutex_working[MULTICURL_NO_PROG_MUTEX]);
-  pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
-}
-
-void *GUIThreadHandler_sym_name_update(void *data) {
+gpointer GUIThread_pref_sym_update(gpointer data) {
   portfolio_packet *pkg = (portfolio_packet *)data;
-
-  pthread_cleanup_push(sym_name_update_thd_cleanup, NULL);
 
   symbol_name_map *sym_map = NULL;
 
-  pthread_mutex_lock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
+  g_mutex_lock(&mutexes[SYMBOL_NAME_MAP_MUTEX]);
 
   gdk_threads_add_idle(PrefSymBtnStart, NULL);
 
   /* Get the current Symbol-Name map pointer, if any. */
   sym_map = pkg->GetSymNameMap();
   /* Download the new sym-name map, if downloaded successfully; free the
-     current map, if any exists, set the current map to the new map.
+     current map if any exists, set the current map to the new map.
      Otherwise do nothing.*/
   sym_map = SymNameFetchUpdate(pkg, sym_map);
 
   gdk_threads_add_idle(PrefSymBtnStop, NULL);
+
+  g_mutex_unlock(&mutexes[SYMBOL_NAME_MAP_MUTEX]);
 
   /* Make sure the security names are set with pango style markups [in the
    * equity folder]. */
   pkg->SetSecurityNames();
 
   if (pkg->IsCurlCanceled())
-    pthread_exit(NULL);
+    g_thread_exit(NULL);
 
-  /* gdk_threads_add_idle is non-blocking, we need the mutex
-     in the HistoryCompletionSet and SecurityCompletionSet functions. */
+  /* Set the completion widget on two entry boxes. */
   if (sym_map) {
     gdk_threads_add_idle(HistoryCompletionSet, sym_map);
     gdk_threads_add_idle(SecurityCompletionSet, sym_map);
 
-    if (pkg->IsDefaultView())
+    if (pkg->IsDefaultView()) {
       gdk_threads_add_idle(MainDefaultTreeview, pkg);
+    }
   }
 
-  pthread_cleanup_pop(1);
-  pthread_exit(NULL);
+  g_thread_exit(NULL);
+  return NULL;
 }
 
-static void completion_set_thd_cleanup() {
-  pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
-}
-
-void *GUIThreadHandler_completion_set(void *data) {
+gpointer GUIThread_completion_set(gpointer data) {
   portfolio_packet *pkg = (portfolio_packet *)data;
-
-  pthread_cleanup_push(completion_set_thd_cleanup, NULL);
 
   symbol_name_map *sym_map = NULL;
   /* Fetch the stock symbols and names [from a local Db] outside the Gtk
@@ -405,20 +475,20 @@ void *GUIThreadHandler_completion_set(void *data) {
      a GtkEntryCompletion widget. */
 
   /* This mutex prevents the program from crashing if a
-     GUIThreadHandler_main_exit thread is run concurrently with this thread.
-     This thread is only run once at application start.
+     GUIThread_main_exit thread is run concurrently with this thread.
+     This thread is only run at application start.
   */
-  pthread_mutex_lock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
+  g_mutex_lock(&mutexes[SYMBOL_NAME_MAP_MUTEX]);
 
   sym_map = SymNameFetch(pkg);
   pkg->SetSymNameMap(sym_map);
   /* Make sure the security names are set with pango style markups. */
   pkg->SetSecurityNames();
 
-  pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
+  g_mutex_unlock(&mutexes[SYMBOL_NAME_MAP_MUTEX]);
 
   if (pkg->IsCurlCanceled())
-    pthread_exit(NULL);
+    g_thread_exit(NULL);
 
   if (sym_map) {
     gdk_threads_add_idle(HistoryCompletionSet, sym_map);
@@ -429,91 +499,25 @@ void *GUIThreadHandler_completion_set(void *data) {
   if (pkg->IsDefaultView())
     gdk_threads_add_idle(MainDefaultTreeview, pkg);
 
-  pthread_cleanup_pop(1);
-  pthread_exit(NULL);
-}
-
-void *GUIThreadHandler_main_clock(void *data) {
-  /*
-     This is a single process multithreaded application.
-     The process is always using New York time.
-  */
-  pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
-  pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
-
-  while (1) {
-    gdk_threads_add_idle(MainDisplayTime, data);
-
-    /* Allow the thread to be canceled while sleeping. */
-    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
-
-    /* Sleep until the end of the current second. */
-    usleep((useconds_t)ClockSleepMicroSeconds());
-    /* Sleep until the end of the current minute. */
-    sleep(ClockSleepSeconds());
-
-    pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
-  }
-  pthread_exit(NULL);
-}
-
-void *GUIThreadHandler_time_to_close(void *data) {
-  pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
-  pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
-
-  portfolio_packet *pkg = (portfolio_packet *)data;
-
-  pkg->SetHoliday();
-  while (1) {
-    /* MarketOpen () will take into account holidays,
-       including the black friday early close. */
-    if (MarketOpen()) {
-
-      gdk_threads_add_idle(MainDisplayTimeRemaining, pkg);
-
-      /* Allow the thread to be canceled while sleeping. */
-      pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
-      usleep((useconds_t)ClockSleepMicroSeconds());
-      pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
-
-    } else {
-      pkg->SetHoliday();
-      gdk_threads_add_idle(MainDisplayTimeRemaining, pkg);
-
-      pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
-      sleep(pkg->SecondsToOpen());
-      pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
-
-      pkg->SetHoliday();
-    }
-  }
-  pthread_exit(NULL);
+  g_thread_exit(NULL);
+  return NULL;
 }
 
 static void main_exit_curl_cleanup(portfolio_packet *pkg) {
   if (pkg->IsFetchingData()) {
-    /* Non-Main Curl */
-    pkg->SetCurlCanceled(true);
+    pkg->SetFetchingData(FALSE);
     /* Main Curl */
-    pkg->SetMainCurlCanceled(true);
-    pkg->StopMultiCurlAll();
-    /* Cancel data fetching thread if any. */
-    pthread_cancel(pkg->meta_class->thread_id_main_fetch_data);
-    pthread_join(pkg->meta_class->thread_id_main_fetch_data, NULL);
+    pkg->SetMainCurlCanceled(TRUE);
   }
+
+  /* Non-Main Curl */
+  pkg->SetCurlCanceled(TRUE);
+
+  pkg->StopMultiCurlAll();
 }
 
-static void main_exit_thd_cleanup() {
-  pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_SQLITE_MUTEX]);
-  pthread_mutex_unlock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
-  pthread_mutex_unlock(&mutex_working[SQLITE_MUTEX]);
-  pthread_mutex_unlock(&mutex_working[FETCH_DATA_MUTEX]);
-}
-
-void *GUIThreadHandler_main_exit(void *data) {
+gpointer GUIThread_main_exit(gpointer data) {
   portfolio_packet *pkg = (portfolio_packet *)data;
-
-  pthread_cleanup_push(main_exit_thd_cleanup, NULL);
 
   /* Stop cURL transfers.
        Cancel data fetching thread. */
@@ -521,26 +525,30 @@ void *GUIThreadHandler_main_exit(void *data) {
 
   /* This mutex prevents the program from crashing if a
      MAIN_FETCH_BTN thread is run concurrently with this thread. */
-  pthread_mutex_lock(&mutex_working[FETCH_DATA_MUTEX]);
-
-  /* Save the Window Size and Location. */
-  pkg->SetWindowDataSql();
+  g_mutex_lock(&mutexes[FETCH_DATA_MUTEX]);
 
   /* Hide the windows. Prevents them from hanging open if a db write is in
    * progress. */
   gdk_threads_add_idle(MainHideWindows, NULL);
 
+  /* Save application data in Sqlite. */
+  pkg->SaveSqlData();
+
   /* This mutex prevents the program from crashing if a
      COMPLETION thread is run concurrently with this thread. */
-  pthread_mutex_lock(&mutex_working[SYMBOL_NAME_MAP_MUTEX]);
+  g_mutex_lock(&mutexes[SYMBOL_NAME_MAP_MUTEX]);
 
-  /* Hold the application until the Sqlite thread is finished [prevents db
-   * write errors]. */
-  pthread_mutex_lock(&mutex_working[SYMBOL_NAME_MAP_SQLITE_MUTEX]);
+  /* Hold the application until the Sqlite sym-name map thread is finished
+   * [prevents db write errors]. */
+  g_mutex_lock(&mutexes[SYMBOL_NAME_MAP_SQLITE_MUTEX]);
 
   /* Exit the GTK main loop. */
   gtk_main_quit();
 
-  pthread_cleanup_pop(1);
-  pthread_exit(NULL);
+  g_mutex_unlock(&mutexes[SYMBOL_NAME_MAP_SQLITE_MUTEX]);
+  g_mutex_unlock(&mutexes[SYMBOL_NAME_MAP_MUTEX]);
+  g_mutex_unlock(&mutexes[FETCH_DATA_MUTEX]);
+
+  g_thread_exit(NULL);
+  return NULL;
 }

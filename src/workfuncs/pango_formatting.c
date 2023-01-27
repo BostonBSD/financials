@@ -30,22 +30,15 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <stdarg.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include <locale.h>
-#include <monetary.h>
-
 #include "../include/macros.h"
 #include "../include/workfuncs.h"
 
 /* Font name file global. */
-static const char *font_name;
+static const gchar *font_name;
 
-void SetFont(const char *fnt) { font_name = fnt; }
+void SetFont(const gchar *fnt) { font_name = fnt; }
 
-static void create_markup(char **str, const char *fmt, ...)
+static void create_markup(gchar **str, const gchar *fmt, ...)
 /* Create a string from a format string and a list of arguments.
    Useful for creating marked up strings and their attribute components.
 
@@ -56,11 +49,11 @@ static void create_markup(char **str, const char *fmt, ...)
   /* Set the arg pointer. */
   va_start(arg_ptr, fmt);
   /* Get the size of the potential string. */
-  size_t len = vsnprintf(NULL, 0, fmt, arg_ptr);
+  gsize len = g_vsnprintf(NULL, 0, fmt, arg_ptr) + 1;
   va_end(arg_ptr);
 
   /* Realloc str[0] to the string size. */
-  char *tmp = realloc(str[0], len + 1);
+  gchar *tmp = g_realloc(str[0], len);
 
   if (tmp == NULL) {
     printf("Not Enough Memory, realloc returned NULL.\n");
@@ -72,59 +65,59 @@ static void create_markup(char **str, const char *fmt, ...)
   /* Reset the arg pointer. */
   va_start(arg_ptr, fmt);
   /* Create the markup string from format and argument list. */
-  vsnprintf(str[0], len + 1, fmt, arg_ptr);
+  g_vsnprintf(str[0], len, fmt, arg_ptr);
   va_end(arg_ptr);
 }
 
-static char *font_attr(const char *fnt_name) {
-  const char *fnt_fmt = "font_desc='%s'";
-  char *attr = NULL;
+static gchar *font_attr(const gchar *fnt_name) {
+  const gchar *fnt_fmt = "font_desc='%s'";
+  gchar *attr = NULL;
 
   create_markup(&attr, fnt_fmt, fnt_name);
   return attr;
 }
 
-static char *fg_attr(const char *fg_color) {
-  const char *fg_fmt = "foreground='%s'";
-  char *attr = NULL;
+static gchar *fg_attr(const gchar *fg_color) {
+  const gchar *fg_fmt = "foreground='%s'";
+  gchar *attr = NULL;
 
   create_markup(&attr, fg_fmt, fg_color);
   return attr;
 }
 
-static char *wght_attr(const char *wght_name) {
-  const char *wght_fmt = "weight='%s'";
-  char *attr = NULL;
+static gchar *wght_attr(const gchar *wght_name) {
+  const gchar *wght_fmt = "weight='%s'";
+  gchar *attr = NULL;
 
   create_markup(&attr, wght_fmt, wght_name);
   return attr;
 }
 
-static char *undln_attr(const char *undln_type) {
-  const char *undln_fmt = "underline='%s'";
-  char *attr = NULL;
+static gchar *undln_attr(const gchar *undln_type) {
+  const gchar *undln_fmt = "underline='%s'";
+  gchar *attr = NULL;
 
   create_markup(&attr, undln_fmt, undln_type);
   return attr;
 }
 
-static char *undln__colr_attr(const char *undln_color) {
-  const char *undln_colr_fmt = "underline_color='%s'";
-  char *attr = NULL;
+static gchar *undln__colr_attr(const gchar *undln_color) {
+  const gchar *undln_colr_fmt = "underline_color='%s'";
+  gchar *attr = NULL;
 
   create_markup(&attr, undln_colr_fmt, undln_color);
   return attr;
 }
 
-static char *style_attr(const char *style_type) {
-  const char *style_fmt = "style='%s'";
-  char *attr = NULL;
+static gchar *style_attr(const gchar *style_type) {
+  const gchar *style_fmt = "style='%s'";
+  gchar *attr = NULL;
 
   create_markup(&attr, style_fmt, style_type);
   return attr;
 }
 
-void StringToStrPango(char **dst, const char *src, const unsigned int color)
+void StringToStrPango(gchar **dst, const gchar *src, const guint color)
 /* Take in a string buffer, a src string, and a color macro, convert to Pango
    Markup string.
 
@@ -136,17 +129,17 @@ void StringToStrPango(char **dst, const char *src, const unsigned int color)
   if (!dst || !src)
     return;
 
-  char *font = font_attr(font_name);
-  char *fg = NULL;
-  char *wght = NULL;
-  char *undln = NULL;
-  char *undln_colr = NULL;
-  char *style = NULL;
-  char *tmp = NULL;
-  const char *format_three = "<span %s %s>%s</span>";
-  const char *format_four = "<span %s %s %s>%s</span>";
-  const char *format_five = "<span %s %s %s %s>%s</span>";
-  const char *format_six = "<span %s %s %s %s %s>%s</span>";
+  gchar *font = font_attr(font_name);
+  gchar *fg = NULL;
+  gchar *wght = NULL;
+  gchar *undln = NULL;
+  gchar *undln_colr = NULL;
+  gchar *style = NULL;
+  gchar *tmp = NULL;
+  const gchar *format_three = "<span %s %s>%s</span>";
+  const gchar *format_four = "<span %s %s %s>%s</span>";
+  const gchar *format_five = "<span %s %s %s %s>%s</span>";
+  const gchar *format_six = "<span %s %s %s %s %s>%s</span>";
 
   switch (color) {
   case NO_COLOR:
@@ -240,25 +233,24 @@ void StringToStrPango(char **dst, const char *src, const unsigned int color)
   }
 
   if (font)
-    free(font);
+    g_free(font);
   if (fg)
-    free(fg);
+    g_free(fg);
   if (wght)
-    free(wght);
+    g_free(wght);
   if (undln)
-    free(undln);
+    g_free(undln);
   if (undln_colr)
-    free(undln_colr);
+    g_free(undln_colr);
   if (style)
-    free(style);
+    g_free(style);
   if (tmp)
-    free(tmp);
+    g_free(tmp);
 }
 
-void DoubleToFormattedStrPango(char **dst, const double num,
-                               const unsigned short digits_right,
-                               const unsigned int format_type,
-                               const unsigned int color)
+void DoubleToFormattedStrPango(gchar **dst, const gdouble num,
+                               const guint8 digits_right,
+                               const guint format_type, const guint color)
 /* Take in a string buffer, a double, the number of digits
    to the right of the decimal point, a format type, and a color.
 
@@ -276,8 +268,8 @@ void DoubleToFormattedStrPango(char **dst, const double num,
    The macro enums are defined in workfuncs.h.
 */
 {
-  char *tmp = NULL;
+  gchar *tmp = NULL;
   DoubleToFormattedStr(&tmp, num, digits_right, format_type);
   StringToStrPango(dst, tmp, color);
-  free(tmp);
+  g_free(tmp);
 }

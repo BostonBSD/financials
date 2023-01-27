@@ -183,7 +183,7 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Nasdaq symbol url</property>
+                    <property name="label" translatable="yes">Nasdaq symbols url</property>
                     <property name="justify">center</property>
                     <attributes>
                       <attribute name="font-desc" value="Oxygen-Sans 10"/>
@@ -407,7 +407,7 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Beta 1.0</property>
+                    <property name="label" translatable="yes">Beta 2.0</property>
                     <property name="justify">center</property>
                     <attributes>
                       <attribute name="font-desc" value="Oxygen-Sans 11"/>
@@ -472,26 +472,6 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">CSV parser Copyright © 2015--2021 Samuel Alexander</property>
-                    <property name="justify">center</property>
-                    <property name="selectable">True</property>
-                    <attributes>
-                      <attribute name="font-desc" value="Sans 8"/>
-                      <attribute name="style" value="normal"/>
-                      <attribute name="weight" value="semilight"/>
-                      <attribute name="variant" value="normal"/>
-                    </attributes>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">4</property>
-                  </packing>
-                </child>
-                <child>
                   <object class="GtkLabel" id="AboutTrendsIconLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
@@ -508,14 +488,14 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">5</property>
+                    <property name="position">4</property>
                   </packing>
                 </child>
                 <child>
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">This program comes with no warranty of any sort.</property>
+                    <property name="label" translatable="yes">This program comes with absolutely no warranty.</property>
                     <property name="justify">center</property>
                     <property name="selectable">True</property>
                     <attributes>
@@ -528,7 +508,7 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">6</property>
+                    <property name="position">5</property>
                   </packing>
                 </child>
               </object>
@@ -1554,9 +1534,11 @@ POSSIBILITY OF SUCH DAMAGE.</property>
   <object class="GtkWindow" id="HotkeysWindow">
     <property name="can-focus">False</property>
     <property name="can-default">True</property>
+    <property name="valign">start</property>
+    <property name="hexpand">True</property>
     <property name="resizable">False</property>
     <property name="default-width">-1</property>
-    <property name="default-height">-1</property>
+    <property name="default-height">700</property>
     <property name="destroy-with-parent">True</property>
     <property name="icon">Stocks-icon.png</property>
     <property name="skip-pager-hint">True</property>
@@ -1564,25 +1546,37 @@ POSSIBILITY OF SUCH DAMAGE.</property>
       <object class="GtkBox">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
+        <property name="valign">start</property>
+        <property name="margin-start">3</property>
+        <property name="margin-end">3</property>
+        <property name="margin-top">3</property>
+        <property name="margin-bottom">3</property>
+        <property name="hexpand">True</property>
         <property name="orientation">vertical</property>
+        <property name="homogeneous">True</property>
         <property name="baseline-position">top</property>
         <child>
           <object class="GtkScrolledWindow" id="ShortcutScrolledWindow">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="valign">start</property>
             <property name="hexpand">True</property>
-            <property name="vexpand">True</property>
             <property name="hscrollbar-policy">never</property>
-            <property name="vscrollbar-policy">never</property>
-            <property name="shadow-type">in</property>
+            <property name="shadow-type">out</property>
             <property name="min-content-width">200</property>
-            <property name="min-content-height">500</property>
+            <property name="min-content-height">300</property>
+            <property name="max-content-height">700</property>
             <property name="propagate-natural-width">True</property>
             <property name="propagate-natural-height">True</property>
             <child>
               <object class="GtkTreeView" id="HotkeysTreeView">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="valign">start</property>
+                <property name="hexpand">True</property>
+                <property name="headers-visible">False</property>
+                <property name="headers-clickable">False</property>
+                <property name="show-expanders">False</property>
                 <child internal-child="selection">
                   <object class="GtkTreeSelection"/>
                 </child>
@@ -2954,8 +2948,8 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                 </attributes>
               </object>
             </child>
-            <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
             <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+            <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
           </object>
           <packing>
             <property name="expand">False</property>

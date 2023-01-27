@@ -30,9 +30,6 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <stdlib.h>
-#include <string.h>
-
 #include "../include/class.h" /* The class init and destruct funcs are required 
                                  in the class methods, includes portfolio_packet 
                                  metal, meta, and equity_folder class types */
@@ -56,7 +53,7 @@ static equity_folder
                            can change dynamically. */
 
 /* Class Method (also called Function) Definitions */
-static void convert_equity_to_strings(stock *S, unsigned short digits_right) {
+static void convert_equity_to_strings(stock *S, guint8 digits_right) {
   /* Convert the double values into string values. */
   DoubleToFormattedStrPango(&S->current_price_stock_mrkd_ch,
                             S->current_price_stock_f, digits_right, MON_STR,
@@ -155,10 +152,10 @@ static void convert_equity_to_strings(stock *S, unsigned short digits_right) {
                             MON_STR, BLACK);
 }
 
-static void ToStrings(unsigned short digits_right) {
+static void ToStrings(guint8 digits_right) {
   equity_folder *F = FolderClassObject;
 
-  for (unsigned short g = 0; g < F->size; g++) {
+  for (guint8 g = 0; g < F->size; g++) {
     convert_equity_to_strings(F->Equity[g], digits_right);
   }
 
@@ -198,14 +195,14 @@ static void ToStrings(unsigned short digits_right) {
 static void equity_calculations(stock *S) {
   /* Calculate the stock holdings change. */
   if (S->num_shares_stock_int > 0) {
-    S->change_value_f = S->change_share_f * (double)S->num_shares_stock_int;
+    S->change_value_f = S->change_share_f * (gdouble)S->num_shares_stock_int;
   } else {
     S->change_value_f = 0.0f;
   }
 
   /* The total current investment in this equity. */
   S->current_investment_stock_f =
-      (double)S->num_shares_stock_int * S->current_price_stock_f;
+      (gdouble)S->num_shares_stock_int * S->current_price_stock_f;
 }
 
 static void Calculate() {
@@ -215,7 +212,7 @@ static void Calculate() {
   F->stock_port_value_f = 0.0f;
   F->stock_port_value_chg_f = 0.0f;
 
-  for (unsigned short g = 0; g < F->size; g++) {
+  for (guint8 g = 0; g < F->size; g++) {
     equity_calculations(F->Equity[g]);
 
     /* Add the equity investment to the total equity value. */
@@ -227,46 +224,35 @@ static void Calculate() {
   }
 
   /* The change in total investment in equity as a percentage. */
-  double prev_total = F->stock_port_value_f - F->stock_port_value_chg_f;
+  gdouble prev_total = F->stock_port_value_f - F->stock_port_value_chg_f;
   F->stock_port_value_p_chg_f = CalcGain(F->stock_port_value_f, prev_total);
 }
 
-static void GenerateURL(void *data) {
-  pthread_mutex_lock(&mutex_working[CLASS_MEMBER_MUTEX]);
+static void GenerateURL(gpointer data) {
+  g_mutex_lock(&mutexes[CLASS_MEMBER_MUTEX]);
 
   portfolio_packet *pkg = (portfolio_packet *)data;
   equity_folder *F = FolderClassObject;
   meta *Met = pkg->GetMetaClass();
 
-  size_t len;
-
   /* Cycle through the list of equities. */
-  for (unsigned short c = 0; c < F->size; c++) {
+  for (guint8 c = 0; c < F->size; c++) {
     /* Generate the request URL for this equity. */
-    len = snprintf(NULL, 0, "%s%s%s", Met->stock_url_ch,
-                   F->Equity[c]->symbol_stock_ch, Met->curl_key_ch) +
-          1;
-    char *tmp = realloc(F->Equity[c]->curl_url_stock_ch, len);
-
-    if (tmp == NULL) {
-      printf("Not Enough Memory, realloc returned NULL.\n");
-      exit(EXIT_FAILURE);
-    }
-
-    F->Equity[c]->curl_url_stock_ch = tmp;
-    snprintf(F->Equity[c]->curl_url_stock_ch, len, "%s%s%s", Met->stock_url_ch,
-             F->Equity[c]->symbol_stock_ch, Met->curl_key_ch);
+    g_free(F->Equity[c]->curl_url_stock_ch);
+    F->Equity[c]->curl_url_stock_ch =
+        g_strconcat(Met->stock_url_ch, F->Equity[c]->symbol_stock_ch,
+                    Met->curl_key_ch, NULL);
   }
 
-  pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
+  g_mutex_unlock(&mutexes[CLASS_MEMBER_MUTEX]);
 }
 
-static int SetUpCurl(void *data) {
+static gint SetUpCurl(gpointer data) {
   portfolio_packet *pkg = (portfolio_packet *)data;
   equity_folder *F = FolderClassObject;
 
   /* Cycle through the list of equities. */
-  for (unsigned short c = 0; c < F->size; c++) {
+  for (guint8 c = 0; c < F->size; c++) {
     /* Add a cURL easy handle to the multi-cURL handle
     (passing JSON output struct by reference) */
     SetUpCurlHandle(F->Equity[c]->easy_hnd, pkg->multicurl_main_hnd,
@@ -277,7 +263,7 @@ static int SetUpCurl(void *data) {
 }
 
 static void Reset() {
-  pthread_mutex_lock(&mutex_working[CLASS_MEMBER_MUTEX]);
+  g_mutex_lock(&mutexes[CLASS_MEMBER_MUTEX]);
 
   equity_folder *F = FolderClassObject;
 
@@ -294,47 +280,37 @@ static void Reset() {
 
     */
     if (F->Equity)
-      free(F->Equity);
-    stock **temp = (stock **)malloc(sizeof(stock *));
-
-    if (temp == NULL) {
-      printf("Not Enough Memory, malloc returned NULL.\n");
-      exit(EXIT_FAILURE);
-    }
+      g_free(F->Equity);
+    stock **temp = (stock **)g_malloc(sizeof(stock *));
 
     F->Equity = temp;
   } else {
-    for (short c = (F->size - 1); c >= 0; c--) {
+    for (guint8 c = 0; c < F->size; c++) {
       class_destruct_equity(F->Equity[c]);
     }
 
-    free(F->Equity);
-    stock **temp = (stock **)malloc(sizeof(stock *));
-
-    if (temp == NULL) {
-      printf("Not Enough Memory, malloc returned NULL.\n");
-      exit(EXIT_FAILURE);
-    }
+    g_free(F->Equity);
+    stock **temp = (stock **)g_malloc(sizeof(stock *));
 
     F->Equity = temp;
     F->size = 0;
   }
 
-  pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
+  g_mutex_unlock(&mutexes[CLASS_MEMBER_MUTEX]);
 }
 
-static void AddStock(const char *symbol, const char *shares)
+static void AddStock(const gchar *symbol, const gchar *shares)
 /* Adds a new stock object to our folder,
    increments size. */
 {
-  pthread_mutex_lock(&mutex_working[CLASS_MEMBER_MUTEX]);
+  g_mutex_lock(&mutexes[CLASS_MEMBER_MUTEX]);
   equity_folder *F = FolderClassObject;
   /* Does nothing if maximum number of stocks has been reached. */
   if (F->size == 255)
     return;
 
   stock **tmp_array =
-      (stock **)realloc(F->Equity, (F->size + 1) * sizeof(stock *));
+      (stock **)g_realloc(F->Equity, (F->size + 1) * sizeof(stock *));
 
   if (tmp_array == NULL) {
     printf("Not Enough Memory, realloc returned NULL.\n");
@@ -348,7 +324,7 @@ static void AddStock(const char *symbol, const char *shares)
 
   /* Add The Shares To the stock object */
   F->Equity[F->size]->num_shares_stock_int =
-      (unsigned int)strtol(shares ? shares : "0", NULL, 10);
+      (guint)g_ascii_strtoll(shares ? shares : "0", NULL, 10);
   DoubleToFormattedStrPango(&F->Equity[F->size]->num_shares_stock_mrkd_ch,
                             (double)F->Equity[F->size]->num_shares_stock_int, 0,
                             NUM_STR, BLACK);
@@ -369,31 +345,31 @@ static void AddStock(const char *symbol, const char *shares)
   }
   F->size++;
 
-  pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
+  g_mutex_unlock(&mutexes[CLASS_MEMBER_MUTEX]);
 }
 
-static void RemoveStock(const char *s)
+static void RemoveStock(const gchar *s)
 /* Removes a stock object from our folder,
    decrements size. If the stock isn't found
    the size doesn't change.  Locate stock by the
    symbol string. */
 {
-  pthread_mutex_lock(&mutex_working[CLASS_MEMBER_MUTEX]);
+  g_mutex_lock(&mutexes[CLASS_MEMBER_MUTEX]);
 
   equity_folder *F = FolderClassObject;
   stock **tmp;
 
-  unsigned short j, i = 0;
+  guint8 j, i = 0;
   while (i < F->size) {
-    if (strcasecmp(s, F->Equity[i]->symbol_stock_ch) == 0) {
+    if (g_strcmp0(s, F->Equity[i]->symbol_stock_ch) == 0) {
       class_destruct_equity(F->Equity[i]);
       j = i;
       while (j < F->size - 1) {
         F->Equity[j] = F->Equity[j + 1];
         j++;
       }
-      /* realloc will free memory if assigned a smaller new value. */
-      tmp = realloc(F->Equity, (F->size - 1) * sizeof(stock *));
+      /* g_realloc will free memory if assigned a smaller new value. */
+      tmp = g_realloc(F->Equity, (F->size - 1) * sizeof(stock *));
       if (tmp)
         F->Equity = tmp;
       F->size--;
@@ -402,38 +378,44 @@ static void RemoveStock(const char *s)
     i++;
   }
 
-  pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
+  g_mutex_unlock(&mutexes[CLASS_MEMBER_MUTEX]);
+}
+
+static void extract_data_reset(stock *S) {
+  S->current_price_stock_f = 0.0f;
+  S->high_stock_f = 0.0f;
+  S->low_stock_f = 0.0f;
+  S->opening_stock_f = 0.0f;
+  S->prev_closing_stock_f = 0.0f;
+  S->change_share_f = 0.0f;
+  S->change_percent_f = 0.0f;
 }
 
 static void ExtractData() {
   equity_folder *F = FolderClassObject;
+  gboolean transfer_complete = TRUE;
 
-  for (unsigned short c = 0; c < F->size; c++)
+  for (guint8 c = 0; c < F->size; c++)
   /* Extract current price from JSON data for each Symbol. */
   {
-    if (F->Equity[c]->JSON.memory) {
-      /* Extract double values from JSON data using JSON-glib */
-      JsonExtractEquity(
+    /* Extract double values from JSON data using JSON-glib */
+    if (transfer_complete) {
+      /* If one transfer is incomplete, reject all further transfers. */
+      transfer_complete = JsonExtractEquity(
           F->Equity[c]->JSON.memory, &F->Equity[c]->current_price_stock_f,
           &F->Equity[c]->high_stock_f, &F->Equity[c]->low_stock_f,
           &F->Equity[c]->opening_stock_f, &F->Equity[c]->prev_closing_stock_f,
           &F->Equity[c]->change_share_f, &F->Equity[c]->change_percent_f);
 
-      /* Free memory. */
       FreeMemtype(&F->Equity[c]->JSON);
     } else {
-      F->Equity[c]->current_price_stock_f = 0.0;
-      F->Equity[c]->high_stock_f = 0.0;
-      F->Equity[c]->low_stock_f = 0.0;
-      F->Equity[c]->opening_stock_f = 0.0;
-      F->Equity[c]->prev_closing_stock_f = 0.0;
-      F->Equity[c]->change_share_f = 0.0;
-      F->Equity[c]->change_percent_f = 0.0;
+      extract_data_reset(F->Equity[c]);
+      FreeMemtype(&F->Equity[c]->JSON);
     }
   }
 }
 
-static int alpha_asc(const void *a, const void *b)
+static int alpha_asc(gconstpointer a, gconstpointer b)
 /* This is a callback function for stdlib sorting functions.
    It compares stock-structs in alphabetically ascending order,
    by the stock symbol data member.  Swapping only the pointer.
@@ -443,21 +425,21 @@ static int alpha_asc(const void *a, const void *b)
   stock **aa = (stock **)a;
   stock **bb = (stock **)b;
 
-  /* Compare the stock symbols ignoring for case. */
-  return strcasecmp(aa[0]->symbol_stock_ch, bb[0]->symbol_stock_ch);
+  /* Compare the stock symbols. */
+  return g_strcmp0(aa[0]->symbol_stock_ch, bb[0]->symbol_stock_ch);
 }
 
 static void Sort() {
-  pthread_mutex_lock(&mutex_working[CLASS_MEMBER_MUTEX]);
+  g_mutex_lock(&mutexes[CLASS_MEMBER_MUTEX]);
 
   /* Sort the equity folder in alphabetically ascending order. */
   equity_folder *F = FolderClassObject;
-  qsort(&F->Equity[0], (size_t)F->size, sizeof(stock *), alpha_asc);
+  qsort(&F->Equity[0], (gsize)F->size, sizeof(stock *), alpha_asc);
 
-  pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
+  g_mutex_unlock(&mutexes[CLASS_MEMBER_MUTEX]);
 }
 
-static void remove_dash(char *s)
+static void remove_dash(gchar *s)
 /* Locate first dash character '-' in a string,
    replace prior space with NULL character.
    If the string pointer is NULL or the first
@@ -465,19 +447,19 @@ static void remove_dash(char *s)
 {
   if (s == NULL || s[0] == '-')
     return;
-  char *ch = strchr(s, (int)'-');
+  gchar *ch = g_utf8_strchr(s, -1, (gunichar)'-');
   if (ch != NULL)
     ch[-1] = 0;
 }
 
-static void SetSecurityNames(void *data) {
-  pthread_mutex_lock(&mutex_working[CLASS_MEMBER_MUTEX]);
+static void SetSecurityNames(gpointer data) {
+  g_mutex_lock(&mutexes[CLASS_MEMBER_MUTEX]);
   portfolio_packet *pkg = (portfolio_packet *)data;
   equity_folder *F = pkg->GetEquityFolderClass();
   symbol_name_map *sn_map = pkg->GetSymNameMap();
-  char *security_name = NULL;
+  gchar *security_name = NULL;
 
-  short g = 0;
+  guint8 g = 0;
   while (g < F->size) {
     if (sn_map) {
       security_name = GetSecurityName(F->Equity[g]->symbol_stock_ch, sn_map);
@@ -493,18 +475,18 @@ static void SetSecurityNames(void *data) {
     }
 
     if (security_name) {
-      free(security_name);
+      g_free(security_name);
       security_name = NULL;
     }
     g++;
   }
-  pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
+  g_mutex_unlock(&mutexes[CLASS_MEMBER_MUTEX]);
 }
 
 /* Class Init Functions */
 static stock *class_init_equity() {
   /* Allocate Memory For A New Class Object */
-  stock *new_class = (stock *)malloc(sizeof(*new_class));
+  stock *new_class = (stock *)g_malloc(sizeof(*new_class));
 
   /* Initialize Variables */
   new_class->num_shares_stock_int = 0;
@@ -545,7 +527,7 @@ static stock *class_init_equity() {
 
 equity_folder *ClassInitEquityFolder() {
   /* Allocate Memory For A New Class */
-  equity_folder *new_class = (equity_folder *)malloc(sizeof(*new_class));
+  equity_folder *new_class = (equity_folder *)g_malloc(sizeof(*new_class));
 
   /* A placeholder for our nested stock class array */
   new_class->Equity = NULL;
@@ -584,66 +566,65 @@ equity_folder *ClassInitEquityFolder() {
 /* Class Destruct Functions */
 static void class_destruct_equity(stock *stock_class) {
   /* Free Memory */
-
   if (stock_class->current_price_stock_mrkd_ch) {
-    free(stock_class->current_price_stock_mrkd_ch);
+    g_free(stock_class->current_price_stock_mrkd_ch);
     stock_class->current_price_stock_mrkd_ch = NULL;
   }
   if (stock_class->high_stock_mrkd_ch) {
-    free(stock_class->high_stock_mrkd_ch);
+    g_free(stock_class->high_stock_mrkd_ch);
     stock_class->high_stock_mrkd_ch = NULL;
   }
   if (stock_class->low_stock_mrkd_ch) {
-    free(stock_class->low_stock_mrkd_ch);
+    g_free(stock_class->low_stock_mrkd_ch);
     stock_class->low_stock_mrkd_ch = NULL;
   }
   if (stock_class->opening_stock_mrkd_ch) {
-    free(stock_class->opening_stock_mrkd_ch);
+    g_free(stock_class->opening_stock_mrkd_ch);
     stock_class->opening_stock_mrkd_ch = NULL;
   }
   if (stock_class->prev_closing_stock_mrkd_ch) {
-    free(stock_class->prev_closing_stock_mrkd_ch);
+    g_free(stock_class->prev_closing_stock_mrkd_ch);
     stock_class->prev_closing_stock_mrkd_ch = NULL;
   }
   if (stock_class->change_share_stock_mrkd_ch) {
-    free(stock_class->change_share_stock_mrkd_ch);
+    g_free(stock_class->change_share_stock_mrkd_ch);
     stock_class->change_share_stock_mrkd_ch = NULL;
   }
   if (stock_class->change_value_mrkd_ch) {
-    free(stock_class->change_value_mrkd_ch);
+    g_free(stock_class->change_value_mrkd_ch);
     stock_class->change_value_mrkd_ch = NULL;
   }
   if (stock_class->change_percent_mrkd_ch) {
-    free(stock_class->change_percent_mrkd_ch);
+    g_free(stock_class->change_percent_mrkd_ch);
     stock_class->change_percent_mrkd_ch = NULL;
   }
 
   if (stock_class->current_investment_stock_mrkd_ch) {
-    free(stock_class->current_investment_stock_mrkd_ch);
+    g_free(stock_class->current_investment_stock_mrkd_ch);
     stock_class->current_investment_stock_mrkd_ch = NULL;
   }
 
   if (stock_class->num_shares_stock_mrkd_ch) {
-    free(stock_class->num_shares_stock_mrkd_ch);
+    g_free(stock_class->num_shares_stock_mrkd_ch);
     stock_class->num_shares_stock_mrkd_ch = NULL;
   }
 
   if (stock_class->symbol_stock_mrkd_ch) {
-    free(stock_class->symbol_stock_mrkd_ch);
+    g_free(stock_class->symbol_stock_mrkd_ch);
     stock_class->symbol_stock_mrkd_ch = NULL;
   }
 
   if (stock_class->security_name_mrkd_ch) {
-    free(stock_class->security_name_mrkd_ch);
+    g_free(stock_class->security_name_mrkd_ch);
     stock_class->security_name_mrkd_ch = NULL;
   }
 
   if (stock_class->symbol_stock_ch) {
-    free(stock_class->symbol_stock_ch);
+    g_free(stock_class->symbol_stock_ch);
     stock_class->symbol_stock_ch = NULL;
   }
   if (stock_class->curl_url_stock_ch) {
-    free(stock_class->curl_url_stock_ch);
+    g_free(stock_class->curl_url_stock_ch);
     stock_class->curl_url_stock_ch = NULL;
   }
 
@@ -654,31 +635,31 @@ static void class_destruct_equity(stock *stock_class) {
 
   /* Free Memory From Class Object */
   if (stock_class) {
-    free(stock_class);
+    g_free(stock_class);
     stock_class = NULL;
   }
 }
 
 void ClassDestructEquityFolder(equity_folder *F) {
   /* Free Memory From Class Objects */
-  for (short c = (F->size - 1); c >= 0; c--) {
+  for (guint8 c = 0; c < F->size; c++) {
     if (F->Equity[c])
       class_destruct_equity(F->Equity[c]);
   }
 
   if (F->Equity) {
-    free(F->Equity);
+    g_free(F->Equity);
     F->Equity = NULL;
   }
 
   /* Free Pointer Memory */
   if (F->stock_port_value_mrkd_ch)
-    free(F->stock_port_value_mrkd_ch);
+    g_free(F->stock_port_value_mrkd_ch);
   if (F->stock_port_value_chg_mrkd_ch)
-    free(F->stock_port_value_chg_mrkd_ch);
+    g_free(F->stock_port_value_chg_mrkd_ch);
   if (F->stock_port_value_p_chg_mrkd_ch)
-    free(F->stock_port_value_p_chg_mrkd_ch);
+    g_free(F->stock_port_value_p_chg_mrkd_ch);
 
   if (F)
-    free(F);
+    g_free(F);
 }

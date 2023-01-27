@@ -32,118 +32,102 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef CLASS_TYPES_HEADER_H
 #define CLASS_TYPES_HEADER_H
 
-#include <stdatomic.h>
-#include <stdbool.h>
-#include <time.h> /* struct tm  */
-
 #include "gui_types.h"       /* symbol_name_map */
 #include "multicurl_types.h" /* CURL, CURLM */
 
-/* Method prototypes used by these classes
-   Define the function pointer type here. */
-typedef void *sub_func_a_t();
-typedef void sub_func_b_t();
-typedef int sub_func_c_t();
-typedef bool sub_func_d_t();
-typedef void sub_func_e_t(bool);
-typedef double sub_func_f_t();
-typedef unsigned int sub_func_g_t();
-typedef void sub_func_h_t(unsigned short);
-
 typedef struct { /* A container to hold the type of row and symbol, on a right
                     click */
-  char *type;
-  char *symbol;
+  gchar *type;
+  gchar *symbol;
 } right_click_container;
 
 typedef struct {
-  unsigned short main_height;
-  unsigned short main_width;
-  unsigned short main_x_pos;
-  unsigned short main_y_pos;
-  unsigned short history_height;
-  unsigned short history_width;
-  unsigned short history_x_pos;
-  unsigned short history_y_pos;
+  gushort main_height;
+  gushort main_width;
+  gushort main_x_pos;
+  gushort main_y_pos;
+  gushort history_height;
+  gushort history_width;
+  gushort history_x_pos;
+  gushort history_y_pos;
 } window_data;
 
 typedef struct {
-  char *bullion;
-  char *metal;
-  char *ounces;
-  char *premium;
-  char *high;
-  char *low;
-  char *prev_closing;
-  char *chg;
-  char *gain_sym;
-  char *total;
-  char *gain_per;
-  char *gold;
-  char *silver;
-  char *platinum;
-  char *palladium;
-  char *equity;
-  char *symbol;
-  char *shares;
-  char *price;
-  char *opening;
-  char *asset;
-  char *value;
-  char *cash;
-  char *portfolio;
-  char *no_assets;
+  gchar *bullion;
+  gchar *metal;
+  gchar *ounces;
+  gchar *premium;
+  gchar *high;
+  gchar *low;
+  gchar *prev_closing;
+  gchar *chg;
+  gchar *gain_sym;
+  gchar *total;
+  gchar *gain_per;
+  gchar *gold;
+  gchar *silver;
+  gchar *platinum;
+  gchar *palladium;
+  gchar *equity;
+  gchar *symbol;
+  gchar *shares;
+  gchar *price;
+  gchar *opening;
+  gchar *asset;
+  gchar *value;
+  gchar *cash;
+  gchar *portfolio;
+  gchar *no_assets;
 } primary_heading;
 
 typedef struct {
-  char *bullion;
-  char *metal;
-  char *ounces;
-  char *premium;
-  char *gold;
-  char *silver;
-  char *platinum;
-  char *palladium;
-  char *equity;
-  char *symbol;
-  char *shares;
-  char *cash;
-  char *no_assets;
+  gchar *bullion;
+  gchar *metal;
+  gchar *ounces;
+  gchar *premium;
+  gchar *gold;
+  gchar *silver;
+  gchar *platinum;
+  gchar *palladium;
+  gchar *equity;
+  gchar *symbol;
+  gchar *shares;
+  gchar *cash;
+  gchar *no_assets;
 } default_heading;
 
-/* class type definitions (emulated class definitions; C doesn't really have
- * class types) */
+/* class type definitions */
 typedef struct {
   /* Data Variables */
-  double spot_price_f;
-  double premium_f;
-  double port_value_f;
-  double ounce_f;
+  gdouble spot_price_f;
+  gdouble premium_f;
+  gdouble port_value_f; /* Total current investment in this metal. */
+  gdouble ounce_f;      /* Number of ounces. */
 
-  double high_metal_f;
-  double low_metal_f;
-  double prev_closing_metal_f;
-  double change_ounce_f;
-  double change_value_f;
-  double change_percent_f;
-  double change_percent_raw_f;
+  gdouble high_metal_f;
+  gdouble low_metal_f;
+  gdouble prev_closing_metal_f;
+  gdouble change_ounce_f;
+  gdouble change_value_f;
+  gdouble change_percent_f;
+  gdouble change_percent_raw_f; /* The gain not including premium values. */
 
   /* Pango Markup language strings */
-  char *spot_price_mrkd_ch;
-  char *premium_mrkd_ch;
-  char *port_value_mrkd_ch; /* Total current investment in this metal. */
-  char *ounce_mrkd_ch;      /* Number of ounces. */
+  gchar *spot_price_mrkd_ch;
+  gchar *premium_mrkd_ch;
+  gchar *port_value_mrkd_ch;
+  gchar *ounce_mrkd_ch;
 
-  char *high_metal_mrkd_ch;
-  char *low_metal_mrkd_ch;
-  char *prev_closing_metal_mrkd_ch;
-  char *change_ounce_mrkd_ch;
-  char *change_value_mrkd_ch;
-  char *change_percent_mrkd_ch;
+  gchar *high_metal_mrkd_ch;
+  gchar *low_metal_mrkd_ch;
+  gchar *prev_closing_metal_mrkd_ch;
+  gchar *change_ounce_mrkd_ch;
+  gchar *change_value_mrkd_ch;
+  gchar *change_percent_mrkd_ch;
 
   /* Unmarked strings */
-  char *change_percent_raw_ch; /* The gain not including premium values. */
-  char *url_ch;
+  gchar *change_percent_raw_ch;
+  gchar *url_ch;
 
   CURL *YAHOO_hnd; /* Bullion cURL Easy Handle. */
   MemType CURLDATA;
@@ -152,40 +136,40 @@ typedef struct {
 
 typedef struct {
   /* Data Variables */
-  unsigned int num_shares_stock_int; /* Cannot hold more than 4294967295 shares
+  guint num_shares_stock_int; /* Cannot hold more than 4294967295 shares
                                         of stock on most 64-bit machines */
 
-  double current_price_stock_f;
-  double high_stock_f;
-  double low_stock_f;
-  double opening_stock_f;
-  double prev_closing_stock_f;
-  double change_share_f;
-  double change_value_f;
-  double change_percent_f;
+  gdouble current_price_stock_f;
+  gdouble high_stock_f;
+  gdouble low_stock_f;
+  gdouble opening_stock_f;
+  gdouble prev_closing_stock_f;
+  gdouble change_share_f;
+  gdouble change_value_f;
+  gdouble change_percent_f;
 
-  double current_investment_stock_f;
+  gdouble current_investment_stock_f; /* The total current investment in
+                                              the stock. */
 
   /* Pango Markup language strings */
-  char *security_name_mrkd_ch;
-  char *current_price_stock_mrkd_ch;
-  char *high_stock_mrkd_ch;
-  char *low_stock_mrkd_ch;
-  char *opening_stock_mrkd_ch;
-  char *prev_closing_stock_mrkd_ch;
-  char *change_share_stock_mrkd_ch;
-  char *change_value_mrkd_ch;
-  char *change_percent_mrkd_ch;
-  char *current_investment_stock_mrkd_ch; /* The total current investment in the
-                                             stock. */
-  char *symbol_stock_mrkd_ch;
-  char *num_shares_stock_mrkd_ch;
+  gchar *security_name_mrkd_ch;
+  gchar *current_price_stock_mrkd_ch;
+  gchar *high_stock_mrkd_ch;
+  gchar *low_stock_mrkd_ch;
+  gchar *opening_stock_mrkd_ch;
+  gchar *prev_closing_stock_mrkd_ch;
+  gchar *change_share_stock_mrkd_ch;
+  gchar *change_value_mrkd_ch;
+  gchar *change_percent_mrkd_ch;
+  gchar *current_investment_stock_mrkd_ch;
+  gchar *symbol_stock_mrkd_ch;
+  gchar *num_shares_stock_mrkd_ch;
 
   /* Unmarked strings */
-  char *symbol_stock_ch;   /* The stock symbol in all caps, it's used to create
+  gchar *symbol_stock_ch;   /* The stock symbol in all caps, it's used to create
                               the stock request URL */
-  char *curl_url_stock_ch; /* The assembled request URL, Each stock has it's own
-                              URL request */
+  gchar *curl_url_stock_ch; /* The assembled request URL, Each stock has it's
+                              own URL request */
 
   CURL *easy_hnd; /* cURL Easy Handle. */
   MemType JSON;
@@ -200,85 +184,88 @@ typedef struct {
 
   symbol_name_map *sym_map; /* The symbol to name mapping struct */
 
-  double cash_f;
+  gdouble cash_f; /* Total value of cash */
 
-  double portfolio_port_value_f;
-  double portfolio_port_value_chg_f;
-  double portfolio_port_value_p_chg_f;
+  gdouble portfolio_port_value_f;     /* Total value of the entire portfolio */
+  gdouble portfolio_port_value_chg_f; /* Total value of the entire
+                                               portfolio change */
+  gdouble portfolio_port_value_p_chg_f; /* Total value of the entire
+                                                portfolio percent change */
 
-  double index_dow_value_f;
-  double index_dow_value_chg_f;
-  double index_dow_value_p_chg_f;
+  gdouble index_dow_value_f;
+  gdouble index_dow_value_chg_f;
+  gdouble index_dow_value_p_chg_f;
 
-  double index_nasdaq_value_f;
-  double index_nasdaq_value_chg_f;
-  double index_nasdaq_value_p_chg_f;
+  gdouble index_nasdaq_value_f;
+  gdouble index_nasdaq_value_chg_f;
+  gdouble index_nasdaq_value_p_chg_f;
 
-  double index_sp_value_f;
-  double index_sp_value_chg_f;
-  double index_sp_value_p_chg_f;
+  gdouble index_sp_value_f;
+  gdouble index_sp_value_chg_f;
+  gdouble index_sp_value_p_chg_f;
 
-  double crypto_bitcoin_value_f;
-  double crypto_bitcoin_value_chg_f;
-  double crypto_bitcoin_value_p_chg_f;
+  gdouble crypto_bitcoin_value_f;
+  gdouble crypto_bitcoin_value_chg_f;
+  gdouble crypto_bitcoin_value_p_chg_f;
 
-  double updates_per_min_f;
-  double updates_hours_f;
+  gdouble updates_per_min_f;
+  gdouble updates_hours_f;
 
-  unsigned short decimal_places_shrt;
+  guint8 decimal_places_guint8;
 
   /* Pango Markup language strings */
   primary_heading pri_h_mkd;
   default_heading def_h_mkd;
 
-  char *cash_mrkd_ch;                 /* Total value of cash */
-  char *portfolio_port_value_mrkd_ch; /* Total value of the entire portfolio */
-  char *portfolio_port_value_chg_mrkd_ch; /* Total value of the entire portfolio
-                                             change */
-  char *portfolio_port_value_p_chg_mrkd_ch; /* Total value of the entire
-                                               portfolio percent change */
+  gchar *cash_mrkd_ch;
+  gchar *portfolio_port_value_mrkd_ch;
+  gchar *portfolio_port_value_chg_mrkd_ch;
+  gchar *portfolio_port_value_p_chg_mrkd_ch;
 
   /* Unmarked strings */
-  char *stock_url_ch;         /* First component of the stock request URL */
-  char *curl_key_ch;          /* Last component of the stock request URL */
-  char *Nasdaq_Symbol_url_ch; /* Nasdaq Symbol List URL */
-  char *NYSE_Symbol_url_ch;   /* NYSE Symbol List URL */
+  gchar *stock_url_ch;         /* First component of the stock request URL */
+  gchar *curl_key_ch;          /* Last component of the stock request URL */
+  gchar *Nasdaq_Symbol_url_ch; /* Nasdaq Symbol List URL */
+  gchar *NYSE_Symbol_url_ch;   /* NYSE Symbol List URL */
 
-  char *index_dow_value_ch;
-  char *index_dow_value_chg_ch;
-  char *index_dow_value_p_chg_ch;
+  gchar *index_dow_value_ch;
+  gchar *index_dow_value_chg_ch;
+  gchar *index_dow_value_p_chg_ch;
 
-  char *index_nasdaq_value_ch;
-  char *index_nasdaq_value_chg_ch;
-  char *index_nasdaq_value_p_chg_ch;
+  gchar *index_nasdaq_value_ch;
+  gchar *index_nasdaq_value_chg_ch;
+  gchar *index_nasdaq_value_p_chg_ch;
 
-  char *index_sp_value_ch;
-  char *index_sp_value_chg_ch;
-  char *index_sp_value_p_chg_ch;
+  gchar *index_sp_value_ch;
+  gchar *index_sp_value_chg_ch;
+  gchar *index_sp_value_p_chg_ch;
 
-  char *crypto_bitcoin_value_ch;
-  char *crypto_bitcoin_value_chg_ch;
-  char *crypto_bitcoin_value_p_chg_ch;
+  gchar *crypto_bitcoin_value_ch;
+  gchar *crypto_bitcoin_value_chg_ch;
+  gchar *crypto_bitcoin_value_p_chg_ch;
 
-  char *home_dir_ch;                   /* Path to the user's home directory */
-  char *sqlite_db_path_ch;             /* Path to the sqlite db file */
-  char *sqlite_symbol_name_db_path_ch; /* Path to the sqlite symbol-name db file
-                                        */
-  char *main_font_ch;                  /* The main treeview font */
+  gchar *config_dir_ch;     /* Path to the user's config directory */
+  gchar *sqlite_db_path_ch; /* Path to the sqlite db file */
+  gchar *sqlite_symbol_name_db_path_ch; /* Path to the sqlite symbol-name db
+                                           file */
+  gchar *font_ch;                       /* The application font */
 
-  atomic_bool fetching_data_bool; /* Indicates a fetch operation in progress. */
-  atomic_bool holiday_bool;       /* Indicates if today is a holiday. */
-  atomic_bool multicurl_cancel_bool;      /* Indicates if we should cancel all
-                                          multicurl requests. */
-  atomic_bool multicurl_cancel_main_bool; /* Indicates if we should cancel the
-                                          main multicurl request. */
-  atomic_bool index_bar_revealed_bool;    /* Indicates if the indices bar is
-                                          revealed or not. */
-  atomic_bool clocks_displayed_bool;      /* Indicates if the clocks are
-                                                   displayed or not. */
-  atomic_bool main_win_default_view_bool; /* Indicates if the main window
-                                          treeview is displaying the default or
-                                          the primary view. Default is true. */
+  gboolean
+      fetching_data_bool : 1; /* Indicates a fetch operation in progress. */
+  gboolean
+      market_closed_bool : 1; /* Indicates if the market is open or closed. */
+  gboolean multicurl_cancel_bool : 1;      /* Indicates if we should cancel all
+                                            multicurl requests. */
+  gboolean multicurl_cancel_main_bool : 1; /* Indicates if we should cancel the
+                                            main multicurl request. */
+  gboolean index_bar_revealed_bool : 1;    /* Indicates if the indices bar is
+                                            revealed or not. */
+  gboolean clocks_displayed_bool : 1;      /* Indicates if the clocks are
+                                                     displayed or not. */
+  gboolean
+      main_win_default_view_bool : 1; /* Indicates if the main window
+                                       treeview is displaying the default or
+                                       the primary view. Default is TRUE. */
 
   CURL *history_hnd;           /* History Data cURL Easy Handle. */
   CURL *NASDAQ_completion_hnd; /* NASDAQ Symbol list cURL Easy Handle. */
@@ -289,33 +276,30 @@ typedef struct {
   CURL *index_sp_hnd;       /* S&P Index cURL Easy Handle. */
   CURL *crypto_bitcoin_hnd; /* Bitcoin cURL Easy Handle. */
 
-  CURLM *multicurl_cmpltn_hnd;  /* Multicurl Handle for the No Prog Multicurl
-                                   function. */
-  CURLM *multicurl_history_hnd; /* Multicurl Handle for the No Prog Multicurl
-                               function. */
+  /* Two multicurl handle used with the No Prog Multicurl function. */
+  CURLM *multicurl_cmpltn_hnd;
+  CURLM *multicurl_history_hnd;
 
   MemType INDEX_DOW_CURLDATA;
   MemType INDEX_NASDAQ_CURLDATA;
   MemType INDEX_SP_CURLDATA;
   MemType CRYPTO_BITCOIN_CURLDATA;
 
-  /* Thread Ids */
-  pthread_t thread_id_clock;
-  pthread_t thread_id_closing_time;
-  pthread_t thread_id_main_fetch_data;
+  /* Thread Ids and cond variables */
+  GCond gthread_clocks_cond;
+  GCond gthread_main_fetch_cond;
+  GThread *gthread_clocks_id;
+  GThread *gthread_main_fetch_id;
 
-  /*
-     Methods or Functions
-     Create a function pointer from the type here.
-  */
-  sub_func_b_t *ToStringsPortfolio;
-  sub_func_b_t *CalculatePortfolio;
-  sub_func_b_t *StopHistoryCurl;
-  sub_func_b_t *StopSNMapCurl;
-  sub_func_c_t *SetUpCurlIndicesData;
-  sub_func_b_t *ExtractIndicesData;
-  sub_func_b_t *ToStringsIndices;
-  sub_func_b_t *ToStringsHeadings;
+  /* Methods/Function pointers. */
+  void (*ToStringsPortfolio)();
+  void (*CalculatePortfolio)(gpointer data);
+  void (*StopHistoryCurl)();
+  void (*StopSNMapCurl)();
+  gint (*SetUpCurlIndicesData)(gpointer data);
+  void (*ExtractIndicesData)();
+  void (*ToStringsIndices)();
+  void (*ToStringsHeadings)();
 } meta;
 
 typedef struct {
@@ -326,26 +310,26 @@ typedef struct {
   bullion *Palladium;
 
   /* Data Variables */
-  double bullion_port_value_f;
-  double bullion_port_value_chg_f;
-  double bullion_port_value_p_chg_f;
-  double gold_silver_ratio_f;
+  gdouble bullion_port_value_f;
+  gdouble bullion_port_value_chg_f;
+  gdouble bullion_port_value_p_chg_f;
+  gdouble gold_silver_ratio_f;
 
   /* Pango Markup language strings */
-  char *bullion_port_value_mrkd_ch;       /* Total value of bullion holdings */
-  char *bullion_port_value_chg_mrkd_ch;   /* Total value of bullion holdings
+  gchar *bullion_port_value_mrkd_ch;       /* Total value of bullion holdings */
+  gchar *bullion_port_value_chg_mrkd_ch;   /* Total value of bullion holdings
                                              change */
-  char *bullion_port_value_p_chg_mrkd_ch; /* Total value of bullion holdings
+  gchar *bullion_port_value_p_chg_mrkd_ch; /* Total value of bullion holdings
                                              percent change */
 
   /* Unmarked strings */
-  char *gold_silver_ratio_ch;
+  gchar *gold_silver_ratio_ch;
 
-  /* Methods or Functions */
-  sub_func_h_t *ToStrings;
-  sub_func_b_t *Calculate;
-  sub_func_c_t *SetUpCurl;
-  sub_func_b_t *ExtractData;
+  /* Method/Function pointers */
+  void (*ToStrings)(guint8 digits_right);
+  void (*Calculate)();
+  gint (*SetUpCurl)(gpointer data);
+  void (*ExtractData)();
 } metal;
 
 typedef struct {
@@ -353,32 +337,31 @@ typedef struct {
   stock **Equity; /* Stock Double Pointer Array */
 
   /* Data Variables */
-  double stock_port_value_f;
-  double stock_port_value_chg_f;
-  double stock_port_value_p_chg_f;
+  gdouble stock_port_value_f;
+  gdouble stock_port_value_chg_f;
+  gdouble stock_port_value_p_chg_f;
 
-  /* Can have up to 255 stocks [0-254]: 8 bits.
-     I'd like to keep this a bit field in order to limit it to 8 bits. */
-  unsigned short size : 8;
+  /* Can have up to 255 stocks [0-254]: 8 bits. */
+  guint8 size;
 
   /* Pango Markup language strings */
-  char *stock_port_value_mrkd_ch; /* Total value of equity holdings */
-  char
+  gchar *stock_port_value_mrkd_ch; /* Total value of equity holdings */
+  gchar
       *stock_port_value_chg_mrkd_ch; /* Total value of equity holdings change */
-  char *stock_port_value_p_chg_mrkd_ch; /* Total value of equity holdings
+  gchar *stock_port_value_p_chg_mrkd_ch; /* Total value of equity holdings
                                       percent change */
 
-  /* Methods or Functions */
-  sub_func_h_t *ToStrings;
-  sub_func_b_t *Calculate;
-  sub_func_b_t *GenerateURL;
-  sub_func_c_t *SetUpCurl;
-  sub_func_b_t *ExtractData;
-  sub_func_b_t *AddStock;
-  sub_func_b_t *Sort;
-  sub_func_b_t *Reset;
-  sub_func_b_t *RemoveStock;
-  sub_func_b_t *SetSecurityNames;
+  /* Method/Function pointers */
+  void (*ToStrings)(guint8 digits_right);
+  void (*Calculate)();
+  void (*GenerateURL)(gpointer data);
+  gint (*SetUpCurl)(gpointer data);
+  void (*ExtractData)();
+  void (*AddStock)(const gchar *symbol, const gchar *shares);
+  void (*Sort)();
+  void (*Reset)();
+  void (*RemoveStock)(const gchar *s);
+  void (*SetSecurityNames)(gpointer data);
 } equity_folder;
 
 /* A handle to our three primary classes and some useful functions */
@@ -391,41 +374,40 @@ typedef struct {
   /* Main Multicurl Handle for use with data fetch operation */
   CURLM *multicurl_main_hnd;
 
-  /* Methods or Functions */
-  sub_func_b_t *Calculate;
-  sub_func_b_t *ToStrings;
-  sub_func_c_t *GetData;
-  sub_func_b_t *ExtractData;
-  sub_func_d_t *IsFetchingData;
-  sub_func_e_t *SetFetchingData;
-  sub_func_d_t *IsDefaultView;
-  sub_func_e_t *SetDefaultView;
-  sub_func_b_t *FreeMainCurlData;
-  sub_func_b_t *StopMultiCurlMain;
-  sub_func_b_t *StopMultiCurlAll;
-  sub_func_d_t *IsCurlCanceled;
-  sub_func_e_t *SetCurlCanceled;
-  sub_func_d_t *IsMainCurlCanceled;
-  sub_func_e_t *SetMainCurlCanceled;
-  sub_func_f_t *GetHoursOfUpdates;
-  sub_func_f_t *GetUpdatesPerMinute;
-  sub_func_d_t *IsHoliday;
-  sub_func_b_t *SetHoliday;
-  sub_func_a_t *GetPrimaryHeadings;
-  sub_func_a_t *GetDefaultHeadings;
-  sub_func_b_t *SetWindowDataSql;
-  sub_func_a_t *GetWindowData;
-  sub_func_a_t *GetMetaClass;
-  sub_func_a_t *GetMetalClass;
-  sub_func_a_t *GetSymNameMap;
-  sub_func_b_t *SetSymNameMap;
-  sub_func_a_t *GetEquityFolderClass;
-  sub_func_g_t *SecondsToOpen;
-  sub_func_d_t *IsClockDisplayed;
-  sub_func_e_t *SetClockDisplayed;
-  sub_func_d_t *IsIndicesDisplayed;
-  sub_func_e_t *SetIndicesDisplayed;
-  sub_func_b_t *SetSecurityNames;
+  /* Method/Function pointers */
+  void (*Calculate)();
+  void (*ToStrings)();
+  gint (*GetData)();
+  void (*ExtractData)();
+  gboolean (*IsFetchingData)();
+  void (*SetFetchingData)(gboolean data);
+  gboolean (*IsDefaultView)();
+  void (*SetDefaultView)(gboolean data);
+  void (*FreeMainCurlData)();
+  void (*StopMultiCurlMain)();
+  void (*StopMultiCurlAll)();
+  gboolean (*IsClosed)();
+  void (*SetClosed)(gboolean data);
+  gboolean (*IsCurlCanceled)();
+  void (*SetCurlCanceled)(gboolean data);
+  gboolean (*IsMainCurlCanceled)();
+  void (*SetMainCurlCanceled)(gboolean data);
+  gdouble (*GetHoursOfUpdates)();
+  gdouble (*GetUpdatesPerMinute)();
+  gpointer (*GetPrimaryHeadings)();
+  gpointer (*GetDefaultHeadings)();
+  void (*SaveSqlData)();
+  gpointer (*GetWindowData)();
+  gpointer (*GetMetaClass)();
+  gpointer (*GetMetalClass)();
+  gpointer (*GetSymNameMap)();
+  void (*SetSymNameMap)(gpointer data);
+  gpointer (*GetEquityFolderClass)();
+  gboolean (*IsClockDisplayed)();
+  void (*SetClockDisplayed)(gboolean data);
+  gboolean (*IsIndicesDisplayed)();
+  void (*SetIndicesDisplayed)(gboolean data);
+  void (*SetSecurityNames)();
 
 } portfolio_packet;
 

@@ -31,12 +31,6 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include <ctype.h>
-#include <stdbool.h>
 
 #include <locale.h>
 #include <monetary.h>
@@ -44,63 +38,68 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/macros.h"
 #include "../include/workfuncs.h"
 
-bool CheckValidString(const char *string) {
-  size_t len = strlen(string);
+gboolean CheckValidString(const gchar *string) {
+  gsize len = g_utf8_strlen(string, -1);
 
   /* The string cannot begin with these characters  */
-  if (strchr(" _\0", (int)string[0]))
-    return false;
+  if (g_utf8_strchr(" _\0", -1, (gunichar)string[0]))
+    return FALSE;
 
   /* The string cannot end with these characters  */
-  if (strchr(" _.", (int)string[len - 1]))
-    return false;
+
+  if (g_utf8_strchr(" _.", -1, (gunichar)string[len - 1]))
+    return FALSE;
 
   /* The string cannot contain these characters  */
-  if (strpbrk(string, "\n\"\'\\)(][}{~`, "))
-    return false;
+  gint g = 0;
+  while (string[g]) {
+    if (g_utf8_strchr("\n\"\'\\)(][}{~`, ", -1, (gunichar)string[g]))
+      return FALSE;
+    g++;
+  }
 
-  return true;
+  return TRUE;
 }
 
-bool CheckIfStringDoubleNumber(const char *string) {
-  char *end_ptr;
-  strtod(string, &end_ptr);
+gboolean CheckIfStringDoubleNumber(const gchar *string) {
+  gchar *end_ptr;
+  g_strtod(string, &end_ptr);
 
   /* If no conversion took place or if conversion not complete. */
   if ((end_ptr == string) || (*end_ptr != '\0')) {
-    return false;
+    return FALSE;
   }
 
-  return true;
+  return TRUE;
 }
 
-bool CheckIfStringDoublePositiveNumber(const char *string) {
-  char *end_ptr;
-  double num = strtod(string, &end_ptr);
+gboolean CheckIfStringDoublePositiveNumber(const gchar *string) {
+  gchar *end_ptr;
+  gdouble num = g_strtod(string, &end_ptr);
 
   /* If no conversion took place or if conversion not complete. */
   if ((end_ptr == string) || (*end_ptr != '\0'))
-    return false;
+    return FALSE;
   if (num < 0)
-    return false;
+    return FALSE;
 
-  return true;
+  return TRUE;
 }
 
-bool CheckIfStringLongPositiveNumber(const char *string) {
-  char *end_ptr;
-  long num = strtol(string, &end_ptr, 10);
+gboolean CheckIfStringLongPositiveNumber(const gchar *string) {
+  gchar *end_ptr;
+  gint64 num = g_ascii_strtoll(string, &end_ptr, 10);
 
   /* If no conversion took place or if conversion not complete. */
   if ((end_ptr == string) || (*end_ptr != '\0'))
-    return false;
+    return FALSE;
   if (num < 0)
-    return false;
+    return FALSE;
 
-  return true;
+  return TRUE;
 }
 
-void CopyString(char **dst, const char *src)
+void CopyString(gchar **dst, const gchar *src)
 /* Take in a string buffer, resize it to fit the src
    Copy the src to the *dst.  If either src or dst is NULL
    do nothing. If *dst = NULL, allocate memory for the buffer.
@@ -114,19 +113,19 @@ void CopyString(char **dst, const char *src)
   if (!dst || !src)
     return;
 
-  size_t len = strlen(src) + 1;
-  char *tmp = realloc(dst[0], len);
+  gsize len = g_utf8_strlen(src, -1) + 1;
+  gchar *tmp = g_realloc(dst[0], len);
 
   if (tmp == NULL) {
-    printf("Not Enough Memory, realloc returned NULL.\n");
+    printf("Not Enough Memory, g_realloc returned NULL.\n");
     exit(EXIT_FAILURE);
   }
 
   dst[0] = tmp;
-  snprintf(dst[0], len, "%s", src);
+  g_snprintf(dst[0], len, "%s", src);
 }
 
-void ToNumStr(char *s)
+void ToNumStr(gchar *s)
 /* Remove all dollar signs '$', commas ',', braces '(',
    percent signs '%', negative signs '-', and plus
    signs '+'  from a string. */
@@ -137,11 +136,11 @@ void ToNumStr(char *s)
    different currency symbol]. */
 {
   /* Read character by character until the null character is reached. */
-  for (unsigned int i = 0; s[i]; i++) {
+  for (guint i = 0; s[i]; i++) {
     /* If s[i] is one of these characters */
-    if (strchr("$,()%-+", (int)s[i])) {
+    if (g_utf8_strchr("$,()%-+", -1, (gunichar)s[i])) {
       /* Read each character thereafter and */
-      for (unsigned int j = i; s[j]; j++) {
+      for (guint j = i; s[j]; j++) {
         /* Shift the array to the left one character [remove the character] */
         s[j] = s[j + 1];
       }
@@ -152,40 +151,18 @@ void ToNumStr(char *s)
   }
 }
 
-void LowerCaseStr(char *s) {
-  /* Convert the string to lowercase letters */
-  for (unsigned short i = 0; s[i]; i++) {
-    s[i] = tolower(s[i]);
-  }
-}
-
-void UpperCaseStr(char *s) {
-  /* Convert the string to uppercase letters */
-  for (unsigned short i = 0; s[i]; i++) {
-    s[i] = toupper(s[i]);
-  }
-}
-
-void Chomp(char *s)
-/* Locate first newline character '\n' in a string, replace with NULL */
-{
-  char *ch = strchr(s, (int)'\n');
-  if (ch != NULL)
-    *ch = 0;
-}
-
-static size_t abs_val(const double n) {
+static gsize abs_val(const gdouble n) {
   if (n < 0)
-    return (size_t)floor((-1.0f * n));
-  return (size_t)floor(n);
+    return (gsize)floor((-1.0f * n));
+  return (gsize)floor(n);
 }
 
-static size_t length_doub_string(const double n, const unsigned short dec_pts,
-                                 const unsigned int type) {
+static gsize length_doub_string(const gdouble n, const guint8 dec_pts,
+                                const guint type) {
 
-  size_t number = abs_val(n);
-  size_t a = 1, b = 1, len = 0, chars = 0;
-  unsigned int neg_sign = 0, commas = 0;
+  gsize number = abs_val(n);
+  gsize a = 1, b = 1, len = 0, chars = 0;
+  guint8 neg_sign = 0, commas = 0;
 
   do {
     chars++;
@@ -230,25 +207,24 @@ static size_t length_doub_string(const double n, const unsigned short dec_pts,
   return len;
 }
 
-double StringToDouble(const char *str)
+gdouble StringToDouble(const gchar *str)
 /* Take in a number string, convert to a double value.
    The string can be formatted as a monetary string, a percent string,
    a number formatted string [thousands gouping], or a regular number
    string [no thousands grouping]. */
 {
-  char *newstr = strdup(str);
+  gchar *newstr = g_strdup(str);
 
   ToNumStr(newstr);
-  double num = strtod(newstr, NULL);
+  gdouble num = g_strtod(newstr, NULL);
 
-  free(newstr);
+  g_free(newstr);
 
   return num;
 }
 
-void DoubleToFormattedStr(char **dst, const double num,
-                          const unsigned short digits_right,
-                          const unsigned int format_type)
+void DoubleToFormattedStr(gchar **dst, const gdouble num,
+                          const guint8 digits_right, const guint format_type)
 /* Take in a string buffer, a double, a precision variable, and a format type
    convert to a formatted string [monetary, percent, or number].
 
@@ -269,12 +245,12 @@ void DoubleToFormattedStr(char **dst, const double num,
   if (!dst || digits_right > 4)
     return;
 
-  size_t len = length_doub_string(num, digits_right, format_type) + 1;
+  gsize len = length_doub_string(num, digits_right, format_type) + 1;
   /* Adjust the string length */
-  char *tmp = realloc(dst[0], len);
+  gchar *tmp = g_realloc(dst[0], len);
 
   if (tmp == NULL) {
-    printf("Not Enough Memory, realloc returned NULL.\n");
+    printf("Not Enough Memory, g_realloc returned NULL.\n");
     exit(EXIT_FAILURE);
   }
 
@@ -321,7 +297,7 @@ void DoubleToFormattedStr(char **dst, const double num,
       break;
     }
     setlocale(LC_NUMERIC, LOCALE);
-    snprintf(dst[0], len, tmp, num);
+    g_snprintf(dst[0], len, tmp, num);
     break;
   case NUM_STR:
     switch (digits_right) {
@@ -342,7 +318,7 @@ void DoubleToFormattedStr(char **dst, const double num,
       break;
     }
     setlocale(LC_NUMERIC, LOCALE);
-    snprintf(dst[0], len, tmp, num);
+    g_snprintf(dst[0], len, tmp, num);
     break;
   default:
     printf("DoubleToFormattedStr format_type out of range.\n");
@@ -351,8 +327,7 @@ void DoubleToFormattedStr(char **dst, const double num,
   }
 }
 
-void StringToMonStr(char **dst, const char *src,
-                    const unsigned short digits_right)
+void StringToMonStr(gchar **dst, const gchar *src, const guint8 digits_right)
 /* Take in a string buffer, a number string, and the precision,
    Convert the number string, src, to a monetary string, dst[0].
    If the src string cannot be converted to a double, undefined behavior.
@@ -370,6 +345,6 @@ void StringToMonStr(char **dst, const char *src,
   if (!dst || !src)
     return;
 
-  double n = StringToDouble(src);
+  gdouble n = StringToDouble(src);
   DoubleToFormattedStr(dst, n, digits_right, MON_STR);
 }

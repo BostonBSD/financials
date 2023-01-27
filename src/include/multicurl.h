@@ -36,9 +36,9 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "multicurl_types.h" /* MemType, CURL, CURLM */
 
 /* Function Prototypes */
-void FreeMemtype(MemType *);
-void *SetUpCurlHandle(CURL *, CURLM *, char *, MemType *);
-unsigned short PerformMultiCurl(CURLM *, double);
-unsigned short PerformMultiCurl_no_prog(CURLM *);
+void FreeMemtype(MemType *mem_data);
+gpointer SetUpCurlHandle(CURL *hnd, CURLM *mh, gchar *url, MemType *output);
+gushort PerformMultiCurl(CURLM *mh, gdouble size);
+gushort PerformMultiCurl_no_prog(CURLM *mh);
 
 #endif /* MULTICURL_HEADER_H */

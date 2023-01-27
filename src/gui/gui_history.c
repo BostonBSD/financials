@@ -30,21 +30,18 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <ctype.h>
-
 #include "../include/class_types.h" /* portfolio_packet, window_data */
 #include "../include/gui.h"         /* Gtk headers and funcs */
-
-#include "../include/csv.h"
+#include "../include/multicurl.h"
 #include "../include/mutex.h"
 #include "../include/workfuncs.h"
 
-int HistoryCompletionSet(void *data) {
+gint HistoryCompletionSet(gpointer data) {
   CompletionSet(data, GUI_COMPLETION_HISTORY);
   return 0;
 }
 
-int HistoryShowHide(void *data) {
+gint HistoryShowHide(gpointer data) {
   portfolio_packet *pkg = (portfolio_packet *)data;
   window_data *W = pkg->GetWindowData();
 
@@ -53,7 +50,7 @@ int HistoryShowHide(void *data) {
   gboolean visible = gtk_widget_is_visible(window);
 
   if (visible) {
-    gtk_widget_set_visible(window, false);
+    gtk_widget_set_visible(window, FALSE);
     gtk_window_resize(GTK_WINDOW(window), W->history_width, W->history_height);
     gtk_window_move(GTK_WINDOW(window), W->history_x_pos, W->history_y_pos);
   } else {
@@ -61,7 +58,7 @@ int HistoryShowHide(void *data) {
     gtk_window_move(GTK_WINDOW(window), W->history_x_pos, W->history_y_pos);
 
     GtkWidget *Button = GetWidget("HistoryFetchDataBTN");
-    gtk_widget_set_sensitive(Button, false);
+    gtk_widget_set_sensitive(Button, FALSE);
     g_object_set(G_OBJECT(Button), "can-default", TRUE, "has-default", TRUE,
                  NULL);
 
@@ -77,31 +74,31 @@ int HistoryShowHide(void *data) {
     GtkWidget *scrwindow = GetWidget("HistoryScrolledWindow");
     gtk_scrolled_window_set_vadjustment(GTK_SCROLLED_WINDOW(scrwindow), NULL);
 
-    gtk_widget_set_visible(window, true);
+    gtk_widget_set_visible(window, TRUE);
   }
   return 0;
 }
 
-int HistoryCursorMove() {
+gint HistoryCursorMove() {
   const gchar *s = GetEntryText("HistorySymbolEntryBox");
   GtkWidget *Button = GetWidget("HistoryFetchDataBTN");
 
   if (CheckValidString(s)) {
-    gtk_widget_set_sensitive(Button, true);
+    gtk_widget_set_sensitive(Button, TRUE);
   } else {
-    gtk_widget_set_sensitive(Button, false);
+    gtk_widget_set_sensitive(Button, FALSE);
   }
 
   return 0;
 }
 
-int HistoryTreeViewClear() {
+gint HistoryTreeViewClear() {
   /* Clear the GtkTreeView. */
   GtkWidget *treeview = GetWidget("HistoryTreeView");
   return TreeViewClear(treeview);
 }
 
-static char *col_names[HISTORY_N_COLUMNS] = {
+static gchar *col_names[HISTORY_N_COLUMNS] = {
     "Date", "Price",    "High", "Low", "Open",     "Pr. Close",
     "Chg",  "Gain (%)", "Vol.", "RSI", "Indicator"};
 
@@ -113,28 +110,38 @@ static void history_set_columns() {
   }
 }
 
-int HistorySetSNLabel(void *data) {
-  gchar *sec_name;
-  data ? (sec_name = (gchar *)data) : (sec_name = NULL);
+gint HistorySetSNLabel(gpointer data) {
+  string_font *str_fnt_container = (string_font *)data;
+  GtkWidget *label = GetWidget("HistoryStockSymbolLabel");
+  const gchar *fmt = "<span foreground='MidnightBlue' size='larger'>%s</span>";
 
-  GtkWidget *Label = GetWidget("HistoryStockSymbolLabel");
-
-  gushort len = strlen(sec_name ? sec_name : "");
+  gushort len = g_utf8_strlen(
+      str_fnt_container->string ? str_fnt_container->string : "", -1);
   if (len >= 96) {
-    sec_name[95] = 0;
-    gchar *ch = strchr(sec_name, (int)',');
+    /* We don't want names longer than 95 characters. */
+    str_fnt_container->string[95] = 0;
+    /* Truncate unnecessary info after the comma. */
+    gchar *ch = g_utf8_strchr(str_fnt_container->string, -1, (gunichar)',');
     if (ch != NULL)
       *ch = 0;
   }
 
-  gtk_label_set_text(GTK_LABEL(Label), sec_name ? sec_name : "");
-  if (sec_name)
-    g_free(sec_name);
+  SetFormattedLabel(label, fmt, str_fnt_container->font,
+                    str_fnt_container->string ? str_fnt_container->string : "");
+
+  if (str_fnt_container->string)
+    g_free(str_fnt_container->string);
+
+  if (str_fnt_container->font)
+    g_free(str_fnt_container->font);
+
+  if (str_fnt_container)
+    g_free(str_fnt_container);
 
   return 0;
 }
 
-int HistoryGetSymbol(char **s)
+gint HistoryGetSymbol(gchar **s)
 /* Get the stock symbol from the EntryBox.
    Must free string buffer.
 
@@ -142,23 +149,24 @@ int HistoryGetSymbol(char **s)
    Gtk outside the Gtk Main Loop.
 */
 {
-  s[0] = strdup(GetEntryText("HistorySymbolEntryBox"));
-  UpperCaseStr(s[0]);
+  const gchar *tmp = GetEntryText("HistorySymbolEntryBox");
+  /* Convert to uppercase letters, must free return value. */
+  s[0] = g_ascii_strup(tmp, -1);
 
   return 0;
 }
 
 enum { RUN, RESET };
-static bool history_rsi_ready(double gain_f, double *rsi_f, int state) {
+static gboolean history_rsi_ready(gdouble gain_f, gdouble *rsi_f, gint state) {
   /* We need to remember the running averages
      and the counter between iterations. */
-  static unsigned short c = 0;
-  static double avg_gain_f = 0.0f, avg_loss_f = 0.0f;
+  static gushort c = 0;
+  static gdouble avg_gain_f = 0.0f, avg_loss_f = 0.0f;
   if (state == RESET) {
     c = 0;
     avg_gain_f = 0.0f;
     avg_loss_f = 0.0f;
-    return false;
+    return FALSE;
   }
 
   /* For 13 days we sum the gains and losses. */
@@ -179,10 +187,10 @@ static bool history_rsi_ready(double gain_f, double *rsi_f, int state) {
     /* Calculate the rsi. */
     *rsi_f = CalcRsi(avg_gain_f, avg_loss_f);
     c++;
-    return true;
+    return TRUE;
   }
   c++;
-  return false;
+  return FALSE;
 }
 
 typedef struct {
@@ -199,39 +207,41 @@ typedef struct {
   char *indicator_ch;
 } history_strings;
 
-static bool history_rsi_calculate(char *line, history_strings *strings,
-                                  int state) {
+static gboolean history_rsi_calculate(gchar *line, history_strings *strings,
+                                      gint state) {
   /* We need to remember the last closing price in the next iteration. */
-  static double cur_price_f = 0.0f;
+  static gdouble cur_price_f = 0.0f;
 
   if (state == RESET) {
     /* Reset the static variables. */
     cur_price_f = 0.0f;
     history_rsi_ready(0.0, NULL, RESET);
-    return false;
+    return FALSE;
   }
 
-  double gain_f, prev_price_f, rsi_f, change_f;
-  unsigned long volume_long;
+  gdouble gain_f, prev_price_f, rsi_f, change_f;
+  gulong volume_long;
 
-  Chomp(line);
-  char **csv_array = parse_csv(line);
-  if (csv_array == NULL)
-    return false;
+  gchar **csv_array = g_strsplit(line, ",", -1);
+  if (g_strv_length(csv_array) < 7) {
+    g_strfreev(csv_array);
+    return FALSE;
+  }
+
   prev_price_f = cur_price_f;
-  cur_price_f = strtod(csv_array[4] ? csv_array[4] : "0", NULL);
+  cur_price_f = g_strtod(csv_array[4] ? csv_array[4] : "0", NULL);
 
   /* The initial closing price has no prev_price */
   if (prev_price_f == 0.0f) {
-    free_csv_line(csv_array);
-    return false;
+    g_strfreev(csv_array);
+    return FALSE;
   }
 
   gain_f = CalcGain(cur_price_f, prev_price_f);
   if (!history_rsi_ready(gain_f, &rsi_f, RUN)) {
-    /* Until we get 14 days of data return false. */
-    free_csv_line(csv_array);
-    return false;
+    /* Until we get 14 days of data return FALSE. */
+    g_strfreev(csv_array);
+    return FALSE;
   }
 
   StringToStrPango(&strings->date_ch,
@@ -258,7 +268,7 @@ static bool history_rsi_calculate(char *line, history_strings *strings,
   }
   DoubleToFormattedStrPango(&strings->rsi_ch, rsi_f, 2, NUM_STR, BLACK);
   volume_long =
-      (unsigned long)strtol(csv_array[6] ? csv_array[6] : "0", NULL, 10);
+      (gulong)g_ascii_strtoll(csv_array[6] ? csv_array[6] : "0", NULL, 10);
   DoubleToFormattedStrPango(&strings->volume_ch, (double)volume_long, 0,
                             NUM_STR, BLACK);
 
@@ -274,42 +284,42 @@ static bool history_rsi_calculate(char *line, history_strings *strings,
     StringToStrPango(&strings->indicator_ch, "Oversold", GREEN);
   }
 
-  free_csv_line(csv_array);
-  return true;
+  g_strfreev(csv_array);
+  return TRUE;
 }
 
-static void history_set_store_thd_cleanup(void *data) {
+static void history_set_store_thd_cleanup(gpointer data) {
   history_strings *history_strs = (history_strings *)data;
 
   /* Reset the static variables. */
   history_rsi_calculate(NULL, NULL, RESET);
 
-  free(history_strs->date_ch);
-  free(history_strs->gain_ch);
-  free(history_strs->rsi_ch);
-  free(history_strs->volume_ch);
-  free(history_strs->price_ch);
-  free(history_strs->high_ch);
-  free(history_strs->low_ch);
-  free(history_strs->opening_ch);
-  free(history_strs->change_ch);
-  free(history_strs->prev_closing_ch);
-  free(history_strs->indicator_ch);
+  g_free(history_strs->date_ch);
+  g_free(history_strs->gain_ch);
+  g_free(history_strs->rsi_ch);
+  g_free(history_strs->volume_ch);
+  g_free(history_strs->price_ch);
+  g_free(history_strs->high_ch);
+  g_free(history_strs->low_ch);
+  g_free(history_strs->opening_ch);
+  g_free(history_strs->change_ch);
+  g_free(history_strs->prev_closing_ch);
+  g_free(history_strs->indicator_ch);
 }
 
-static void history_set_store(GtkListStore *store, const char *curl_data) {
+static void history_set_store(GtkListStore *store, const gchar *curl_data) {
   if (curl_data == NULL) {
     return;
   }
 
   history_strings history_strs = (history_strings){NULL};
-  pthread_cleanup_push(history_set_store_thd_cleanup, &history_strs);
 
   GtkTreeIter iter;
 
   /* Convert a String to a File Pointer Stream for Reading */
-  FILE *fp = fmemopen((void *)curl_data, strlen(curl_data) + 1, "r");
-  char line[1024];
+  FILE *fp =
+      fmemopen((gpointer)curl_data, g_utf8_strlen(curl_data, -1) + 1, "r");
+  gchar line[1024];
 
   /* Ignore the header line */
   if (fgets(line, 1024, fp) == NULL) {
@@ -317,13 +327,17 @@ static void history_set_store(GtkListStore *store, const char *curl_data) {
     return;
   }
   while (fgets(line, 1024, fp) != NULL) {
+    g_strchomp(line);
+
     /* If there is a null error in this line, ignore the line.
        Sometimes Yahoo! data is incomplete, the result is more
        correct if we ignore the incomplete portion of data. */
-    if (strstr(line, "null"))
+    /* If we have an empty line, continue. */
+
+    if (g_strrstr(line, "null") || line[0] == '\0')
       continue;
-    /* 404 replies start with an html tag after the header line. */
-    if (strstr(line, "<html>"))
+    /* Invalid replies start with a tag. */
+    if (g_strrstr(line, "<"))
       break;
 
     /* Don't start adding rows until we get 14 days of data. */
@@ -347,10 +361,10 @@ static void history_set_store(GtkListStore *store, const char *curl_data) {
   }
 
   fclose(fp);
-  pthread_cleanup_pop(1);
+  history_set_store_thd_cleanup(&history_strs);
 }
 
-GtkListStore *HistoryMakeStore(const char *data_str) {
+GtkListStore *HistoryMakeStore(const gchar *data_str) {
   GtkListStore *store;
 
   /* Set up the storage container with the number of columns and column type */
@@ -364,7 +378,7 @@ GtkListStore *HistoryMakeStore(const char *data_str) {
   return store;
 }
 
-int HistoryMakeTreeview(void *data) {
+int HistoryMakeTreeview(gpointer data) {
   GtkListStore *store = (GtkListStore *)data;
   GtkWidget *list = GetWidget("HistoryTreeView");
 
@@ -385,4 +399,28 @@ int HistoryMakeTreeview(void *data) {
                                GTK_TREE_VIEW_GRID_LINES_NONE);
 
   return 0;
+}
+
+MemType *FetchHistoryData(const gchar *symbol_ch, portfolio_packet *pkg) {
+  meta *D = pkg->GetMetaClass();
+  gchar *MyUrl_ch = NULL;
+  MemType *MyOutputStruct = (MemType *)g_malloc(sizeof(*MyOutputStruct));
+  MyOutputStruct->memory = NULL;
+  MyOutputStruct->size = 0;
+
+  /* Number of Seconds in a Year Plus Three Weeks */
+  guint period = 31557600 + (604800 * 3);
+  GetYahooUrl(&MyUrl_ch, symbol_ch, period);
+
+  SetUpCurlHandle(D->history_hnd, D->multicurl_history_hnd, MyUrl_ch,
+                  MyOutputStruct);
+  if (PerformMultiCurl_no_prog(D->multicurl_history_hnd) != 0) {
+    g_free(MyUrl_ch);
+    FreeMemtype(MyOutputStruct);
+    g_free(MyOutputStruct);
+    return NULL;
+  }
+
+  g_free(MyUrl_ch);
+  return MyOutputStruct;
 }

@@ -34,7 +34,9 @@ POSSIBILITY OF SUCH DAMAGE.
 #define JSON_HEADER_H
 
 /* json */
-void *JsonExtractEquity(char *, double *, double *, double *, double *,
-                        double *, double *, double *);
+gboolean JsonExtractEquity(gchar *str, gdouble *current_price_f,
+                           gdouble *high_f, gdouble *low_f, gdouble *opening_f,
+                           gdouble *prev_closing_f, gdouble *ch_share_f,
+                           gdouble *ch_percent_f);
 
 #endif /* JSON_HEADER_H */

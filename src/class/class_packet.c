@@ -30,9 +30,6 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <stdlib.h>
-#include <time.h> /* time_t, struct tm, time ()  */
-
 #include "../include/class.h" /* The class init and destruct funcs are required 
                                        in the class methods, includes portfolio_packet 
                                        metal, meta, and equity_folder class types */
@@ -49,57 +46,13 @@ POSSIBILITY OF SUCH DAMAGE.
 portfolio_packet *packet;
 
 /* Class Method (also called Function) Definitions */
-static void Calculate() {
-  pthread_mutex_lock(&mutex_working[CLASS_CALCULATE_MUTEX]);
-
-  packet->equity_folder_class->Calculate();
-  packet->metal_class->Calculate();
-  packet->meta_class->CalculatePortfolio(packet);
-  /* No need to calculate the index data [the gain calculation is performed
-   * during extraction] */
-
-  pthread_mutex_unlock(&mutex_working[CLASS_CALCULATE_MUTEX]);
-}
-
-static void ToStrings() {
-  pthread_mutex_lock(&mutex_working[CLASS_TOSTRINGS_MUTEX]);
-
-  packet->meta_class->ToStringsPortfolio();
-  packet->meta_class->ToStringsIndices();
-  packet->metal_class->ToStrings(packet->meta_class->decimal_places_shrt);
-  packet->equity_folder_class->ToStrings(
-      packet->meta_class->decimal_places_shrt);
-
-  pthread_mutex_unlock(&mutex_working[CLASS_TOSTRINGS_MUTEX]);
-}
-
-static void FreeMainCurlData() {
-  equity_folder *F = packet->GetEquityFolderClass();
-  metal *M = packet->GetMetalClass();
-  meta *Met = packet->GetMetaClass();
-
-  for (unsigned short c = 0; c < F->size; c++) {
-    FreeMemtype(&F->Equity[c]->JSON);
-  }
-  FreeMemtype(&M->Gold->CURLDATA);
-  FreeMemtype(&M->Silver->CURLDATA);
-  FreeMemtype(&M->Platinum->CURLDATA);
-  FreeMemtype(&M->Palladium->CURLDATA);
-
-  FreeMemtype(&Met->INDEX_DOW_CURLDATA);
-  FreeMemtype(&Met->INDEX_NASDAQ_CURLDATA);
-  FreeMemtype(&Met->INDEX_SP_CURLDATA);
-  FreeMemtype(&Met->CRYPTO_BITCOIN_CURLDATA);
-}
-
-static int perform_multicurl_request(portfolio_packet *pkg) {
+static gint perform_multicurl_request(portfolio_packet *pkg) {
   equity_folder *F = pkg->GetEquityFolderClass();
-  metal *M = pkg->GetMetalClass();
-  int return_code = 0;
-  short num_metals = 2;
-  if (M->Platinum->ounce_f > 0)
+  gint return_code = 0;
+  gushort num_metals = 2;
+  if (pkg->metal_class->Platinum->ounce_f > 0)
     num_metals++;
-  if (M->Palladium->ounce_f > 0)
+  if (pkg->metal_class->Palladium->ounce_f > 0)
     num_metals++;
 
   /* Perform the cURL requests simultaneously using multi-cURL. */
@@ -112,116 +65,115 @@ static int perform_multicurl_request(portfolio_packet *pkg) {
   return return_code;
 }
 
-static int GetData() {
-  pthread_mutex_lock(&mutex_working[CLASS_MEMBER_MUTEX]);
+static gint GetData() {
+  g_mutex_lock(&mutexes[CLASS_MEMBER_MUTEX]);
+  gint return_code = 0;
 
-  portfolio_packet *pkg = packet;
-  equity_folder *F = pkg->GetEquityFolderClass();
-  metal *M = pkg->GetMetalClass();
-  meta *Met = pkg->GetMetaClass();
-  int return_code = 0;
+  /* We don't want to remove handles while setting up curl. */
+  g_mutex_lock(&mutexes[MULTICURL_REM_HAND_MUTEX]);
 
-  Met->SetUpCurlIndicesData(pkg); /* Four Indices */
-  M->SetUpCurl(pkg);              /* Two to Four Metals */
-  F->SetUpCurl(pkg);
-  return_code = perform_multicurl_request(pkg);
+  packet->meta_class->SetUpCurlIndicesData(packet); /* Four Indices */
+  packet->metal_class->SetUpCurl(packet);           /* Two to Four Metals */
+  packet->equity_folder_class->SetUpCurl(packet);
 
-  pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
+  /* The user might want to remove handles during perform_multicurl_request().
+   */
+  g_mutex_unlock(&mutexes[MULTICURL_REM_HAND_MUTEX]);
+
+  return_code = (gint)perform_multicurl_request(packet);
+
+  g_mutex_unlock(&mutexes[CLASS_MEMBER_MUTEX]);
   return return_code;
 }
 
 static void ExtractData() {
-  pthread_mutex_lock(&mutex_working[CLASS_MEMBER_MUTEX]);
+  g_mutex_lock(&mutexes[CLASS_EXTRACT_DATA_MUTEX]);
 
   packet->meta_class->ExtractIndicesData();
   packet->metal_class->ExtractData();
   packet->equity_folder_class->ExtractData();
 
-  pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
+  g_mutex_unlock(&mutexes[CLASS_EXTRACT_DATA_MUTEX]);
 }
 
-static bool IsFetchingData() { return packet->meta_class->fetching_data_bool; }
+static void Calculate() {
+  g_mutex_lock(&mutexes[CLASS_CALCULATE_MUTEX]);
 
-static void SetFetchingData(bool data) {
-  packet->meta_class->fetching_data_bool = data;
+  packet->equity_folder_class->Calculate();
+  packet->metal_class->Calculate();
+  packet->meta_class->CalculatePortfolio(packet);
+  /* No need to calculate the index data [the gain calculation is performed
+   * during extraction] */
+
+  g_mutex_unlock(&mutexes[CLASS_CALCULATE_MUTEX]);
 }
 
-static bool IsDefaultView() {
-  return packet->meta_class->main_win_default_view_bool;
+static void ToStrings() {
+  g_mutex_lock(&mutexes[CLASS_TOSTRINGS_MUTEX]);
+
+  packet->meta_class->ToStringsPortfolio();
+  packet->meta_class->ToStringsIndices();
+  packet->metal_class->ToStrings(packet->meta_class->decimal_places_guint8);
+  packet->equity_folder_class->ToStrings(
+      packet->meta_class->decimal_places_guint8);
+
+  g_mutex_unlock(&mutexes[CLASS_TOSTRINGS_MUTEX]);
 }
 
-static void SetDefaultView(bool data) {
-  packet->meta_class->main_win_default_view_bool = data;
+static gdouble GetHoursOfUpdates() {
+  return packet->meta_class->updates_hours_f;
 }
 
-static bool IsCurlCanceled()
-/* Non-main curl flag */
-{
-  return packet->meta_class->multicurl_cancel_bool;
+static gdouble GetUpdatesPerMinute() {
+  return packet->meta_class->updates_per_min_f;
 }
 
-static void SetCurlCanceled(bool data)
-/* Non-main curl flag */
-{
-  packet->meta_class->multicurl_cancel_bool = data;
-}
+static void FreeMainCurlData() {
+  g_mutex_lock(&mutexes[CLASS_EXTRACT_DATA_MUTEX]);
 
-static bool IsMainCurlCanceled()
-/* Main window curl flag */
-{
-  return packet->meta_class->multicurl_cancel_main_bool;
-}
+  equity_folder *F = packet->GetEquityFolderClass();
+  metal *M = packet->GetMetalClass();
+  meta *Met = packet->GetMetaClass();
 
-static void SetMainCurlCanceled(bool data)
-/* Main window curl flag */
-{
-  packet->meta_class->multicurl_cancel_main_bool = data;
-}
+  for (guint8 c = 0; c < F->size; c++) {
+    FreeMemtype(&F->Equity[c]->JSON);
+  }
+  FreeMemtype(&M->Gold->CURLDATA);
+  FreeMemtype(&M->Silver->CURLDATA);
+  FreeMemtype(&M->Platinum->CURLDATA);
+  FreeMemtype(&M->Palladium->CURLDATA);
 
-static bool IsHoliday() { return packet->meta_class->holiday_bool; }
+  FreeMemtype(&Met->INDEX_DOW_CURLDATA);
+  FreeMemtype(&Met->INDEX_NASDAQ_CURLDATA);
+  FreeMemtype(&Met->INDEX_SP_CURLDATA);
+  FreeMemtype(&Met->CRYPTO_BITCOIN_CURLDATA);
 
-static void SetHoliday() {
-  pthread_mutex_lock(&mutex_working[CLASS_MEMBER_MUTEX]);
-
-  meta *D = packet->GetMetaClass();
-  struct tm NY_Time = NYTimeComponents();
-  D->holiday_bool = CheckHoliday(NY_Time);
-
-  pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
-}
-
-static double GetHoursOfUpdates() {
-
-  meta *D = packet->GetMetaClass();
-  double return_value = D->updates_hours_f;
-
-  return return_value;
-}
-
-static double GetUpdatesPerMinute() {
-  pthread_mutex_lock(&mutex_working[CLASS_MEMBER_MUTEX]);
-
-  meta *D = packet->GetMetaClass();
-  double return_value = D->updates_per_min_f;
-
-  pthread_mutex_unlock(&mutex_working[CLASS_MEMBER_MUTEX]);
-  return return_value;
+  g_mutex_unlock(&mutexes[CLASS_EXTRACT_DATA_MUTEX]);
 }
 
 static void remove_main_curl_handles(portfolio_packet *pkg)
 /* Removing the easy handle from the multihandle will stop the cURL data
    transfer immediately. curl_multi_remove_handle does nothing if the easy
-   handle is not currently set in the multihandle. */
+   handle is not currently set in the multihandle.
+
+   FYI: If the handles are removed during a transfer, curl appears to throw
+   a unix signal which will prevent canceling a thread during sleep in pthreads
+   or signalling a cond in Gthreads during g_cond_wait_until().  Use a flag in
+   conjunction, to exit the thread before the sleep() or g_cond_wait()
+   statement.
+  */
 {
+  g_mutex_lock(&mutexes[MULTICURL_REM_HAND_MUTEX]);
+
   metal *M = pkg->GetMetalClass();
   equity_folder *F = pkg->GetEquityFolderClass();
   meta *Met = pkg->GetMetaClass();
 
   curl_multi_wakeup(pkg->multicurl_main_hnd);
-  pthread_mutex_lock(&mutex_working[MULTICURL_PROG_MUTEX]);
+  g_mutex_lock(&mutexes[MULTICURL_PROG_MUTEX]);
 
   /* Equity Multicurl Operation */
-  for (unsigned short i = 0; i < F->size; i++) {
+  for (guint8 i = 0; i < F->size; i++) {
     curl_multi_remove_handle(pkg->multicurl_main_hnd, F->Equity[i]->easy_hnd);
   }
 
@@ -239,9 +191,11 @@ static void remove_main_curl_handles(portfolio_packet *pkg)
   curl_multi_remove_handle(pkg->multicurl_main_hnd, Met->index_sp_hnd);
   curl_multi_remove_handle(pkg->multicurl_main_hnd, Met->crypto_bitcoin_hnd);
 
-  pthread_mutex_unlock(&mutex_working[MULTICURL_PROG_MUTEX]);
+  g_mutex_unlock(&mutexes[MULTICURL_PROG_MUTEX]);
 
   pkg->FreeMainCurlData();
+
+  g_mutex_unlock(&mutexes[MULTICURL_REM_HAND_MUTEX]);
 }
 
 static void StopMultiCurlMain() {
@@ -262,11 +216,114 @@ static void StopMultiCurlAll() {
   remove_main_curl_handles(packet);
 }
 
-static void *GetPrimaryHeadings() { return &packet->meta_class->pri_h_mkd; }
+static gpointer GetPrimaryHeadings() { return &packet->meta_class->pri_h_mkd; }
 
-static void *GetDefaultHeadings() { return &packet->meta_class->def_h_mkd; }
+static gpointer GetDefaultHeadings() { return &packet->meta_class->def_h_mkd; }
 
-static void SetWindowDataSql() {
+static gpointer GetWindowData() { return &packet->meta_class->window_struct; }
+
+static gpointer GetMetaClass() { return packet->meta_class; }
+
+static gpointer GetMetalClass() { return packet->metal_class; }
+
+static gpointer GetEquityFolderClass() { return packet->equity_folder_class; }
+
+static gpointer GetSymNameMap() { return packet->meta_class->sym_map; }
+
+static void SetSymNameMap(gpointer data) {
+  packet->meta_class->sym_map = (symbol_name_map *)data;
+}
+
+static gboolean IsClockDisplayed() {
+  return packet->meta_class->clocks_displayed_bool;
+}
+
+static void SetClockDisplayed(gboolean data) {
+  packet->meta_class->clocks_displayed_bool = data;
+}
+
+static gboolean IsIndicesDisplayed() {
+  return packet->meta_class->index_bar_revealed_bool;
+}
+
+static void SetIndicesDisplayed(gboolean data) {
+  packet->meta_class->index_bar_revealed_bool = data;
+}
+
+static gboolean IsClosed()
+/* Market Closed flag */
+{
+  if (!packet->meta_class->clocks_displayed_bool) {
+    packet->meta_class->market_closed_bool =
+        GetTimeData(NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+  }
+  return packet->meta_class->market_closed_bool;
+}
+
+static void SetClosed(gboolean data)
+/* Market Closed flag */
+{
+  packet->meta_class->market_closed_bool = data;
+}
+
+static gboolean IsMainCurlCanceled()
+/* Main window curl flag */
+{
+  return packet->meta_class->multicurl_cancel_main_bool;
+}
+
+static void SetMainCurlCanceled(gboolean data)
+/* Main window curl flag */
+{
+  packet->meta_class->multicurl_cancel_main_bool = data;
+}
+
+static gboolean IsFetchingData() {
+  return packet->meta_class->fetching_data_bool;
+}
+
+static void SetFetchingData(gboolean data) {
+  packet->meta_class->fetching_data_bool = data;
+}
+
+static gboolean IsDefaultView() {
+  return packet->meta_class->main_win_default_view_bool;
+}
+
+static void SetDefaultView(gboolean data) {
+  packet->meta_class->main_win_default_view_bool = data;
+}
+
+static gboolean IsCurlCanceled()
+/* Non-main curl flag */
+{
+  return packet->meta_class->multicurl_cancel_bool;
+}
+
+static void SetCurlCanceled(gboolean data)
+/* Non-main curl flag */
+{
+  packet->meta_class->multicurl_cancel_bool = data;
+}
+
+static void SetSecurityNames() {
+  packet->equity_folder_class->SetSecurityNames(packet);
+}
+
+static void save_sql_data_bul(const gchar *metal_name_ch,
+                              const gdouble ounces_f, const gdouble premium_f) {
+  meta *D = packet->GetMetaClass();
+
+  gchar *ounces_ch, *premium_ch;
+  ounces_ch = g_markup_printf_escaped("%lf", ounces_f);
+  premium_ch = g_markup_printf_escaped("%lf", premium_f);
+  SqliteBullionAdd(metal_name_ch, ounces_ch, premium_ch, D);
+  g_free(ounces_ch);
+  g_free(premium_ch);
+}
+
+static void SaveSqlData() {
+  metal *M = packet->GetMetalClass();
   meta *D = packet->GetMetaClass();
   window_data *W = packet->GetWindowData();
 
@@ -275,48 +332,59 @@ static void SetWindowDataSql() {
   SqliteMainWindowPosAdd(W->main_x_pos, W->main_y_pos, D);
   SqliteHistoryWindowSizeAdd(W->history_width, W->history_height, D);
   SqliteHistoryWindowPosAdd(W->history_x_pos, W->history_y_pos, D);
-}
 
-static void *GetWindowData() { return &packet->meta_class->window_struct; }
+  /* Save preference info. */
+  SqlitePrefAdd("Main_Font", D->font_ch, D);
+  if (D->clocks_displayed_bool) {
+    SqlitePrefAdd("Clocks_Displayed", "TRUE", D);
+  } else {
+    SqlitePrefAdd("Clocks_Displayed", "FALSE", D);
+  }
+  if (D->index_bar_revealed_bool) {
+    SqlitePrefAdd("Indices_Displayed", "TRUE", D);
+  } else {
+    SqlitePrefAdd("Indices_Displayed", "FALSE", D);
+  }
 
-static void *GetMetaClass() { return packet->meta_class; }
+  gchar *value = g_markup_printf_escaped("%d", D->decimal_places_guint8);
+  SqlitePrefAdd("Decimal_Places", value, D);
+  g_free(value);
 
-static void *GetMetalClass() { return packet->metal_class; }
+  value = g_markup_printf_escaped("%lf", D->updates_per_min_f);
+  SqlitePrefAdd("Updates_Per_Min", value, D);
+  g_free(value);
 
-static void *GetEquityFolderClass() { return packet->equity_folder_class; }
+  value = g_markup_printf_escaped("%lf", D->updates_hours_f);
+  SqlitePrefAdd("Updates_Hours", value, D);
+  g_free(value);
 
-static unsigned int Seconds2Open() { return SecondsToOpen(); }
+  /* Save api info. */
+  SqliteAPIAdd("Stock_URL", D->stock_url_ch, D);
+  SqliteAPIAdd("URL_KEY", D->curl_key_ch, D);
+  SqliteAPIAdd("Nasdaq_Symbol_URL", D->Nasdaq_Symbol_url_ch, D);
+  SqliteAPIAdd("NYSE_Symbol_URL", D->NYSE_Symbol_url_ch, D);
 
-static void *GetSymNameMap() { return packet->meta_class->sym_map; }
+  /* Save cash info. */
+  value = g_markup_printf_escaped("%lf", D->cash_f);
+  SqliteCashAdd(value, D);
+  g_free(value);
 
-static void SetSymNameMap(void *data) {
-  packet->meta_class->sym_map = (symbol_name_map *)data;
-}
+  /* Save bullion info. */
+  save_sql_data_bul("gold", M->Gold->ounce_f, M->Gold->premium_f);
+  save_sql_data_bul("silver", M->Silver->ounce_f, M->Silver->premium_f);
+  save_sql_data_bul("platinum", M->Platinum->ounce_f, M->Platinum->premium_f);
+  save_sql_data_bul("palladium", M->Palladium->ounce_f,
+                    M->Palladium->premium_f);
 
-static bool IsClockDisplayed() {
-  return packet->meta_class->clocks_displayed_bool;
-}
-
-static void SetClockDisplayed(bool data) {
-  packet->meta_class->clocks_displayed_bool = data;
-}
-
-static bool IsIndicesDisplayed() {
-  return packet->meta_class->index_bar_revealed_bool;
-}
-
-static void SetIndicesDisplayed(bool data) {
-  packet->meta_class->index_bar_revealed_bool = data;
-}
-
-static void SetSecurityNames() {
-  packet->equity_folder_class->SetSecurityNames(packet);
+  /* It's easier to save / remove equity info while running than at app
+   * shutdown. */
 }
 
 /* Class Init Functions */
 void ClassInitPortfolioPacket() {
   /* Allocate Memory For A New Class Object */
-  portfolio_packet *new_class = (portfolio_packet *)malloc(sizeof(*new_class));
+  portfolio_packet *new_class =
+      (portfolio_packet *)g_malloc(sizeof(*new_class));
 
   /* Initialize Variables */
   new_class->metal_class = ClassInitMetal();
@@ -341,16 +409,13 @@ void ClassInitPortfolioPacket() {
   new_class->SetMainCurlCanceled = SetMainCurlCanceled;
   new_class->GetHoursOfUpdates = GetHoursOfUpdates;
   new_class->GetUpdatesPerMinute = GetUpdatesPerMinute;
-  new_class->IsHoliday = IsHoliday;
-  new_class->SetHoliday = SetHoliday;
   new_class->GetPrimaryHeadings = GetPrimaryHeadings;
   new_class->GetDefaultHeadings = GetDefaultHeadings;
-  new_class->SetWindowDataSql = SetWindowDataSql;
+  new_class->SaveSqlData = SaveSqlData;
   new_class->GetWindowData = GetWindowData;
   new_class->GetMetaClass = GetMetaClass;
   new_class->GetMetalClass = GetMetalClass;
   new_class->GetEquityFolderClass = GetEquityFolderClass;
-  new_class->SecondsToOpen = Seconds2Open;
   new_class->GetSymNameMap = GetSymNameMap;
   new_class->SetSymNameMap = SetSymNameMap;
   new_class->IsClockDisplayed = IsClockDisplayed;
@@ -358,6 +423,8 @@ void ClassInitPortfolioPacket() {
   new_class->IsIndicesDisplayed = IsIndicesDisplayed;
   new_class->SetIndicesDisplayed = SetIndicesDisplayed;
   new_class->SetSecurityNames = SetSecurityNames;
+  new_class->SetClosed = SetClosed;
+  new_class->IsClosed = IsClosed;
 
   /* General Multicurl Handle for the Main Fetch Operation */
   new_class->multicurl_main_hnd = curl_multi_init();
@@ -375,10 +442,9 @@ void ClassDestructPortfolioPacket(portfolio_packet *pkg) {
     ClassDestructMetal(pkg->metal_class);
   if (pkg->meta_class)
     ClassDestructMeta(pkg->meta_class);
-
   if (pkg->multicurl_main_hnd)
     curl_multi_cleanup(pkg->multicurl_main_hnd);
 
   /* Free Memory From Class Object */
-  free(pkg);
+  g_free(pkg);
 }

@@ -30,14 +30,9 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <stdlib.h>
-#include <string.h>
-#include <time.h> /* time_t, struct tm, time ()  */
-
 #include "../include/class_types.h" /* Includes portfolio_packet, metal, meta, 
                                              and equity_folder class types */
 
-#include "../include/csv.h"
 #include "../include/macros.h"
 #include "../include/multicurl.h"
 #include "../include/mutex.h"
@@ -56,8 +51,7 @@ static metal *
     MetalClassObject; /* A class handle to the bullion class object pointers. */
 
 /* Class Method (also called Function) Definitions */
-static void convert_bullion_to_strings(bullion *B,
-                                       unsigned short digits_right) {
+static void convert_bullion_to_strings(bullion *B, guint8 digits_right) {
   /* Basic metal data */
   DoubleToFormattedStrPango(&B->ounce_mrkd_ch, B->ounce_f, 4, NUM_STR, BLACK);
 
@@ -121,7 +115,7 @@ static void convert_bullion_to_strings(bullion *B,
                        PER_STR);
 }
 
-static void ToStrings(unsigned short digits_right) {
+static void ToStrings(guint8 digits_right) {
   metal *M = MetalClassObject;
   convert_bullion_to_strings(M->Gold, digits_right);
   convert_bullion_to_strings(M->Silver, digits_right);
@@ -181,7 +175,7 @@ static void bullion_calculations(bullion *B) {
   B->change_value_f = B->change_ounce_f * B->ounce_f;
 
   /* The change in total investment in this metal as a percentage. */
-  double prev_total = B->port_value_f - B->change_value_f;
+  gdouble prev_total = B->port_value_f - B->change_value_f;
   /* Bullion gain is calculated based off of the total bullion holdings, if
      there is no bullion, the gain is calculated based off of the current and
      prev spot price. These gains are ordinarily
@@ -226,7 +220,7 @@ static void Calculate() {
   M->bullion_port_value_chg_f += M->Palladium->change_value_f;
 
   /* The change in total investment in bullion as a percentage. */
-  double prev_total = M->bullion_port_value_f - M->bullion_port_value_chg_f;
+  gdouble prev_total = M->bullion_port_value_f - M->bullion_port_value_chg_f;
   if (prev_total == 0.0f) {
     M->bullion_port_value_p_chg_f = 0.0f;
   } else {
@@ -239,13 +233,13 @@ static void Calculate() {
     M->gold_silver_ratio_f = M->Gold->spot_price_f / M->Silver->spot_price_f;
 }
 
-static int SetUpCurl(void *data) {
+static gint SetUpCurl(gpointer data) {
   portfolio_packet *pkg = (portfolio_packet *)data;
   metal *M = MetalClassObject;
 
-  /* The start time needs to be a week before the current time, so minus seven
-     days This compensates for weekends and holidays and ensures enough data. */
-  unsigned int period = (86400 * 7);
+  /* The start time needs to be a week before the current time, so seven days.
+   * This compensates for weekends and holidays and ensures enough data. */
+  guint period = (86400 * 7);
   GetYahooUrl(&M->Gold->url_ch, "GC=F", period);
   GetYahooUrl(&M->Silver->url_ch, "SI=F", period);
   if (M->Platinum->ounce_f > 0)
@@ -267,42 +261,45 @@ static int SetUpCurl(void *data) {
   return 0;
 }
 
+static void extract_bullion_data_reset(bullion *B) {
+  B->prev_closing_metal_f = 0.0f;
+  B->high_metal_f = 0.0f;
+  B->low_metal_f = 0.0f;
+  B->spot_price_f = 0.0f;
+  FreeMemtype(&B->CURLDATA);
+}
+
 static void extract_bullion_data(bullion *B) {
   if (B->CURLDATA.memory == NULL) {
-    B->prev_closing_metal_f = 0.0f;
-    B->high_metal_f = 0.0f;
-    B->low_metal_f = 0.0f;
-    B->spot_price_f = 0.0f;
+    extract_bullion_data_reset(B);
     return;
   }
 
   /* Convert a String to a File Pointer Stream for Reading */
-  FILE *fp =
-      fmemopen((void *)B->CURLDATA.memory, strlen(B->CURLDATA.memory) + 1, "r");
+  FILE *fp = fmemopen((gpointer)B->CURLDATA.memory,
+                      g_utf8_strlen(B->CURLDATA.memory, -1) + 1, "r");
 
   if (fp == NULL) {
-    B->prev_closing_metal_f = 0.0f;
-    B->high_metal_f = 0.0f;
-    B->low_metal_f = 0.0f;
-    B->spot_price_f = 0.0f;
-
-    FreeMemtype(&B->CURLDATA);
+    extract_bullion_data_reset(B);
     return;
   }
 
   char **csv_array;
-  double prev_closing = 0.0f, cur_price = 0.0f;
-  char *line = ExtractYahooData(fp, &prev_closing, &cur_price);
+  gdouble prev_closing = 0.0f, cur_price = 0.0f;
+  gchar *line = ExtractYahooData(fp, &prev_closing, &cur_price);
 
-  Chomp(line);
-  csv_array = parse_csv(line);
-  B->prev_closing_metal_f = prev_closing;
-  B->high_metal_f = strtod(csv_array[2] ? csv_array[2] : "0", NULL);
-  B->low_metal_f = strtod(csv_array[3] ? csv_array[3] : "0", NULL);
-  B->spot_price_f = cur_price;
+  if (line) {
+    g_strchomp(line);
+    csv_array = g_strsplit(line, ",", -1);
+    B->prev_closing_metal_f = prev_closing;
+    B->high_metal_f = g_strtod(csv_array[2] ? csv_array[2] : "0", NULL);
+    B->low_metal_f = g_strtod(csv_array[3] ? csv_array[3] : "0", NULL);
+    B->spot_price_f = cur_price;
 
-  free_csv_line(csv_array);
-  free(line);
+    g_strfreev(csv_array);
+  }
+
+  g_free(line);
   fclose(fp);
   FreeMemtype(&B->CURLDATA);
 }
@@ -321,7 +318,7 @@ static void ExtractData() {
 /* Class Init Functions */
 static bullion *class_init_bullion() {
   /* Allocate Memory For A New Class Object */
-  bullion *new_class = (bullion *)malloc(sizeof(*new_class));
+  bullion *new_class = (bullion *)g_malloc(sizeof(*new_class));
 
   /* Initialize Variables */
   new_class->ounce_f = 0.0f;
@@ -362,7 +359,7 @@ static bullion *class_init_bullion() {
 
 metal *ClassInitMetal() {
   /* Allocate Memory For A New Class */
-  metal *new_class = (metal *)malloc(sizeof(*new_class));
+  metal *new_class = (metal *)g_malloc(sizeof(*new_class));
 
   /* Initialize Nested Class Objects,
      technically these are structs because
@@ -401,30 +398,30 @@ metal *ClassInitMetal() {
 static void class_destruct_bullion(bullion *bullion_class) {
   /* Free Memory */
   if (bullion_class->url_ch)
-    free(bullion_class->url_ch);
+    g_free(bullion_class->url_ch);
   if (bullion_class->spot_price_mrkd_ch)
-    free(bullion_class->spot_price_mrkd_ch);
+    g_free(bullion_class->spot_price_mrkd_ch);
   if (bullion_class->premium_mrkd_ch)
-    free(bullion_class->premium_mrkd_ch);
+    g_free(bullion_class->premium_mrkd_ch);
   if (bullion_class->port_value_mrkd_ch)
-    free(bullion_class->port_value_mrkd_ch);
+    g_free(bullion_class->port_value_mrkd_ch);
   if (bullion_class->ounce_mrkd_ch)
-    free(bullion_class->ounce_mrkd_ch);
+    g_free(bullion_class->ounce_mrkd_ch);
 
   if (bullion_class->high_metal_mrkd_ch)
-    free(bullion_class->high_metal_mrkd_ch);
+    g_free(bullion_class->high_metal_mrkd_ch);
   if (bullion_class->low_metal_mrkd_ch)
-    free(bullion_class->low_metal_mrkd_ch);
+    g_free(bullion_class->low_metal_mrkd_ch);
   if (bullion_class->prev_closing_metal_mrkd_ch)
-    free(bullion_class->prev_closing_metal_mrkd_ch);
+    g_free(bullion_class->prev_closing_metal_mrkd_ch);
   if (bullion_class->change_ounce_mrkd_ch)
-    free(bullion_class->change_ounce_mrkd_ch);
+    g_free(bullion_class->change_ounce_mrkd_ch);
   if (bullion_class->change_value_mrkd_ch)
-    free(bullion_class->change_value_mrkd_ch);
+    g_free(bullion_class->change_value_mrkd_ch);
   if (bullion_class->change_percent_mrkd_ch)
-    free(bullion_class->change_percent_mrkd_ch);
+    g_free(bullion_class->change_percent_mrkd_ch);
   if (bullion_class->change_percent_raw_ch)
-    free(bullion_class->change_percent_raw_ch);
+    g_free(bullion_class->change_percent_raw_ch);
 
   if (bullion_class->YAHOO_hnd)
     curl_easy_cleanup(bullion_class->YAHOO_hnd);
@@ -433,7 +430,7 @@ static void class_destruct_bullion(bullion *bullion_class) {
 
   /* Free Memory From Class Object */
   if (bullion_class) {
-    free(bullion_class);
+    g_free(bullion_class);
     bullion_class = NULL;
   }
 }
@@ -451,14 +448,14 @@ void ClassDestructMetal(metal *metal_handle) {
 
   /* Free Pointer Memory */
   if (metal_handle->bullion_port_value_mrkd_ch)
-    free(metal_handle->bullion_port_value_mrkd_ch);
+    g_free(metal_handle->bullion_port_value_mrkd_ch);
   if (metal_handle->bullion_port_value_chg_mrkd_ch)
-    free(metal_handle->bullion_port_value_chg_mrkd_ch);
+    g_free(metal_handle->bullion_port_value_chg_mrkd_ch);
   if (metal_handle->bullion_port_value_p_chg_mrkd_ch)
-    free(metal_handle->bullion_port_value_p_chg_mrkd_ch);
+    g_free(metal_handle->bullion_port_value_p_chg_mrkd_ch);
   if (metal_handle->gold_silver_ratio_ch)
-    free(metal_handle->gold_silver_ratio_ch);
+    g_free(metal_handle->gold_silver_ratio_ch);
 
   if (metal_handle)
-    free(metal_handle);
+    g_free(metal_handle);
 }
