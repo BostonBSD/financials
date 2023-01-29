@@ -181,8 +181,8 @@ static gboolean history_rsi_ready(gdouble gain_f, gdouble *rsi_f, gint state) {
   }
   /* On the 15th day we start calculating the RSI. */
   else {
-    /* Calculate the running average. */
-    CalcRunAvgRsi(gain_f, &avg_gain_f, &avg_loss_f);
+    /* Calculate the running average with a 14 day smoothing period. */
+    CalcRunAvgRsi(gain_f, &avg_gain_f, &avg_loss_f, 14);
     /* Calculate the rsi. */
     *rsi_f = CalcRsi(avg_gain_f, avg_loss_f);
     c++;
@@ -193,17 +193,17 @@ static gboolean history_rsi_ready(gdouble gain_f, gdouble *rsi_f, gint state) {
 }
 
 typedef struct {
-  char *date_ch;
-  char *price_ch;
-  char *high_ch;
-  char *low_ch;
-  char *opening_ch;
-  char *prev_closing_ch;
-  char *change_ch;
-  char *gain_ch;
-  char *rsi_ch;
-  char *volume_ch;
-  char *indicator_ch;
+  gchar *date_ch;
+  gchar *price_ch;
+  gchar *high_ch;
+  gchar *low_ch;
+  gchar *opening_ch;
+  gchar *prev_closing_ch;
+  gchar *change_ch;
+  gchar *gain_ch;
+  gchar *rsi_ch;
+  gchar *volume_ch;
+  gchar *indicator_ch;
 } history_strings;
 
 static gboolean history_rsi_calculate(gchar *line, history_strings *strings,

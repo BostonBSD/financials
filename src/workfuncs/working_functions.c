@@ -33,31 +33,42 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/class_types.h"
 #include "../include/macros.h"
 
+/* For auditing purposes, I included the effective formulas in comments. */
 gdouble CalcGain(gdouble cur_price, gdouble prev_price) {
-  return (100 * ((cur_price - prev_price) / prev_price));
+  /* return (100 * ((cur_price - prev_price) / prev_price)); */
+  return ((100 * (cur_price / prev_price)) - 100);
 }
 
 void CalcSumRsi(gdouble current_gain, gdouble *avg_gain, gdouble *avg_loss) {
   if (current_gain >= 0) {
     *avg_gain += current_gain;
   } else {
-    *avg_loss += (-1 * current_gain);
+    /* *avg_loss += (-1 * current_gain); */
+    *avg_loss -= current_gain;
   }
 }
 
-void CalcRunAvgRsi(gdouble current_gain, gdouble *avg_gain, gdouble *avg_loss) {
+void CalcRunAvgRsi(gdouble current_gain, gdouble *avg_gain, gdouble *avg_loss,
+                   guint8 period) {
   if (current_gain >= 0) {
-    *avg_gain = ((*avg_gain * 13) + current_gain) / 14;
-    *avg_loss = ((*avg_loss * 13) + 0) / 14;
+    /*
+     *avg_gain = ((*avg_gain * (period - 1)) + current_gain) / period;
+     *avg_loss = ((*avg_loss * (period - 1)) + 0) / period; */
+    *avg_gain += ((current_gain - *avg_gain) / period);
+    *avg_loss -= (*avg_loss / period);
   } else {
-    *avg_gain = ((*avg_gain * 13) + 0) / 14;
-    *avg_loss = ((*avg_loss * 13) + (-1 * current_gain)) / 14;
+    /*
+     *avg_gain = ((*avg_gain * (period - 1)) + 0) / period;
+     *avg_loss = ((*avg_loss * (period - 1)) + (-1 * current_gain)) / period; */
+    *avg_gain -= (*avg_gain / period);
+    *avg_loss -= (*avg_loss + current_gain) / period;
   }
 }
 
 gdouble CalcRsi(gdouble avg_gain, gdouble avg_loss) {
-  gdouble rs = avg_gain / avg_loss;
-  return (100 - (100 / (1 + rs)));
+  /* gdouble rs = avg_gain / avg_loss;
+     return (100 - (100 / (1 + rs))); */
+  return (100 * avg_gain) / (avg_loss + avg_gain);
 }
 
 gchar *ExtractYahooData(FILE *fp, gdouble *prev_closing_f, gdouble *cur_price_f)

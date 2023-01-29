@@ -96,7 +96,8 @@ gboolean MarketClosed();
 /* working_functions */
 gdouble CalcGain(gdouble cur_price, gdouble prev_price);
 void CalcSumRsi(gdouble current_gain, gdouble *avg_gain, gdouble *avg_loss);
-void CalcRunAvgRsi(gdouble current_gain, gdouble *avg_gain, gdouble *avg_loss);
+void CalcRunAvgRsi(gdouble current_gain, gdouble *avg_gain, gdouble *avg_loss,
+                   guint8 period);
 gdouble CalcRsi(gdouble avg_gain, gdouble avg_loss);
 gchar *ExtractYahooData(FILE *fp, gdouble *prev_closing_f,
                         gdouble *cur_price_f);
