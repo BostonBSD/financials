@@ -46,7 +46,7 @@ void FreeMemtype(MemType *mem_data) {
   mem_data->size = 0;
 }
 
-gushort remove_handles(CURLM *mh) {
+static gushort remove_handles(CURLM *mh) {
   CURLMsg *msg = NULL;
   CURL *hnd = NULL;
   CURLcode rc = 0;

@@ -12,7 +12,7 @@ met:
     notice, this list of conditions and the following disclaimer in
     the documentation and/or other materials provided with the
     distribution.
-    
+
     (3)The name of the author may not be used to
     endorse or promote products derived from this software without
     specific prior written permission.
@@ -69,11 +69,10 @@ static gint64 time_span_remaining(gint64 time_span_usec) {
   /* Return the number of microseconds left in the current timespan [hour, min,
   sec, etc]
 
-  The current unix time in micro-sec, rounded up to the nearest time_span
-  [sec, minute, hour, etc in usec], minus the current unix time. */
+  The timespan minus the number of microsec which have past in the current time
+  span. */
   gint64 cur_time = g_get_real_time();
-  gint64 cur_time_rounded_down = cur_time - (cur_time % time_span_usec);
-  return (cur_time_rounded_down + time_span_usec) - cur_time;
+  return time_span_usec - (cur_time % time_span_usec);
 }
 
 guint64 ClockSleepSecond() {
@@ -112,7 +111,7 @@ static void easter(gint year, gint *month, gint *day)
 }
 
 static gboolean check_holiday(gint year, gint month, gint dayofmonth,
-                              gint weekday, gint hour, char **holiday_str) {
+                              gint weekday, gint hour, gchar **holiday_str) {
   /* Take in the year, month, dayofmonth, weekday, hour, and a holiday string
    * buffer. Return whether it is a holiday or not. Populate *holiday_str with
    * a string, if holiday, otherwise NULL. */

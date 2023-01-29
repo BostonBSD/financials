@@ -537,8 +537,8 @@ void HotkeysSetTreeview() {
                            "weight='Medium' foreground='SaddleBrown'>%s</span>";
   const gchar *fmt;
 
-  gushort size = (sizeof commands) / (sizeof commands[0]);
-  for (guint i = 0; i < size; i++) {
+  guint8 size = (sizeof commands) / (sizeof commands[0]);
+  for (guint8 i = 0; i < size; i++) {
     /* We mark them up slightly first. */
     if (commands[i].color_num == BLACK_HK_COL) {
       fmt = fmt_black;

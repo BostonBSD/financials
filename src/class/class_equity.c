@@ -43,7 +43,7 @@ POSSIBILITY OF SUCH DAMAGE.
 static stock *class_init_equity();
 static void class_destruct_equity(stock *);
 
-/* The static file-global variable 'FolderClassObject' is always accessed via
+/* The static global variable 'FolderClassObject' is always accessed via
  * these functions. */
 /* This is an ad-hoc way of self referencing a class.
    It prevents multiple instances of the equity_folder class. */
@@ -539,8 +539,6 @@ equity_folder *ClassInitEquityFolder() {
   new_class->stock_port_value_p_chg_f = 0.0f;
 
   /* Connect Function Pointers To Function Definitions */
-  /* The functions do not need to have the same name as the pointer,
-     but it is easier to follow this way. */
   new_class->ToStrings = ToStrings;
   new_class->Calculate = Calculate;
   new_class->GenerateURL = GenerateURL;
@@ -552,7 +550,7 @@ equity_folder *ClassInitEquityFolder() {
   new_class->RemoveStock = RemoveStock;
   new_class->SetSecurityNames = SetSecurityNames;
 
-  /* Set the file global variable so we can self-reference this class. */
+  /* Set the static global variable so we can self-reference this class. */
   FolderClassObject = new_class;
 
   /* Return Our Initialized Class */

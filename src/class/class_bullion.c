@@ -42,7 +42,7 @@ POSSIBILITY OF SUCH DAMAGE.
 static bullion *class_init_bullion();
 static void class_destruct_bullion(bullion *);
 
-/* The static file-global variable 'MetalClassObject' is always accessed via
+/* The static global variable 'MetalClassObject' is always accessed via
  * these functions. */
 /* This is an ad-hoc way of self referencing a class.
    It prevents multiple instances of the metal class. */
@@ -360,10 +360,7 @@ metal *ClassInitMetal() {
   /* Allocate Memory For A New Class */
   metal *new_class = (metal *)g_malloc(sizeof(*new_class));
 
-  /* Initialize Nested Class Objects,
-     technically these are structs because
-     we removed their function pointers.
-   */
+  /* Initialize Nested Class Objects. */
   new_class->Gold = class_init_bullion();
   new_class->Silver = class_init_bullion();
   new_class->Platinum = class_init_bullion();
@@ -386,7 +383,7 @@ metal *ClassInitMetal() {
   new_class->SetUpCurl = SetUpCurl;
   new_class->ExtractData = ExtractData;
 
-  /* Set the file global variable so we can self-reference this class. */
+  /* Set the static global variable so we can self-reference this class. */
   MetalClassObject = new_class;
 
   /* Return Our Initialized Class */

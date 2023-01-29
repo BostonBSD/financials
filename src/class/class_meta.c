@@ -37,10 +37,15 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/mutex.h"
 #include "../include/workfuncs.h"
 
-/* The static file-global variable 'MetaClassObject' is always accessed via
+/* The static global variable 'MetaClassObject' is always accessed via
  * these functions. */
 /* This is an ad-hoc way of self referencing a class.
-   It prevents multiple instances of the meta class. */
+   It prevents multiple instances of the meta class.
+
+   A more elegant approach would be to send the class object to the class method
+   and mask it with macro substitution [such that the syntax appears the same
+   class->method()], although, this application does not require that level of
+   sophistication. */
 
 static meta
     *MetaClassObject; /* A class object pointer called MetaClassObject. */
@@ -548,7 +553,7 @@ meta *ClassInitMeta() {
   new_class->ToStringsIndices = ToStringsIndices;
   new_class->ToStringsHeadings = ToStringsHeadings;
 
-  /* Set the file global variable so we can self-reference this class. */
+  /* Set the static global variable so we can self-reference this class. */
   MetaClassObject = new_class;
 
   /* Return Our Initialized Class */
