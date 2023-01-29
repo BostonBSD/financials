@@ -71,11 +71,7 @@ static void class_package_init()
 static void class_package_destruct()
 /* Free Memory */
 {
-  g_mutex_lock(&mutexes[CLASS_MEMBER_MUTEX]);
-
   ClassDestructPortfolioPacket(packet);
-
-  g_mutex_unlock(&mutexes[CLASS_MEMBER_MUTEX]);
 }
 
 gint main(gint argc, gchar *argv[]) {

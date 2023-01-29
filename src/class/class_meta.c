@@ -92,9 +92,8 @@ static void ToStringsPortfolio() {
   }
 }
 
-static void CalculatePortfolio(gpointer data) {
-  portfolio_packet *pkg = (portfolio_packet *)data;
-  meta *Met = MetaClassObject;
+static void CalculatePortfolio(portfolio_packet *pkg) {
+  meta *Met = pkg->GetMetaClass();
   metal *M = pkg->GetMetalClass();
   equity_folder *F = pkg->GetEquityFolderClass();
 
@@ -139,9 +138,8 @@ static void StopSNMapCurl() {
   g_mutex_unlock(&mutexes[MULTICURL_NO_PROG_MUTEX]);
 }
 
-static gint SetUpCurlIndicesData(gpointer data) {
-  portfolio_packet *pkg = (portfolio_packet *)data;
-  meta *Met = MetaClassObject;
+static gint SetUpCurlIndicesData(portfolio_packet *pkg) {
+  meta *Met = pkg->GetMetaClass();
   gchar *dow_url_ch = NULL, *nasdaq_url_ch = NULL, *sp_url_ch = NULL,
         *bitcoin_url_ch = NULL;
 

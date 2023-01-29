@@ -228,11 +228,9 @@ static void Calculate() {
   F->stock_port_value_p_chg_f = CalcGain(F->stock_port_value_f, prev_total);
 }
 
-static void GenerateURL(gpointer data) {
+static void GenerateURL(portfolio_packet *pkg) {
   g_mutex_lock(&mutexes[CLASS_MEMBER_MUTEX]);
-
-  portfolio_packet *pkg = (portfolio_packet *)data;
-  equity_folder *F = FolderClassObject;
+  equity_folder *F = pkg->GetEquityFolderClass();
   meta *Met = pkg->GetMetaClass();
 
   /* Cycle through the list of equities. */
@@ -247,9 +245,8 @@ static void GenerateURL(gpointer data) {
   g_mutex_unlock(&mutexes[CLASS_MEMBER_MUTEX]);
 }
 
-static gint SetUpCurl(gpointer data) {
-  portfolio_packet *pkg = (portfolio_packet *)data;
-  equity_folder *F = FolderClassObject;
+static gint SetUpCurl(portfolio_packet *pkg) {
+  equity_folder *F = pkg->GetEquityFolderClass();
 
   /* Cycle through the list of equities. */
   for (guint8 c = 0; c < F->size; c++) {
@@ -452,9 +449,8 @@ static void remove_dash(gchar *s)
     ch[-1] = 0;
 }
 
-static void SetSecurityNames(gpointer data) {
+static void SetSecurityNames(portfolio_packet *pkg) {
   g_mutex_lock(&mutexes[CLASS_MEMBER_MUTEX]);
-  portfolio_packet *pkg = (portfolio_packet *)data;
   equity_folder *F = pkg->GetEquityFolderClass();
   symbol_name_map *sn_map = pkg->GetSymNameMap();
   gchar *security_name = NULL;

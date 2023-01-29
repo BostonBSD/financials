@@ -34,8 +34,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/gui.h"
 #include "../include/workfuncs.h"
 
-gint MainFetchBTNLabel(gpointer data) {
-  portfolio_packet *pkg = (portfolio_packet *)data;
+gint MainFetchBTNLabel(gpointer pkg_data) {
+  portfolio_packet *pkg = (portfolio_packet *)pkg_data;
   GtkWidget *label = GetWidget("FetchDataBtnLabel");
 
   if (pkg->IsFetchingData()) {
@@ -88,8 +88,8 @@ static gint main_set_columns(gint column_type) {
   /* A hidden column indicating the type of row [bullion, equity, blank space,
    * etc] */
   renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes("type_text", renderer,
-                                                    "text", GUI_TYPE, NULL);
+  column = gtk_tree_view_column_new_with_attributes(
+      "type_text", renderer, "text", MAIN_COLUMN_TYPE, NULL);
   gtk_tree_view_column_set_visible(column, FALSE);
   gtk_tree_view_column_set_min_width(column, 0);
   gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
@@ -97,25 +97,25 @@ static gint main_set_columns(gint column_type) {
   /* A hidden column indicating the item symbol at that row [gold, silver, stock
    * symbol, etc] */
   renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes("symbol_text", renderer,
-                                                    "text", GUI_SYMBOL, NULL);
+  column = gtk_tree_view_column_new_with_attributes(
+      "symbol_text", renderer, "text", MAIN_COLUMN_SYMBOL, NULL);
   gtk_tree_view_column_set_visible(column, FALSE);
   gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
-  AddColumnToTreeview("column_one", GUI_COLUMN_ONE, list);
-  AddColumnToTreeview("column_two", GUI_COLUMN_TWO, list);
-  AddColumnToTreeview("column_three", GUI_COLUMN_THREE, list);
+  AddColumnToTreeview("column_one", MAIN_COLUMN_ONE, list);
+  AddColumnToTreeview("column_two", MAIN_COLUMN_TWO, list);
+  AddColumnToTreeview("column_three", MAIN_COLUMN_THREE, list);
 
   if (column_type == GUI_COLUMN_PRIMARY) {
     /* if PRIMARY treeview */
-    AddColumnToTreeview("column_four", GUI_COLUMN_FOUR, list);
-    AddColumnToTreeview("column_five", GUI_COLUMN_FIVE, list);
-    AddColumnToTreeview("column_six", GUI_COLUMN_SIX, list);
-    AddColumnToTreeview("column_seven", GUI_COLUMN_SEVEN, list);
-    AddColumnToTreeview("column_eight", GUI_COLUMN_EIGHT, list);
-    AddColumnToTreeview("column_nine", GUI_COLUMN_NINE, list);
-    AddColumnToTreeview("column_ten", GUI_COLUMN_TEN, list);
-    AddColumnToTreeview("column_eleven", GUI_COLUMN_ELEVEN, list);
+    AddColumnToTreeview("column_four", MAIN_COLUMN_FOUR, list);
+    AddColumnToTreeview("column_five", MAIN_COLUMN_FIVE, list);
+    AddColumnToTreeview("column_six", MAIN_COLUMN_SIX, list);
+    AddColumnToTreeview("column_seven", MAIN_COLUMN_SEVEN, list);
+    AddColumnToTreeview("column_eight", MAIN_COLUMN_EIGHT, list);
+    AddColumnToTreeview("column_nine", MAIN_COLUMN_NINE, list);
+    AddColumnToTreeview("column_ten", MAIN_COLUMN_TEN, list);
+    AddColumnToTreeview("column_eleven", MAIN_COLUMN_ELEVEN, list);
   }
 
   return 0;
@@ -126,50 +126,52 @@ static gint main_prmry_add_bul_store(bullion *B, const gchar *unmarked_name_ch,
                                      GtkListStore *store, GtkTreeIter *iter) {
   gtk_list_store_append(store, iter);
   gtk_list_store_set(
-      store, iter, GUI_TYPE, "bullion", GUI_SYMBOL, unmarked_name_ch,
-      GUI_COLUMN_ONE, marked_name_ch, GUI_COLUMN_TWO, B->ounce_mrkd_ch,
-      GUI_COLUMN_THREE, B->spot_price_mrkd_ch, GUI_COLUMN_FOUR,
-      B->premium_mrkd_ch, GUI_COLUMN_FIVE, B->high_metal_mrkd_ch,
-      GUI_COLUMN_SIX, B->low_metal_mrkd_ch, GUI_COLUMN_SEVEN,
-      B->prev_closing_metal_mrkd_ch, GUI_COLUMN_EIGHT, B->change_ounce_mrkd_ch,
-      GUI_COLUMN_NINE, B->change_value_mrkd_ch, GUI_COLUMN_TEN,
-      B->port_value_mrkd_ch, GUI_COLUMN_ELEVEN, B->change_percent_mrkd_ch, -1);
+      store, iter, MAIN_COLUMN_TYPE, "bullion", MAIN_COLUMN_SYMBOL,
+      unmarked_name_ch, MAIN_COLUMN_ONE, marked_name_ch, MAIN_COLUMN_TWO,
+      B->ounce_mrkd_ch, MAIN_COLUMN_THREE, B->spot_price_mrkd_ch,
+      MAIN_COLUMN_FOUR, B->premium_mrkd_ch, MAIN_COLUMN_FIVE,
+      B->high_metal_mrkd_ch, MAIN_COLUMN_SIX, B->low_metal_mrkd_ch,
+      MAIN_COLUMN_SEVEN, B->prev_closing_metal_mrkd_ch, MAIN_COLUMN_EIGHT,
+      B->change_ounce_mrkd_ch, MAIN_COLUMN_NINE, B->change_value_mrkd_ch,
+      MAIN_COLUMN_TEN, B->port_value_mrkd_ch, MAIN_COLUMN_ELEVEN,
+      B->change_percent_mrkd_ch, -1);
   return 0;
 }
 
-static GtkListStore *main_primary_store(gpointer data) {
-  /* Unpack the class package */
-  portfolio_packet *package = (portfolio_packet *)data;
-  metal *M = package->GetMetalClass();
-  equity_folder *F = package->GetEquityFolderClass();
-  meta *D = package->GetMetaClass();
-  primary_heading *pri_h_mkd = package->GetPrimaryHeadings();
+static GtkListStore *main_primary_store(portfolio_packet *pkg) {
+  metal *M = pkg->GetMetalClass();
+  equity_folder *F = pkg->GetEquityFolderClass();
+  meta *D = pkg->GetMetaClass();
+  primary_heading *pri_h_mkd = pkg->GetPrimaryHeadings();
 
   GtkListStore *store = NULL;
   GtkTreeIter iter;
   gboolean no_assets = TRUE;
 
   /* Set up the storage container with the number of columns and column type */
-  store = gtk_list_store_new(
-      GUI_N_COLUMNS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+  store = gtk_list_store_new(MAIN_N_COLUMNS, G_TYPE_STRING, G_TYPE_STRING,
+                             G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+                             G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+                             G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+                             G_TYPE_STRING, G_TYPE_STRING);
 
   /* Add data to the storage container. */
   if (M->bullion_port_value_f) {
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, GUI_TYPE, "bullion_total", GUI_SYMBOL, "",
-                       GUI_COLUMN_ONE, pri_h_mkd->bullion, -1);
+    gtk_list_store_set(store, &iter, MAIN_COLUMN_TYPE, "bullion_total",
+                       MAIN_COLUMN_SYMBOL, "", MAIN_COLUMN_ONE,
+                       pri_h_mkd->bullion, -1);
 
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(
-        store, &iter, GUI_TYPE, "bullion_total", GUI_SYMBOL, "", GUI_COLUMN_ONE,
-        pri_h_mkd->metal, GUI_COLUMN_TWO, pri_h_mkd->ounces, GUI_COLUMN_THREE,
-        pri_h_mkd->price, GUI_COLUMN_FOUR, pri_h_mkd->premium, GUI_COLUMN_FIVE,
-        pri_h_mkd->high, GUI_COLUMN_SIX, pri_h_mkd->low, GUI_COLUMN_SEVEN,
-        pri_h_mkd->prev_closing, GUI_COLUMN_EIGHT, pri_h_mkd->chg,
-        GUI_COLUMN_NINE, pri_h_mkd->gain_sym, GUI_COLUMN_TEN, pri_h_mkd->total,
-        GUI_COLUMN_ELEVEN, pri_h_mkd->gain_per, -1);
+        store, &iter, MAIN_COLUMN_TYPE, "bullion_total", MAIN_COLUMN_SYMBOL, "",
+        MAIN_COLUMN_ONE, pri_h_mkd->metal, MAIN_COLUMN_TWO, pri_h_mkd->ounces,
+        MAIN_COLUMN_THREE, pri_h_mkd->price, MAIN_COLUMN_FOUR,
+        pri_h_mkd->premium, MAIN_COLUMN_FIVE, pri_h_mkd->high, MAIN_COLUMN_SIX,
+        pri_h_mkd->low, MAIN_COLUMN_SEVEN, pri_h_mkd->prev_closing,
+        MAIN_COLUMN_EIGHT, pri_h_mkd->chg, MAIN_COLUMN_NINE,
+        pri_h_mkd->gain_sym, MAIN_COLUMN_TEN, pri_h_mkd->total,
+        MAIN_COLUMN_ELEVEN, pri_h_mkd->gain_per, -1);
 
     if (M->Gold->ounce_f) {
       main_prmry_add_bul_store(M->Gold, "gold", pri_h_mkd->gold, store, &iter);
@@ -191,26 +193,27 @@ static GtkListStore *main_primary_store(gpointer data) {
     }
 
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, GUI_TYPE, "blank_space_primary",
-                       GUI_SYMBOL, "", -1);
+    gtk_list_store_set(store, &iter, MAIN_COLUMN_TYPE, "blank_space_primary",
+                       MAIN_COLUMN_SYMBOL, "", -1);
 
     no_assets = FALSE;
   }
 
   if (F->size) {
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, GUI_TYPE, "equity_total", GUI_SYMBOL, "",
-                       GUI_COLUMN_ONE, pri_h_mkd->equity, -1);
+    gtk_list_store_set(store, &iter, MAIN_COLUMN_TYPE, "equity_total",
+                       MAIN_COLUMN_SYMBOL, "", MAIN_COLUMN_ONE,
+                       pri_h_mkd->equity, -1);
 
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(
-        store, &iter, GUI_TYPE, "equity_total", GUI_SYMBOL, "", GUI_COLUMN_ONE,
-        pri_h_mkd->symbol, GUI_COLUMN_TWO, pri_h_mkd->shares, GUI_COLUMN_THREE,
-        pri_h_mkd->price, GUI_COLUMN_FOUR, pri_h_mkd->high, GUI_COLUMN_FIVE,
-        pri_h_mkd->low, GUI_COLUMN_SIX, pri_h_mkd->opening, GUI_COLUMN_SEVEN,
-        pri_h_mkd->prev_closing, GUI_COLUMN_EIGHT, pri_h_mkd->chg,
-        GUI_COLUMN_NINE, pri_h_mkd->gain_sym, GUI_COLUMN_TEN, pri_h_mkd->total,
-        GUI_COLUMN_ELEVEN, pri_h_mkd->gain_per, -1);
+        store, &iter, MAIN_COLUMN_TYPE, "equity_total", MAIN_COLUMN_SYMBOL, "",
+        MAIN_COLUMN_ONE, pri_h_mkd->symbol, MAIN_COLUMN_TWO, pri_h_mkd->shares,
+        MAIN_COLUMN_THREE, pri_h_mkd->price, MAIN_COLUMN_FOUR, pri_h_mkd->high,
+        MAIN_COLUMN_FIVE, pri_h_mkd->low, MAIN_COLUMN_SIX, pri_h_mkd->opening,
+        MAIN_COLUMN_SEVEN, pri_h_mkd->prev_closing, MAIN_COLUMN_EIGHT,
+        pri_h_mkd->chg, MAIN_COLUMN_NINE, pri_h_mkd->gain_sym, MAIN_COLUMN_TEN,
+        pri_h_mkd->total, MAIN_COLUMN_ELEVEN, pri_h_mkd->gain_per, -1);
 
     guint8 c;
     guint8 g = 0;
@@ -236,18 +239,18 @@ static GtkListStore *main_primary_store(gpointer data) {
         gtk_list_store_append(store, &iter);
 
         gtk_list_store_set(
-            store, &iter, GUI_TYPE, "equity", GUI_SYMBOL,
-            F->Equity[c]->symbol_stock_ch, GUI_COLUMN_ONE,
-            F->Equity[c]->symbol_stock_mrkd_ch, GUI_COLUMN_TWO,
-            F->Equity[c]->num_shares_stock_mrkd_ch, GUI_COLUMN_THREE,
-            F->Equity[c]->current_price_stock_mrkd_ch, GUI_COLUMN_FOUR,
-            F->Equity[c]->high_stock_mrkd_ch, GUI_COLUMN_FIVE,
-            F->Equity[c]->low_stock_mrkd_ch, GUI_COLUMN_SIX,
-            F->Equity[c]->opening_stock_mrkd_ch, GUI_COLUMN_SEVEN,
-            F->Equity[c]->prev_closing_stock_mrkd_ch, GUI_COLUMN_EIGHT,
-            F->Equity[c]->change_share_stock_mrkd_ch, GUI_COLUMN_NINE,
-            F->Equity[c]->change_value_mrkd_ch, GUI_COLUMN_TEN,
-            F->Equity[c]->current_investment_stock_mrkd_ch, GUI_COLUMN_ELEVEN,
+            store, &iter, MAIN_COLUMN_TYPE, "equity", MAIN_COLUMN_SYMBOL,
+            F->Equity[c]->symbol_stock_ch, MAIN_COLUMN_ONE,
+            F->Equity[c]->symbol_stock_mrkd_ch, MAIN_COLUMN_TWO,
+            F->Equity[c]->num_shares_stock_mrkd_ch, MAIN_COLUMN_THREE,
+            F->Equity[c]->current_price_stock_mrkd_ch, MAIN_COLUMN_FOUR,
+            F->Equity[c]->high_stock_mrkd_ch, MAIN_COLUMN_FIVE,
+            F->Equity[c]->low_stock_mrkd_ch, MAIN_COLUMN_SIX,
+            F->Equity[c]->opening_stock_mrkd_ch, MAIN_COLUMN_SEVEN,
+            F->Equity[c]->prev_closing_stock_mrkd_ch, MAIN_COLUMN_EIGHT,
+            F->Equity[c]->change_share_stock_mrkd_ch, MAIN_COLUMN_NINE,
+            F->Equity[c]->change_value_mrkd_ch, MAIN_COLUMN_TEN,
+            F->Equity[c]->current_investment_stock_mrkd_ch, MAIN_COLUMN_ELEVEN,
             F->Equity[c]->change_percent_mrkd_ch, -1);
 
         c++;
@@ -256,26 +259,26 @@ static GtkListStore *main_primary_store(gpointer data) {
     }
 
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, GUI_TYPE, "blank_space_primary",
-                       GUI_SYMBOL, "", -1);
+    gtk_list_store_set(store, &iter, MAIN_COLUMN_TYPE, "blank_space_primary",
+                       MAIN_COLUMN_SYMBOL, "", -1);
 
     no_assets = FALSE;
   }
 
   if (D->cash_f || M->bullion_port_value_f || F->stock_port_value_f) {
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, GUI_TYPE, "blank_space_primary",
-                       GUI_SYMBOL, "", GUI_COLUMN_ONE, pri_h_mkd->asset,
-                       GUI_COLUMN_TWO, pri_h_mkd->value, GUI_COLUMN_THREE,
-                       pri_h_mkd->gain_sym, GUI_COLUMN_FOUR,
+    gtk_list_store_set(store, &iter, MAIN_COLUMN_TYPE, "blank_space_primary",
+                       MAIN_COLUMN_SYMBOL, "", MAIN_COLUMN_ONE,
+                       pri_h_mkd->asset, MAIN_COLUMN_TWO, pri_h_mkd->value,
+                       MAIN_COLUMN_THREE, pri_h_mkd->gain_sym, MAIN_COLUMN_FOUR,
                        pri_h_mkd->gain_per, -1);
   }
 
   if (D->cash_f) {
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, GUI_TYPE, "cash", GUI_SYMBOL, "",
-                       GUI_COLUMN_ONE, pri_h_mkd->cash, GUI_COLUMN_TWO,
-                       D->cash_mrkd_ch, -1);
+    gtk_list_store_set(store, &iter, MAIN_COLUMN_TYPE, "cash",
+                       MAIN_COLUMN_SYMBOL, "", MAIN_COLUMN_ONE, pri_h_mkd->cash,
+                       MAIN_COLUMN_TWO, D->cash_mrkd_ch, -1);
 
     no_assets = FALSE;
   }
@@ -283,49 +286,51 @@ static GtkListStore *main_primary_store(gpointer data) {
   if (M->bullion_port_value_f) {
     gtk_list_store_append(store, &iter);
 
-    gtk_list_store_set(store, &iter, GUI_TYPE, "bullion_total", GUI_SYMBOL, "",
-                       GUI_COLUMN_ONE, pri_h_mkd->bullion, GUI_COLUMN_TWO,
-                       M->bullion_port_value_mrkd_ch, GUI_COLUMN_THREE,
-                       M->bullion_port_value_chg_mrkd_ch, GUI_COLUMN_FOUR,
+    gtk_list_store_set(store, &iter, MAIN_COLUMN_TYPE, "bullion_total",
+                       MAIN_COLUMN_SYMBOL, "", MAIN_COLUMN_ONE,
+                       pri_h_mkd->bullion, MAIN_COLUMN_TWO,
+                       M->bullion_port_value_mrkd_ch, MAIN_COLUMN_THREE,
+                       M->bullion_port_value_chg_mrkd_ch, MAIN_COLUMN_FOUR,
                        M->bullion_port_value_p_chg_mrkd_ch, -1);
   }
 
   if (F->stock_port_value_f) {
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, GUI_TYPE, "equity_total", GUI_SYMBOL, "",
-                       GUI_COLUMN_ONE, pri_h_mkd->equity, GUI_COLUMN_TWO,
-                       F->stock_port_value_mrkd_ch, GUI_COLUMN_THREE,
-                       F->stock_port_value_chg_mrkd_ch, GUI_COLUMN_FOUR,
+    gtk_list_store_set(store, &iter, MAIN_COLUMN_TYPE, "equity_total",
+                       MAIN_COLUMN_SYMBOL, "", MAIN_COLUMN_ONE,
+                       pri_h_mkd->equity, MAIN_COLUMN_TWO,
+                       F->stock_port_value_mrkd_ch, MAIN_COLUMN_THREE,
+                       F->stock_port_value_chg_mrkd_ch, MAIN_COLUMN_FOUR,
                        F->stock_port_value_p_chg_mrkd_ch, -1);
   }
 
   if (D->portfolio_port_value_f) {
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, GUI_TYPE, "blank_space_primary",
-                       GUI_SYMBOL, "", -1);
+    gtk_list_store_set(store, &iter, MAIN_COLUMN_TYPE, "blank_space_primary",
+                       MAIN_COLUMN_SYMBOL, "", -1);
     gtk_list_store_append(store, &iter);
 
-    gtk_list_store_set(store, &iter, GUI_TYPE, "blank_space_primary",
-                       GUI_SYMBOL, "", GUI_COLUMN_ONE, pri_h_mkd->portfolio,
-                       GUI_COLUMN_TWO, D->portfolio_port_value_mrkd_ch,
-                       GUI_COLUMN_THREE, D->portfolio_port_value_chg_mrkd_ch,
-                       GUI_COLUMN_FOUR, D->portfolio_port_value_p_chg_mrkd_ch,
-                       -1);
+    gtk_list_store_set(store, &iter, MAIN_COLUMN_TYPE, "blank_space_primary",
+                       MAIN_COLUMN_SYMBOL, "", MAIN_COLUMN_ONE,
+                       pri_h_mkd->portfolio, MAIN_COLUMN_TWO,
+                       D->portfolio_port_value_mrkd_ch, MAIN_COLUMN_THREE,
+                       D->portfolio_port_value_chg_mrkd_ch, MAIN_COLUMN_FOUR,
+                       D->portfolio_port_value_p_chg_mrkd_ch, -1);
 
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, GUI_TYPE, "blank_space_primary",
-                       GUI_SYMBOL, "", -1);
+    gtk_list_store_set(store, &iter, MAIN_COLUMN_TYPE, "blank_space_primary",
+                       MAIN_COLUMN_SYMBOL, "", -1);
   }
 
   if (no_assets) {
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, GUI_TYPE, "blank_space_primary",
-                       GUI_SYMBOL, "", GUI_COLUMN_ONE, pri_h_mkd->no_assets,
-                       -1);
+    gtk_list_store_set(store, &iter, MAIN_COLUMN_TYPE, "blank_space_primary",
+                       MAIN_COLUMN_SYMBOL, "", MAIN_COLUMN_ONE,
+                       pri_h_mkd->no_assets, -1);
   }
 
   /* Indicate that the default view is not displayed. */
-  package->SetDefaultView(FALSE);
+  pkg->SetDefaultView(FALSE);
 
   return store;
 }
@@ -334,20 +339,18 @@ static gint main_def_add_bul_store(bullion *B, const gchar *unmarked_name_ch,
                                    const gchar *marked_name_ch,
                                    GtkListStore *store, GtkTreeIter *iter) {
   gtk_list_store_append(store, iter);
-  gtk_list_store_set(store, iter, GUI_TYPE, "bullion", GUI_SYMBOL,
-                     unmarked_name_ch, GUI_COLUMN_ONE, marked_name_ch,
-                     GUI_COLUMN_TWO, B->ounce_mrkd_ch, GUI_COLUMN_THREE,
-                     B->premium_mrkd_ch, -1);
+  gtk_list_store_set(store, iter, MAIN_COLUMN_TYPE, "bullion",
+                     MAIN_COLUMN_SYMBOL, unmarked_name_ch, MAIN_COLUMN_ONE,
+                     marked_name_ch, MAIN_COLUMN_TWO, B->ounce_mrkd_ch,
+                     MAIN_COLUMN_THREE, B->premium_mrkd_ch, -1);
   return 0;
 }
 
-static GtkListStore *main_default_store(gpointer data) {
-  /* Unpack the class package */
-  portfolio_packet *package = (portfolio_packet *)data;
-  metal *M = package->GetMetalClass();
-  equity_folder *F = package->GetEquityFolderClass();
-  meta *D = package->GetMetaClass();
-  default_heading *def_h_mkd = package->GetDefaultHeadings();
+static GtkListStore *main_default_store(portfolio_packet *pkg) {
+  metal *M = pkg->GetMetalClass();
+  equity_folder *F = pkg->GetEquityFolderClass();
+  meta *D = pkg->GetMetaClass();
+  default_heading *def_h_mkd = pkg->GetDefaultHeadings();
 
   gboolean no_assets = TRUE;
 
@@ -363,14 +366,15 @@ static GtkListStore *main_default_store(gpointer data) {
       M->Palladium->ounce_f) {
 
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, GUI_TYPE, "bullion_total", GUI_SYMBOL, "",
-                       GUI_COLUMN_ONE, def_h_mkd->bullion, -1);
+    gtk_list_store_set(store, &iter, MAIN_COLUMN_TYPE, "bullion_total",
+                       MAIN_COLUMN_SYMBOL, "", MAIN_COLUMN_ONE,
+                       def_h_mkd->bullion, -1);
 
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, GUI_TYPE, "bullion_total", GUI_SYMBOL, "",
-                       GUI_COLUMN_ONE, def_h_mkd->metal, GUI_COLUMN_TWO,
-                       def_h_mkd->ounces, GUI_COLUMN_THREE, def_h_mkd->premium,
-                       -1);
+    gtk_list_store_set(store, &iter, MAIN_COLUMN_TYPE, "bullion_total",
+                       MAIN_COLUMN_SYMBOL, "", MAIN_COLUMN_ONE,
+                       def_h_mkd->metal, MAIN_COLUMN_TWO, def_h_mkd->ounces,
+                       MAIN_COLUMN_THREE, def_h_mkd->premium, -1);
     if (M->Gold->ounce_f) {
       main_def_add_bul_store(M->Gold, "gold", def_h_mkd->gold, store, &iter);
     }
@@ -388,20 +392,22 @@ static GtkListStore *main_default_store(gpointer data) {
     }
 
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, GUI_TYPE, "blank_space_default",
-                       GUI_SYMBOL, "", GUI_COLUMN_ONE, "", -1);
+    gtk_list_store_set(store, &iter, MAIN_COLUMN_TYPE, "blank_space_default",
+                       MAIN_COLUMN_SYMBOL, "", MAIN_COLUMN_ONE, "", -1);
     no_assets = FALSE;
   }
 
   if (F->size) {
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, GUI_TYPE, "equity_total", GUI_SYMBOL, "",
-                       GUI_COLUMN_ONE, def_h_mkd->equity, -1);
+    gtk_list_store_set(store, &iter, MAIN_COLUMN_TYPE, "equity_total",
+                       MAIN_COLUMN_SYMBOL, "", MAIN_COLUMN_ONE,
+                       def_h_mkd->equity, -1);
 
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, GUI_TYPE, "equity_total", GUI_SYMBOL, "",
-                       GUI_COLUMN_ONE, def_h_mkd->symbol, GUI_COLUMN_TWO,
-                       def_h_mkd->shares, -1);
+    gtk_list_store_set(store, &iter, MAIN_COLUMN_TYPE, "equity_total",
+                       MAIN_COLUMN_SYMBOL, "", MAIN_COLUMN_ONE,
+                       def_h_mkd->symbol, MAIN_COLUMN_TWO, def_h_mkd->shares,
+                       -1);
     guint8 c;
     guint8 g = 0;
 
@@ -423,54 +429,52 @@ static GtkListStore *main_default_store(gpointer data) {
           }
         }
         gtk_list_store_append(store, &iter);
-        gtk_list_store_set(store, &iter, GUI_TYPE, "equity", GUI_SYMBOL,
-                           F->Equity[c]->symbol_stock_ch, GUI_COLUMN_ONE,
-                           F->Equity[c]->symbol_stock_mrkd_ch, GUI_COLUMN_TWO,
-                           F->Equity[c]->num_shares_stock_mrkd_ch,
-                           GUI_COLUMN_THREE,
-                           F->Equity[c]->security_name_mrkd_ch, -1);
+        gtk_list_store_set(
+            store, &iter, MAIN_COLUMN_TYPE, "equity", MAIN_COLUMN_SYMBOL,
+            F->Equity[c]->symbol_stock_ch, MAIN_COLUMN_ONE,
+            F->Equity[c]->symbol_stock_mrkd_ch, MAIN_COLUMN_TWO,
+            F->Equity[c]->num_shares_stock_mrkd_ch, MAIN_COLUMN_THREE,
+            F->Equity[c]->security_name_mrkd_ch, -1);
         c++;
       }
       g++;
     }
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, GUI_TYPE, "blank_space_default",
-                       GUI_SYMBOL, "", GUI_COLUMN_ONE, "", -1);
+    gtk_list_store_set(store, &iter, MAIN_COLUMN_TYPE, "blank_space_default",
+                       MAIN_COLUMN_SYMBOL, "", MAIN_COLUMN_ONE, "", -1);
     no_assets = FALSE;
   }
 
   if (D->cash_f) {
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, GUI_TYPE, "cash", GUI_SYMBOL, "",
-                       GUI_COLUMN_ONE, def_h_mkd->cash, GUI_COLUMN_THREE,
-                       D->cash_mrkd_ch, -1);
+    gtk_list_store_set(store, &iter, MAIN_COLUMN_TYPE, "cash",
+                       MAIN_COLUMN_SYMBOL, "", MAIN_COLUMN_ONE, def_h_mkd->cash,
+                       MAIN_COLUMN_THREE, D->cash_mrkd_ch, -1);
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, GUI_TYPE, "blank_space_default",
-                       GUI_SYMBOL, "", GUI_COLUMN_ONE, "", -1);
+    gtk_list_store_set(store, &iter, MAIN_COLUMN_TYPE, "blank_space_default",
+                       MAIN_COLUMN_SYMBOL, "", MAIN_COLUMN_ONE, "", -1);
     no_assets = FALSE;
   }
 
   if (no_assets) {
     gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, GUI_TYPE, "blank_space_default",
-                       GUI_SYMBOL, "", GUI_COLUMN_ONE, "", -1);
+    gtk_list_store_set(store, &iter, MAIN_COLUMN_TYPE, "blank_space_default",
+                       MAIN_COLUMN_SYMBOL, "", MAIN_COLUMN_ONE, "", -1);
     gtk_list_store_append(store, &iter);
 
-    gtk_list_store_set(store, &iter, GUI_TYPE, "blank_space_default",
-                       GUI_SYMBOL, "", GUI_COLUMN_ONE, def_h_mkd->no_assets,
-                       -1);
+    gtk_list_store_set(store, &iter, MAIN_COLUMN_TYPE, "blank_space_default",
+                       MAIN_COLUMN_SYMBOL, "", MAIN_COLUMN_ONE,
+                       def_h_mkd->no_assets, -1);
   }
 
   /* Indicate that the default view is displayed. */
-  package->SetDefaultView(TRUE);
+  pkg->SetDefaultView(TRUE);
 
   return store;
 }
 
-static void show_indices(gpointer data) {
-  /* Unpack the class package */
-  portfolio_packet *package = (portfolio_packet *)data;
-  meta *D = package->GetMetaClass();
+static void show_indices(portfolio_packet *pkg) {
+  meta *D = pkg->GetMetaClass();
 
   /* Set Revealer Bar */
   GtkWidget *revealer = GetWidget("MainIndicesRevealer");
@@ -478,8 +482,7 @@ static void show_indices(gpointer data) {
                                 D->index_bar_revealed_bool);
 }
 
-static void set_clock_header(gpointer data) {
-  portfolio_packet *pkg = (portfolio_packet *)data;
+static void set_clock_header(portfolio_packet *pkg) {
   const gchar *fmt_header = "<span foreground='Black'>%s</span>";
 
   /* Set clock heading label */
@@ -510,9 +513,7 @@ static struct {
                     {"GoldLabel", "Gold"},     {"SilverLabel", "Silver"},
                     {"GSLabel", "Gold/Silver"}};
 
-static void set_indice_header(gpointer data) {
-  portfolio_packet *pkg = (portfolio_packet *)data;
-
+static void set_indice_header(portfolio_packet *pkg) {
   /* Format the index header labels */
   gushort size = sizeof lbl_name_str / sizeof lbl_name_str[0];
   for (gushort g = 0; g < size; g++) {
@@ -521,15 +522,14 @@ static void set_indice_header(gpointer data) {
   }
 }
 
-gint MainSetFonts(gpointer data) {
+gint MainSetFonts(portfolio_packet *pkg) {
   /* Set the clock label fonts */
-  set_clock_header(data);
+  set_clock_header(pkg);
 
   /* Make sure the font is set on the indice header labels */
-  set_indice_header(data);
+  set_indice_header(pkg);
 
   /* Make sure the treeview heading fonts are set */
-  portfolio_packet *pkg = (portfolio_packet *)data;
   pkg->meta_class->ToStringsHeadings();
 
   return 0;
@@ -561,9 +561,7 @@ static void set_indice_value_label(const gchar *label_name, const gdouble chg_f,
   gtk_label_set_attributes((GtkLabel *)label, attrlist);
 }
 
-static void set_indices_labels(gpointer data) {
-  /* Unpack the class package */
-  portfolio_packet *pkg = (portfolio_packet *)data;
+static void set_indices_labels(portfolio_packet *pkg) {
   meta *D = pkg->GetMetaClass();
   metal *M = pkg->GetMetalClass();
   /* Make sure the labels have the application font set. */
@@ -623,12 +621,13 @@ static void set_indices_labels(gpointer data) {
   pango_attr_list_unref(attrlist);
 }
 
-gint MainPrimaryTreeview(gpointer data) {
+gint MainPrimaryTreeview(gpointer pkg_data) {
+  portfolio_packet *pkg = (portfolio_packet *)pkg_data;
   /* Show the Indices Labels */
-  show_indices(data);
+  show_indices(pkg);
 
   /* Set The Indices Labels */
-  set_indices_labels(data);
+  set_indices_labels(pkg);
 
   GtkListStore *store = NULL;
   GtkWidget *list = GetWidget("MainTreeView");
@@ -640,7 +639,7 @@ gint MainPrimaryTreeview(gpointer data) {
   main_set_columns(GUI_COLUMN_PRIMARY);
 
   /* Set up the storage container */
-  store = main_primary_store(data);
+  store = main_primary_store(pkg);
 
   /* Add the store of data to the TreeView. */
   gtk_tree_view_set_model(GTK_TREE_VIEW(list), GTK_TREE_MODEL(store));
@@ -661,7 +660,8 @@ static void hide_indices() {
   gtk_revealer_set_reveal_child(GTK_REVEALER(revealer), FALSE);
 }
 
-gint MainDefaultTreeview(gpointer data) {
+gint MainDefaultTreeview(gpointer pkg_data) {
+  portfolio_packet *pkg = (portfolio_packet *)pkg_data;
   GtkListStore *store = NULL;
   GtkWidget *list = GetWidget("MainTreeView");
 
@@ -675,7 +675,7 @@ gint MainDefaultTreeview(gpointer data) {
   main_set_columns(GUI_COLUMN_DEFAULT);
 
   /* Set up the storage container */
-  store = main_default_store(data);
+  store = main_default_store(pkg);
 
   /* Add the store of data to the TreeView. */
   gtk_tree_view_set_model(GTK_TREE_VIEW(list), GTK_TREE_MODEL(store));
@@ -727,8 +727,8 @@ static gint main_display_time_remaining(const gchar *fmt, const gchar *font,
   return 0;
 }
 
-gint MainSetClocks(gpointer data) {
-  portfolio_packet *pkg = (portfolio_packet *)data;
+gint MainSetClocks(gpointer pkg_data) {
+  portfolio_packet *pkg = (portfolio_packet *)pkg_data;
   const gchar *fmt = "<span foreground='DimGray'>%s</span>";
   gint h_left, m_left, s_left, h_cur, m_cur;
   gchar *holiday_str = NULL;

@@ -299,11 +299,29 @@ static void add_special_symbols(symbol_name_map *sn_map) {
   }
 }
 
+static void symbol_list_fetch_cleanup(gchar *line, FILE **fp,
+                                      symbol_name_map *sn_map, MemType *Nasdaq,
+                                      MemType *NYSE) {
+  if (line)
+    g_free(line);
+  if (fp[0])
+    fclose(fp[0]);
+  if (fp[1])
+    fclose(fp[1]);
+  FreeMemtype(Nasdaq);
+  FreeMemtype(NYSE);
+
+  if (sn_map) {
+    SNMapDestruct(sn_map);
+    g_free(sn_map);
+  }
+}
 
 static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
   meta *D = pkg->GetMetaClass();
 
-  gchar line[1024];
+  gchar *line = NULL;
+  gsize len_bytes = 0;
   gchar **token_array;
   gchar *symbol_token, *name_token, *tmp_symbol;
 
@@ -324,12 +342,7 @@ static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
                   D->NYSE_Symbol_url_ch, &NYSE_Struct);
   if (PerformMultiCurl_no_prog(D->multicurl_cmpltn_hnd) != 0 ||
       pkg->IsCurlCanceled()) {
-    FreeMemtype(&Nasdaq_Struct);
-    FreeMemtype(&NYSE_Struct);
-    if (sn_map->sn_container_arr)
-      g_free(sn_map->sn_container_arr);
-    if (sn_map)
-      g_free(sn_map);
+    symbol_list_fetch_cleanup(NULL, NULL, sn_map, &Nasdaq_Struct, &NYSE_Struct);
     return NULL;
   }
 
@@ -345,7 +358,7 @@ static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
     /* Read the file stream one line at a time */
     /* Populate the Symbol-Name Array. The second list is added after the first
      * list. */
-    while (fgets(line, 1024, fp[k]) != NULL) {
+    while (getline(&line, &len_bytes, fp[k]) > 0) {
       g_strchomp(line);
 
       /* If we have an empty line, continue. */
@@ -354,17 +367,8 @@ static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
 
       /* Invalid replies start with a tag. */
       if (g_strrstr(line, "<")) {
-        if (fp[0])
-          fclose(fp[0]);
-        if (fp[1])
-          fclose(fp[1]);
-        FreeMemtype(&Nasdaq_Struct);
-        FreeMemtype(&NYSE_Struct);
-
-        if (sn_map) {
-          SNMapDestruct(sn_map);
-          g_free(sn_map);
-        }
+        symbol_list_fetch_cleanup(line, fp, sn_map, &Nasdaq_Struct,
+                                  &NYSE_Struct);
         return NULL;
       }
 
@@ -393,21 +397,12 @@ static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
 
       /* If we are exiting the application, return immediately. */
       if (pkg->IsCurlCanceled()) {
-        if (fp[0])
-          fclose(fp[0]);
-        if (fp[1])
-          fclose(fp[1]);
-        FreeMemtype(&Nasdaq_Struct);
-        FreeMemtype(&NYSE_Struct);
-        if (sn_map) {
-          SNMapDestruct(sn_map);
-          g_free(sn_map);
-        }
+        symbol_list_fetch_cleanup(line, fp, sn_map, &Nasdaq_Struct,
+                                  &NYSE_Struct);
         return NULL;
       }
-    }
+    } /* end while loop */
     k++;
-
   } /* end while loop */
 
   /* Add special symbols such as indices, commodities, bonds, and crypto to the
@@ -423,10 +418,7 @@ static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
    * value. */
   CreateHashTable(sn_map);
 
-  fclose(fp[0]);
-  fclose(fp[1]);
-  FreeMemtype(&Nasdaq_Struct);
-  FreeMemtype(&NYSE_Struct);
+  symbol_list_fetch_cleanup(line, fp, NULL, &Nasdaq_Struct, &NYSE_Struct);
   return sn_map;
 }
 

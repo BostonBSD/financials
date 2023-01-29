@@ -50,8 +50,7 @@ const gchar *GetEntryText(const gchar *name_ch) {
 }
 
 /* GtkWidget/GObject signal connect functions. */
-static void main_window_sig_connect(gpointer data) {
-  portfolio_packet *pkg = (portfolio_packet *)data;
+static void main_window_sig_connect(portfolio_packet *pkg) {
   window_data *W = pkg->GetWindowData();
   GObject *window, *object;
 
@@ -199,8 +198,7 @@ static void bullion_window_sig_connect() {
                    (gpointer)BUL_COMBO_BOX);
 }
 
-static void preferences_window_sig_connect(gpointer data) {
-  portfolio_packet *pkg = (portfolio_packet *)data;
+static void preferences_window_sig_connect(portfolio_packet *pkg) {
   meta *D = pkg->GetMetaClass();
   GObject *window, *object;
 
@@ -287,8 +285,7 @@ static void api_window_sig_connect() {
                    (gpointer)API_CURSOR_MOVE);
 }
 
-static void history_window_sig_connect(gpointer data) {
-  portfolio_packet *pkg = (portfolio_packet *)data;
+static void history_window_sig_connect(portfolio_packet *pkg) {
   window_data *W = pkg->GetWindowData();
   GObject *window, *object;
 
@@ -356,15 +353,15 @@ static void other_window_sig_connect() {
                    (gpointer)CASH_CURSOR_MOVE);
 }
 
-static void gui_signal_connect(gpointer data)
+static void gui_signal_connect(portfolio_packet *pkg)
 /* Connect widget signals to signal handlers. */
 {
-  main_window_sig_connect(data);
+  main_window_sig_connect(pkg);
   security_window_sig_connect();
   bullion_window_sig_connect();
-  preferences_window_sig_connect(data);
+  preferences_window_sig_connect(pkg);
   api_window_sig_connect();
-  history_window_sig_connect(data);
+  history_window_sig_connect(pkg);
   other_window_sig_connect();
 }
 
@@ -390,7 +387,7 @@ static void gui_signal_connect(gpointer data)
    convenient for adding new widgets with a generic callback function.
 */
 
-void GuiStart(gpointer data)
+void GuiStart(portfolio_packet *pkg)
 /* Setup GUI widgets and display the GUI. */
 {
   GError *error = NULL;
@@ -411,11 +408,11 @@ void GuiStart(gpointer data)
 
   /* Set whether the clocks are displayed or not.
      Start clock threads if the clocks are displayed. */
-  StartClockThread(data);
+  StartClockThread(pkg);
 
   /* Add the list of stock symbols from sqlite to a struct.
      Set two entrybox completion widgets.*/
-  StartCompletionThread(data);
+  StartCompletionThread(pkg);
 
   /* Add the keyboard shortcuts to the Hotkeys window. */
   HotkeysSetTreeview();
@@ -424,19 +421,18 @@ void GuiStart(gpointer data)
   AboutSetLabel();
 
   /* Make sure the main labels and treeview header fonts are set */
-  MainSetFonts(data);
+  MainSetFonts(pkg);
 
   /* Connect callback functions to corresponding GUI signals. */
-  gui_signal_connect(data);
+  gui_signal_connect(pkg);
 
   /* Set the default treeview.
      This treeview is already set in the GUIThread_completion_set thread
      [created in StartCompletionThread()], however, there may be a db read
      delay before it is displayed. So we set it here showing any available data.
    */
-  portfolio_packet *pkg = (portfolio_packet *)data;
   pkg->ToStrings();
-  MainDefaultTreeview(data);
+  MainDefaultTreeview(pkg);
 
   /* Start the gtk_main loop. */
   gtk_main();

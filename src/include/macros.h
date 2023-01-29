@@ -38,7 +38,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #define UNUSED(x) (void)x;
 #endif
 
-/* SQLite config db file location (from the user's home directory). */
+/* SQLite config db file location (from the user's config directory). */
 #ifndef CONFIG_DIR
 #define CONFIG_DIR "/financials"
 #endif
@@ -97,7 +97,7 @@ POSSIBILITY OF SUCH DAMAGE.
   "http://www.nasdaqtrader.com/dynamic/SymDir/otherlisted.txt"
 #endif
 
-/* These two macros define initial URL values before the user sets up the
+/* These two macros define initial values before the user sets up the
    application. */
 /* The finnhub.io stock quote URL */
 #ifndef FINNHUB_URL

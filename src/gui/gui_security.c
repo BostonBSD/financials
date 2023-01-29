@@ -38,8 +38,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/sqlite.h"
 #include "../include/workfuncs.h"
 
-gint SecurityCompletionSet(gpointer data) {
-  CompletionSet(data, GUI_COMPLETION_SECURITY);
+gint SecurityCompletionSet(gpointer sn_map_data) {
+  CompletionSet((symbol_name_map *)sn_map_data, GUI_COMPLETION_SECURITY);
   return 0;
 }
 
@@ -71,8 +71,7 @@ static void remove_dash(gchar *s)
     ch[-1] = 0;
 }
 
-gint SecurityComBoxChange(gpointer data) {
-  portfolio_packet *pkg = (portfolio_packet *)data;
+gint SecurityComBoxChange(portfolio_packet *pkg) {
   symbol_name_map *sn_map = pkg->GetSymNameMap();
 
   GtkWidget *ComboBox = GetWidget("SecurityComboBox");
@@ -89,7 +88,7 @@ gint SecurityComBoxChange(gpointer data) {
 
     remove_dash(name);
     const gchar *fmt =
-        "<span foreground='MidnightBlue' size='larger'>%s</span>";
+        "<span foreground='MidnightBlue' size='large'>%s</span>";
     SetFormattedLabel(label, fmt, pkg->meta_class->font_ch, name ? name : "");
     if (name)
       g_free(name);
@@ -239,27 +238,25 @@ static gpointer remove_security_ok_thd(gpointer data) {
   return NULL;
 }
 
-gint SecurityOk(gpointer data) {
+gint SecurityOk(portfolio_packet *pkg) {
   GtkWidget *stack = GetWidget("SecurityStack");
   const gchar *name = gtk_stack_get_visible_child_name(GTK_STACK(stack));
 
   GThread *g_thread_id;
   if (g_strcmp0(name, "add") == 0) {
     /* Add the data in a separate thread */
-    g_thread_id = g_thread_new(NULL, add_security_ok_thd, data);
+    g_thread_id = g_thread_new(NULL, add_security_ok_thd, pkg);
     g_thread_unref(g_thread_id);
   } else {
     /* Remove the data in a separate thread */
-    g_thread_id = g_thread_new(NULL, remove_security_ok_thd, data);
+    g_thread_id = g_thread_new(NULL, remove_security_ok_thd, pkg);
     g_thread_unref(g_thread_id);
   }
   return 0;
 }
 
-gint SecurityShowHide(gpointer data) {
-  /* Unpack the package */
-  portfolio_packet *package = (portfolio_packet *)data;
-  equity_folder *F = package->GetEquityFolderClass();
+gint SecurityShowHide(portfolio_packet *pkg) {
+  equity_folder *F = pkg->GetEquityFolderClass();
 
   GtkWidget *window = GetWidget("SecurityWindow");
   gboolean visible = gtk_widget_is_visible(window);

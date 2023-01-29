@@ -39,20 +39,16 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/sqlite.h"
 #include "../include/workfuncs.h" /* CheckIfStringDoublePositiveNumber (), SetFont () */
 
-void GUICallbackHandler(GtkWidget *widget, gpointer data)
-/* The widget callback functions block the gui loop until they return,
-   therefore we do not want a join statement in this function. */
-{
+void GUICallbackHandler(GtkWidget *widget, gpointer sig_data) {
   UNUSED(widget)
   GThread *g_thread_id;
 
   /* We're using data as a value rather than a pointer. */
-  cb_signal index_signal = (cb_signal)((guintptr)data);
+  cb_signal index_signal = (cb_signal)((guintptr)sig_data);
 
   switch (index_signal) {
   case MAIN_FETCH_BTN:
-    g_thread_id =
-        g_thread_new(NULL, GUIThreadHandler_main_fetch_handler, packet);
+    g_thread_id = g_thread_new(NULL, GUIThreadHandler_main_fetch, packet);
     g_thread_unref(g_thread_id);
     break;
   case MAIN_EXIT:
@@ -84,7 +80,7 @@ void GUICallbackHandler(GtkWidget *widget, gpointer data)
     break;
   case BUL_OK_BTN:
     BullionShowHide(packet);
-    /* If we need data to update the main treeview with new bullion data. */
+    /* If we need to update the main treeview with new bullion data. */
     if (BullionOk(packet) && !packet->IsDefaultView()) {
       /* Fetch the data in a separate thread */
       g_thread_id = g_thread_new(NULL, GUIThread_bul_fetch, packet);
@@ -134,7 +130,7 @@ void GUICallbackHandler(GtkWidget *widget, gpointer data)
     break;
   case HISTORY_TOGGLE_BTN:
     HistoryShowHide(packet);
-    HistoryTreeViewClear();    
+    HistoryTreeViewClear();
     break;
   case HISTORY_CURSOR_MOVE:
     HistoryCursorMove();
@@ -209,7 +205,7 @@ gboolean GUICallback_pref_clock_switch(GtkSwitch *Switch, gboolean state) {
      switch. */
 
   /* Start/Stop clock threads, will toggle the clocks_displayed_bool flag */
-  g_thread_id = g_thread_new(NULL, GUIThreadHandler_clock_handler, packet);
+  g_thread_id = g_thread_new(NULL, GUIThreadHandler_clock, packet);
   g_thread_unref(g_thread_id);
 
   /* Return FALSE to keep the state
@@ -282,10 +278,10 @@ void GUICallback_pref_hours_spinbutton(GtkEditable *spin_button) {
 }
 
 gboolean GUICallback_hide_window_on_delete(GtkWidget *window, GdkEvent *event,
-                                           gpointer data) {
+                                           gpointer sig_data) {
   UNUSED(event)
 
-  guintptr index_signal = (guintptr)data;
+  guintptr index_signal = (guintptr)sig_data;
 
   switch (index_signal) {
   case ABOUT_TOGGLE_BTN:
@@ -318,7 +314,7 @@ gboolean GUICallback_hide_window_on_delete(GtkWidget *window, GdkEvent *event,
 }
 
 gboolean GUICallback_window_data(GtkWidget *window, GdkEvent *event,
-                                 gpointer data) {
+                                 gpointer sig_data) {
   /*
       The "event->configure.x" and "event->configure.y" data members are
      slightly less accurate than the gtk_window_get_position function, so we're
@@ -332,7 +328,7 @@ gboolean GUICallback_window_data(GtkWidget *window, GdkEvent *event,
 
   window_data *W = packet->GetWindowData();
 
-  guint s = (guint)((guintptr)data);
+  guint s = (guint)((guintptr)sig_data);
 
   switch (s) {
   case GUI_MAIN_WINDOW:
@@ -359,13 +355,13 @@ gboolean GUICallback_window_data(GtkWidget *window, GdkEvent *event,
 
 gboolean GUICallback_select_comp(GtkEntryCompletion *completion,
                                  GtkTreeModel *model, GtkTreeIter *iter,
-                                 gpointer data)
+                                 gpointer sig_data)
 /* activated when an item is selected from the completion list */
 {
   UNUSED(completion)
 
   /* We're using data as a value rather than a pointer. */
-  guintptr index_signal = (guintptr)data;
+  guintptr index_signal = (guintptr)sig_data;
   GtkWidget *EntryBox = NULL;
 
   if (index_signal == GUI_COMPLETION_HISTORY) {
@@ -390,13 +386,13 @@ gboolean GUICallback_select_comp(GtkEntryCompletion *completion,
 
 gboolean GUICallback_cursor_comp(GtkEntryCompletion *completion,
                                  GtkTreeModel *model, GtkTreeIter *iter,
-                                 gpointer data)
+                                 gpointer sig_data)
 /* activated when an item is highlighted from the completion list */
 {
   UNUSED(completion)
 
   /* We're using data as a value rather than a pointer. */
-  guintptr index_signal = (guintptr)data;
+  guintptr index_signal = (guintptr)sig_data;
   GtkWidget *EntryBox = NULL;
 
   if (index_signal == GUI_COMPLETION_HISTORY) {
@@ -607,8 +603,8 @@ gboolean GUICallback_main_treeview_click(GtkWidget *treeview,
       selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
       gtk_tree_selection_set_mode(selection, GTK_SELECTION_SINGLE);
       if (gtk_tree_selection_get_selected(selection, &model, &iter)) {
-        gtk_tree_model_get(model, &iter, GUI_TYPE, &type, GUI_SYMBOL, &symbol,
-                           -1);
+        gtk_tree_model_get(model, &iter, MAIN_COLUMN_TYPE, &type,
+                           MAIN_COLUMN_SYMBOL, &symbol, -1);
         if (!type || !symbol) {
           if (!symbol) {
             g_free(type);

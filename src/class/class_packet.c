@@ -230,24 +230,24 @@ static gpointer GetEquityFolderClass() { return packet->equity_folder_class; }
 
 static gpointer GetSymNameMap() { return packet->meta_class->sym_map; }
 
-static void SetSymNameMap(gpointer data) {
-  packet->meta_class->sym_map = (symbol_name_map *)data;
+static void SetSymNameMap(symbol_name_map *sn_map) {
+  packet->meta_class->sym_map = sn_map;
 }
 
 static gboolean IsClockDisplayed() {
   return packet->meta_class->clocks_displayed_bool;
 }
 
-static void SetClockDisplayed(gboolean data) {
-  packet->meta_class->clocks_displayed_bool = data;
+static void SetClockDisplayed(gboolean displayed_bool) {
+  packet->meta_class->clocks_displayed_bool = displayed_bool;
 }
 
 static gboolean IsIndicesDisplayed() {
   return packet->meta_class->index_bar_revealed_bool;
 }
 
-static void SetIndicesDisplayed(gboolean data) {
-  packet->meta_class->index_bar_revealed_bool = data;
+static void SetIndicesDisplayed(gboolean displayed_bool) {
+  packet->meta_class->index_bar_revealed_bool = displayed_bool;
 }
 
 static gboolean IsClosed()
@@ -260,10 +260,10 @@ static gboolean IsClosed()
   return packet->meta_class->market_closed_bool;
 }
 
-static void SetClosed(gboolean data)
+static void SetClosed(gboolean closed_bool)
 /* Market Closed flag */
 {
-  packet->meta_class->market_closed_bool = data;
+  packet->meta_class->market_closed_bool = closed_bool;
 }
 
 static gboolean IsMainCurlCanceled()
@@ -272,26 +272,26 @@ static gboolean IsMainCurlCanceled()
   return packet->meta_class->multicurl_cancel_main_bool;
 }
 
-static void SetMainCurlCanceled(gboolean data)
+static void SetMainCurlCanceled(gboolean canceled_bool)
 /* Main window curl flag */
 {
-  packet->meta_class->multicurl_cancel_main_bool = data;
+  packet->meta_class->multicurl_cancel_main_bool = canceled_bool;
 }
 
 static gboolean IsFetchingData() {
   return packet->meta_class->fetching_data_bool;
 }
 
-static void SetFetchingData(gboolean data) {
-  packet->meta_class->fetching_data_bool = data;
+static void SetFetchingData(gboolean fetching_bool) {
+  packet->meta_class->fetching_data_bool = fetching_bool;
 }
 
 static gboolean IsDefaultView() {
   return packet->meta_class->main_win_default_view_bool;
 }
 
-static void SetDefaultView(gboolean data) {
-  packet->meta_class->main_win_default_view_bool = data;
+static void SetDefaultView(gboolean default_vw_bool) {
+  packet->meta_class->main_win_default_view_bool = default_vw_bool;
 }
 
 static gboolean IsCurlCanceled()
@@ -300,10 +300,10 @@ static gboolean IsCurlCanceled()
   return packet->meta_class->multicurl_cancel_bool;
 }
 
-static void SetCurlCanceled(gboolean data)
+static void SetCurlCanceled(gboolean canceled_bool)
 /* Non-main curl flag */
 {
-  packet->meta_class->multicurl_cancel_bool = data;
+  packet->meta_class->multicurl_cancel_bool = canceled_bool;
 }
 
 static void SetSecurityNames() {

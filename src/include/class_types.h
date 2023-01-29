@@ -35,6 +35,13 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "gui_types.h"       /* symbol_name_map */
 #include "multicurl_types.h" /* CURL, CURLM */
 
+typedef struct bullion bullion;
+typedef struct metal metal;
+typedef struct stock stock;
+typedef struct equity_folder equity_folder;
+typedef struct meta meta;
+typedef struct portfolio_packet portfolio_packet;
+
 typedef struct { /* A container to hold the type of row and symbol, on a right
                     click */
   gchar *type;
@@ -97,7 +104,7 @@ typedef struct {
 } default_heading;
 
 /* class type definitions */
-typedef struct {
+struct bullion {
   /* Data Variables */
   gdouble spot_price_f;
   gdouble premium_f;
@@ -131,10 +138,39 @@ typedef struct {
 
   CURL *YAHOO_hnd; /* Bullion cURL Easy Handle. */
   MemType CURLDATA;
+};
 
-} bullion;
+struct metal {
+  /* Bullion Handles */
+  bullion *Gold;
+  bullion *Silver;
+  bullion *Platinum;
+  bullion *Palladium;
 
-typedef struct {
+  /* Data Variables */
+  gdouble bullion_port_value_f;
+  gdouble bullion_port_value_chg_f;
+  gdouble bullion_port_value_p_chg_f;
+  gdouble gold_silver_ratio_f;
+
+  /* Pango Markup language strings */
+  gchar *bullion_port_value_mrkd_ch;       /* Total value of bullion holdings */
+  gchar *bullion_port_value_chg_mrkd_ch;   /* Total value of bullion holdings
+                                             change */
+  gchar *bullion_port_value_p_chg_mrkd_ch; /* Total value of bullion holdings
+                                             percent change */
+
+  /* Unmarked strings */
+  gchar *gold_silver_ratio_ch;
+
+  /* Method/Function pointers */
+  void (*ToStrings)(guint8 digits_right);
+  void (*Calculate)();
+  gint (*SetUpCurl)(portfolio_packet *pkg);
+  void (*ExtractData)();
+};
+
+struct stock {
   /* Data Variables */
   guint num_shares_stock_int; /* Cannot hold more than 4294967295 shares
                                         of stock on most 64-bit machines */
@@ -173,10 +209,41 @@ typedef struct {
 
   CURL *easy_hnd; /* cURL Easy Handle. */
   MemType JSON;
+};
 
-} stock;
+struct equity_folder {
+  /* Handle to stock array */
+  stock **Equity; /* Stock Double Pointer Array */
 
-typedef struct {
+  /* Data Variables */
+  gdouble stock_port_value_f;
+  gdouble stock_port_value_chg_f;
+  gdouble stock_port_value_p_chg_f;
+
+  /* Can have up to 255 stocks [0-254]: 8 bits. */
+  guint8 size;
+
+  /* Pango Markup language strings */
+  gchar *stock_port_value_mrkd_ch; /* Total value of equity holdings */
+  gchar
+      *stock_port_value_chg_mrkd_ch; /* Total value of equity holdings change */
+  gchar *stock_port_value_p_chg_mrkd_ch; /* Total value of equity holdings
+                                      percent change */
+
+  /* Method/Function pointers */
+  void (*ToStrings)(guint8 digits_right);
+  void (*Calculate)();
+  void (*GenerateURL)(portfolio_packet *pkg);
+  gint (*SetUpCurl)(portfolio_packet *pkg);
+  void (*ExtractData)();
+  void (*AddStock)(const gchar *symbol, const gchar *shares);
+  void (*Sort)();
+  void (*Reset)();
+  void (*RemoveStock)(const gchar *s);
+  void (*SetSecurityNames)(portfolio_packet *pkg);
+};
+
+struct meta {
   /* Data Variables */
   right_click_container rght_clk_data;
   window_data window_struct; /* A struct that holds the size and position of
@@ -293,79 +360,17 @@ typedef struct {
 
   /* Methods/Function pointers. */
   void (*ToStringsPortfolio)();
-  void (*CalculatePortfolio)(gpointer data);
+  void (*CalculatePortfolio)(portfolio_packet *pkg);
   void (*StopHistoryCurl)();
   void (*StopSNMapCurl)();
-  gint (*SetUpCurlIndicesData)(gpointer data);
+  gint (*SetUpCurlIndicesData)(portfolio_packet *pkg);
   void (*ExtractIndicesData)();
   void (*ToStringsIndices)();
   void (*ToStringsHeadings)();
-} meta;
-
-typedef struct {
-  /* Bullion Handles */
-  bullion *Gold;
-  bullion *Silver;
-  bullion *Platinum;
-  bullion *Palladium;
-
-  /* Data Variables */
-  gdouble bullion_port_value_f;
-  gdouble bullion_port_value_chg_f;
-  gdouble bullion_port_value_p_chg_f;
-  gdouble gold_silver_ratio_f;
-
-  /* Pango Markup language strings */
-  gchar *bullion_port_value_mrkd_ch;       /* Total value of bullion holdings */
-  gchar *bullion_port_value_chg_mrkd_ch;   /* Total value of bullion holdings
-                                             change */
-  gchar *bullion_port_value_p_chg_mrkd_ch; /* Total value of bullion holdings
-                                             percent change */
-
-  /* Unmarked strings */
-  gchar *gold_silver_ratio_ch;
-
-  /* Method/Function pointers */
-  void (*ToStrings)(guint8 digits_right);
-  void (*Calculate)();
-  gint (*SetUpCurl)(gpointer data);
-  void (*ExtractData)();
-} metal;
-
-typedef struct {
-  /* Handle to stock array */
-  stock **Equity; /* Stock Double Pointer Array */
-
-  /* Data Variables */
-  gdouble stock_port_value_f;
-  gdouble stock_port_value_chg_f;
-  gdouble stock_port_value_p_chg_f;
-
-  /* Can have up to 255 stocks [0-254]: 8 bits. */
-  guint8 size;
-
-  /* Pango Markup language strings */
-  gchar *stock_port_value_mrkd_ch; /* Total value of equity holdings */
-  gchar
-      *stock_port_value_chg_mrkd_ch; /* Total value of equity holdings change */
-  gchar *stock_port_value_p_chg_mrkd_ch; /* Total value of equity holdings
-                                      percent change */
-
-  /* Method/Function pointers */
-  void (*ToStrings)(guint8 digits_right);
-  void (*Calculate)();
-  void (*GenerateURL)(gpointer data);
-  gint (*SetUpCurl)(gpointer data);
-  void (*ExtractData)();
-  void (*AddStock)(const gchar *symbol, const gchar *shares);
-  void (*Sort)();
-  void (*Reset)();
-  void (*RemoveStock)(const gchar *s);
-  void (*SetSecurityNames)(gpointer data);
-} equity_folder;
+};
 
 /* A handle to our three primary classes and some useful functions */
-typedef struct {
+struct portfolio_packet {
   /* handles to each of our three classes */
   metal *metal_class;
   equity_folder *equity_folder_class;
@@ -380,18 +385,18 @@ typedef struct {
   gint (*GetData)();
   void (*ExtractData)();
   gboolean (*IsFetchingData)();
-  void (*SetFetchingData)(gboolean data);
+  void (*SetFetchingData)(gboolean fetching_bool);
   gboolean (*IsDefaultView)();
-  void (*SetDefaultView)(gboolean data);
+  void (*SetDefaultView)(gboolean default_vw_bool);
   void (*FreeMainCurlData)();
   void (*StopMultiCurlMain)();
   void (*StopMultiCurlAll)();
   gboolean (*IsClosed)();
-  void (*SetClosed)(gboolean data);
+  void (*SetClosed)(gboolean closed_bool);
   gboolean (*IsCurlCanceled)();
-  void (*SetCurlCanceled)(gboolean data);
+  void (*SetCurlCanceled)(gboolean canceled_bool);
   gboolean (*IsMainCurlCanceled)();
-  void (*SetMainCurlCanceled)(gboolean data);
+  void (*SetMainCurlCanceled)(gboolean canceled_bool);
   gdouble (*GetHoursOfUpdates)();
   gdouble (*GetUpdatesPerMinute)();
   gpointer (*GetPrimaryHeadings)();
@@ -401,14 +406,13 @@ typedef struct {
   gpointer (*GetMetaClass)();
   gpointer (*GetMetalClass)();
   gpointer (*GetSymNameMap)();
-  void (*SetSymNameMap)(gpointer data);
+  void (*SetSymNameMap)(symbol_name_map *sn_map);
   gpointer (*GetEquityFolderClass)();
   gboolean (*IsClockDisplayed)();
-  void (*SetClockDisplayed)(gboolean data);
+  void (*SetClockDisplayed)(gboolean displayed_bool);
   gboolean (*IsIndicesDisplayed)();
-  void (*SetIndicesDisplayed)(gboolean data);
+  void (*SetIndicesDisplayed)(gboolean displayed_bool);
   void (*SetSecurityNames)();
-
-} portfolio_packet;
+};
 
 #endif /* CLASS_TYPES_HEADER_H */

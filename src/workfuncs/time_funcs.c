@@ -63,7 +63,7 @@ enum { DAY_ERROR, MON, TUES, WEDS, THURS, FRI, SAT, SUN };
 
 /* Time calculations are based off of the New York timezone due to
  * daylight-savings time adjustments, the process timezone remains unchanged. */
-const gchar *ny_tz_str = NEW_YORK_TIME_ZONE;
+static const gchar *ny_tz_str = NEW_YORK_TIME_ZONE;
 
 static gint64 time_span_remaining(gint64 time_span_usec) {
   /* Return the number of microseconds left in the current timespan [hour, min,
@@ -252,7 +252,7 @@ gboolean GetTimeData(gboolean *holiday, gchar **holiday_str, gint *h_r,
   gboolean closed;
 
   /* Get the GDateTime object for the New York timezone. */
-  /* g_time_zone_new() is deprecated in Glib 2.68, however, it's replacement;
+  /* g_time_zone_new() is deprecated in Glib 2.68, however, its replacement;
    * g_time_zone_new_identifier() is unavailable on earlier Glib versions used
    * by some OSs; Debian. */
   GTimeZone *ny_tz = g_time_zone_new(ny_tz_str);

@@ -33,8 +33,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef WORKFUNCS_HEADER_H
 #define WORKFUNCS_HEADER_H
 
-#include "class_types.h"     /* equity_folder, metal, meta, portfolio_packet */
-#include "gui_types.h"       /* symbol_name_map */
+#include "class_types.h" /* equity_folder, metal, meta, portfolio_packet */
+#include "gui_types.h"   /* symbol_name_map */
 
 /* pango_formatting */
 enum {

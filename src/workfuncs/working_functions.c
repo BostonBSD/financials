@@ -62,7 +62,7 @@ gdouble CalcRsi(gdouble avg_gain, gdouble avg_loss) {
 
 gchar *ExtractYahooData(FILE *fp, gdouble *prev_closing_f, gdouble *cur_price_f)
 /* Take in a file pointer, and references to two doubles; prev_closing_f and
-   cur_price_f.  Will populate the last closing price and the current price.
+   cur_price_f.  Will populate the previous closing price and the current price.
 
    Returns the last line of the file stream.
    Must free return value.
@@ -71,14 +71,15 @@ gchar *ExtractYahooData(FILE *fp, gdouble *prev_closing_f, gdouble *cur_price_f)
    Yahoo! finance.
 */
 {
-  gchar line[1024];
-  gchar **csv_array;
+  gchar *ret_value = NULL, *line = NULL;
+  gsize len_bytes = 0;
+  gchar **token_arr;
 
   /* Yahoo! sometimes updates data when the equities markets are closed.
      The while loop iterates to the end of file to get the latest data. */
   *prev_closing_f = 0.0f;
   *cur_price_f = 0.0f;
-  while (fgets(line, 1024, fp) != NULL) {
+  while (getline(&line, &len_bytes, fp) > 0) {
     g_strchomp(line);
 
     *prev_closing_f = *cur_price_f;
@@ -94,15 +95,19 @@ gchar *ExtractYahooData(FILE *fp, gdouble *prev_closing_f, gdouble *cur_price_f)
       return NULL;
     }
 
-    csv_array = g_strsplit(line, ",", -1);
-    if (g_strv_length(csv_array) < 7) {
-      g_strfreev(csv_array);
+    token_arr = g_strsplit(line, ",", -1);
+    if (g_strv_length(token_arr) < 7) {
+      g_strfreev(token_arr);
       return NULL;
     }
-    *cur_price_f = g_strtod(csv_array[4] ? csv_array[4] : "0", NULL);
-    g_strfreev(csv_array);
+    *cur_price_f = g_strtod(token_arr[4] ? token_arr[4] : "0", NULL);
+    g_strfreev(token_arr);
+
+    g_free(ret_value);
+    ret_value = g_strdup(line);
   };
-  return (gchar *)g_strdup(line);
+  g_free(line);
+  return ret_value;
 }
 
 static gint64 unix_time_sec() {
@@ -123,12 +128,7 @@ void GetYahooUrl(gchar **url_ch, const gchar *symbol_ch, guint period) {
 
   len = g_snprintf(NULL, 0, fmt, symbol_ch, start_time, end_time) + 1;
   gchar *tmp = g_realloc(url_ch[0], len);
-
-  if (tmp == NULL) {
-    printf("Not Enough Memory, realloc returned NULL.\n");
-    exit(EXIT_FAILURE);
-  }
-
   url_ch[0] = tmp;
+
   g_snprintf(url_ch[0], len, fmt, symbol_ch, start_time, end_time);
 }

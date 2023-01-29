@@ -37,8 +37,7 @@ POSSIBILITY OF SUCH DAMAGE.
 static void config_dir_processing(const gchar *usr_config_dir)
 /* Check if the "~/.config" and "~/.config/financials" directories exist. */
 {
-  /* Append the /financials directory to the end of user config directory path.
-   */
+  /* Append the /financials directory to the end of user config directory path. */
   gchar *path = g_strconcat(usr_config_dir, CONFIG_DIR, NULL);
 
   /* Make dir if it doesn't exist, along with parent dirs. */

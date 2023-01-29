@@ -233,9 +233,8 @@ static void Calculate() {
     M->gold_silver_ratio_f = M->Gold->spot_price_f / M->Silver->spot_price_f;
 }
 
-static gint SetUpCurl(gpointer data) {
-  portfolio_packet *pkg = (portfolio_packet *)data;
-  metal *M = MetalClassObject;
+static gint SetUpCurl(portfolio_packet *pkg) {
+  metal *M = pkg->GetMetalClass();
 
   /* The start time needs to be a week before the current time, so seven days.
    * This compensates for weekends and holidays and ensures enough data. */
@@ -284,19 +283,19 @@ static void extract_bullion_data(bullion *B) {
     return;
   }
 
-  char **csv_array;
+  char **token_arr;
   gdouble prev_closing = 0.0f, cur_price = 0.0f;
   gchar *line = ExtractYahooData(fp, &prev_closing, &cur_price);
 
   if (line) {
     g_strchomp(line);
-    csv_array = g_strsplit(line, ",", -1);
+    token_arr = g_strsplit(line, ",", -1);
     B->prev_closing_metal_f = prev_closing;
-    B->high_metal_f = g_strtod(csv_array[2] ? csv_array[2] : "0", NULL);
-    B->low_metal_f = g_strtod(csv_array[3] ? csv_array[3] : "0", NULL);
+    B->high_metal_f = g_strtod(token_arr[2] ? token_arr[2] : "0", NULL);
+    B->low_metal_f = g_strtod(token_arr[3] ? token_arr[3] : "0", NULL);
     B->spot_price_f = cur_price;
 
-    g_strfreev(csv_array);
+    g_strfreev(token_arr);
   }
 
   g_free(line);

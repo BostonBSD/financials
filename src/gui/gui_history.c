@@ -36,13 +36,12 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/mutex.h"
 #include "../include/workfuncs.h"
 
-gint HistoryCompletionSet(gpointer data) {
-  CompletionSet(data, GUI_COMPLETION_HISTORY);
+gint HistoryCompletionSet(gpointer sn_map_data) {
+  CompletionSet((symbol_name_map *)sn_map_data, GUI_COMPLETION_HISTORY);
   return 0;
 }
 
-gint HistoryShowHide(gpointer data) {
-  portfolio_packet *pkg = (portfolio_packet *)data;
+gint HistoryShowHide(portfolio_packet *pkg) {
   window_data *W = pkg->GetWindowData();
 
   /* get the GObject and cast as a GtkWidget */
@@ -110,10 +109,10 @@ static void history_set_columns() {
   }
 }
 
-gint HistorySetSNLabel(gpointer data) {
-  string_font *str_fnt_container = (string_font *)data;
+gint HistorySetSNLabel(gpointer string_font_data) {
+  string_font *str_fnt_container = (string_font *)string_font_data;
   GtkWidget *label = GetWidget("HistoryStockSymbolLabel");
-  const gchar *fmt = "<span foreground='MidnightBlue' size='larger'>%s</span>";
+  const gchar *fmt = "<span foreground='MidnightBlue' size='large'>%s</span>";
 
   gushort len = g_utf8_strlen(
       str_fnt_container->string ? str_fnt_container->string : "", -1);
@@ -222,38 +221,38 @@ static gboolean history_rsi_calculate(gchar *line, history_strings *strings,
   gdouble gain_f, prev_price_f, rsi_f, change_f;
   gulong volume_long;
 
-  gchar **csv_array = g_strsplit(line, ",", -1);
-  if (g_strv_length(csv_array) < 7) {
-    g_strfreev(csv_array);
+  gchar **token_arr = g_strsplit(line, ",", -1);
+  if (g_strv_length(token_arr) < 7) {
+    g_strfreev(token_arr);
     return FALSE;
   }
 
   prev_price_f = cur_price_f;
-  cur_price_f = g_strtod(csv_array[4] ? csv_array[4] : "0", NULL);
+  cur_price_f = g_strtod(token_arr[4] ? token_arr[4] : "0", NULL);
 
   /* The initial closing price has no prev_price */
   if (prev_price_f == 0.0f) {
-    g_strfreev(csv_array);
+    g_strfreev(token_arr);
     return FALSE;
   }
 
   gain_f = CalcGain(cur_price_f, prev_price_f);
   if (!history_rsi_ready(gain_f, &rsi_f, RUN)) {
     /* Until we get 14 days of data return FALSE. */
-    g_strfreev(csv_array);
+    g_strfreev(token_arr);
     return FALSE;
   }
 
   StringToStrPango(&strings->date_ch,
-                   csv_array[0] ? csv_array[0] : "0000-00-00", CHOCOLATE);
+                   token_arr[0] ? token_arr[0] : "0000-00-00", CHOCOLATE);
   DoubleToFormattedStrPango(&strings->prev_closing_ch, prev_price_f, 2, MON_STR,
                             BLACK);
   DoubleToFormattedStrPango(&strings->price_ch, cur_price_f, 2, MON_STR, BLACK);
-  StringToStrPango(&strings->high_ch, csv_array[2] ? csv_array[2] : "0",
+  StringToStrPango(&strings->high_ch, token_arr[2] ? token_arr[2] : "0",
                    STR_TO_MON_STR);
-  StringToStrPango(&strings->low_ch, csv_array[3] ? csv_array[3] : "0",
+  StringToStrPango(&strings->low_ch, token_arr[3] ? token_arr[3] : "0",
                    STR_TO_MON_STR);
-  StringToStrPango(&strings->opening_ch, csv_array[1] ? csv_array[1] : "0",
+  StringToStrPango(&strings->opening_ch, token_arr[1] ? token_arr[1] : "0",
                    STR_TO_MON_STR);
   change_f = cur_price_f - prev_price_f;
   if (change_f > 0) {
@@ -268,7 +267,7 @@ static gboolean history_rsi_calculate(gchar *line, history_strings *strings,
   }
   DoubleToFormattedStrPango(&strings->rsi_ch, rsi_f, 2, NUM_STR, BLACK);
   volume_long =
-      (gulong)g_ascii_strtoll(csv_array[6] ? csv_array[6] : "0", NULL, 10);
+      (gulong)g_ascii_strtoll(token_arr[6] ? token_arr[6] : "0", NULL, 10);
   DoubleToFormattedStrPango(&strings->volume_ch, (double)volume_long, 0,
                             NUM_STR, BLACK);
 
@@ -284,13 +283,11 @@ static gboolean history_rsi_calculate(gchar *line, history_strings *strings,
     StringToStrPango(&strings->indicator_ch, "Oversold", GREEN);
   }
 
-  g_strfreev(csv_array);
+  g_strfreev(token_arr);
   return TRUE;
 }
 
-static void history_set_store_thd_cleanup(gpointer data) {
-  history_strings *history_strs = (history_strings *)data;
-
+static void history_set_store_thd_cleanup(history_strings *history_strs) {
   /* Reset the static variables. */
   history_rsi_calculate(NULL, NULL, RESET);
 
@@ -308,25 +305,27 @@ static void history_set_store_thd_cleanup(gpointer data) {
 }
 
 static void history_set_store(GtkListStore *store, const gchar *curl_data) {
-  if (curl_data == NULL) {
+  if (!curl_data)
     return;
-  }
 
   history_strings history_strs = (history_strings){NULL};
 
   GtkTreeIter iter;
+  gchar *line = NULL;
+  gsize len_bytes = 0;
 
   /* Convert a String to a File Pointer Stream for Reading */
   FILE *fp =
       fmemopen((gpointer)curl_data, g_utf8_strlen(curl_data, -1) + 1, "r");
-  gchar line[1024];
+  if (!fp)
+    return;
 
   /* Ignore the header line */
-  if (fgets(line, 1024, fp) == NULL) {
+  if (getline(&line, &len_bytes, fp) <= 0) {
     fclose(fp);
     return;
   }
-  while (fgets(line, 1024, fp) != NULL) {
+  while (getline(&line, &len_bytes, fp) > 0) {
     g_strchomp(line);
 
     /* If there is a null error in this line, ignore the line.
@@ -359,6 +358,7 @@ static void history_set_store(GtkListStore *store, const gchar *curl_data) {
         history_strs.rsi_ch, HISTORY_COLUMN_ELEVEN, history_strs.indicator_ch,
         -1);
   }
+  g_free(line);
 
   fclose(fp);
   history_set_store_thd_cleanup(&history_strs);
@@ -378,8 +378,8 @@ GtkListStore *HistoryMakeStore(const gchar *data_str) {
   return store;
 }
 
-int HistoryMakeTreeview(gpointer data) {
-  GtkListStore *store = (GtkListStore *)data;
+int HistoryMakeTreeview(gpointer store_data) {
+  GtkListStore *store = (GtkListStore *)store_data;
   GtkWidget *list = GetWidget("HistoryTreeView");
 
   /* Set the columns for the new TreeView model */
@@ -401,7 +401,7 @@ int HistoryMakeTreeview(gpointer data) {
   return 0;
 }
 
-MemType *FetchHistoryData(const gchar *symbol_ch, portfolio_packet *pkg) {
+MemType *HistoryFetchData(const gchar *symbol_ch, portfolio_packet *pkg) {
   meta *D = pkg->GetMetaClass();
   gchar *MyUrl_ch = NULL;
   MemType *MyOutputStruct = (MemType *)g_malloc(sizeof(*MyOutputStruct));
@@ -409,7 +409,7 @@ MemType *FetchHistoryData(const gchar *symbol_ch, portfolio_packet *pkg) {
   MyOutputStruct->size = 0;
 
   /* Number of Seconds in a Year Plus Three Weeks */
-  guint period = 31557600 + (604800 * 3);
+  guint period = 33372000;
   GetYahooUrl(&MyUrl_ch, symbol_ch, period);
 
   SetUpCurlHandle(D->history_hnd, D->multicurl_history_hnd, MyUrl_ch,

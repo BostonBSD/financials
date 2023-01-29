@@ -36,10 +36,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/mutex.h"
 #include "../include/workfuncs.h"
 
-gint PrefShowHide(gpointer data) {
-  /* Unpack the package */
-  portfolio_packet *package = (portfolio_packet *)data;
-  meta *D = package->GetMetaClass();
+gint PrefShowHide(portfolio_packet *pkg) {
+  meta *D = pkg->GetMetaClass();
 
   /* get the GObject and cast as a GtkWidget */
   GtkWidget *window = GetWidget("PrefWindow");
@@ -73,9 +71,9 @@ gint PrefSymBtnStop() {
   return 0;
 }
 
-gint PrefSetClockSwitch(gpointer data) {
+gint PrefSetClockSwitch(gpointer pkg_data) {
   /* Unpack the package */
-  portfolio_packet *pkg = (portfolio_packet *)data;
+  portfolio_packet *pkg = (portfolio_packet *)pkg_data;
   meta *D = pkg->GetMetaClass();
 
   GtkWidget *Switch = GetWidget("PrefShowClocksSwitch");
@@ -101,10 +99,8 @@ static void set_api_entry_box(const gchar *entry_box_name_ch,
   g_object_set(G_OBJECT(EntryBox), "activates-default", TRUE, NULL);
 }
 
-gint APIShowHide(gpointer data) {
-  /* Unpack the package */
-  portfolio_packet *package = (portfolio_packet *)data;
-  meta *D = package->GetMetaClass();
+gint APIShowHide(portfolio_packet *pkg) {
+  meta *D = pkg->GetMetaClass();
 
   GtkWidget *window = GetWidget("ApiWindow");
   gboolean visible = gtk_widget_is_visible(window);
@@ -131,8 +127,7 @@ static void process_api_data(gchar *cur_value, const gchar *new_value) {
   }
 }
 
-gint APIOk(gpointer data) {
-  portfolio_packet *pkg = (portfolio_packet *)data;
+gint APIOk(portfolio_packet *pkg) {
   equity_folder *F = pkg->GetEquityFolderClass();
   meta *D = pkg->GetMetaClass();
 
@@ -222,10 +217,8 @@ static void set_bullion_entry_box(const gchar *entry_box_name_ch, gdouble value,
   g_free(temp);
 }
 
-gint BullionShowHide(gpointer data) {
-  /* Unpack the package */
-  portfolio_packet *package = (portfolio_packet *)data;
-  metal *M = package->GetMetalClass();
+gint BullionShowHide(portfolio_packet *pkg) {
+  metal *M = pkg->GetMetalClass();
 
   GtkWidget *window = GetWidget("BullionWindow");
   gboolean visible = gtk_widget_is_visible(window);
@@ -335,19 +328,17 @@ static gboolean process_bullion(const gint metal_int, portfolio_packet *pkg) {
                                      B);
 }
 
-gboolean BullionOk(gpointer data) {
-  /* Unpack the package */
-  portfolio_packet *package = (portfolio_packet *)data;
+gboolean BullionOk(portfolio_packet *pkg) {
   gboolean new_gold_bool = FALSE, new_silver_bool = FALSE,
            new_platinum_bool = FALSE, new_palladium_bool = FALSE;
 
-  new_gold_bool = process_bullion(GOLD, package);
-  new_silver_bool = process_bullion(SILVER, package);
-  new_platinum_bool = process_bullion(PLATINUM, package);
-  new_palladium_bool = process_bullion(PALLADIUM, package);
+  new_gold_bool = process_bullion(GOLD, pkg);
+  new_silver_bool = process_bullion(SILVER, pkg);
+  new_platinum_bool = process_bullion(PLATINUM, pkg);
+  new_palladium_bool = process_bullion(PALLADIUM, pkg);
 
-  return new_gold_bool || new_silver_bool ||
-                            new_platinum_bool || new_palladium_bool;
+  return new_gold_bool || new_silver_bool || new_platinum_bool ||
+         new_palladium_bool;
 }
 
 gint BullionCursorMove() {
@@ -395,10 +386,8 @@ gint BullionCursorMove() {
   return 0;
 }
 
-gint CashShowHide(gpointer data) {
-  /* Unpack the package */
-  portfolio_packet *package = (portfolio_packet *)data;
-  meta *D = package->GetMetaClass();
+gint CashShowHide(portfolio_packet *pkg) {
+  meta *D = pkg->GetMetaClass();
 
   GtkWidget *window = GetWidget("CashWindow");
   gboolean visible = gtk_widget_is_visible(window);
@@ -418,10 +407,8 @@ gint CashShowHide(gpointer data) {
   return 0;
 }
 
-gint CashOk(gpointer data) {
-  /* Unpack the package */
-  portfolio_packet *package = (portfolio_packet *)data;
-  meta *D = package->GetMetaClass();
+gint CashOk(portfolio_packet *pkg) {
+  meta *D = pkg->GetMetaClass();
 
   const gchar *new_value = GetEntryText("CashSpinBTN");
   gdouble new_f = g_strtod(new_value, NULL);
@@ -544,13 +531,13 @@ void HotkeysSetTreeview() {
   GtkListStore *store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
   GtkTreeIter iter;
 
-  const gchar *fmt_black = "<span font='Cantarell Regular 8' "
+  const gchar *fmt_black = "<span font='Sans Regular 8' "
                            "weight='Medium' foreground='Black'>%s</span>";
-  const gchar *fmt_brown = "<span font='Cantarell Regular 10' "
+  const gchar *fmt_brown = "<span font='Sans Regular 9' "
                            "weight='Medium' foreground='SaddleBrown'>%s</span>";
   const gchar *fmt;
 
-  gushort size = 32;//(sizeof commands) / (sizeof commands[0]);
+  gushort size = (sizeof commands) / (sizeof commands[0]);
   for (guint i = 0; i < size; i++) {
     /* We mark them up slightly first. */
     if (commands[i].color_num == BLACK_HK_COL) {

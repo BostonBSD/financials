@@ -128,8 +128,8 @@ static void main_fetch_exit(portfolio_packet *pkg) {
   g_thread_exit(NULL);
 }
 
-static gpointer main_fetch_thd(gpointer data) {
-  portfolio_packet *pkg = (portfolio_packet *)data;
+static gpointer main_fetch_thd(gpointer pkg_data) {
+  portfolio_packet *pkg = (portfolio_packet *)pkg_data;
 
   gdk_threads_add_idle(MainFetchBTNLabel, pkg);
 
@@ -167,13 +167,13 @@ static gpointer main_fetch_thd(gpointer data) {
   return NULL;
 }
 
-gpointer GUIThreadHandler_main_fetch_handler(gpointer data)
+gpointer GUIThreadHandler_main_fetch(gpointer pkg_data)
 /* A thread that handles the main_fetch_thd thread. */
 {
   if (!g_mutex_trylock(&mutexes[FETCH_DATA_HANDLER_MUTEX]))
     g_thread_exit(NULL);
 
-  portfolio_packet *pkg = (portfolio_packet *)data;
+  portfolio_packet *pkg = (portfolio_packet *)pkg_data;
   meta *D = pkg->GetMetaClass();
 
   /* If the main_fetch_thd thread is currently running. */
@@ -194,7 +194,7 @@ gpointer GUIThreadHandler_main_fetch_handler(gpointer data)
     /* Create fetching data thread. */
     g_cond_clear(&D->gthread_main_fetch_cond);
     g_cond_init(&D->gthread_main_fetch_cond);
-    D->gthread_main_fetch_id = g_thread_new(NULL, main_fetch_thd, data);
+    D->gthread_main_fetch_id = g_thread_new(NULL, main_fetch_thd, pkg_data);
   }
 
   g_mutex_unlock(&mutexes[FETCH_DATA_HANDLER_MUTEX]);
@@ -202,49 +202,48 @@ gpointer GUIThreadHandler_main_fetch_handler(gpointer data)
   return NULL;
 }
 
-gpointer GUIThread_clock(gpointer data) {
+gpointer GUIThread_clock(gpointer pkg_data) {
   /*
      Set the wallclock to the NY time.
      Display whether the market is open or closed,
      time remaining until closed, or if it is a holiday.
   */
-  portfolio_packet *pkg = (portfolio_packet *)data;
+  portfolio_packet *pkg = (portfolio_packet *)pkg_data;
   meta *D = pkg->GetMetaClass();
   gint64 wait_time;
 
   while (D->clocks_displayed_bool) {
-    gdk_threads_add_idle(MainSetClocks, data);
+    gdk_threads_add_idle(MainSetClocks, pkg_data);
 
     /* Will take into account holidays,
-       including the black friday early close. */
+       including the black friday early close.
+       Updated in MainSetClocks() */
     if (D->market_closed_bool) {
 
       /* Set Sleep until the end of the current minute. */
       wait_time = ClockSleepMinute();
-      if (cond_sleep(&D->gthread_clocks_cond, &mutexes[CLOCKS_COND_MUTEX],
-                     wait_time))
-        break;
     } else {
 
       /* Set Sleep until the end of the current second. */
       wait_time = ClockSleepSecond();
-      if (cond_sleep(&D->gthread_clocks_cond, &mutexes[CLOCKS_COND_MUTEX],
-                     wait_time))
-        break;
     }
+
+    if (cond_sleep(&D->gthread_clocks_cond, &mutexes[CLOCKS_COND_MUTEX],
+                   wait_time))
+      break;
   }
 
   g_thread_exit(NULL);
   return NULL;
 }
 
-gpointer GUIThreadHandler_clock_handler(gpointer data)
+gpointer GUIThreadHandler_clock(gpointer pkg_data)
 /* A thread that handles the clock thread. */
 {
   if (!g_mutex_trylock(&mutexes[CLOCKS_HANDLER_MUTEX]))
     g_thread_exit(NULL);
 
-  portfolio_packet *pkg = (portfolio_packet *)data;
+  portfolio_packet *pkg = (portfolio_packet *)pkg_data;
   meta *D = pkg->GetMetaClass();
 
   /* If the clock thread is currently running. */
@@ -260,7 +259,7 @@ gpointer GUIThreadHandler_clock_handler(gpointer data)
     gdk_threads_add_idle(MainHideClocks, NULL);
 
     /* Make sure the pref window clock switch is set correctly. */
-    gdk_threads_add_idle(PrefSetClockSwitch, data);
+    gdk_threads_add_idle(PrefSetClockSwitch, pkg_data);
 
     /* If the clock thread is not running. */
   } else {
@@ -269,13 +268,13 @@ gpointer GUIThreadHandler_clock_handler(gpointer data)
 
     /* Create clock thread. */
     g_cond_init(&D->gthread_clocks_cond);
-    D->gthread_clocks_id = g_thread_new(NULL, GUIThread_clock, data);
+    D->gthread_clocks_id = g_thread_new(NULL, GUIThread_clock, pkg_data);
 
     /* Show revealer */
     gdk_threads_add_idle(MainDisplayClocks, NULL);
 
     /* Make sure the pref window clock switch is set correctly. */
-    gdk_threads_add_idle(PrefSetClockSwitch, data);
+    gdk_threads_add_idle(PrefSetClockSwitch, pkg_data);
   }
 
   g_mutex_unlock(&mutexes[CLOCKS_HANDLER_MUTEX]);
@@ -283,8 +282,8 @@ gpointer GUIThreadHandler_clock_handler(gpointer data)
   return NULL;
 }
 
-gpointer GUIThread_recalculate(gpointer data) {
-  portfolio_packet *pkg = (portfolio_packet *)data;  
+gpointer GUIThread_recalculate(gpointer pkg_data) {
+  portfolio_packet *pkg = (portfolio_packet *)pkg_data;
 
   /* Set Gtk treeview. */
   if (pkg->IsDefaultView()) {
@@ -300,8 +299,8 @@ gpointer GUIThread_recalculate(gpointer data) {
   return NULL;
 }
 
-gpointer GUIThread_api_ok(gpointer data) {
-  portfolio_packet *pkg = (portfolio_packet *)data;
+gpointer GUIThread_api_ok(gpointer pkg_data) {
+  portfolio_packet *pkg = (portfolio_packet *)pkg_data;
 
   g_mutex_lock(&mutexes[FETCH_DATA_MUTEX]);
 
@@ -313,8 +312,8 @@ gpointer GUIThread_api_ok(gpointer data) {
   return NULL;
 }
 
-gpointer GUIThread_bul_fetch(gpointer data) {
-  portfolio_packet *pkg = (portfolio_packet *)data;
+gpointer GUIThread_bul_fetch(gpointer pkg_data) {
+  portfolio_packet *pkg = (portfolio_packet *)pkg_data;
   metal *M = pkg->GetMetalClass();
   guint8 num_metals = 2;
   if (M->Platinum->ounce_f > 0)
@@ -351,7 +350,7 @@ gpointer GUIThread_bul_fetch(gpointer data) {
   gdk_threads_add_idle(MainProgBarReset, NULL);
 
   /* Update the main window treeview. */
-  gdk_threads_add_idle(MainPrimaryTreeview, data);
+  gdk_threads_add_idle(MainPrimaryTreeview, pkg_data);
 
   g_thread_exit(NULL);
   return NULL;
@@ -375,8 +374,8 @@ static void history_fetch_exit(history_cleanup *hist_data) {
   g_thread_exit(NULL);
 }
 
-gpointer GUIThread_history_fetch(gpointer data) {
-  portfolio_packet *pkg = (portfolio_packet *)data;
+gpointer GUIThread_history_fetch(gpointer pkg_data) {
+  portfolio_packet *pkg = (portfolio_packet *)pkg_data;
 
   history_cleanup hstry_data = (history_cleanup){NULL};
   string_font *str_font_container = g_malloc(sizeof *str_font_container);
@@ -396,7 +395,7 @@ gpointer GUIThread_history_fetch(gpointer data) {
   str_font_container->font = g_strdup(pkg->meta_class->font_ch);
 
   /* Perform multicurl. */
-  hstry_data.HistoryOutput = FetchHistoryData(hstry_data.symbol, pkg);
+  hstry_data.HistoryOutput = HistoryFetchData(hstry_data.symbol, pkg);
   if (pkg->IsCurlCanceled() || hstry_data.HistoryOutput == NULL) {
     gdk_threads_add_idle(HistoryTreeViewClear, NULL);
     /* The str_font_container is freed in HistorySetSNLabel */
@@ -425,8 +424,8 @@ gpointer GUIThread_history_fetch(gpointer data) {
   return NULL;
 }
 
-gpointer GUIThread_pref_sym_update(gpointer data) {
-  portfolio_packet *pkg = (portfolio_packet *)data;
+gpointer GUIThread_pref_sym_update(gpointer pkg_data) {
+  portfolio_packet *pkg = (portfolio_packet *)pkg_data;
 
   symbol_name_map *sym_map = NULL;
 
@@ -466,8 +465,8 @@ gpointer GUIThread_pref_sym_update(gpointer data) {
   return NULL;
 }
 
-gpointer GUIThread_completion_set(gpointer data) {
-  portfolio_packet *pkg = (portfolio_packet *)data;
+gpointer GUIThread_completion_set(gpointer pkg_data) {
+  portfolio_packet *pkg = (portfolio_packet *)pkg_data;
 
   symbol_name_map *sym_map = NULL;
   /* Fetch the stock symbols and names [from a local Db] outside the Gtk
@@ -516,8 +515,8 @@ static void main_exit_curl_cleanup(portfolio_packet *pkg) {
   pkg->StopMultiCurlAll();
 }
 
-gpointer GUIThread_main_exit(gpointer data) {
-  portfolio_packet *pkg = (portfolio_packet *)data;
+gpointer GUIThread_main_exit(gpointer pkg_data) {
+  portfolio_packet *pkg = (portfolio_packet *)pkg_data;
 
   /* Stop cURL transfers.
        Cancel data fetching thread. */

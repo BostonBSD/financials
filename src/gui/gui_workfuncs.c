@@ -142,8 +142,8 @@ static gboolean completion_match(GtkEntryCompletion *completion,
   return ans;
 }
 
-gint CompletionSet(gpointer data, guintptr gui_completion_sig) {
-  if (data == NULL)
+gint CompletionSet(symbol_name_map *sn_map, guintptr gui_completion_sig) {
+  if (sn_map == NULL)
     return 0;
 
   GtkWidget *EntryBox = NULL;
@@ -154,7 +154,7 @@ gint CompletionSet(gpointer data, guintptr gui_completion_sig) {
   }
 
   GtkEntryCompletion *completion = gtk_entry_completion_new();
-  GtkListStore *store = completion_set_store((symbol_name_map *)data);
+  GtkListStore *store = completion_set_store(sn_map);
   gtk_entry_completion_set_model(completion, GTK_TREE_MODEL(store));
   g_object_unref(G_OBJECT(store));
 
@@ -192,7 +192,7 @@ gint CompletionSet(gpointer data, guintptr gui_completion_sig) {
   return 0;
 }
 
-void StartCompletionThread(gpointer data) {
+void StartCompletionThread(portfolio_packet *pkg) {
   GThread *g_thread_id;
 
   /* Set up the EntryBox Completion Widgets
@@ -202,15 +202,14 @@ void StartCompletionThread(gpointer data) {
      The lists of symbol to name mappings need to be
      downloaded by the user [in the preferences window]
      if the db isn't already populated. */
-  g_thread_id = g_thread_new(NULL, GUIThread_completion_set, data);
+  g_thread_id = g_thread_new(NULL, GUIThread_completion_set, pkg);
   g_thread_unref(g_thread_id);
 }
 
-void StartClockThread(gpointer data)
+void StartClockThread(portfolio_packet *pkg)
 /* Set the initial display of the clocks.
    We don't want the revealer animation on startup. */
 {
-  portfolio_packet *pkg = (portfolio_packet *)data;
   meta *D = pkg->GetMetaClass();
 
   GtkWidget *revealer = GetWidget("MainClockRevealer");
