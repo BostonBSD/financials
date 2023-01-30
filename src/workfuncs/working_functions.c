@@ -30,6 +30,9 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <gio/gio.h>
+#include <glib/gprintf.h>
+
 #include "../include/class_types.h"
 #include "../include/macros.h"
 
@@ -49,7 +52,7 @@ void CalcSumRsi(gdouble current_gain, gdouble *avg_gain, gdouble *avg_loss) {
 }
 
 void CalcRunAvgRsi(gdouble current_gain, gdouble *avg_gain, gdouble *avg_loss,
-                   guint8 period) {
+                   gdouble period) {
   if (current_gain >= 0) {
     /*
      *avg_gain = ((*avg_gain * (period - 1)) + current_gain) / period;
@@ -71,43 +74,82 @@ gdouble CalcRsi(gdouble avg_gain, gdouble avg_loss) {
   return (100 * avg_gain) / (avg_loss + avg_gain);
 }
 
-gchar *ExtractYahooData(FILE *fp, gdouble *prev_closing_f, gdouble *cur_price_f)
-/* Take in a file pointer, and references to two doubles; prev_closing_f and
+GDataInputStream *StringToInputStream(const gchar *str) {
+  /* Take in a gchar string and convert to GDataInputStream object [this will
+   * duplicate the gchar string in memory]. */
+  GBytes *bytes =
+      g_bytes_new((gconstpointer)str, (gsize)g_utf8_strlen(str, -1) + 1);
+  GInputStream *in_stream = g_memory_input_stream_new_from_bytes(bytes);
+  g_bytes_unref(bytes);
+  return g_data_input_stream_new(in_stream);
+}
+
+gchar *ReadLine(GDataInputStream *in) {
+  /* Read one line from the input stream.
+
+     Return a newly allocated NULL terminated string without a newline char.
+     Must free return value. Will return NULL if the end of the stream has been
+     reached. */
+  GError *error = NULL;
+  gchar *str = g_data_input_stream_read_line(in, NULL, NULL, &error);
+  if (error) {
+    g_printf("Read Line (from GDataInputStream) Error: %s\n", error->message);
+    g_error_free(error);
+  }
+  return str;
+}
+
+void CloseInputStream(GDataInputStream *in) {
+  /* Free the GDataInputStream object and all resources associated with it. */
+  GError *error = NULL;
+  g_input_stream_close(G_INPUT_STREAM(in), NULL, &error);
+  if (error) {
+    g_printf("Close Input Stream Error: %s\n", error->message);
+    g_error_free(error);
+  }
+}
+
+gchar *ExtractYahooData(GDataInputStream *in, gdouble *prev_closing_f,
+                        gdouble *cur_price_f)
+/* Take in a GDataInputStream, and references to two doubles; prev_closing_f and
    cur_price_f.  Will populate the previous closing price and the current price.
 
-   Returns the last line of the file stream.
+   Returns the last line of the GDataInputStream.
    Must free return value.
 
-   Useful for finding the current stats on a security/index/commodity from
-   Yahoo! finance.
+   This is useful for finding the current stats on a security/index/commodity
+   from Yahoo! finance.
 */
 {
   gchar *ret_value = NULL, *line = NULL;
-  gsize len_bytes = 0;
   gchar **token_arr;
 
   /* Yahoo! sometimes updates data when the equities markets are closed.
      The while loop iterates to the end of file to get the latest data. */
   *prev_closing_f = 0.0f;
   *cur_price_f = 0.0f;
-  while (getline(&line, &len_bytes, fp) > 0) {
-    g_strchomp(line);
-
+  while ((line = ReadLine(in))) {
     *prev_closing_f = *cur_price_f;
     /* Sometimes the API gives us a null value for certain days.
        using the closing price from the day prior gives us a more accurate
        gain value. */
     /* If we have an empty line, continue. */
-    if (g_strrstr(line, "null") || g_strrstr(line, "Date") || line[0] == '\0')
+    if (g_strrstr(line, "null") || g_strrstr(line, "Date") || line[0] == '\0') {
+      g_free(line);
       continue;
+    }
 
     /* Invalid replies start with a tag. */
     if (g_strrstr(line, "<")) {
+      g_free(ret_value);
+      g_free(line);
       return NULL;
     }
 
     token_arr = g_strsplit(line, ",", -1);
     if (g_strv_length(token_arr) < 7) {
+      g_free(ret_value);
+      g_free(line);
       g_strfreev(token_arr);
       return NULL;
     }
@@ -116,8 +158,8 @@ gchar *ExtractYahooData(FILE *fp, gdouble *prev_closing_f, gdouble *cur_price_f)
 
     g_free(ret_value);
     ret_value = g_strdup(line);
+    g_free(line);
   };
-  g_free(line);
   return ret_value;
 }
 

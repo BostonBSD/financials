@@ -61,22 +61,18 @@ enum {
 };
 enum { DAY_ERROR, MON, TUES, WEDS, THURS, FRI, SAT, SUN };
 
-/* Time calculations are based off of the New York timezone due to
- * daylight-savings time adjustments, the process timezone remains unchanged. */
-static const gchar *ny_tz_str = NEW_YORK_TIME_ZONE;
-
 static gint64 time_span_remaining(gint64 time_span_usec) {
   /* Return the number of microseconds left in the current timespan [hour, min,
   sec, etc]
 
-  The timespan minus the number of microsec which have past in the current time
-  span. */
+  The timespan, in microseconds, minus the number of microseconds which have
+  past in the current time span. */
   gint64 cur_time = g_get_real_time();
   return time_span_usec - (cur_time % time_span_usec);
 }
 
 guint64 ClockSleepSecond() {
-  /* Return the number of micro-seconds remaining in the current second. */
+  /* Return the number of microseconds remaining in the current second. */
   return (guint64)time_span_remaining(G_TIME_SPAN_SECOND);
 }
 
@@ -86,7 +82,12 @@ guint64 ClockSleepMinute() {
 }
 
 static void easter(gint year, gint *month, gint *day)
-/* Modified From: https://c-for-dummies.com/blog/?p=2446 by dgookin */
+/* Modified From: https://c-for-dummies.com/blog/?p=2446 by dgookin.
+
+   This is the Nature computus, published anonymously, in the Nature Journal,
+   in 1876, it appears to be the commonly accepted computus, although others do
+   exist. */
+   
 /* For any given year, will determine the month and day of Easter Sunday.
    Month numbering starts at 1; March is 3, April is 4, etc. */
 {
@@ -231,6 +232,8 @@ static gboolean check_holiday(gint year, gint month, gint dayofmonth,
   return FALSE;
 }
 
+/* Time calculations are based off of the New York timezone due to
+ * daylight-savings time adjustments, the process timezone remains unchanged. */
 gboolean GetTimeData(gboolean *holiday, gchar **holiday_str, gint *h_r,
                      gint *m_r, gint *s_r, gint *h_cur, gint *m_cur)
 
@@ -252,9 +255,9 @@ gboolean GetTimeData(gboolean *holiday, gchar **holiday_str, gint *h_r,
 
   /* Get the GDateTime object for the New York timezone. */
   /* g_time_zone_new() is deprecated in Glib 2.68, however, its replacement;
-   * g_time_zone_new_identifier() is unavailable on earlier Glib versions used
+   * g_time_zone_new_identifier() is unavailable on earlier variations used
    * by some OSs; Debian. */
-  GTimeZone *ny_tz = g_time_zone_new(ny_tz_str);
+  GTimeZone *ny_tz = g_time_zone_new(NEW_YORK_TIME_ZONE);
   GDateTime *dt = g_date_time_new_now(ny_tz);
   g_time_zone_unref(ny_tz);
   gint year = g_date_time_get_year(dt);
@@ -282,7 +285,7 @@ gboolean GetTimeData(gboolean *holiday, gchar **holiday_str, gint *h_r,
     *m_cur = min;
 
   /* Closed */
-  if (weekday == 6 || weekday == 7 || hol_bool || hour < OPEN_HOUR ||
+  if (weekday == SAT || weekday == SUN || hol_bool || hour < OPEN_HOUR ||
       (hour == OPEN_HOUR && min < OPEN_MINUTE) || hour >= CLOSING_HOUR) {
     if (h_r)
       *h_r = 0;
@@ -292,7 +295,7 @@ gboolean GetTimeData(gboolean *holiday, gchar **holiday_str, gint *h_r,
       *s_r = 0;
     closed = TRUE;
     /* Open: closes early on black friday */
-  } else if (month == 11 && weekday == 5 && dayofmonth >= 23 &&
+  } else if (month == NOV && weekday == FRI && dayofmonth >= 23 &&
              dayofmonth <= 29) {
     if (h_r)
       *h_r = CLOSING_HOUR_BLACK_FRIDAY - 1 - hour;

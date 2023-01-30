@@ -274,21 +274,19 @@ static void extract_bullion_data(bullion *B) {
     return;
   }
 
-  /* Convert a String to a File Pointer Stream for Reading */
-  FILE *fp = fmemopen((gpointer)B->CURLDATA.memory,
-                      g_utf8_strlen(B->CURLDATA.memory, -1) + 1, "r");
+  /* Convert a String to a GDataInputStream for Reading */
+  GDataInputStream *in_stream = StringToInputStream(B->CURLDATA.memory);
 
-  if (fp == NULL) {
+  if (in_stream == NULL) {
     extract_bullion_data_reset(B);
     return;
   }
 
   char **token_arr;
   gdouble prev_closing = 0.0f, cur_price = 0.0f;
-  gchar *line = ExtractYahooData(fp, &prev_closing, &cur_price);
+  gchar *line = ExtractYahooData(in_stream, &prev_closing, &cur_price);
 
   if (line) {
-    g_strchomp(line);
     token_arr = g_strsplit(line, ",", -1);
     B->prev_closing_metal_f = prev_closing;
     B->high_metal_f = g_strtod(token_arr[2] ? token_arr[2] : "0", NULL);
@@ -297,9 +295,8 @@ static void extract_bullion_data(bullion *B) {
 
     g_strfreev(token_arr);
   }
-
   g_free(line);
-  fclose(fp);
+  CloseInputStream(in_stream);
   FreeMemtype(&B->CURLDATA);
 }
 

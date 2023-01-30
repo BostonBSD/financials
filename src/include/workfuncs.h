@@ -33,6 +33,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef WORKFUNCS_HEADER_H
 #define WORKFUNCS_HEADER_H
 
+#include <gio/gio.h>
+
 #include "class_types.h" /* equity_folder, metal, meta, portfolio_packet */
 #include "gui_types.h"   /* symbol_name_map */
 
@@ -97,9 +99,12 @@ gboolean MarketClosed();
 gdouble CalcGain(gdouble cur_price, gdouble prev_price);
 void CalcSumRsi(gdouble current_gain, gdouble *avg_gain, gdouble *avg_loss);
 void CalcRunAvgRsi(gdouble current_gain, gdouble *avg_gain, gdouble *avg_loss,
-                   guint8 period);
+                   gdouble period);
 gdouble CalcRsi(gdouble avg_gain, gdouble avg_loss);
-gchar *ExtractYahooData(FILE *fp, gdouble *prev_closing_f,
+GDataInputStream *StringToInputStream(const gchar *str);
+gchar *ReadLine(GDataInputStream *in);
+void CloseInputStream(GDataInputStream *in);
+gchar *ExtractYahooData(GDataInputStream *in, gdouble *prev_closing_f,
                         gdouble *cur_price_f);
 void GetYahooUrl(gchar **url_ch, const gchar *symbol_ch, guint period);
 

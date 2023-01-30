@@ -182,7 +182,7 @@ static gboolean history_rsi_ready(gdouble gain_f, gdouble *rsi_f, gint state) {
   /* On the 15th day we start calculating the RSI. */
   else {
     /* Calculate the running average with a 14 day smoothing period. */
-    CalcRunAvgRsi(gain_f, &avg_gain_f, &avg_loss_f, 14);
+    CalcRunAvgRsi(gain_f, &avg_gain_f, &avg_loss_f, 14.0f);
     /* Calculate the rsi. */
     *rsi_f = CalcRsi(avg_gain_f, avg_loss_f);
     c++;
@@ -287,7 +287,7 @@ static gboolean history_rsi_calculate(gchar *line, history_strings *strings,
   return TRUE;
 }
 
-static void history_set_store_thd_cleanup(history_strings *history_strs) {
+static void history_set_store_cleanup(history_strings *history_strs) {
   /* Reset the static variables. */
   history_rsi_calculate(NULL, NULL, RESET);
 
@@ -311,37 +311,39 @@ static void history_set_store(GtkListStore *store, const gchar *curl_data) {
   history_strings history_strs = (history_strings){NULL};
 
   GtkTreeIter iter;
-  gchar *line = NULL;
-  gsize len_bytes = 0;
+  gchar *line;
 
-  /* Convert a String to a File Pointer Stream for Reading */
-  FILE *fp =
-      fmemopen((gpointer)curl_data, g_utf8_strlen(curl_data, -1) + 1, "r");
-  if (!fp)
-    return;
+  /* Convert a String to a GDataInputStream for Reading */
+  GDataInputStream *in_stream = StringToInputStream(curl_data);
 
   /* Ignore the header line */
-  if (getline(&line, &len_bytes, fp) <= 0) {
-    fclose(fp);
+  if (!(line = ReadLine(in_stream))) {
+    CloseInputStream(in_stream);
     return;
   }
-  while (getline(&line, &len_bytes, fp) > 0) {
-    g_strchomp(line);
+  free(line);
+  while ((line = ReadLine(in_stream))) {
 
     /* If there is a null error in this line, ignore the line.
        Sometimes Yahoo! data is incomplete, the result is more
        correct if we ignore the incomplete portion of data. */
     /* If we have an empty line, continue. */
 
-    if (g_strrstr(line, "null") || line[0] == '\0')
+    if (g_strrstr(line, "null") || line[0] == '\0') {
+      g_free(line);
       continue;
+    }
     /* Invalid replies start with a tag. */
-    if (g_strrstr(line, "<"))
+    if (g_strrstr(line, "<")) {
+      g_free(line);
       break;
+    }
 
     /* Don't start adding rows until we get 14 days of data. */
-    if (!history_rsi_calculate(line, &history_strs, RUN))
+    if (!history_rsi_calculate(line, &history_strs, RUN)) {
+      g_free(line);
       continue;
+    }
 
     /* Add data to the storage container. */
     /* Yahoo! sends data with the earliest date first, so we prepend rows.
@@ -357,11 +359,11 @@ static void history_set_store(GtkListStore *store, const gchar *curl_data) {
         HISTORY_COLUMN_NINE, history_strs.volume_ch, HISTORY_COLUMN_TEN,
         history_strs.rsi_ch, HISTORY_COLUMN_ELEVEN, history_strs.indicator_ch,
         -1);
+    g_free(line);
   }
-  g_free(line);
 
-  fclose(fp);
-  history_set_store_thd_cleanup(&history_strs);
+  CloseInputStream(in_stream);
+  history_set_store_cleanup(&history_strs);
 }
 
 GtkListStore *HistoryMakeStore(const gchar *data_str) {
