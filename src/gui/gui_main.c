@@ -769,6 +769,9 @@ gint MainHideWindows() {
   window = GetWidget("ApiWindow");
   gtk_widget_set_visible(window, FALSE);
 
+  window = GetWidget("PrefWindow");
+  gtk_widget_set_visible(window, FALSE);
+
   return 0;
 }
 

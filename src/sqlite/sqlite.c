@@ -333,6 +333,19 @@ static gint symbol_name_callback(gpointer data, gint argc, gchar **argv,
   return 0;
 }
 
+static gint get_snmap_name_callback(gpointer data, gint argc, gchar **argv,
+                                    gchar **ColName) {
+  /* argv[0] is name */
+  if (argc != 1)
+    return 1;
+  if (g_strcmp0(ColName[0], "name") != 0)
+    return 1;
+
+  gchar **name_ch = (gchar **)data;
+  name_ch[0] = g_strdup(argv[0] ? argv[0] : NULL);
+  return 0;
+}
+
 static void error_msg(sqlite3 *db) {
   fprintf(stderr, "Sqlite3 database error: %s\n", sqlite3_errmsg(db));
   sqlite3_close(db);
@@ -788,6 +801,37 @@ symbol_name_map *SqliteGetSNMap(meta *D) {
   return sn_map;
 }
 
+gchar *SqliteGetSNMapName(const gchar *symbol_ch, meta *D) {
+  /* Take in a symbol char string, the meta class and return the name string, if
+     found, otherwise NULL.  Must free return value. */
+  g_mutex_lock(&mutexes[SYMBOL_NAME_MAP_SQLITE_MUTEX]);
+
+  gchar *err_msg = 0;
+  sqlite3 *db;
+  const gchar *fmt = "SELECT name FROM symbolname WHERE symbol = '%s';";
+  gchar *name_ch = NULL;
+
+  /* Open the sqlite database file. */
+  if (sqlite3_open(D->sqlite_symbol_name_db_path_ch, &db) != SQLITE_OK)
+    error_msg(db);
+
+  gushort len = g_snprintf(NULL, 0, fmt, symbol_ch) + 1;
+  gchar *sql_cmd = (gchar *)g_malloc(len);
+  g_snprintf(sql_cmd, len, fmt, symbol_ch);
+
+  if (sqlite3_exec(db, sql_cmd, get_snmap_name_callback, &name_ch, &err_msg) !=
+      SQLITE_OK)
+    error_msg(db);
+
+  g_free(sql_cmd);
+
+  /* Close the sqlite database file. */
+  sqlite3_close(db);
+
+  g_mutex_unlock(&mutexes[SYMBOL_NAME_MAP_SQLITE_MUTEX]);
+  return name_ch;
+}
+
 static void escape_apostrophy(gchar **s)
 /* If required, insert an sqlite escape apostrophy to the string. */
 {
@@ -826,10 +870,12 @@ typedef struct {
 } meta_map_container;
 
 static gpointer add_mapping_to_database_thd(gpointer data) {
-  g_mutex_lock(&mutexes[SYMBOL_NAME_MAP_SQLITE_MUTEX]);
   meta_map_container *mmc = (meta_map_container *)data;
   symbol_name_map *sn_map = mmc->map;
   meta *D = mmc->metadata;
+  
+  D->snmap_db_busy_bool = TRUE;
+  g_mutex_lock(&mutexes[SYMBOL_NAME_MAP_SQLITE_MUTEX]);
 
   gchar *err_msg = 0;
   sqlite3 *db;
@@ -876,10 +922,11 @@ static gpointer add_mapping_to_database_thd(gpointer data) {
   SNMapDestruct(sn_map);
   g_free(sn_map);
 
+  D->snmap_db_busy_bool = FALSE;
+  g_mutex_unlock(&mutexes[SYMBOL_NAME_MAP_SQLITE_MUTEX]);
+
   /* Don't Free the member pointers */
   g_free(mmc);
-
-  g_mutex_unlock(&mutexes[SYMBOL_NAME_MAP_SQLITE_MUTEX]);
   g_thread_exit(NULL);
   return NULL;
 }

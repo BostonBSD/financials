@@ -308,12 +308,6 @@ static void AddStock(const gchar *symbol, const gchar *shares)
 
   stock **tmp_array =
       (stock **)g_realloc(F->Equity, (F->size + 1) * sizeof(stock *));
-
-  if (tmp_array == NULL) {
-    printf("Not Enough Memory, realloc returned NULL.\n");
-    exit(EXIT_FAILURE);
-  }
-
   F->Equity = tmp_array;
 
   /* class_init_equity returns an object pointer. */
@@ -457,10 +451,14 @@ static void SetSecurityNames(portfolio_packet *pkg) {
 
   guint8 g = 0;
   while (g < F->size) {
-    if (sn_map) {
-      security_name = GetSecurityName(F->Equity[g]->symbol_stock_ch, sn_map);
-      remove_dash(security_name);
+    if (pkg->IsExitingApp()) {
+      g_mutex_unlock(&mutexes[CLASS_MEMBER_MUTEX]);
+      return;
     }
+
+    security_name = GetSecurityName(F->Equity[g]->symbol_stock_ch, sn_map,
+                                    pkg->GetMetaClass());
+    remove_dash(security_name);
 
     if (F->Equity[g]->num_shares_stock_int) {
       StringToStrPango(&F->Equity[g]->security_name_mrkd_ch,

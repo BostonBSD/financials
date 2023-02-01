@@ -72,7 +72,7 @@ void AddSymbolToMap(const gchar *symbol, const gchar *name,
 symbol_name_map *SymNameFetch(portfolio_packet *pkg);
 symbol_name_map *SymNameFetchUpdate(portfolio_packet *pkg,
                                     symbol_name_map *sn_map);
-gchar *GetSecurityName(gchar *s, const symbol_name_map *sn_map);
+gchar *GetSecurityName(gchar *s, const symbol_name_map *sn_map, meta *D);
 void SNMapDestruct(symbol_name_map *sn_map);
 void CreateHashTable(symbol_name_map *sn_map);
 
@@ -101,7 +101,7 @@ void CalcSumRsi(gdouble current_gain, gdouble *avg_gain, gdouble *avg_loss);
 void CalcRunAvgRsi(gdouble current_gain, gdouble *avg_gain, gdouble *avg_loss,
                    gdouble period);
 gdouble CalcRsi(gdouble avg_gain, gdouble avg_loss);
-GDataInputStream *StringToInputStream(const gchar *str);
+GDataInputStream *StringToInputStream(const gchar *str, const gsize num_bytes);
 gchar *ReadLine(GDataInputStream *in);
 void CloseInputStream(GDataInputStream *in);
 gchar *ExtractYahooData(GDataInputStream *in, gdouble *prev_closing_f,

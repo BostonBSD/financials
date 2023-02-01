@@ -54,6 +54,7 @@ void SqliteHistoryWindowSizeAdd(gushort width, gushort height, meta *D);
 void SqliteHistoryWindowPosAdd(gushort x, gushort y, meta *D);
 
 symbol_name_map *SqliteGetSNMap(meta *D);
+gchar *SqliteGetSNMapName(const gchar *symbol_ch, meta *D);
 void SqliteSNMapAdd(symbol_name_map *sn_map, meta *D);
 
 #endif /* SQLITE_HEADER_H */

@@ -102,7 +102,7 @@ gint HistoryCursorMove();
 gint HistoryCompletionSet(gpointer sn_map_data);
 gint HistorySetSNLabel(gpointer string_font_data);
 gint HistoryGetSymbol(gchar **s);
-GtkListStore *HistoryMakeStore(const gchar *data_str);
+GtkListStore *HistoryMakeStore(const gchar *data_str, const gsize string_len);
 MemType *HistoryFetchData(const gchar *symbol_ch, portfolio_packet *pkg);
 
 /* GUI Callback Functions */

@@ -54,12 +54,6 @@ static void create_markup(gchar **str, const gchar *fmt, ...)
 
   /* Realloc str[0] to the string size. */
   gchar *tmp = g_realloc(str[0], len);
-
-  if (tmp == NULL) {
-    printf("Not Enough Memory, realloc returned NULL.\n");
-    exit(EXIT_FAILURE);
-  }
-
   str[0] = tmp;
 
   /* Reset the arg pointer. */

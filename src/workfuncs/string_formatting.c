@@ -31,9 +31,10 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <math.h>
-
 #include <locale.h>
 #include <monetary.h>
+
+#include <glib/gprintf.h>
 
 #include "../include/macros.h"
 #include "../include/workfuncs.h"
@@ -115,13 +116,8 @@ void CopyString(gchar **dst, const gchar *src)
 
   gsize len = g_utf8_strlen(src, -1) + 1;
   gchar *tmp = g_realloc(dst[0], len);
-
-  if (tmp == NULL) {
-    printf("Not Enough Memory, g_realloc returned NULL.\n");
-    exit(EXIT_FAILURE);
-  }
-
   dst[0] = tmp;
+
   g_snprintf(dst[0], len, "%s", src);
 }
 
@@ -248,12 +244,6 @@ void DoubleToFormattedStr(gchar **dst, const gdouble num,
   gsize len = length_doub_string(num, digits_right, format_type) + 1;
   /* Adjust the string length */
   gchar *tmp = g_realloc(dst[0], len);
-
-  if (tmp == NULL) {
-    printf("Not Enough Memory, g_realloc returned NULL.\n");
-    exit(EXIT_FAILURE);
-  }
-
   dst[0] = tmp;
 
   switch (format_type) {
@@ -321,7 +311,7 @@ void DoubleToFormattedStr(gchar **dst, const gdouble num,
     g_snprintf(dst[0], len, tmp, num);
     break;
   default:
-    printf("DoubleToFormattedStr format_type out of range.\n");
+    g_printf("DoubleToFormattedStr format_type out of range.\n");
     exit(EXIT_FAILURE);
     break;
   }

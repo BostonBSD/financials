@@ -275,7 +275,8 @@ static void extract_bullion_data(bullion *B) {
   }
 
   /* Convert a String to a GDataInputStream for Reading */
-  GDataInputStream *in_stream = StringToInputStream(B->CURLDATA.memory);
+  GDataInputStream *in_stream =
+      StringToInputStream(B->CURLDATA.memory, B->CURLDATA.size + 1);
 
   if (in_stream == NULL) {
     extract_bullion_data_reset(B);

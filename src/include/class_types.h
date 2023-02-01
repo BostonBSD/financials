@@ -321,8 +321,7 @@ struct meta {
       fetching_data_bool : 1; /* Indicates a fetch operation in progress. */
   gboolean
       market_closed_bool : 1; /* Indicates if the market is open or closed. */
-  gboolean multicurl_cancel_bool : 1;      /* Indicates if we should cancel all
-                                            multicurl requests. */
+  gboolean exit_app_bool : 1; /* Indicates if we are exiting the application. */
   gboolean multicurl_cancel_main_bool : 1; /* Indicates if we should cancel the
                                             main multicurl request. */
   gboolean index_bar_revealed_bool : 1;    /* Indicates if the indices bar is
@@ -333,6 +332,8 @@ struct meta {
       main_win_default_view_bool : 1; /* Indicates if the main window
                                        treeview is displaying the default or
                                        the primary view. Default is TRUE. */
+  gboolean
+      snmap_db_busy_bool : 1; /* Indicates if the snmap db is busy or not. */
 
   CURL *history_hnd;           /* History Data cURL Easy Handle. */
   CURL *NASDAQ_completion_hnd; /* NASDAQ Symbol list cURL Easy Handle. */
@@ -393,8 +394,8 @@ struct portfolio_packet {
   void (*StopMultiCurlAll)();
   gboolean (*IsClosed)();
   void (*SetClosed)(gboolean closed_bool);
-  gboolean (*IsCurlCanceled)();
-  void (*SetCurlCanceled)(gboolean canceled_bool);
+  gboolean (*IsExitingApp)();
+  void (*SetExitingApp)(gboolean exiting_bool);
   gboolean (*IsMainCurlCanceled)();
   void (*SetMainCurlCanceled)(gboolean canceled_bool);
   gdouble (*GetHoursOfUpdates)();
@@ -412,6 +413,8 @@ struct portfolio_packet {
   void (*SetClockDisplayed)(gboolean displayed_bool);
   gboolean (*IsIndicesDisplayed)();
   void (*SetIndicesDisplayed)(gboolean displayed_bool);
+  gboolean (*IsSnmapDbBusy)();
+  void (*SetSnmapDbBusy)(gboolean busy_bool);
   void (*SetSecurityNames)();
 };
 

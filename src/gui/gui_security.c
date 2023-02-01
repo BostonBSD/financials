@@ -83,7 +83,7 @@ gint SecurityComBoxChange(portfolio_packet *pkg) {
   if (index != 0) {
     gchar *symbol =
         gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(ComboBox));
-    gchar *name = GetSecurityName(symbol, sn_map);
+    gchar *name = GetSecurityName(symbol, sn_map, pkg->GetMetaClass());
     g_free(symbol);
 
     remove_dash(name);

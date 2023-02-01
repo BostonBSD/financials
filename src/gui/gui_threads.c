@@ -374,11 +374,30 @@ static void history_fetch_exit(history_cleanup *hist_data) {
   g_thread_exit(NULL);
 }
 
+void dstry_notify_func_string_font(gpointer string_font_data) {
+  string_font *str_fnt_container = (string_font *)string_font_data;
+  if (str_fnt_container->string)
+    g_free(str_fnt_container->string);
+
+  if (str_fnt_container->font)
+    g_free(str_fnt_container->font);
+
+  if (str_fnt_container)
+    g_free(str_fnt_container);
+}
+
+void dstry_notify_func_store(gpointer store_data) {
+  GtkListStore *store = (GtkListStore *)store_data;
+  if (store)
+    g_object_unref(store);
+}
+
 gpointer GUIThread_history_fetch(gpointer pkg_data) {
   portfolio_packet *pkg = (portfolio_packet *)pkg_data;
 
   history_cleanup hstry_data = (history_cleanup){NULL};
   string_font *str_font_container = g_malloc(sizeof *str_font_container);
+  *str_font_container = (string_font){NULL};
   GtkListStore *store = NULL;
 
   /* Prevents concurrent history fetch requests. */
@@ -388,18 +407,18 @@ gpointer GUIThread_history_fetch(gpointer pkg_data) {
   HistoryGetSymbol(&hstry_data.symbol);
 
   /* Get the security name from the symbol map. */
-  g_mutex_lock(&mutexes[SYMBOL_NAME_MAP_MUTEX]);
-  str_font_container->string =
-      GetSecurityName(hstry_data.symbol, pkg->meta_class->sym_map);
-  g_mutex_unlock(&mutexes[SYMBOL_NAME_MAP_MUTEX]);
+  str_font_container->string = GetSecurityName(
+      hstry_data.symbol, pkg->GetSymNameMap(), pkg->GetMetaClass());
   str_font_container->font = g_strdup(pkg->meta_class->font_ch);
 
   /* Perform multicurl. */
   hstry_data.HistoryOutput = HistoryFetchData(hstry_data.symbol, pkg);
-  if (pkg->IsCurlCanceled() || hstry_data.HistoryOutput == NULL) {
+  if (pkg->IsExitingApp() || hstry_data.HistoryOutput == NULL) {
     gdk_threads_add_idle(HistoryTreeViewClear, NULL);
-    /* The str_font_container is freed in HistorySetSNLabel */
-    gdk_threads_add_idle(HistorySetSNLabel, str_font_container);
+    /* The str_font_container is freed in dstry_notify_func_string_font */
+    gdk_threads_add_idle_full(G_PRIORITY_DEFAULT_IDLE, HistorySetSNLabel,
+                              str_font_container,
+                              dstry_notify_func_string_font);
     g_mutex_unlock(&mutexes[HISTORY_FETCH_MUTEX]);
     history_fetch_exit(&hstry_data);
   }
@@ -408,15 +427,18 @@ gpointer GUIThread_history_fetch(gpointer pkg_data) {
   gdk_threads_add_idle(HistoryTreeViewClear, NULL);
 
   /* Perform calculations and set the liststore. */
-  store = HistoryMakeStore(hstry_data.HistoryOutput->memory);
+  store = HistoryMakeStore(hstry_data.HistoryOutput->memory,
+                           hstry_data.HistoryOutput->size);
 
   /* Set and display the history treeview model. */
-  /* This will unref the store */
-  gdk_threads_add_idle(HistoryMakeTreeview, store);
+  /* dstry_notify_func_store will unref the store */
+  gdk_threads_add_idle_full(G_PRIORITY_DEFAULT_IDLE, HistoryMakeTreeview, store,
+                            dstry_notify_func_store);
 
   /* Set the security name label.
-     The str_font_container is freed in HistorySetSNLabel */
-  gdk_threads_add_idle(HistorySetSNLabel, str_font_container);
+     The str_font_container is freed in dstry_notify_func_string_font */
+  gdk_threads_add_idle_full(G_PRIORITY_DEFAULT_IDLE, HistorySetSNLabel,
+                            str_font_container, dstry_notify_func_string_font);
 
   g_mutex_unlock(&mutexes[HISTORY_FETCH_MUTEX]);
 
@@ -424,37 +446,49 @@ gpointer GUIThread_history_fetch(gpointer pkg_data) {
   return NULL;
 }
 
+static void dstry_notify_func_snmap(gpointer snmap_data) {
+  symbol_name_map *sym_map = (symbol_name_map *)snmap_data;
+  SNMapDestruct(sym_map);
+  g_free(sym_map);
+}
+
 gpointer GUIThread_pref_sym_update(gpointer pkg_data) {
   portfolio_packet *pkg = (portfolio_packet *)pkg_data;
 
   symbol_name_map *sym_map = NULL;
-
-  g_mutex_lock(&mutexes[SYMBOL_NAME_MAP_MUTEX]);
 
   gdk_threads_add_idle(PrefSymBtnStart, NULL);
 
   /* Get the current Symbol-Name map pointer, if any. */
   sym_map = pkg->GetSymNameMap();
   /* Download the new sym-name map, if downloaded successfully; free the
-     current map if any exists, set the current map to the new map.
-     Otherwise do nothing.*/
+     current map if any exists [most likely there isn't a current map because I
+     changed the code slightly], set the new map to the current map. Otherwise
+     do nothing.*/
   sym_map = SymNameFetchUpdate(pkg, sym_map);
 
   gdk_threads_add_idle(PrefSymBtnStop, NULL);
 
-  g_mutex_unlock(&mutexes[SYMBOL_NAME_MAP_MUTEX]);
+  if (pkg->IsExitingApp()) {
+    pkg->SetSymNameMap(NULL);
+    g_thread_exit(NULL);
+  }
+
+  /* This flag will force map lookups to memory rather than from disk,
+   * temporarily [it is reset in add_mapping_to_database_thd]. */
+  pkg->SetSnmapDbBusy(TRUE);
 
   /* Make sure the security names are set with pango style markups [in the
    * equity folder]. */
   pkg->SetSecurityNames();
 
-  if (pkg->IsCurlCanceled())
-    g_thread_exit(NULL);
-
   /* Set the completion widget on two entry boxes. */
+  /* Destroy the sn_map after setting the two widgets. */
   if (sym_map) {
     gdk_threads_add_idle(HistoryCompletionSet, sym_map);
-    gdk_threads_add_idle(SecurityCompletionSet, sym_map);
+    gdk_threads_add_idle_full(G_PRIORITY_DEFAULT_IDLE, SecurityCompletionSet,
+                              sym_map, dstry_notify_func_snmap);
+    pkg->SetSymNameMap(NULL);
 
     if (pkg->IsDefaultView()) {
       gdk_threads_add_idle(MainDefaultTreeview, pkg);
@@ -472,26 +506,22 @@ gpointer GUIThread_completion_set(gpointer pkg_data) {
   /* Fetch the stock symbols and names [from a local Db] outside the Gtk
      main loop, then create a GtkListStore and set it into
      a GtkEntryCompletion widget. */
-
-  /* This mutex prevents the program from crashing if a
-     GUIThread_main_exit thread is run concurrently with this thread.
-     This thread is only run at application start.
-  */
-  g_mutex_lock(&mutexes[SYMBOL_NAME_MAP_MUTEX]);
-
   sym_map = SymNameFetch(pkg);
   pkg->SetSymNameMap(sym_map);
+
+  if (pkg->IsExitingApp())
+    g_thread_exit(NULL);
+
   /* Make sure the security names are set with pango style markups. */
   pkg->SetSecurityNames();
 
-  g_mutex_unlock(&mutexes[SYMBOL_NAME_MAP_MUTEX]);
-
-  if (pkg->IsCurlCanceled())
-    g_thread_exit(NULL);
-
+  /* Destroy the sn_map after setting the two widgets
+   * [dstry_notify_func_snmap()]. */
   if (sym_map) {
     gdk_threads_add_idle(HistoryCompletionSet, sym_map);
-    gdk_threads_add_idle(SecurityCompletionSet, sym_map);
+    gdk_threads_add_idle_full(G_PRIORITY_DEFAULT_IDLE, SecurityCompletionSet,
+                              sym_map, dstry_notify_func_snmap);
+    pkg->SetSymNameMap(NULL);
   }
 
   /* Set the default treeview. */
@@ -502,15 +532,15 @@ gpointer GUIThread_completion_set(gpointer pkg_data) {
   return NULL;
 }
 
-static void main_exit_curl_cleanup(portfolio_packet *pkg) {
+static void main_exit_set_flags(portfolio_packet *pkg) {
   if (pkg->IsFetchingData()) {
     pkg->SetFetchingData(FALSE);
     /* Main Curl */
     pkg->SetMainCurlCanceled(TRUE);
   }
 
-  /* Non-Main Curl */
-  pkg->SetCurlCanceled(TRUE);
+  /* Exiting App */
+  pkg->SetExitingApp(TRUE);
 
   pkg->StopMultiCurlAll();
 }
@@ -518,24 +548,19 @@ static void main_exit_curl_cleanup(portfolio_packet *pkg) {
 gpointer GUIThread_main_exit(gpointer pkg_data) {
   portfolio_packet *pkg = (portfolio_packet *)pkg_data;
 
-  /* Stop cURL transfers.
-       Cancel data fetching thread. */
-  main_exit_curl_cleanup(pkg);
-
-  /* This mutex prevents the program from crashing if a
-     MAIN_FETCH_BTN thread is run concurrently with this thread. */
-  g_mutex_lock(&mutexes[FETCH_DATA_MUTEX]);
-
   /* Hide the windows. Prevents them from hanging open if a db write is in
    * progress. */
   gdk_threads_add_idle(MainHideWindows, NULL);
 
-  /* Save application data in Sqlite. */
-  pkg->SaveSqlData();
+  /* Flag the other threads. */
+  main_exit_set_flags(pkg);
 
   /* This mutex prevents the program from crashing if a
-     COMPLETION thread is run concurrently with this thread. */
-  g_mutex_lock(&mutexes[SYMBOL_NAME_MAP_MUTEX]);
+     main_fetch_thd thread is run concurrently with this thread. */
+  g_mutex_lock(&mutexes[FETCH_DATA_MUTEX]);
+
+  /* Save application data in Sqlite. */
+  pkg->SaveSqlData();
 
   /* Hold the application until the Sqlite sym-name map thread is finished
    * [prevents db write errors]. */
@@ -545,7 +570,6 @@ gpointer GUIThread_main_exit(gpointer pkg_data) {
   gtk_main_quit();
 
   g_mutex_unlock(&mutexes[SYMBOL_NAME_MAP_SQLITE_MUTEX]);
-  g_mutex_unlock(&mutexes[SYMBOL_NAME_MAP_MUTEX]);
   g_mutex_unlock(&mutexes[FETCH_DATA_MUTEX]);
 
   g_thread_exit(NULL);

@@ -81,20 +81,19 @@ guint64 ClockSleepMinute() {
   return (guint64)time_span_remaining(G_TIME_SPAN_MINUTE);
 }
 
-static void easter(gint year, gint *month, gint *day)
+static void easter(gint Y, gint *month, gint *day)
 /* Modified From: https://c-for-dummies.com/blog/?p=2446 by dgookin.
 
    This is the Nature computus, published anonymously, in the Nature Journal,
    in 1876, it appears to be the commonly accepted computus, although others do
-   exist. */
-   
-/* For any given year, will determine the month and day of Easter Sunday.
+   exist.
+
+   For any given year, will determine the month and day of Easter Sunday.
    Month numbering starts at 1; March is 3, April is 4, etc. */
 {
-  gint Y, a, c, e, h, k, L;
+  gint a, c, e, h, k, L;
   gdouble b, d, f, g, i, m;
 
-  Y = year;
   a = Y % 19;
   b = floor(Y / 100);
   c = Y % 100;
@@ -238,8 +237,8 @@ gboolean GetTimeData(gboolean *holiday, gchar **holiday_str, gint *h_r,
                      gint *m_r, gint *s_r, gint *h_cur, gint *m_cur)
 
 {
-  /* Return TRUE if the markets are closed, populate other args accordingly. */
-  /* Will populate any combination of args, unused args should be sent as NULL.
+  /* Return TRUE if the markets are closed, populate other args accordingly.
+     Will populate any combination of args, unused args should be sent as NULL.
 
   *holiday; TRUE or FALSE whether today is a holiday or not.
   holiday_str[0]; If today is a holiday will set the holiday string, otherwise,

@@ -127,16 +127,6 @@ gint HistorySetSNLabel(gpointer string_font_data) {
 
   SetFormattedLabel(label, fmt, str_fnt_container->font,
                     str_fnt_container->string ? str_fnt_container->string : "");
-
-  if (str_fnt_container->string)
-    g_free(str_fnt_container->string);
-
-  if (str_fnt_container->font)
-    g_free(str_fnt_container->font);
-
-  if (str_fnt_container)
-    g_free(str_fnt_container);
-
   return 0;
 }
 
@@ -304,7 +294,8 @@ static void history_set_store_cleanup(history_strings *history_strs) {
   g_free(history_strs->indicator_ch);
 }
 
-static void history_set_store(GtkListStore *store, const gchar *curl_data) {
+static void history_set_store(GtkListStore *store, const gchar *curl_data,
+                              const gsize string_len) {
   if (!curl_data)
     return;
 
@@ -314,7 +305,7 @@ static void history_set_store(GtkListStore *store, const gchar *curl_data) {
   gchar *line;
 
   /* Convert a String to a GDataInputStream for Reading */
-  GDataInputStream *in_stream = StringToInputStream(curl_data);
+  GDataInputStream *in_stream = StringToInputStream(curl_data, string_len + 1);
 
   /* Ignore the header line */
   if (!(line = ReadLine(in_stream))) {
@@ -366,7 +357,7 @@ static void history_set_store(GtkListStore *store, const gchar *curl_data) {
   history_set_store_cleanup(&history_strs);
 }
 
-GtkListStore *HistoryMakeStore(const gchar *data_str) {
+GtkListStore *HistoryMakeStore(const gchar *data_str, const gsize string_len) {
   GtkListStore *store;
 
   /* Set up the storage container with the number of columns and column type */
@@ -375,8 +366,9 @@ GtkListStore *HistoryMakeStore(const gchar *data_str) {
                              G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
                              G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 
-  /* Add data to the storage container, pass in the data_str pointer. */
-  history_set_store(store, data_str);
+  /* Add data to the storage container, pass in the data_str pointer and the
+   * string length [not including null]. */
+  history_set_store(store, data_str, string_len);
   return store;
 }
 
@@ -389,9 +381,6 @@ int HistoryMakeTreeview(gpointer store_data) {
 
   /* Add the store of data to the list. */
   gtk_tree_view_set_model(GTK_TREE_VIEW(list), GTK_TREE_MODEL(store));
-
-  if (store)
-    g_object_unref(store);
 
   /* Set the list header as visible. */
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(list), TRUE);

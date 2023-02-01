@@ -36,6 +36,13 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/class_types.h"
 #include "../include/macros.h"
 
+/* The Relative Strength Index (RSI) was invented by John Welles Wilder Jr. and
+ * first published in New Concepts in Technical Trading Systems, 1978.
+
+   This implementation follows the explanation found here:
+ https://school.stockcharts.com/doku.php?id=technical_indicators:relative_strength_index_rsi#calculation
+ */
+
 /* For auditing purposes, I included the effective formulas in comments. */
 gdouble CalcGain(gdouble cur_price, gdouble prev_price) {
   /* return (100 * ((cur_price - prev_price) / prev_price)); */
@@ -74,11 +81,11 @@ gdouble CalcRsi(gdouble avg_gain, gdouble avg_loss) {
   return (100 * avg_gain) / (avg_loss + avg_gain);
 }
 
-GDataInputStream *StringToInputStream(const gchar *str) {
-  /* Take in a gchar string and convert to GDataInputStream object [this will
-   * duplicate the gchar string in memory]. */
-  GBytes *bytes =
-      g_bytes_new((gconstpointer)str, (gsize)g_utf8_strlen(str, -1) + 1);
+GDataInputStream *StringToInputStream(const gchar *str, const gsize num_bytes) {
+  /* Take in a gchar string, the size in bytes [including the terminating null
+   * char] and convert to GDataInputStream object [this will duplicate the gchar
+   * string in memory]. */
+  GBytes *bytes = g_bytes_new((gconstpointer)str, num_bytes);
   GInputStream *in_stream = g_memory_input_stream_new_from_bytes(bytes);
   g_bytes_unref(bytes);
   return g_data_input_stream_new(in_stream);

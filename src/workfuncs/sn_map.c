@@ -33,26 +33,39 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/class_types.h"
 #include "../include/gui_types.h"
 #include "../include/multicurl.h"
+#include "../include/mutex.h"
 #include "../include/sqlite.h"
 #include "../include/workfuncs.h"
 
-gchar *GetSecurityName(gchar *s, const symbol_name_map *sn_map)
-/* Look for a Security Name using the Symbol as a key value.
-   Must free return value. */
-{
-  symbol_to_security_name_container *item = NULL;
+static gchar *hash_table_lookup(gchar *s, const symbol_name_map *sn_map) {
   if (sn_map == NULL)
     return NULL;
 
+  gchar *ret_val = NULL;
+  symbol_to_security_name_container *item = NULL;
   item = (symbol_to_security_name_container *)g_hash_table_lookup(
       sn_map->hash_table, s);
 
-  if (item) {
-    /* The item pointer is not freed. It points to an item in the
+  /* The item pointer is not freed. It points to an item in the
        sn_container_arr array and not a duplicate. */
-    return g_strdup(item->security_name);
+  if (item)
+    ret_val = g_strdup(item->security_name);
+
+  return ret_val;
+}
+
+gchar *GetSecurityName(gchar *s, const symbol_name_map *sn_map, meta *D)
+/* Look for a Security Name using the Symbol as a key value.
+   Must free return value. */
+{
+  /* If we are currently adding a mapping to the db */
+  if (D->snmap_db_busy_bool) {
+    /* Look for a name in the sn_map, in memory. */
+    return hash_table_lookup(s, sn_map);
   } else {
-    return NULL;
+    /* Otherwise, look for a name in the db, from hard drive. */
+    gchar *test_ch = SqliteGetSNMapName(s, D);
+    return test_ch;
   }
 }
 
@@ -180,12 +193,8 @@ void AddSymbolToMap(const gchar *symbol, const gchar *name,
       sn_map->sn_container_arr,
       sizeof(symbol_to_security_name_container *) * (sn_map->size + 1));
 
-  if (tmp == NULL) {
-    printf("Not Enough Memory, realloc returned NULL.\n");
-    exit(EXIT_FAILURE);
-  }
-
   sn_map->sn_container_arr = tmp;
+
   /* Allocate memory for an object and add the address of it to the array */
   sn_map->sn_container_arr[sn_map->size] =
       g_malloc(sizeof(symbol_to_security_name_container));
@@ -304,9 +313,9 @@ static void symbol_list_fetch_cleanup(gchar *line, GDataInputStream **in,
                                       MemType *NYSE) {
   if (line)
     g_free(line);
-  if (in[0])
+  if (in && in[0])
     CloseInputStream(in[0]);
-  if (in[1])
+  if (in && in[1])
     CloseInputStream(in[1]);
   FreeMemtype(Nasdaq);
   FreeMemtype(NYSE);
@@ -340,15 +349,17 @@ static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
   SetUpCurlHandle(D->NYSE_completion_hnd, D->multicurl_cmpltn_hnd,
                   D->NYSE_Symbol_url_ch, &NYSE_Struct);
   if (PerformMultiCurl_no_prog(D->multicurl_cmpltn_hnd) != 0 ||
-      pkg->IsCurlCanceled()) {
+      pkg->IsExitingApp()) {
     symbol_list_fetch_cleanup(NULL, NULL, sn_map, &Nasdaq_Struct, &NYSE_Struct);
     return NULL;
   }
 
   /* Convert a String to a GDataInputStream for Reading */
   GDataInputStream *in_stream[2];
-  in_stream[0] = StringToInputStream(Nasdaq_Struct.memory);
-  in_stream[1] = StringToInputStream(NYSE_Struct.memory);
+  in_stream[0] =
+      StringToInputStream(Nasdaq_Struct.memory, Nasdaq_Struct.size + 1);
+  in_stream[1] =
+      StringToInputStream(NYSE_Struct.memory, Nasdaq_Struct.size + 1);
 
   guint8 k = 0;
   while (k < 2) {
@@ -394,8 +405,9 @@ static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
       g_strfreev(token_array);
 
       /* If we are exiting the application, return immediately. */
-      if (pkg->IsCurlCanceled()) {
-        symbol_list_fetch_cleanup(line, in_stream, sn_map, &Nasdaq_Struct,
+      /* in_stream appears to be handled by GIO if the refs are dropped. */
+      if (pkg->IsExitingApp()) {
+        symbol_list_fetch_cleanup(line, NULL, sn_map, &Nasdaq_Struct,
                                   &NYSE_Struct);
         return NULL;
       }
@@ -420,6 +432,7 @@ static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
 
   symbol_list_fetch_cleanup(NULL, in_stream, NULL, &Nasdaq_Struct,
                             &NYSE_Struct);
+
   return sn_map;
 }
 
@@ -434,12 +447,11 @@ symbol_name_map *SymNameFetch(portfolio_packet *pkg)
   /* Check the database */
   symbol_name_map *sn_map = SqliteGetSNMap(D);
 
-  if (sn_map) {
-    /* Sort the sn_map [it should already be sorted from the Db, but just to
-     * make sure]. */
+  /* Sort the sn_map [it should already be sorted from the Db, but just to
+   * make sure]. */
+  if (sn_map)
     qsort(&sn_map->sn_container_arr[0], sn_map->size,
           sizeof(symbol_to_security_name_container *), alpha_asc_sec_name);
-  }
 
   return sn_map;
 }

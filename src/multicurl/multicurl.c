@@ -29,6 +29,7 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
 IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
+#include <glib/gprintf.h>
 
 #include "../include/gui.h" /* MainProgBar func */
 #include "../include/multicurl_types.h"
@@ -90,11 +91,6 @@ static gsize write_callback(gchar *ptr, gsize size, gsize nmemb,
   gchar *tmp = g_realloc(mem->memory, mem->size + realsize +
                                           1); /* We add 1 for the NULL char. */
 
-  if (tmp == NULL) {
-    printf("Not Enough Memory, realloc returned NULL.\n");
-    exit(EXIT_FAILURE);
-  }
-
   mem->memory = tmp;
   memcpy(&(mem->memory[mem->size]), ptr,
          realsize); /* Starting at the last element copy in
@@ -155,7 +151,7 @@ gpointer SetUpCurlHandle(CURL *hnd, CURLM *mh, gchar *url, MemType *output)
     curl_multi_add_handle(mh, hnd);
   } else {
     g_free(output->memory);
-    printf("cURL Library Failed, curl_easy_init() returned NULL.\n");
+    g_printf("cURL Library Failed, curl_easy_init() returned NULL.\n");
     exit(EXIT_FAILURE);
   }
 
@@ -173,7 +169,7 @@ gushort PerformMultiCurl(CURLM *mh, gdouble size)
 {
   curl_global_init(CURL_GLOBAL_ALL);
   if (!mh) {
-    printf("cURL Library Failed, curl_multi_init() returned NULL.\n");
+    g_printf("cURL Library Failed, curl_multi_init() returned NULL.\n");
     exit(EXIT_FAILURE);
   }
 
@@ -240,7 +236,7 @@ gushort PerformMultiCurl_no_prog(CURLM *mh)
 {
   curl_global_init(CURL_GLOBAL_ALL);
   if (!mh) {
-    printf("cURL Library Failed, curl_multi_init() returned NULL.\n");
+    g_printf("cURL Library Failed, curl_multi_init() returned NULL.\n");
     exit(EXIT_FAILURE);
   }
 

@@ -205,7 +205,8 @@ static void extract_index_data(const gchar *index, MemType *Data) {
   }
 
   /* Convert a String to a GDataInputStream for Reading */
-  GDataInputStream *in_stream = StringToInputStream(Data->memory);
+  GDataInputStream *in_stream =
+      StringToInputStream(Data->memory, Data->size + 1);
 
   if (in_stream == NULL) {
     extract_index_data_reset(index, Data);
@@ -513,11 +514,12 @@ meta *ClassInitMeta() {
   new_class->fetching_data_bool = FALSE;
   new_class->market_closed_bool =
       GetTimeData(NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-  new_class->multicurl_cancel_bool = FALSE;
+  new_class->exit_app_bool = FALSE;
   new_class->multicurl_cancel_main_bool = FALSE;
   new_class->index_bar_revealed_bool = TRUE;
   new_class->clocks_displayed_bool = TRUE;
   new_class->main_win_default_view_bool = TRUE;
+  new_class->snmap_db_busy_bool = FALSE;
 
   new_class->history_hnd = curl_easy_init();
   new_class->NASDAQ_completion_hnd = curl_easy_init();
@@ -574,15 +576,13 @@ void ClassDestructMeta(meta *meta_class) {
      allocated with the struct pointer and freed with the struct pointer. */
 
   /* Free the symbol to security name mapping array. */
-  g_mutex_lock(&mutexes[SYMBOL_NAME_MAP_MUTEX]);
+  
 
   if (meta_class->sym_map) {
     SNMapDestruct(meta_class->sym_map);
     g_free(meta_class->sym_map);
     meta_class->sym_map = NULL;
   }
-
-  g_mutex_unlock(&mutexes[SYMBOL_NAME_MAP_MUTEX]);
 
   if (meta_class->stock_url_ch)
     g_free(meta_class->stock_url_ch);

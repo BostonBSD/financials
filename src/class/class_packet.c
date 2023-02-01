@@ -294,16 +294,28 @@ static void SetDefaultView(gboolean default_vw_bool) {
   packet->meta_class->main_win_default_view_bool = default_vw_bool;
 }
 
-static gboolean IsCurlCanceled()
-/* Non-main curl flag */
+static gboolean IsExitingApp()
+/* Exiting Application flag */
 {
-  return packet->meta_class->multicurl_cancel_bool;
+  return packet->meta_class->exit_app_bool;
 }
 
-static void SetCurlCanceled(gboolean canceled_bool)
-/* Non-main curl flag */
+static void SetExitingApp(gboolean exiting_bool)
+/* Exiting Application flag */
 {
-  packet->meta_class->multicurl_cancel_bool = canceled_bool;
+  packet->meta_class->exit_app_bool = exiting_bool;
+}
+
+static gboolean IsSnmapDbBusy()
+/* Exiting Application flag */
+{
+  return packet->meta_class->snmap_db_busy_bool;
+}
+
+static void SetSnmapDbBusy(gboolean busy_bool)
+/* Exiting Application flag */
+{
+  packet->meta_class->snmap_db_busy_bool = busy_bool;
 }
 
 static void SetSecurityNames() {
@@ -403,8 +415,8 @@ void ClassInitPortfolioPacket() {
   new_class->FreeMainCurlData = FreeMainCurlData;
   new_class->StopMultiCurlMain = StopMultiCurlMain;
   new_class->StopMultiCurlAll = StopMultiCurlAll;
-  new_class->IsCurlCanceled = IsCurlCanceled;
-  new_class->SetCurlCanceled = SetCurlCanceled;
+  new_class->IsExitingApp = IsExitingApp;
+  new_class->SetExitingApp = SetExitingApp;
   new_class->IsMainCurlCanceled = IsMainCurlCanceled;
   new_class->SetMainCurlCanceled = SetMainCurlCanceled;
   new_class->GetHoursOfUpdates = GetHoursOfUpdates;
@@ -422,9 +434,11 @@ void ClassInitPortfolioPacket() {
   new_class->SetClockDisplayed = SetClockDisplayed;
   new_class->IsIndicesDisplayed = IsIndicesDisplayed;
   new_class->SetIndicesDisplayed = SetIndicesDisplayed;
-  new_class->SetSecurityNames = SetSecurityNames;
-  new_class->SetClosed = SetClosed;
   new_class->IsClosed = IsClosed;
+  new_class->SetClosed = SetClosed;  
+  new_class->IsSnmapDbBusy = IsSnmapDbBusy;
+  new_class->SetSnmapDbBusy = SetSnmapDbBusy;
+  new_class->SetSecurityNames = SetSecurityNames;
 
   /* General Multicurl Handle for the Main Fetch Operation */
   new_class->multicurl_main_hnd = curl_multi_init();
