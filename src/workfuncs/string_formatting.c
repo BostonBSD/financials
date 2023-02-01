@@ -30,8 +30,8 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <math.h>
 #include <locale.h>
+#include <math.h>
 #include <monetary.h>
 
 #include <glib/gprintf.h>
@@ -148,9 +148,11 @@ void ToNumStr(gchar *s)
 }
 
 static gsize abs_val(const gdouble n) {
+  /* If n is 9.9999 we want it to round up, to account for the strfmon and
+   * snprintf rounding at zero, one, two, and three decimal places. */
   if (n < 0)
-    return (gsize)floor((-1.0f * n));
-  return (gsize)floor(n);
+    return (gsize)ceil((-1.0f * n));
+  return (gsize)ceil(n);
 }
 
 static gsize length_doub_string(const gdouble n, const guint8 dec_pts,

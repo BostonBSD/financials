@@ -470,6 +470,10 @@ gpointer GUIThread_pref_sym_update(gpointer pkg_data) {
   gdk_threads_add_idle(PrefSymBtnStop, NULL);
 
   if (pkg->IsExitingApp()) {
+    if (sym_map) {
+      SNMapDestruct(sym_map);
+      g_free(sym_map);
+    }
     pkg->SetSymNameMap(NULL);
     g_thread_exit(NULL);
   }

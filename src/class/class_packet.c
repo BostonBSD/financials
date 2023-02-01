@@ -307,13 +307,13 @@ static void SetExitingApp(gboolean exiting_bool)
 }
 
 static gboolean IsSnmapDbBusy()
-/* Exiting Application flag */
+/* Sn_map Db busy flag [currently writing the sn_map to Db] */
 {
   return packet->meta_class->snmap_db_busy_bool;
 }
 
 static void SetSnmapDbBusy(gboolean busy_bool)
-/* Exiting Application flag */
+/* Sn_map Db busy flag [currently writing the sn_map to Db] */
 {
   packet->meta_class->snmap_db_busy_bool = busy_bool;
 }
@@ -435,7 +435,7 @@ void ClassInitPortfolioPacket() {
   new_class->IsIndicesDisplayed = IsIndicesDisplayed;
   new_class->SetIndicesDisplayed = SetIndicesDisplayed;
   new_class->IsClosed = IsClosed;
-  new_class->SetClosed = SetClosed;  
+  new_class->SetClosed = SetClosed;
   new_class->IsSnmapDbBusy = IsSnmapDbBusy;
   new_class->SetSnmapDbBusy = SetSnmapDbBusy;
   new_class->SetSecurityNames = SetSecurityNames;

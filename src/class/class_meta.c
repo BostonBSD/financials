@@ -576,7 +576,6 @@ void ClassDestructMeta(meta *meta_class) {
      allocated with the struct pointer and freed with the struct pointer. */
 
   /* Free the symbol to security name mapping array. */
-  
 
   if (meta_class->sym_map) {
     SNMapDestruct(meta_class->sym_map);

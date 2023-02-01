@@ -33,7 +33,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/class_types.h"
 #include "../include/gui_types.h"
 #include "../include/multicurl.h"
-#include "../include/mutex.h"
 #include "../include/sqlite.h"
 #include "../include/workfuncs.h"
 

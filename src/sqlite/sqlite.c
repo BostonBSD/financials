@@ -873,7 +873,7 @@ static gpointer add_mapping_to_database_thd(gpointer data) {
   meta_map_container *mmc = (meta_map_container *)data;
   symbol_name_map *sn_map = mmc->map;
   meta *D = mmc->metadata;
-  
+
   D->snmap_db_busy_bool = TRUE;
   g_mutex_lock(&mutexes[SYMBOL_NAME_MAP_SQLITE_MUTEX]);
 

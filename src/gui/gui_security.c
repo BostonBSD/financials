@@ -87,8 +87,7 @@ gint SecurityComBoxChange(portfolio_packet *pkg) {
     g_free(symbol);
 
     remove_dash(name);
-    const gchar *fmt =
-        "<span foreground='MidnightBlue' size='large'>%s</span>";
+    const gchar *fmt = "<span foreground='MidnightBlue' size='large'>%s</span>";
     SetFormattedLabel(label, fmt, pkg->meta_class->font_ch, name ? name : "");
     if (name)
       g_free(name);
