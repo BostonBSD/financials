@@ -274,18 +274,17 @@ static void extract_bullion_data(bullion *B) {
     return;
   }
 
-  /* Convert a String to a GDataInputStream for Reading */
-  GDataInputStream *in_stream =
-      StringToInputStream(B->CURLDATA.memory, B->CURLDATA.size + 1);
+  /* Convert a String to a File Pointer Stream for Reading */
+  FILE *fp = fmemopen((gpointer)B->CURLDATA.memory, B->CURLDATA.size + 1, "r");
 
-  if (in_stream == NULL) {
+  if (fp == NULL) {
     extract_bullion_data_reset(B);
     return;
   }
 
   char **token_arr;
   gdouble prev_closing = 0.0f, cur_price = 0.0f;
-  gchar *line = ExtractYahooData(in_stream, &prev_closing, &cur_price);
+  gchar *line = ExtractYahooData(fp, &prev_closing, &cur_price);
 
   if (line) {
     token_arr = g_strsplit(line, ",", -1);
@@ -297,7 +296,7 @@ static void extract_bullion_data(bullion *B) {
     g_strfreev(token_arr);
   }
   g_free(line);
-  CloseInputStream(in_stream);
+  fclose(fp);
   FreeMemtype(&B->CURLDATA);
 }
 

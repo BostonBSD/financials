@@ -33,7 +33,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/class_types.h" /* portfolio_packet, window_data */
 #include "../include/gui.h"         /* Gtk headers and funcs */
 #include "../include/multicurl.h"
-#include "../include/mutex.h"
 #include "../include/workfuncs.h"
 
 gint HistoryCompletionSet(gpointer sn_map_data) {
@@ -302,39 +301,36 @@ static void history_set_store(GtkListStore *store, const gchar *curl_data,
   history_strings history_strs = (history_strings){NULL};
 
   GtkTreeIter iter;
-  gchar *line;
+  gchar *line = NULL;
+  gsize linecap = 0;
 
-  /* Convert a String to a GDataInputStream for Reading */
-  GDataInputStream *in_stream = StringToInputStream(curl_data, string_len + 1);
+  /* Convert a String to a File Pointer Stream for Reading */
+  FILE *fp = fmemopen((gpointer)curl_data, string_len + 1, "r");
 
   /* Ignore the header line */
-  if (!(line = ReadLine(in_stream))) {
-    CloseInputStream(in_stream);
+  if (getline(&line, &linecap, fp) <= 0) {
+    g_free(line);
+    fclose(fp);
     return;
   }
-  free(line);
-  while ((line = ReadLine(in_stream))) {
+  while (getline(&line, &linecap, fp) > 0) {
+    g_strchomp(line);
 
     /* If there is a null error in this line, ignore the line.
        Sometimes Yahoo! data is incomplete, the result is more
        correct if we ignore the incomplete portion of data. */
     /* If we have an empty line, continue. */
 
-    if (g_strrstr(line, "null") || line[0] == '\0') {
-      g_free(line);
+    if (g_strrstr(line, "null") || line[0] == '\0')
       continue;
-    }
+
     /* Invalid replies start with a tag. */
-    if (g_strrstr(line, "<")) {
-      g_free(line);
+    if (g_strrstr(line, "<"))
       break;
-    }
 
     /* Don't start adding rows until we get 14 days of data. */
-    if (!history_rsi_calculate(line, &history_strs, RUN)) {
-      g_free(line);
+    if (!history_rsi_calculate(line, &history_strs, RUN))
       continue;
-    }
 
     /* Add data to the storage container. */
     /* Yahoo! sends data with the earliest date first, so we prepend rows.
@@ -350,10 +346,9 @@ static void history_set_store(GtkListStore *store, const gchar *curl_data,
         HISTORY_COLUMN_NINE, history_strs.volume_ch, HISTORY_COLUMN_TEN,
         history_strs.rsi_ch, HISTORY_COLUMN_ELEVEN, history_strs.indicator_ch,
         -1);
-    g_free(line);
   }
-
-  CloseInputStream(in_stream);
+  g_free(line);
+  fclose(fp);
   history_set_store_cleanup(&history_strs);
 }
 

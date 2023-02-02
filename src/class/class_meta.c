@@ -204,17 +204,15 @@ static void extract_index_data(const gchar *index, MemType *Data) {
     return;
   }
 
-  /* Convert a String to a GDataInputStream for Reading */
-  GDataInputStream *in_stream =
-      StringToInputStream(Data->memory, Data->size + 1);
+  FILE *fp = fmemopen((gpointer)Data->memory, Data->size + 1, "r");
 
-  if (in_stream == NULL) {
+  if (fp == NULL) {
     extract_index_data_reset(index, Data);
     return;
   }
 
   double prev_closing = 0.0f, cur_price = 0.0f;
-  char *line = ExtractYahooData(in_stream, &prev_closing, &cur_price);
+  char *line = ExtractYahooData(fp, &prev_closing, &cur_price);
   if (line)
     g_free(line);
 
@@ -236,7 +234,7 @@ static void extract_index_data(const gchar *index, MemType *Data) {
     Met->crypto_bitcoin_value_p_chg_f = CalcGain(cur_price, prev_closing);
   }
 
-  CloseInputStream(in_stream);
+  fclose(fp);
   FreeMemtype(Data);
 }
 
