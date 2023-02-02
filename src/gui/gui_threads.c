@@ -478,17 +478,17 @@ gpointer GUIThread_pref_sym_update(gpointer pkg_data) {
     g_thread_exit(NULL);
   }
 
-  /* This flag will force map lookups to memory rather than from disk,
-   * temporarily [it is reset in add_mapping_to_database_thd]. */
-  pkg->SetSnmapDbBusy(TRUE);
-
-  /* Make sure the security names are set with pango style markups [in the
-   * equity folder]. */
-  pkg->SetSecurityNames();
-
-  /* Set the completion widget on two entry boxes. */
-  /* Destroy the sn_map after setting the two widgets. */
   if (sym_map) {
+    /* This flag will force map lookups to memory rather than from disk,
+     * temporarily [it is reset in add_mapping_to_database_thd]. */
+    pkg->SetSnmapDbBusy(TRUE);
+
+    /* Make sure the security names are set with pango style markups [in the
+     * equity folder]. */
+    pkg->SetSecurityNames();
+
+    /* Set the completion widget on two entry boxes. */
+    /* Destroy the sn_map after setting the two widgets. */
     gdk_threads_add_idle(HistoryCompletionSet, sym_map);
     gdk_threads_add_idle_full(G_PRIORITY_DEFAULT_IDLE, SecurityCompletionSet,
                               sym_map, dstry_notify_func_snmap);

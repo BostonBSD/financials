@@ -151,7 +151,7 @@ static gsize abs_val(const gdouble n) {
   /* If n is 9.9999 we want it to round up, to account for the strfmon and
    * snprintf rounding at zero, one, two, and three decimal places. */
   if (n < 0)
-    return (gsize)ceil((-1.0f * n));
+    return (gsize)(-1.0f * ceil(n));
   return (gsize)ceil(n);
 }
 

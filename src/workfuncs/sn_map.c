@@ -361,7 +361,7 @@ static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
 
   guint8 k = 0;
   while (k < 2) {
-    /* Read the stream one line at a time */
+    /* Read the file stream one line at a time */
     /* Populate the Symbol-Name Array. The second list is added after the first
      * list. */
     while (getline(&line, &linecap, fp[k]) > 0) {
@@ -380,6 +380,12 @@ static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
 
       /* Get the symbol and the name from the line. */
       token_array = g_strsplit(line, "|", -1);
+      if (g_strv_length(token_array) < 8) {
+        symbol_list_fetch_cleanup(line, fp, sn_map, &Nasdaq_Struct,
+                                  &NYSE_Struct);
+        g_strfreev(token_array);
+        return NULL;
+      }
       symbol_token = token_array[0] ? token_array[0] : "";
       name_token = token_array[1] ? token_array[1] : "";
 

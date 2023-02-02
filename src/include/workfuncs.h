@@ -91,7 +91,6 @@ guint64 ClockSleepMinute();
 guint64 ClockSleepSecond();
 gboolean GetTimeData(gboolean *holiday, gchar **holiday_str, gint *h_r,
                      gint *m_r, gint *s_r, gint *h_cur, gint *m_cur);
-gboolean MarketClosed();
 
 /* working_functions */
 gdouble CalcGain(gdouble cur_price, gdouble prev_price);
@@ -99,7 +98,8 @@ void CalcSumRsi(gdouble current_gain, gdouble *avg_gain, gdouble *avg_loss);
 void CalcRunAvgRsi(gdouble current_gain, gdouble *avg_gain, gdouble *avg_loss,
                    gdouble period);
 gdouble CalcRsi(gdouble avg_gain, gdouble avg_loss);
-gchar *ExtractYahooData(FILE *fp, gdouble *prev_closing_f, gdouble *cur_price_f);                        
+gchar *ExtractYahooData(FILE *fp, gdouble *prev_closing_f,
+                        gdouble *cur_price_f);
 void GetYahooUrl(gchar **url_ch, const gchar *symbol_ch, guint period);
 
 #endif /* WORKFUNCS_HEADER_H */

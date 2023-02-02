@@ -87,8 +87,8 @@ gchar *ExtractYahooData(FILE *fp, gdouble *prev_closing_f, gdouble *cur_price_f)
    Returns the last line of the file stream.
    Must free return value.
 
-   Useful for finding the current stats on a security/index/commodity from
-   Yahoo! finance.
+   This is useful for finding the current stats on a security/index/commodity
+   from Yahoo! finance.
 */
 {
 
@@ -108,7 +108,7 @@ gchar *ExtractYahooData(FILE *fp, gdouble *prev_closing_f, gdouble *cur_price_f)
        using the closing price from the day prior gives us a more accurate
        gain value. */
     /* If we have an empty line, continue. */
-    if (g_strrstr(line, "null") || g_strrstr(line, "Date") || line[0] == '\0')
+    if (g_strrstr(line, "null") || g_strrstr(line, "Date") || !line[0])
       continue;
 
     /* Invalid replies start with a tag. */
@@ -123,7 +123,7 @@ gchar *ExtractYahooData(FILE *fp, gdouble *prev_closing_f, gdouble *cur_price_f)
       g_strfreev(token_arr);
       return NULL;
     }
-    *cur_price_f = strtod(token_arr[4] ? token_arr[4] : "0", NULL);
+    *cur_price_f = g_strtod(token_arr[4] ? token_arr[4] : "0", NULL);
     g_strfreev(token_arr);
 
     g_free(ret_value);
