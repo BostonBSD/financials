@@ -48,10 +48,10 @@ void SqliteCashAdd(const gchar *value, meta *D);
 void SqliteAPIAdd(const gchar *keyword, const gchar *data, meta *D);
 void SqlitePrefAdd(const gchar *keyword, const gchar *data, meta *D);
 
-void SqliteMainWindowSizeAdd(gushort width, gushort height, meta *D);
-void SqliteMainWindowPosAdd(gushort x, gushort y, meta *D);
-void SqliteHistoryWindowSizeAdd(gushort width, gushort height, meta *D);
-void SqliteHistoryWindowPosAdd(gushort x, gushort y, meta *D);
+void SqliteMainWindowSizeAdd(gint width, gint height, meta *D);
+void SqliteMainWindowPosAdd(gint x, gint y, meta *D);
+void SqliteHistoryWindowSizeAdd(gint width, gint height, meta *D);
+void SqliteHistoryWindowPosAdd(gint x, gint y, meta *D);
 
 symbol_name_map *SqliteGetSNMap(meta *D);
 gchar *SqliteGetSNMapName(const gchar *symbol_ch, meta *D);

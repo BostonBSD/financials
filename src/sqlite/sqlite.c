@@ -233,10 +233,9 @@ static gint main_wndwsz_callback(gpointer data, gint argc, gchar **argv,
     return 1;
 
   window_data *window = (window_data *)data;
-  window->main_width =
-      (gushort)g_ascii_strtoll(argv[1] ? argv[1] : "0", NULL, 10);
+  window->main_width = (gint)g_ascii_strtoll(argv[1] ? argv[1] : "0", NULL, 10);
   window->main_height =
-      (gushort)g_ascii_strtoll(argv[2] ? argv[2] : "0", NULL, 10);
+      (gint)g_ascii_strtoll(argv[2] ? argv[2] : "0", NULL, 10);
 
   g_mutex_unlock(&mutexes[CLASS_MEMBER_MUTEX]);
   return 0;
@@ -257,10 +256,8 @@ static gint main_wndwpos_callback(gpointer data, gint argc, gchar **argv,
     return 1;
 
   window_data *window = (window_data *)data;
-  window->main_x_pos =
-      (gushort)g_ascii_strtoll(argv[1] ? argv[1] : "0", NULL, 10);
-  window->main_y_pos =
-      (gushort)g_ascii_strtoll(argv[2] ? argv[2] : "0", NULL, 10);
+  window->main_x_pos = (gint)g_ascii_strtoll(argv[1] ? argv[1] : "0", NULL, 10);
+  window->main_y_pos = (gint)g_ascii_strtoll(argv[2] ? argv[2] : "0", NULL, 10);
 
   g_mutex_unlock(&mutexes[CLASS_MEMBER_MUTEX]);
   return 0;
@@ -282,9 +279,9 @@ static gint history_wndwsz_callback(gpointer data, gint argc, gchar **argv,
 
   window_data *window = (window_data *)data;
   window->history_width =
-      (gushort)g_ascii_strtoll(argv[1] ? argv[1] : "0", NULL, 10);
+      (gint)g_ascii_strtoll(argv[1] ? argv[1] : "0", NULL, 10);
   window->history_height =
-      (gushort)g_ascii_strtoll(argv[2] ? argv[2] : "0", NULL, 10);
+      (gint)g_ascii_strtoll(argv[2] ? argv[2] : "0", NULL, 10);
 
   g_mutex_unlock(&mutexes[CLASS_MEMBER_MUTEX]);
   return 0;
@@ -306,9 +303,9 @@ static gint history_wndwpos_callback(gpointer data, gint argc, gchar **argv,
 
   window_data *window = (window_data *)data;
   window->history_x_pos =
-      (gushort)g_ascii_strtoll(argv[1] ? argv[1] : "0", NULL, 10);
+      (gint)g_ascii_strtoll(argv[1] ? argv[1] : "0", NULL, 10);
   window->history_y_pos =
-      (gushort)g_ascii_strtoll(argv[2] ? argv[2] : "0", NULL, 10);
+      (gint)g_ascii_strtoll(argv[2] ? argv[2] : "0", NULL, 10);
 
   g_mutex_unlock(&mutexes[CLASS_MEMBER_MUTEX]);
   return 0;
@@ -714,7 +711,7 @@ void SqlitePrefAdd(const gchar *keyword, const gchar *data, meta *D) {
 }
 
 static void sqlite_window_data_add(const gchar *del_fmt, const gchar *ins_fmt,
-                                   gushort w_x, gushort h_y, meta *D) {
+                                   gint w_x, gint h_y, meta *D) {
   g_mutex_lock(&mutexes[SQLITE_MUTEX]);
 
   gushort len;
@@ -742,25 +739,25 @@ static void sqlite_window_data_add(const gchar *del_fmt, const gchar *ins_fmt,
   g_mutex_unlock(&mutexes[SQLITE_MUTEX]);
 }
 
-void SqliteMainWindowSizeAdd(gushort width, gushort height, meta *D) {
+void SqliteMainWindowSizeAdd(gint width, gint height, meta *D) {
   const gchar *del_fmt = "DELETE FROM mainwinsize WHERE Id = 1;";
   const gchar *ins_fmt = "INSERT INTO mainwinsize VALUES(1, '%d', '%d');";
   sqlite_window_data_add(del_fmt, ins_fmt, width, height, D);
 }
 
-void SqliteMainWindowPosAdd(gushort x, gushort y, meta *D) {
+void SqliteMainWindowPosAdd(gint x, gint y, meta *D) {
   const gchar *del_fmt = "DELETE FROM mainwinpos WHERE Id = 1;";
   const gchar *ins_fmt = "INSERT INTO mainwinpos VALUES(1, '%d', '%d');";
   sqlite_window_data_add(del_fmt, ins_fmt, x, y, D);
 }
 
-void SqliteHistoryWindowSizeAdd(gushort width, gushort height, meta *D) {
+void SqliteHistoryWindowSizeAdd(gint width, gint height, meta *D) {
   const gchar *del_fmt = "DELETE FROM historywinsize WHERE Id = 1;";
   const gchar *ins_fmt = "INSERT INTO historywinsize VALUES(1, '%d', '%d');";
   sqlite_window_data_add(del_fmt, ins_fmt, width, height, D);
 }
 
-void SqliteHistoryWindowPosAdd(gushort x, gushort y, meta *D) {
+void SqliteHistoryWindowPosAdd(gint x, gint y, meta *D) {
   const gchar *del_fmt = "DELETE FROM historywinpos WHERE Id = 1;";
   const gchar *ins_fmt = "INSERT INTO historywinpos VALUES(1, '%d', '%d');";
   sqlite_window_data_add(del_fmt, ins_fmt, x, y, D);
@@ -843,7 +840,7 @@ static void escape_apostrophy(gchar **s)
   /* Read character by character until the null character is reached. */
   for (gushort i = 0; s[0][i]; i++) {
 
-    /* If we find an ''' character, ASCII decimal code 39 */
+    /* If we find an ''' character, ASCII/UTF8 decimal code 39 */
     if (s[0][i] == 39) {
 
       /* Increase the character array by one character. */

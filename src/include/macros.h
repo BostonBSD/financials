@@ -53,7 +53,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 /* The main treeview font. */
 #ifndef MAIN_FONT
-#define MAIN_FONT "Cantarell 10"
+#define MAIN_FONT "Sans 10"
 #endif
 
 /* The current locale */
@@ -101,7 +101,7 @@ POSSIBILITY OF SUCH DAMAGE.
    application. */
 /* The finnhub.io stock quote URL */
 #ifndef FINNHUB_URL
-#define FINNHUB_URL "https://finnhub.io/api/v1/quote?symbol="
+#define FINNHUB_URL "https://www.finnhub.io/api/v1/quote?symbol="
 #endif
 
 /* The finnhub.io URL account token */

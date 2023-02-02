@@ -212,8 +212,18 @@ gpointer GUIThread_clock(gpointer pkg_data) {
   meta *D = pkg->GetMetaClass();
   gint64 wait_time;
 
+  /* If there were a blocking variation of gdk_threads_add_idle, we could
+     structure this more rigidly. For the time being we will assume the
+     market_closed_bool flag is always set within the current second. */
   while (D->clocks_displayed_bool) {
     gdk_threads_add_idle(MainSetClocks, pkg_data);
+
+    /* Set Sleep until the end of the current second. */
+    wait_time = ClockSleepSecond();
+
+    if (cond_sleep(&D->gthread_clocks_cond, &mutexes[CLOCKS_COND_MUTEX],
+                   wait_time))
+      break;
 
     /* Will take into account holidays,
        including the black friday early close.
@@ -222,15 +232,11 @@ gpointer GUIThread_clock(gpointer pkg_data) {
 
       /* Set Sleep until the end of the current minute. */
       wait_time = ClockSleepMinute();
-    } else {
 
-      /* Set Sleep until the end of the current second. */
-      wait_time = ClockSleepSecond();
+      if (cond_sleep(&D->gthread_clocks_cond, &mutexes[CLOCKS_COND_MUTEX],
+                     wait_time))
+        break;
     }
-
-    if (cond_sleep(&D->gthread_clocks_cond, &mutexes[CLOCKS_COND_MUTEX],
-                   wait_time))
-      break;
   }
 
   g_thread_exit(NULL);

@@ -49,14 +49,14 @@ typedef struct { /* A container to hold the type of row and symbol, on a right
 } right_click_container;
 
 typedef struct {
-  gushort main_height;
-  gushort main_width;
-  gushort main_x_pos;
-  gushort main_y_pos;
-  gushort history_height;
-  gushort history_width;
-  gushort history_x_pos;
-  gushort history_y_pos;
+  gint main_height;
+  gint main_width;
+  gint main_x_pos;
+  gint main_y_pos;
+  gint history_height;
+  gint history_width;
+  gint history_x_pos;
+  gint history_y_pos;
 } window_data;
 
 typedef struct {

@@ -67,9 +67,8 @@ gboolean CheckIfStringDoubleNumber(const gchar *string) {
   g_strtod(string, &end_ptr);
 
   /* If no conversion took place or if conversion not complete. */
-  if ((end_ptr == string) || (*end_ptr != '\0')) {
+  if ((end_ptr == string) || (*end_ptr != '\0'))
     return FALSE;
-  }
 
   return TRUE;
 }

@@ -328,22 +328,22 @@ gboolean GUICallback_window_data(GtkWidget *window, GdkEvent *event,
 
   window_data *W = packet->GetWindowData();
 
-  guint s = (guint)((guintptr)sig_data);
+  guintptr s = (guintptr)sig_data;
 
   switch (s) {
   case GUI_MAIN_WINDOW:
-    W->main_width = (gushort)width;
-    W->main_height = (gushort)height;
+    W->main_width = width;
+    W->main_height = height;
 
-    W->main_x_pos = (gushort)x;
-    W->main_y_pos = (gushort)y;
+    W->main_x_pos = x;
+    W->main_y_pos = y;
     break;
   case GUI_HISTORY_WINDOW:
-    W->history_width = (gushort)width;
-    W->history_height = (gushort)height;
+    W->history_width = width;
+    W->history_height = height;
 
-    W->history_x_pos = (gushort)x;
-    W->history_y_pos = (gushort)y;
+    W->history_x_pos = x;
+    W->history_y_pos = y;
     break;
   }
 
@@ -373,9 +373,6 @@ gboolean GUICallback_select_comp(GtkEntryCompletion *completion,
   gchar *item;
   /* when a match is selected insert column zero instead of column 2 */
   gtk_tree_model_get(model, iter, 0, &item, -1);
-  /* This function is already blocking the gtk main loop, it's ok
-     to change widgets here without using a "gdk_threads_add_idle" wrapper
-     function. */
   gtk_entry_set_text(GTK_ENTRY(EntryBox), item);
 
   /* move the cursor to the end of the string */
@@ -404,9 +401,6 @@ gboolean GUICallback_cursor_comp(GtkEntryCompletion *completion,
   gchar *item;
   /* when a match is highlighted insert column zero instead of column 2 */
   gtk_tree_model_get(model, iter, 0, &item, -1);
-  /* This function is already blocking the gtk main loop, it's ok
-     to change widgets here without using a "gdk_threads_add_idle" wrapper
-     function. */
   gtk_entry_set_text(GTK_ENTRY(EntryBox), item);
 
   /* move the cursor to the end of the string */

@@ -122,9 +122,8 @@ gint APIShowHide(portfolio_packet *pkg) {
 }
 
 static void process_api_data(gchar *cur_value, const gchar *new_value) {
-  if ((g_strcmp0(cur_value, new_value) != 0)) {
+  if ((g_strcmp0(cur_value, new_value) != 0))
     CopyString(&cur_value, new_value);
-  }
 }
 
 gint APIOk(portfolio_packet *pkg) {
