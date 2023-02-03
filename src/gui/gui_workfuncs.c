@@ -42,7 +42,7 @@ void AddColumnToTreeview(const gchar *col_name, const gint col_num,
   gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 }
 
-int TreeViewClear(GtkWidget *treeview) {
+gint TreeViewClear(GtkWidget *treeview) {
   /* Clear the GtkTreeView. */
   GtkTreeViewColumn *column;
   gushort n = gtk_tree_view_get_n_columns(GTK_TREE_VIEW(treeview));

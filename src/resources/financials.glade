@@ -407,7 +407,7 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Beta 2.0</property>
+                    <property name="label" translatable="yes">0.1.0</property>
                     <property name="justify">center</property>
                     <attributes>
                       <attribute name="font-desc" value="Oxygen-Sans 11"/>

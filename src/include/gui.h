@@ -48,7 +48,7 @@ void GuiStart(portfolio_packet *pkg);
 /* gui_workfuncs */
 void AddColumnToTreeview(const gchar *col_name, const gint col_num,
                          GtkWidget *treeview);
-int TreeViewClear(GtkWidget *treeview);
+gint TreeViewClear(GtkWidget *treeview);
 gint SetFormattedLabel(GtkWidget *label, const gchar *fmt, const gchar *font,
                        const gchar *text);
 gint CompletionSet(symbol_name_map *sn_map, guintptr gui_completion_sig);
