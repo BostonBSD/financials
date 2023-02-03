@@ -30,8 +30,6 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <glib/gprintf.h>
-
 #include "../include/class_types.h"
 #include "../include/macros.h"
 

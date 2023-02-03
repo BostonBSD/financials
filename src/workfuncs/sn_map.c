@@ -357,7 +357,7 @@ static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
   /* Convert a String to a File Pointer Stream for Reading */
   FILE *fp[2];
   fp[0] = fmemopen((gpointer)Nasdaq_Struct.memory, Nasdaq_Struct.size + 1, "r");
-  fp[1] = fmemopen((gpointer)Nasdaq_Struct.memory, Nasdaq_Struct.size + 1, "r");
+  fp[1] = fmemopen((gpointer)NYSE_Struct.memory, NYSE_Struct.size + 1, "r");
 
   guint8 k = 0;
   while (k < 2) {
@@ -380,7 +380,7 @@ static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
 
       /* Get the symbol and the name from the line. */
       token_array = g_strsplit(line, "|", -1);
-      if (g_strv_length(token_array) < 8) {
+      if (g_strv_length(token_array) < 7) {
         symbol_list_fetch_cleanup(line, fp, sn_map, &Nasdaq_Struct,
                                   &NYSE_Struct);
         g_strfreev(token_array);
