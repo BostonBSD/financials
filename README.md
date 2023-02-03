@@ -45,8 +45,6 @@ Has also been tested on FreeBSD 13.1 for arm64/aarch64.
 Will likely run on any derivative of these operating systems 
 [Linux Mint, Elementary OS, Trisquel, Raspberry PI OS, NomadBSD, GhostBSD, etc].
 
-Will compile and run on Fedora 37, however, there is a glib issue and it won't operate quite as optimally.
-
 ----------------------------------------------------------
 
 RSI INDICATOR NOTE: 
