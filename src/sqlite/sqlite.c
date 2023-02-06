@@ -600,7 +600,7 @@ static gchar *vradic_sqlte_cmd(gint8 num_args_cmd, const gchar *fmt,
 
   /* Create the long format string [includes all args]. */
   gchar *sql_cmd_fmt = strdup(fmt);
-  for (gushort g = 0; g < (args_count / num_args_cmd); g++) {
+  for (gushort g = 0; g < (args_count / num_args_cmd) - 1; g++) {
     sql_cmd_tmp = g_strconcat(sql_cmd_fmt, fmt, NULL);
     g_free(sql_cmd_fmt);
     sql_cmd_fmt = sql_cmd_tmp;
