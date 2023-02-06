@@ -32,6 +32,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "../include/class_types.h"
 #include "../include/gui_types.h"
+#include "../include/macros.h"
 #include "../include/multicurl.h"
 #include "../include/sqlite.h"
 #include "../include/workfuncs.h"
@@ -112,13 +113,15 @@ void SNMapDestruct(symbol_name_map *sn_map)
   }
 }
 
-static gint alpha_asc_sec_name(gconstpointer a, gconstpointer b)
-/* This is a callback function for stdlib sorting functions.
+static gint alpha_asc_sec_name(gconstpointer a, gconstpointer b, gpointer data)
+/* This is a callback function for Glib sorting functions.
    It compares symbol_to_security_name_container in alphabetically
    ascending order, by the stock symbol data member.  Swapping only
    the pointer.
 */
 {
+  UNUSED(data)
+
   /* Cast the void pointer as a symbol_to_security_name_container double
    * pointer. */
   symbol_to_security_name_container **aa =
@@ -423,8 +426,9 @@ static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
 
   /* Sort the security symbol array, this reorders both lists into one sorted
    * list. */
-  qsort(&sn_map->sn_container_arr[0], sn_map->size,
-        sizeof(symbol_to_security_name_container *), alpha_asc_sec_name);
+  g_qsort_with_data(
+      (gconstpointer)&sn_map->sn_container_arr[0], (gint)sn_map->size,
+      (gsize)sizeof(sn_map->sn_container_arr[0]), alpha_asc_sec_name, NULL);
 
   /* Create a hashing table from the sn_container_arr, the symbol is the key
    * value. */
@@ -449,8 +453,9 @@ symbol_name_map *SymNameFetch(portfolio_packet *pkg)
   /* Sort the sn_map [it should already be sorted from the Db, but just to
    * make sure]. */
   if (sn_map)
-    qsort(&sn_map->sn_container_arr[0], sn_map->size,
-          sizeof(symbol_to_security_name_container *), alpha_asc_sec_name);
+    g_qsort_with_data(
+        (gconstpointer)&sn_map->sn_container_arr[0], (gint)sn_map->size,
+        (gsize)sizeof(sn_map->sn_container_arr[0]), alpha_asc_sec_name, NULL);
 
   return sn_map;
 }

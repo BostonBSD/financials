@@ -30,6 +30,7 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <glib/gprintf.h> /* g_fprintf() */
 #include <sqlite3.h>
 
 #include "../include/class_types.h" /* equity_folder, metal, meta, window_data */
@@ -37,6 +38,7 @@ POSSIBILITY OF SUCH DAMAGE.
                                        symbol_name_map symbol_name_map */
 #include "../include/macros.h"
 #include "../include/mutex.h"
+#include "../include/sqlite.h"
 #include "../include/workfuncs.h"
 
 static gint equity_callback(gpointer data, gint argc, gchar **argv,
@@ -344,9 +346,33 @@ static gint get_snmap_name_callback(gpointer data, gint argc, gchar **argv,
 }
 
 static void error_msg(sqlite3 *db) {
-  fprintf(stderr, "Sqlite3 database error: %s\n", sqlite3_errmsg(db));
+  g_fprintf(stderr, "Sqlite3 database error: %s\n", sqlite3_errmsg(db));
   sqlite3_close(db);
   exit(EXIT_FAILURE);
+}
+
+static void sqlite_run_cmd(GMutex *mutex, const gchar *db_path, gint (*func)(),
+                           void *data, const gchar *cmd) {
+  /* Open the sqlite database file. */
+  g_mutex_lock(mutex);
+
+  gchar *err_msg = 0;
+  sqlite3 *db;
+  if (sqlite3_open(db_path, &db) != SQLITE_OK) {
+    g_mutex_unlock(mutex);
+    error_msg(db);
+  }
+
+  /* Run the command. */
+  if (sqlite3_exec(db, cmd, func, data, &err_msg) != SQLITE_OK) {
+    g_mutex_unlock(mutex);
+    error_msg(db);
+  }
+
+  /* Close the sqlite database file. */
+  sqlite3_close(db);
+
+  g_mutex_unlock(mutex);
 }
 
 void SqliteProcessing(portfolio_packet *pkg) {
@@ -355,130 +381,138 @@ void SqliteProcessing(portfolio_packet *pkg) {
   equity_folder *F = pkg->GetEquityFolderClass();
   meta *D = pkg->GetMetaClass();
   window_data *W = pkg->GetWindowData();
-  gchar *err_msg = 0;
-  sqlite3 *db;
-
-  g_mutex_lock(&mutexes[SYMBOL_NAME_MAP_SQLITE_MUTEX]);
-
-  /* Open the sqlite symbol-name database file. */
-  if (sqlite3_open(D->sqlite_symbol_name_db_path_ch, &db) != SQLITE_OK)
-    error_msg(db);
 
   /* Create the symbolname table if it doesn't already exist. */
   gchar *sql_cmd = "CREATE TABLE IF NOT EXISTS symbolname(Id INTEGER PRIMARY "
                    "KEY, symbol TEXT NOT NULL, name TEXT NOT NULL);";
-  if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
-    error_msg(db);
+  sqlite_run_cmd(&mutexes[SYMBOL_NAME_MAP_SQLITE_MUTEX],
+                 D->sqlite_symbol_name_db_path_ch, 0, 0, sql_cmd);
 
-  /* Close the sqlite symbol-name database file. */
-  sqlite3_close(db);
-
-  g_mutex_unlock(&mutexes[SYMBOL_NAME_MAP_SQLITE_MUTEX]);
-  g_mutex_lock(&mutexes[SQLITE_MUTEX]);
-
-  /* Open the regular config sqlite database file. */
-  if (sqlite3_open(D->sqlite_db_path_ch, &db) != SQLITE_OK)
-    error_msg(db);
+  /* Many of these can be combined into a singular sql_cmd statement, however I
+   * think this way is more clear. */
 
   /* Create the prefdata table if it doesn't already exist. */
   sql_cmd = "CREATE TABLE IF NOT EXISTS prefdata(Id INTEGER PRIMARY KEY, "
             "Keyword TEXT NOT NULL, Data TEXT NOT NULL);";
-  if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
-    error_msg(db);
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
+
+  sql_cmd = "CREATE UNIQUE INDEX IF NOT EXISTS idx_prefdata_keyword ON "
+            "prefdata (Keyword);";
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
 
   /* Create the apidata table if it doesn't already exist. */
   sql_cmd = "CREATE TABLE IF NOT EXISTS apidata(Id INTEGER PRIMARY KEY, "
             "Keyword TEXT NOT NULL, Data TEXT NOT NULL);";
-  if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
-    error_msg(db);
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
+
+  sql_cmd = "CREATE UNIQUE INDEX IF NOT EXISTS idx_apidata_keyword ON "
+            "apidata (Keyword);";
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
 
   /* Create the equity table if it doesn't already exist. */
   sql_cmd = "CREATE TABLE IF NOT EXISTS equity(Id INTEGER PRIMARY KEY, Symbol "
             "TEXT NOT NULL, Shares TEXT NOT NULL);";
-  if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
-    error_msg(db);
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
+
+  sql_cmd = "CREATE UNIQUE INDEX IF NOT EXISTS idx_equity_symbol ON "
+            "equity (Symbol);";
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
 
   /* Create the bullion table if it doesn't already exist. */
   sql_cmd = "CREATE TABLE IF NOT EXISTS bullion(Id INTEGER PRIMARY KEY, Metal "
             "TEXT NOT NULL, Ounces TEXT NOT NULL, Premium TEXT NOT NULL);";
-  if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
-    error_msg(db);
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
+
+  sql_cmd = "CREATE UNIQUE INDEX IF NOT EXISTS idx_bullion_metal ON "
+            "bullion (Metal);";
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
 
   /* Create the cash table if it doesn't already exist. */
   sql_cmd = "CREATE TABLE IF NOT EXISTS cash(Id INTEGER PRIMARY KEY, Value "
             "TEXT NOT NULL);";
-  if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
-    error_msg(db);
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
+
+  sql_cmd = "CREATE UNIQUE INDEX IF NOT EXISTS idx_cash_id ON "
+            "cash (Id);";
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
 
   /* Create the mainwinsize table if it doesn't already exist. */
   sql_cmd = "CREATE TABLE IF NOT EXISTS mainwinsize(Id INTEGER PRIMARY KEY, "
             "Width TEXT NOT NULL, Height TEXT NOT NULL);";
-  if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
-    error_msg(db);
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
+
+  sql_cmd = "CREATE UNIQUE INDEX IF NOT EXISTS idx_mainwinsize_id ON "
+            "mainwinsize (Id);";
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
 
   /* Create the mainwinpos table if it doesn't already exist. */
   sql_cmd = "CREATE TABLE IF NOT EXISTS mainwinpos(Id INTEGER PRIMARY KEY, "
             "X TEXT NOT NULL, Y TEXT NOT NULL);";
-  if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
-    error_msg(db);
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
+
+  sql_cmd = "CREATE UNIQUE INDEX IF NOT EXISTS idx_mainwinpos_id ON "
+            "mainwinpos (Id);";
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
 
   /* Create the historywinsize table if it doesn't already exist. */
   sql_cmd = "CREATE TABLE IF NOT EXISTS historywinsize(Id INTEGER PRIMARY KEY, "
             "Width TEXT NOT NULL, Height TEXT NOT NULL);";
-  if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
-    error_msg(db);
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
+
+  sql_cmd = "CREATE UNIQUE INDEX IF NOT EXISTS idx_historywinsize_id ON "
+            "historywinsize (Id);";
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
 
   /* Create the historywinpos table if it doesn't already exist. */
   sql_cmd =
       "CREATE TABLE IF NOT EXISTS historywinpos(Id INTEGER PRIMARY KEY, X "
       "TEXT NOT NULL, Y TEXT NOT NULL);";
-  if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
-    error_msg(db);
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
+
+  sql_cmd = "CREATE UNIQUE INDEX IF NOT EXISTS idx_historywinpos_id ON "
+            "historywinpos (Id);";
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
 
   /* Reset Equity Folder */
   F->Reset();
 
   /* Populate class/struct instances with saved data. */
-  sql_cmd =
-      "SELECT * FROM prefdata;"; /* We always want this table selected first */
-  if (sqlite3_exec(db, sql_cmd, pref_callback, D, &err_msg) != SQLITE_OK)
-    error_msg(db);
+  sql_cmd = "SELECT * FROM prefdata;";
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, pref_callback, D,
+                 sql_cmd);
 
-  sql_cmd =
-      "SELECT * FROM apidata;"; /* We always want this table selected first */
-  if (sqlite3_exec(db, sql_cmd, api_callback, D, &err_msg) != SQLITE_OK)
-    error_msg(db);
+  sql_cmd = "SELECT * FROM apidata;";
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, api_callback, D,
+                 sql_cmd);
 
-  sql_cmd = "SELECT * FROM equity;";
-  if (sqlite3_exec(db, sql_cmd, equity_callback, F, &err_msg) != SQLITE_OK)
-    error_msg(db);
+  sql_cmd = "SELECT * FROM equity;"; /* We always want this table selected after
+                                        apidata */
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, equity_callback,
+                 F, sql_cmd);
 
   sql_cmd = "SELECT * FROM bullion;";
-  if (sqlite3_exec(db, sql_cmd, bullion_callback, pkg, &err_msg) != SQLITE_OK)
-    error_msg(db);
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, bullion_callback,
+                 pkg, sql_cmd);
 
   sql_cmd = "SELECT * FROM cash;";
-  if (sqlite3_exec(db, sql_cmd, cash_callback, D, &err_msg) != SQLITE_OK)
-    error_msg(db);
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, cash_callback, D,
+                 sql_cmd);
 
   sql_cmd = "SELECT * FROM mainwinsize;";
-  if (sqlite3_exec(db, sql_cmd, main_wndwsz_callback, W, &err_msg) != SQLITE_OK)
-    error_msg(db);
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch,
+                 main_wndwsz_callback, W, sql_cmd);
 
   sql_cmd = "SELECT * FROM mainwinpos;";
-  if (sqlite3_exec(db, sql_cmd, main_wndwpos_callback, W, &err_msg) !=
-      SQLITE_OK)
-    error_msg(db);
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch,
+                 main_wndwpos_callback, W, sql_cmd);
 
   sql_cmd = "SELECT * FROM historywinsize;";
-  if (sqlite3_exec(db, sql_cmd, history_wndwsz_callback, W, &err_msg) !=
-      SQLITE_OK)
-    error_msg(db);
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch,
+                 history_wndwsz_callback, W, sql_cmd);
 
   sql_cmd = "SELECT * FROM historywinpos;";
-  if (sqlite3_exec(db, sql_cmd, history_wndwpos_callback, W, &err_msg) !=
-      SQLITE_OK)
-    error_msg(db);
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch,
+                 history_wndwpos_callback, W, sql_cmd);
 
   if (W->main_width == 0 || W->main_height == 0) {
     /* The Original Production Size, if never run before */
@@ -502,11 +536,6 @@ void SqliteProcessing(portfolio_packet *pkg) {
     W->history_y_pos = 32;
   }
 
-  /* Close the sqlite database file. */
-  sqlite3_close(db);
-
-  g_mutex_unlock(&mutexes[SQLITE_MUTEX]);
-
   /* Sort the equity folder. */
   F->Sort();
 
@@ -515,275 +544,214 @@ void SqliteProcessing(portfolio_packet *pkg) {
 }
 
 void SqliteEquityAdd(const gchar *symbol, const gchar *shares, meta *D) {
-  g_mutex_lock(&mutexes[SQLITE_MUTEX]);
+  const gchar *fmt = "REPLACE INTO equity (Symbol, Shares) VALUES('%s', '%s');";
 
-  gushort len;
-  gchar *err_msg = 0;
-  sqlite3 *db;
-  const gchar *del_fmt = "DELETE FROM equity WHERE Symbol = '%s';";
-  const gchar *ins_fmt = "INSERT INTO equity VALUES(null, '%s', '%s');";
-
-  /* Open the sqlite database file. */
-  if (sqlite3_open(D->sqlite_db_path_ch, &db) != SQLITE_OK)
-    error_msg(db);
-
-  /* Delete entry if already exists, then insert entry. */
-  len = g_snprintf(NULL, 0, del_fmt, symbol) + 1;
+  /* Create sqlite command. */
+  gushort len = g_snprintf(NULL, 0, fmt, symbol, shares) + 1;
   gchar *sql_cmd = (gchar *)g_malloc(len);
-  g_snprintf(sql_cmd, len, del_fmt, symbol);
-  if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
-    error_msg(db);
+  g_snprintf(sql_cmd, len, fmt, symbol, shares);
 
-  len = g_snprintf(NULL, 0, ins_fmt, symbol, shares) + 1;
-  gchar *tmp = g_realloc(sql_cmd, len);
-  sql_cmd = tmp;
-  g_snprintf(sql_cmd, len, ins_fmt, symbol, shares);
-  if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
-    error_msg(db);
+  /* Run the command. */
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
   g_free(sql_cmd);
-
-  /* Close the sqlite database file. */
-  sqlite3_close(db);
-
-  g_mutex_unlock(&mutexes[SQLITE_MUTEX]);
 }
 
 void SqliteEquityRemove(const gchar *symbol, meta *D) {
-  g_mutex_lock(&mutexes[SQLITE_MUTEX]);
+  const gchar *fmt = "DELETE FROM equity WHERE Symbol = '%s';";
 
-  gushort len;
-  gchar *err_msg = 0;
-  sqlite3 *db;
-  const gchar *del_fmt = "DELETE FROM equity WHERE Symbol = '%s';";
-
-  /* Open the sqlite database file. */
-  if (sqlite3_open(D->sqlite_db_path_ch, &db) != SQLITE_OK)
-    error_msg(db);
-
-  /* Delete entry if already exists. */
-  len = g_snprintf(NULL, 0, del_fmt, symbol) + 1;
+  /* Create sqlite command. */
+  gushort len = g_snprintf(NULL, 0, fmt, symbol) + 1;
   gchar *sql_cmd = (gchar *)g_malloc(len);
-  g_snprintf(sql_cmd, len, del_fmt, symbol);
-  if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
-    error_msg(db);
+  g_snprintf(sql_cmd, len, fmt, symbol);
+
+  /* Run the command. */
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
   g_free(sql_cmd);
-
-  /* Close the sqlite database file. */
-  sqlite3_close(db);
-
-  g_mutex_unlock(&mutexes[SQLITE_MUTEX]);
 }
 
 void SqliteEquityRemoveAll(meta *D) {
-  g_mutex_lock(&mutexes[SQLITE_MUTEX]);
-
-  gchar *err_msg = 0;
-  sqlite3 *db;
-
-  /* Open the sqlite database file. */
-  if (sqlite3_open(D->sqlite_db_path_ch, &db) != SQLITE_OK)
-    error_msg(db);
-
-  /* Drop the equity table and create a new one. */
-  if (sqlite3_exec(db, "DROP TABLE equity;", 0, 0, &err_msg) != SQLITE_OK)
-    error_msg(db);
-
-  gchar *sql_cmd = "CREATE TABLE IF NOT EXISTS equity(Id INTEGER PRIMARY KEY, "
-                   "Symbol TEXT NOT NULL, Shares TEXT NOT NULL);";
-  if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
-    error_msg(db);
-
-  /* Close the sqlite database file. */
-  sqlite3_close(db);
-
-  g_mutex_unlock(&mutexes[SQLITE_MUTEX]);
+  /* Drop the equity table then create a new one. */
+  gchar *sql_cmd =
+      "DROP TABLE equity; CREATE TABLE IF NOT EXISTS equity(Id INTEGER "
+      "PRIMARY KEY, Symbol TEXT NOT NULL, Shares TEXT NOT NULL);";
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
 }
 
-void SqliteBullionAdd(const gchar *metal_name, const gchar *ounces,
-                      const gchar *premium, meta *D) {
-  g_mutex_lock(&mutexes[SQLITE_MUTEX]);
+static gchar *vradic_sqlte_cmd(gint8 num_args_cmd, const gchar *fmt,
+                               va_list arg_ptr)
+/* construct a series of sql commands from the number of args per command, a
+ * format string, and a va_list of the total number of args in the series.
+ */
+{
+  gushort args_count = 0;
+  gchar *sql_cmd_tmp, *first_arg;
+  va_list arg_ptr_cpy_1, arg_ptr_cpy_2;
+  va_copy(arg_ptr_cpy_1, arg_ptr);
+  va_copy(arg_ptr_cpy_2, arg_ptr);
 
-  gushort len;
-  gchar *err_msg = 0;
-  sqlite3 *db;
-  const gchar *del_fmt = "DELETE FROM bullion WHERE Metal = '%s';";
-  const gchar *ins_fmt = "INSERT INTO bullion VALUES(null, '%s', '%s', '%s');";
+  /* Count the number of args. */
+  first_arg = va_arg(arg_ptr_cpy_1, gchar *);
+  for (gchar *i = first_arg; i != NULL; i = va_arg(arg_ptr_cpy_1, gchar *))
+    args_count++;
+  va_end(arg_ptr_cpy_1);
 
-  /* Open the sqlite database file. */
-  if (sqlite3_open(D->sqlite_db_path_ch, &db) != SQLITE_OK)
-    error_msg(db);
+  if (args_count % num_args_cmd)
+    return NULL;
 
-  /* Delete entry if already exists, then insert entry. */
-  len = g_snprintf(NULL, 0, del_fmt, metal_name) + 1;
-  gchar *sql_cmd = (gchar *)g_malloc(len);
-  g_snprintf(sql_cmd, len, del_fmt, metal_name);
-  if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
-    error_msg(db);
+  /* Create the long format string [includes all args]. */
+  gchar *sql_cmd_fmt = strdup(fmt);
+  for (gushort g = 0; g < (args_count / num_args_cmd); g++) {
+    sql_cmd_tmp = g_strconcat(sql_cmd_fmt, fmt, NULL);
+    g_free(sql_cmd_fmt);
+    sql_cmd_fmt = sql_cmd_tmp;
+  }
 
-  len = g_snprintf(NULL, 0, ins_fmt, metal_name, ounces, premium) + 1;
-  gchar *tmp = g_realloc(sql_cmd, len);
-  sql_cmd = tmp;
-  g_snprintf(sql_cmd, len, ins_fmt, metal_name, ounces, premium);
-  if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
-    error_msg(db);
+  /* Get the size of the potential string. */
+  gsize len = g_vsnprintf(NULL, 0, sql_cmd_fmt, arg_ptr_cpy_2) + 1;
+  va_end(arg_ptr_cpy_2);
+
+  /* Malloc sql_cmd to the string size. */
+  gchar *sql_cmd = g_malloc(len);
+
+  /* Create the sql command from format and argument list. */
+  g_vsnprintf(sql_cmd, len, sql_cmd_fmt, arg_ptr);
+  va_end(arg_ptr);
+  g_free(sql_cmd_fmt);
+
+  return sql_cmd;
+}
+
+void SqliteBullionAdd(meta *D, ...)
+/* Insert or Replace a variable number of metals into the bullion table.
+
+   Take in a meta class pointer, and at least three more args:
+   Metal, Ounces, Premium formatted as character strings.
+
+   There can be any number of metals, however, each metal must have these three
+   strings. The last arg must be NULL.
+
+   For example:
+   SqliteBullionAdd(D, "gold", gold_ounces_ch, gold_premium_ch, "silver",
+   silver_ounces_ch, silver_premium_ch, NULL);
+*/
+{
+
+  const gchar *fmt = "REPLACE INTO bullion (Metal, Ounces, Premium) "
+                     "VALUES('%s', '%s', '%s'); ";
+
+  va_list arg_ptr;
+
+  /* Get the sqlite command. */
+  va_start(arg_ptr, D);
+  gchar *sql_cmd = vradic_sqlte_cmd(3, fmt, arg_ptr);
+  va_end(arg_ptr);
+
+  /* Run the command. */
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
   g_free(sql_cmd);
-
-  /* Close the sqlite database file. */
-  sqlite3_close(db);
-
-  g_mutex_unlock(&mutexes[SQLITE_MUTEX]);
 }
 
 void SqliteCashAdd(const gchar *value, meta *D) {
-  g_mutex_lock(&mutexes[SQLITE_MUTEX]);
+  const gchar *fmt = "REPLACE INTO cash (Id, Value) VALUES(1, '%s');";
 
-  gushort len;
-  gchar *err_msg = 0;
-  sqlite3 *db;
-  const gchar *del_fmt = "DELETE FROM cash WHERE Id = 1;";
-  const gchar *ins_fmt = "INSERT INTO cash VALUES(1, '%s');";
-
-  /* Open the sqlite database file. */
-  if (sqlite3_open(D->sqlite_db_path_ch, &db) != SQLITE_OK)
-    error_msg(db);
-
-  /* Delete entry if already exists, then insert entry. */
-  if (sqlite3_exec(db, del_fmt, 0, 0, &err_msg) != SQLITE_OK)
-    error_msg(db);
-
-  len = g_snprintf(NULL, 0, ins_fmt, value) + 1;
+  /* Create sqlite command. */
+  gushort len = g_snprintf(NULL, 0, fmt, value) + 1;
   gchar *sql_cmd = (gchar *)g_malloc(len);
-  g_snprintf(sql_cmd, len, ins_fmt, value);
-  if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
-    error_msg(db);
+  g_snprintf(sql_cmd, len, fmt, value);
+
+  /* Run the command. */
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
   g_free(sql_cmd);
-
-  /* Close the sqlite database file. */
-  sqlite3_close(db);
-
-  g_mutex_unlock(&mutexes[SQLITE_MUTEX]);
 }
 
-static void sqlite_api_pref_add(const gchar *del_fmt, const gchar *ins_fmt,
-                                const gchar *keyword, const gchar *data,
-                                meta *D) {
-  g_mutex_lock(&mutexes[SQLITE_MUTEX]);
+void SqliteAPIPrefAdd(gint table_id, meta *D, ...)
+/* Insert or Replace a variable number of Keyword-Data pairs into the prefdata
+   or apidata table.
 
-  gushort len;
-  gchar *err_msg = 0;
-  sqlite3 *db;
+   Take in a table_id (enum in sqlite.h), a meta class
+   pointer, and at least two more args: Keyword, Data; formatted as character
+   strings.
 
-  /* Open the sqlite database file. */
-  if (sqlite3_open(D->sqlite_db_path_ch, &db) != SQLITE_OK)
-    error_msg(db);
+   There can be any number of Keyword-Data pairs, however, each pair
+   must have these two strings. The last arg must be NULL.
 
-  /* Delete entry if already exists, then insert entry. */
-  len = g_snprintf(NULL, 0, del_fmt, keyword) + 1;
+   For example:
+   SqliteAPIPrefAdd(PREF, D, "Main_Font", D->font_ch, NULL);
+   */
+{
+  const gchar *fmt;
+  switch (table_id) {
+  case PREF:
+    fmt = "REPLACE INTO prefdata (Keyword, Data) VALUES('%s', '%s'); ";
+    break;
+  case API:
+    fmt = "REPLACE INTO apidata (Keyword, Data) VALUES('%s', '%s'); ";
+    break;
+  default:
+    g_print("SqliteAPIPrefAdd() table_id out of range.\n");
+    exit(EXIT_FAILURE);
+    break;
+  }
+
+  va_list arg_ptr;
+
+  /* Get the sqlite command. */
+  va_start(arg_ptr, D);
+  gchar *sql_cmd = vradic_sqlte_cmd(2, fmt, arg_ptr);
+  va_end(arg_ptr);
+
+  /* Run the command. */
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
+  g_free(sql_cmd);
+}
+
+static void sqlite_window_data_add(const gchar *fmt, gint w_x, gint h_y,
+                                   meta *D) {
+  /* Create sqlite command. */
+  gushort len = g_snprintf(NULL, 0, fmt, w_x, h_y) + 1;
   gchar *sql_cmd = (gchar *)g_malloc(len);
-  g_snprintf(sql_cmd, len, del_fmt, keyword);
-  if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
-    error_msg(db);
+  g_snprintf(sql_cmd, len, fmt, w_x, h_y);
 
-  len = g_snprintf(NULL, 0, ins_fmt, keyword, data) + 1;
-  gchar *tmp = g_realloc(sql_cmd, len);
-  sql_cmd = tmp;
-  g_snprintf(sql_cmd, len, ins_fmt, keyword, data);
-  if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
-    error_msg(db);
+  /* Run the command. */
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
   g_free(sql_cmd);
-
-  /* Close the sqlite database file. */
-  sqlite3_close(db);
-
-  g_mutex_unlock(&mutexes[SQLITE_MUTEX]);
-}
-
-void SqliteAPIAdd(const gchar *keyword, const gchar *data, meta *D) {
-  const gchar *del_fmt = "DELETE FROM apidata WHERE Keyword = '%s';";
-  const gchar *ins_fmt = "INSERT INTO apidata VALUES(null, '%s', '%s');";
-  sqlite_api_pref_add(del_fmt, ins_fmt, keyword, data, D);
-}
-
-void SqlitePrefAdd(const gchar *keyword, const gchar *data, meta *D) {
-  const gchar *del_fmt = "DELETE FROM prefdata WHERE Keyword = '%s';";
-  const gchar *ins_fmt = "INSERT INTO prefdata VALUES(null, '%s', '%s');";
-  sqlite_api_pref_add(del_fmt, ins_fmt, keyword, data, D);
-}
-
-static void sqlite_window_data_add(const gchar *del_fmt, const gchar *ins_fmt,
-                                   gint w_x, gint h_y, meta *D) {
-  g_mutex_lock(&mutexes[SQLITE_MUTEX]);
-
-  gushort len;
-  gchar *err_msg = 0;
-  sqlite3 *db;
-
-  /* Open the sqlite database file. */
-  if (sqlite3_open(D->sqlite_db_path_ch, &db) != SQLITE_OK)
-    error_msg(db);
-
-  /* Delete entry if already exists, then insert entry. */
-  if (sqlite3_exec(db, del_fmt, 0, 0, &err_msg) != SQLITE_OK)
-    error_msg(db);
-
-  len = g_snprintf(NULL, 0, ins_fmt, w_x, h_y) + 1;
-  gchar *sql_cmd = (gchar *)g_malloc(len);
-  g_snprintf(sql_cmd, len, ins_fmt, w_x, h_y);
-  if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
-    error_msg(db);
-  g_free(sql_cmd);
-
-  /* Close the sqlite database file. */
-  sqlite3_close(db);
-
-  g_mutex_unlock(&mutexes[SQLITE_MUTEX]);
 }
 
 void SqliteMainWindowSizeAdd(gint width, gint height, meta *D) {
-  const gchar *del_fmt = "DELETE FROM mainwinsize WHERE Id = 1;";
-  const gchar *ins_fmt = "INSERT INTO mainwinsize VALUES(1, '%d', '%d');";
-  sqlite_window_data_add(del_fmt, ins_fmt, width, height, D);
+  const gchar *fmt =
+      "REPLACE INTO mainwinsize (Id, Width, Height) VALUES(1, '%d', '%d');";
+  sqlite_window_data_add(fmt, width, height, D);
 }
 
 void SqliteMainWindowPosAdd(gint x, gint y, meta *D) {
-  const gchar *del_fmt = "DELETE FROM mainwinpos WHERE Id = 1;";
-  const gchar *ins_fmt = "INSERT INTO mainwinpos VALUES(1, '%d', '%d');";
-  sqlite_window_data_add(del_fmt, ins_fmt, x, y, D);
+  const gchar *fmt =
+      "REPLACE INTO mainwinpos (Id, X, Y) VALUES(1, '%d', '%d');";
+  sqlite_window_data_add(fmt, x, y, D);
 }
 
 void SqliteHistoryWindowSizeAdd(gint width, gint height, meta *D) {
-  const gchar *del_fmt = "DELETE FROM historywinsize WHERE Id = 1;";
-  const gchar *ins_fmt = "INSERT INTO historywinsize VALUES(1, '%d', '%d');";
-  sqlite_window_data_add(del_fmt, ins_fmt, width, height, D);
+  const gchar *fmt =
+      "REPLACE INTO historywinsize (Id, Width, Height) VALUES(1, '%d', '%d');";
+  sqlite_window_data_add(fmt, width, height, D);
 }
 
 void SqliteHistoryWindowPosAdd(gint x, gint y, meta *D) {
-  const gchar *del_fmt = "DELETE FROM historywinpos WHERE Id = 1;";
-  const gchar *ins_fmt = "INSERT INTO historywinpos VALUES(1, '%d', '%d');";
-  sqlite_window_data_add(del_fmt, ins_fmt, x, y, D);
+  const gchar *fmt =
+      "REPLACE INTO historywinpos (Id, X, Y) VALUES(1, '%d', '%d');";
+  sqlite_window_data_add(fmt, x, y, D);
 }
 
 symbol_name_map *SqliteGetSNMap(meta *D) {
-  g_mutex_lock(&mutexes[SYMBOL_NAME_MAP_SQLITE_MUTEX]);
-
-  gchar *err_msg = 0;
-  sqlite3 *db;
   symbol_name_map *sn_map = (symbol_name_map *)g_malloc(sizeof(*sn_map));
   sn_map->sn_container_arr = g_malloc(1);
   sn_map->size = 0;
   sn_map->hash_table = NULL;
 
-  /* Open the sqlite database file. */
-  if (sqlite3_open(D->sqlite_symbol_name_db_path_ch, &db) != SQLITE_OK)
-    error_msg(db);
-
+  /* Run the command. */
   gchar *sql_cmd = "SELECT * FROM symbolname;";
-  if (sqlite3_exec(db, sql_cmd, symbol_name_callback, sn_map, &err_msg) !=
-      SQLITE_OK)
-    error_msg(db);
-
-  /* Close the sqlite database file. */
-  sqlite3_close(db);
+  sqlite_run_cmd(&mutexes[SYMBOL_NAME_MAP_SQLITE_MUTEX],
+                 D->sqlite_symbol_name_db_path_ch, symbol_name_callback, sn_map,
+                 sql_cmd);
 
   if (sn_map->size == 0) {
     g_free(sn_map->sn_container_arr);
@@ -794,38 +762,26 @@ symbol_name_map *SqliteGetSNMap(meta *D) {
     CreateHashTable(sn_map);
   }
 
-  g_mutex_unlock(&mutexes[SYMBOL_NAME_MAP_SQLITE_MUTEX]);
+  /* Return sn_map if size > 0, if size = 0 return NULL */
   return sn_map;
 }
 
 gchar *SqliteGetSNMapName(const gchar *symbol_ch, meta *D) {
   /* Take in a symbol char string, the meta class and return the name string, if
-     found, otherwise NULL.  Must free return value. */
-  g_mutex_lock(&mutexes[SYMBOL_NAME_MAP_SQLITE_MUTEX]);
-
-  gchar *err_msg = 0;
-  sqlite3 *db;
+     found, if not found return NULL.  Must free return value. */
   const gchar *fmt = "SELECT name FROM symbolname WHERE symbol = '%s';";
   gchar *name_ch = NULL;
 
-  /* Open the sqlite database file. */
-  if (sqlite3_open(D->sqlite_symbol_name_db_path_ch, &db) != SQLITE_OK)
-    error_msg(db);
-
+  /* Create the command. */
   gushort len = g_snprintf(NULL, 0, fmt, symbol_ch) + 1;
   gchar *sql_cmd = (gchar *)g_malloc(len);
   g_snprintf(sql_cmd, len, fmt, symbol_ch);
 
-  if (sqlite3_exec(db, sql_cmd, get_snmap_name_callback, &name_ch, &err_msg) !=
-      SQLITE_OK)
-    error_msg(db);
-
+  /* Run the command. */
+  sqlite_run_cmd(&mutexes[SYMBOL_NAME_MAP_SQLITE_MUTEX],
+                 D->sqlite_symbol_name_db_path_ch, get_snmap_name_callback,
+                 &name_ch, sql_cmd);
   g_free(sql_cmd);
-
-  /* Close the sqlite database file. */
-  sqlite3_close(db);
-
-  g_mutex_unlock(&mutexes[SYMBOL_NAME_MAP_SQLITE_MUTEX]);
   return name_ch;
 }
 
@@ -866,61 +822,70 @@ typedef struct {
   meta *metadata;
 } meta_map_container;
 
+static gchar *add_map_to_db_cmd(symbol_name_map *sn_map) {
+  gushort len;
+  gchar *tmp, *sql_cmd_tmp;
+  gchar *sql_cmd = strdup("INSERT INTO symbolname (symbol, name) VALUES");
+  const gchar *fmt = "('%s', '%s'),";
+  for (gushort g = 0; g < sn_map->size; g++) {
+    if (sn_map->sn_container_arr[g] == NULL || sn_map->sn_container_arr == NULL)
+      break;
+
+    /* Insert an escape apostrophy into the string if needed. */
+    escape_apostrophy(&sn_map->sn_container_arr[g]->security_name);
+
+    /* Create the sub-string to add to the sql command. */
+    len = g_snprintf(NULL, 0, fmt, sn_map->sn_container_arr[g]->symbol,
+                     sn_map->sn_container_arr[g]->security_name) +
+          1;
+    tmp = (gchar *)g_malloc(len);
+    g_snprintf(tmp, len, fmt, sn_map->sn_container_arr[g]->symbol,
+               sn_map->sn_container_arr[g]->security_name);
+
+    /* Concatenate the sub-string to the end of the sql command */
+    sql_cmd_tmp = g_strconcat(sql_cmd, tmp, NULL);
+    g_free(tmp);
+    g_free(sql_cmd);
+    sql_cmd = sql_cmd_tmp;
+  }
+  /* Replace the last comma, in the command, with a semi-colon. */
+  gchar *ch = g_utf8_strrchr(sql_cmd, -1, (gunichar)',');
+  if (ch)
+    *ch = ';';
+
+  return sql_cmd;
+}
+
 static gpointer add_mapping_to_database_thd(gpointer data) {
   meta_map_container *mmc = (meta_map_container *)data;
   symbol_name_map *sn_map = mmc->map;
   meta *D = mmc->metadata;
 
   D->snmap_db_busy_bool = TRUE;
-  g_mutex_lock(&mutexes[SYMBOL_NAME_MAP_SQLITE_MUTEX]);
-
-  gchar *err_msg = 0;
-  sqlite3 *db;
-  gushort len;
-
-  /* Open the sqlite database file. */
-  if (sqlite3_open(D->sqlite_symbol_name_db_path_ch, &db) != SQLITE_OK)
-    error_msg(db);
 
   /* Drop the symbolname table and create a new one. */
-  gchar *sql_cmd = "DROP TABLE symbolname;";
-  if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
-    error_msg(db);
-
-  sql_cmd = "CREATE TABLE IF NOT EXISTS symbolname(Id INTEGER PRIMARY KEY, "
-            "symbol TEXT NOT NULL, name TEXT NOT NULL);";
-  if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
-    error_msg(db);
+  gchar *sql_cmd =
+      "DROP TABLE symbolname; CREATE TABLE IF NOT EXISTS symbolname(Id INTEGER "
+      "PRIMARY KEY, symbol TEXT NOT NULL, name TEXT NOT NULL); CREATE UNIQUE "
+      "INDEX IF NOT EXISTS idx_symbolname_symbol ON symbolname (symbol);";
+  sqlite_run_cmd(&mutexes[SYMBOL_NAME_MAP_SQLITE_MUTEX],
+                 D->sqlite_symbol_name_db_path_ch, 0, 0, sql_cmd);
 
   /* Insert the mapping into the table. */
-  const gchar *ins_fmt = "INSERT INTO symbolname VALUES(null, '%s', '%s');";
-  for (gushort g = 0; g < sn_map->size; g++) {
-    if (sn_map->sn_container_arr[g] == NULL || sn_map->sn_container_arr == NULL)
-      break;
 
-    /* Insert an escape apostrophy into the string where needed. */
-    escape_apostrophy(&sn_map->sn_container_arr[g]->security_name);
+  /* Create the command. */
+  sql_cmd = add_map_to_db_cmd(sn_map);
 
-    len = g_snprintf(NULL, 0, ins_fmt, sn_map->sn_container_arr[g]->symbol,
-                     sn_map->sn_container_arr[g]->security_name) +
-          1;
-    sql_cmd = (gchar *)g_malloc(len);
-    g_snprintf(sql_cmd, len, ins_fmt, sn_map->sn_container_arr[g]->symbol,
-               sn_map->sn_container_arr[g]->security_name);
-    if (sqlite3_exec(db, sql_cmd, 0, 0, &err_msg) != SQLITE_OK)
-      error_msg(db);
-    g_free(sql_cmd);
-  }
-
-  /* Close the sqlite database file. */
-  sqlite3_close(db);
+  /* Perform the command. */
+  sqlite_run_cmd(&mutexes[SYMBOL_NAME_MAP_SQLITE_MUTEX],
+                 D->sqlite_symbol_name_db_path_ch, 0, 0, sql_cmd);
+  g_free(sql_cmd);
 
   /* Remove the duplicate map from memory. */
   SNMapDestruct(sn_map);
   g_free(sn_map);
 
   D->snmap_db_busy_bool = FALSE;
-  g_mutex_unlock(&mutexes[SYMBOL_NAME_MAP_SQLITE_MUTEX]);
 
   /* Don't Free the member pointers */
   g_free(mmc);

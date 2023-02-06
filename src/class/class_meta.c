@@ -496,7 +496,7 @@ meta *ClassInitMeta() {
       g_strconcat(new_class->config_dir_ch, SN_DB_FILE, NULL);
 
   /* The pango funcs require each dest string to point to allocated space
-                or NULL, they use realloc ( and possibly malloc if NULL ). */
+                or NULL, they use realloc. */
   new_class->pri_h_mkd = (primary_heading){NULL};
   new_class->def_h_mkd = (default_heading){NULL};
 
@@ -574,7 +574,6 @@ void ClassDestructMeta(meta *meta_class) {
      allocated with the struct pointer and freed with the struct pointer. */
 
   /* Free the symbol to security name mapping array. */
-
   if (meta_class->sym_map) {
     SNMapDestruct(meta_class->sym_map);
     g_free(meta_class->sym_map);

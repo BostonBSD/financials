@@ -30,9 +30,28 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <glib.h>
+#include <glib/gstdio.h>
+
 #include "../include/class_types.h" /* equity_folder, metal, meta, window_data */
 #include "../include/macros.h"
 #include "../include/sqlite.h"
+
+gint RemoveConfigFiles(meta *D) {
+  /* Remove both sqlite db files and the ~/.config/financials directory, if
+   * empty.  Return 0 if successful or the number of failed removals if an error
+   * occured. */
+  gint ret_val = 0;
+  if (g_remove(D->sqlite_db_path_ch) < 0)
+    ret_val++;
+  if (g_remove(D->sqlite_symbol_name_db_path_ch) < 0)
+    ret_val++;
+  gchar *path = g_strconcat(D->config_dir_ch, CONFIG_DIR, NULL);
+  if (g_remove(path) < 0)
+    ret_val++;
+  g_free(path);
+  return ret_val;
+}
 
 static void config_dir_processing(const gchar *usr_config_dir)
 /* Check if the "~/.config" and "~/.config/financials" directories exist. */

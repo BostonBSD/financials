@@ -34,8 +34,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <math.h>
 #include <monetary.h>
 
-#include <glib/gprintf.h>
-
 #include "../include/macros.h"
 #include "../include/workfuncs.h"
 
@@ -47,7 +45,6 @@ gboolean CheckValidString(const gchar *string) {
     return FALSE;
 
   /* The string cannot end with these characters  */
-
   if (g_utf8_strchr(" _.", -1, (gunichar)string[len - 1]))
     return FALSE;
 
@@ -150,7 +147,7 @@ static gsize abs_val(const gdouble n) {
   /* If n is 9.9999 we want it to round up, to account for the strfmon and
    * snprintf rounding at zero, one, two, and three decimal places. */
   if (n < 0)
-    return (gsize)(-1.0f * ceil(n));
+    return (gsize)ceil(-1.0f * n);
   return (gsize)ceil(n);
 }
 
@@ -214,7 +211,6 @@ gdouble StringToDouble(const gchar *str)
 
   ToNumStr(newstr);
   gdouble num = g_strtod(newstr, NULL);
-
   g_free(newstr);
 
   return num;
@@ -312,7 +308,7 @@ void DoubleToFormattedStr(gchar **dst, const gdouble num,
     g_snprintf(dst[0], len, tmp, num);
     break;
   default:
-    g_printf("DoubleToFormattedStr format_type out of range.\n");
+    g_print("DoubleToFormattedStr format_type out of range.\n");
     exit(EXIT_FAILURE);
     break;
   }

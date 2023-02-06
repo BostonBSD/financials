@@ -452,9 +452,9 @@ gint AboutShowHide() {
 
 void AboutSetLabel() {
   /* Set the About window labels. */
-  const gchar *text = "<a "
-                      "href=\"https://github.com/BostonBSD/"
-                      "finnhub.io-stock-ticker\">Website</a>";
+  const gchar *text =
+      "<a "
+      "href=\"https://github.com/BostonBSD/financials\">Website</a>";
   GtkWidget *label = GetWidget("AboutWebsiteLabel");
   gtk_label_set_markup(GTK_LABEL(label), text);
 

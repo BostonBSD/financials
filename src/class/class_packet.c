@@ -322,16 +322,70 @@ static void SetSecurityNames() {
   packet->equity_folder_class->SetSecurityNames(packet);
 }
 
-static void save_sql_data_bul(const gchar *metal_name_ch,
-                              const gdouble ounces_f, const gdouble premium_f) {
+static void save_sql_data_bul(const bullion *gold, const bullion *silver,
+                              const bullion *platinum,
+                              const bullion *palladium) {
   meta *D = packet->GetMetaClass();
 
-  gchar *ounces_ch, *premium_ch;
-  ounces_ch = g_markup_printf_escaped("%lf", ounces_f);
-  premium_ch = g_markup_printf_escaped("%lf", premium_f);
-  SqliteBullionAdd(metal_name_ch, ounces_ch, premium_ch, D);
-  g_free(ounces_ch);
-  g_free(premium_ch);
+  gchar *gold_ounces_ch = g_markup_printf_escaped("%lf", gold->ounce_f);
+  gchar *gold_premium_ch = g_markup_printf_escaped("%lf", gold->premium_f);
+  gchar *silver_ounces_ch = g_markup_printf_escaped("%lf", silver->ounce_f);
+  gchar *silver_premium_ch = g_markup_printf_escaped("%lf", silver->premium_f);
+  gchar *platinum_ounces_ch = g_markup_printf_escaped("%lf", platinum->ounce_f);
+  gchar *platinum_premium_ch =
+      g_markup_printf_escaped("%lf", platinum->premium_f);
+  gchar *palladium_ounces_ch =
+      g_markup_printf_escaped("%lf", palladium->ounce_f);
+  gchar *palladium_premium_ch =
+      g_markup_printf_escaped("%lf", palladium->premium_f);
+  SqliteBullionAdd(
+      D, "gold", gold_ounces_ch, gold_premium_ch, "silver", silver_ounces_ch,
+      silver_premium_ch, "platinum", platinum_ounces_ch, platinum_premium_ch,
+      "palladium", palladium_ounces_ch, palladium_premium_ch, NULL);
+  g_free(gold_ounces_ch);
+  g_free(gold_premium_ch);
+  g_free(silver_ounces_ch);
+  g_free(silver_premium_ch);
+  g_free(platinum_ounces_ch);
+  g_free(platinum_premium_ch);
+  g_free(palladium_ounces_ch);
+  g_free(palladium_premium_ch);
+}
+
+static void save_sql_data_pref(meta *D) {
+  const gchar *clks_displ_value;
+  if (D->clocks_displayed_bool) {
+    clks_displ_value = "TRUE";
+  } else {
+    clks_displ_value = "FALSE";
+  }
+  const gchar *indc_displ_value;
+  if (D->index_bar_revealed_bool) {
+    indc_displ_value = "TRUE";
+  } else {
+    indc_displ_value = "FALSE";
+  }
+
+  gchar *dec_pl_value = g_markup_printf_escaped("%d", D->decimal_places_guint8);
+  gchar *up_per_min_value =
+      g_markup_printf_escaped("%lf", D->updates_per_min_f);
+  gchar *up_hours_value = g_markup_printf_escaped("%lf", D->updates_hours_f);
+
+  SqliteAPIPrefAdd(
+      PREF, D, "Main_Font", D->font_ch, "Clocks_Displayed", clks_displ_value,
+      "Indices_Displayed", indc_displ_value, "Decimal_Places", dec_pl_value,
+      "Updates_Per_Min", up_per_min_value, "Updates_Hours", up_hours_value,
+      NULL);
+  g_free(dec_pl_value);
+  g_free(up_per_min_value);
+  g_free(up_hours_value);
+}
+
+static void save_sql_data_api(meta *D) {
+  SqliteAPIPrefAdd(API, D, "Stock_URL", D->stock_url_ch, "URL_KEY",
+                            D->curl_key_ch, "Nasdaq_Symbol_URL",
+                            D->Nasdaq_Symbol_url_ch, "NYSE_Symbol_URL",
+                            D->NYSE_Symbol_url_ch, NULL);
 }
 
 static void SaveSqlData() {
@@ -346,47 +400,18 @@ static void SaveSqlData() {
   SqliteHistoryWindowPosAdd(W->history_x_pos, W->history_y_pos, D);
 
   /* Save preference info. */
-  SqlitePrefAdd("Main_Font", D->font_ch, D);
-  if (D->clocks_displayed_bool) {
-    SqlitePrefAdd("Clocks_Displayed", "TRUE", D);
-  } else {
-    SqlitePrefAdd("Clocks_Displayed", "FALSE", D);
-  }
-  if (D->index_bar_revealed_bool) {
-    SqlitePrefAdd("Indices_Displayed", "TRUE", D);
-  } else {
-    SqlitePrefAdd("Indices_Displayed", "FALSE", D);
-  }
-
-  gchar *value = g_markup_printf_escaped("%d", D->decimal_places_guint8);
-  SqlitePrefAdd("Decimal_Places", value, D);
-  g_free(value);
-
-  value = g_markup_printf_escaped("%lf", D->updates_per_min_f);
-  SqlitePrefAdd("Updates_Per_Min", value, D);
-  g_free(value);
-
-  value = g_markup_printf_escaped("%lf", D->updates_hours_f);
-  SqlitePrefAdd("Updates_Hours", value, D);
-  g_free(value);
+  save_sql_data_pref(D);
 
   /* Save api info. */
-  SqliteAPIAdd("Stock_URL", D->stock_url_ch, D);
-  SqliteAPIAdd("URL_KEY", D->curl_key_ch, D);
-  SqliteAPIAdd("Nasdaq_Symbol_URL", D->Nasdaq_Symbol_url_ch, D);
-  SqliteAPIAdd("NYSE_Symbol_URL", D->NYSE_Symbol_url_ch, D);
+  save_sql_data_api(D);
 
   /* Save cash info. */
-  value = g_markup_printf_escaped("%lf", D->cash_f);
+  gchar *value = g_markup_printf_escaped("%lf", D->cash_f);
   SqliteCashAdd(value, D);
   g_free(value);
 
   /* Save bullion info. */
-  save_sql_data_bul("gold", M->Gold->ounce_f, M->Gold->premium_f);
-  save_sql_data_bul("silver", M->Silver->ounce_f, M->Silver->premium_f);
-  save_sql_data_bul("platinum", M->Platinum->ounce_f, M->Platinum->premium_f);
-  save_sql_data_bul("palladium", M->Palladium->ounce_f,
-                    M->Palladium->premium_f);
+  save_sql_data_bul(M->Gold, M->Silver, M->Platinum, M->Palladium);
 
   /* It's easier to save / remove equity info while running than at app
    * shutdown. */

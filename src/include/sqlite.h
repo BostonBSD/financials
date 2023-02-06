@@ -36,17 +36,17 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "class_types.h" /* equity_folder, metal, meta, window_data */
 #include "gui_types.h"   /* symbol_name_map */
 
+enum { PREF, API };
+
 void SqliteProcessing(portfolio_packet *pkg);
 
 void SqliteEquityAdd(const gchar *symbol, const gchar *shares, meta *D);
 void SqliteEquityRemove(const gchar *symbol, meta *D);
 void SqliteEquityRemoveAll(meta *D);
 
-void SqliteBullionAdd(const gchar *metal_name, const gchar *ounces,
-                      const gchar *premium, meta *D);
+void SqliteBullionAdd(meta *D, ...);
 void SqliteCashAdd(const gchar *value, meta *D);
-void SqliteAPIAdd(const gchar *keyword, const gchar *data, meta *D);
-void SqlitePrefAdd(const gchar *keyword, const gchar *data, meta *D);
+void SqliteAPIPrefAdd(gint table_id, meta *D, ...);
 
 void SqliteMainWindowSizeAdd(gint width, gint height, meta *D);
 void SqliteMainWindowPosAdd(gint x, gint y, meta *D);

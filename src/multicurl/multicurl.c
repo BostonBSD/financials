@@ -29,7 +29,8 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
 IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
-#include <glib/gprintf.h>
+
+#include <glib/gprintf.h> /* g_fprintf() */
 
 #include "../include/gui.h" /* MainProgBar func */
 #include "../include/multicurl_types.h"
@@ -61,13 +62,13 @@ static gushort remove_handles(CURLM *mh) {
       hnd = msg->easy_handle;
       rc = msg->data.result;
       if (rc != CURLE_OK) {
-        fprintf(stderr, "CURL code: %d\n", msg->data.result);
+        g_fprintf(stderr, "CURL code: %d\n", msg->data.result);
         return_value++;
       }
       curl_multi_remove_handle(mh, hnd);
     } else {
-      fprintf(stderr, "error: after curl_multi_info_read(), CURLMsg=%d\n",
-              msg->msg);
+      g_fprintf(stderr, "error: after curl_multi_info_read(), CURLMsg=%d\n",
+                msg->msg);
     }
   }
   return return_value;
@@ -151,7 +152,7 @@ gpointer SetUpCurlHandle(CURL *hnd, CURLM *mh, gchar *url, MemType *output)
     curl_multi_add_handle(mh, hnd);
   } else {
     g_free(output->memory);
-    g_printf("cURL Library Failed, curl_easy_init() returned NULL.\n");
+    g_print("cURL Library Failed, curl_easy_init() returned NULL.\n");
     exit(EXIT_FAILURE);
   }
 
@@ -169,7 +170,7 @@ gushort PerformMultiCurl(CURLM *mh, gdouble size)
 {
   curl_global_init(CURL_GLOBAL_ALL);
   if (!mh) {
-    g_printf("cURL Library Failed, curl_multi_init() returned NULL.\n");
+    g_print("cURL Library Failed, curl_multi_init() returned NULL.\n");
     exit(EXIT_FAILURE);
   }
 
@@ -197,7 +198,7 @@ gushort PerformMultiCurl(CURLM *mh, gdouble size)
     g_mutex_unlock(&mutexes[MULTICURL_PROG_MUTEX]);
 
     if (mc != CURLM_OK) {
-      fprintf(stderr, "curl_multi returned %d\n", (int)mc);
+      g_fprintf(stderr, "curl_multi returned %d\n", (int)mc);
       break;
     }
 
@@ -236,7 +237,7 @@ gushort PerformMultiCurl_no_prog(CURLM *mh)
 {
   curl_global_init(CURL_GLOBAL_ALL);
   if (!mh) {
-    g_printf("cURL Library Failed, curl_multi_init() returned NULL.\n");
+    g_print("cURL Library Failed, curl_multi_init() returned NULL.\n");
     exit(EXIT_FAILURE);
   }
 
@@ -263,7 +264,7 @@ gushort PerformMultiCurl_no_prog(CURLM *mh)
     g_mutex_unlock(&mutexes[MULTICURL_NO_PROG_MUTEX]);
 
     if (mc != CURLM_OK) {
-      fprintf(stderr, "curl_multi returned %d\n", (int)mc);
+      g_fprintf(stderr, "curl_multi returned %d\n", (int)mc);
       break;
     }
 

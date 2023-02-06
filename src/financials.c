@@ -29,9 +29,7 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
 IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
-
 #include "financials.h"
-#include "include/workfuncs.h"
 
 /* PascalCase for public functions, snake_case for private functions.
    The handler functions are PascalCase with snake_case suffix for greater
@@ -74,10 +72,42 @@ static void class_package_destruct()
   ClassDestructPortfolioPacket(packet);
 }
 
+static void simple_arg_parse(gchar **argv, portfolio_packet *pkg) {
+  if (!g_strcmp0("-h", argv[1]) || !g_strcmp0("--help", argv[1])) {
+
+    g_print("Help Message\n"
+            "---------------\n"
+            "-h --help\tPrint this help message.\n"
+            "-r --reset\tRemove %s database files.\n\n",
+            argv[0]);
+    exit(EXIT_SUCCESS);
+
+  } else if (!g_strcmp0("-r", argv[1]) || !g_strcmp0("--reset", argv[1])) {
+
+    gint ret = RemoveConfigFiles(pkg->GetMetaClass());
+    if (ret) {
+      g_print("File removal error, is the '%s" CONFIG_DIR
+              "' directory empty or non-existent?\n",
+              pkg->meta_class->config_dir_ch);
+      exit(EXIT_FAILURE);
+    } else {
+      g_print("Config file directory '%s" CONFIG_DIR
+              "' removed successfully.\n",
+              pkg->meta_class->config_dir_ch);
+      exit(EXIT_SUCCESS);
+    }
+  }
+}
+
 gint main(gint argc, gchar *argv[]) {
   /* Initialize some of our class instances */
-  /* This needs to be initialized before ReadConfig */
+  /* This needs to be initialized before ReadConfig ()
+     and simple_arg_parse () */
   class_package_init();
+
+  /* Parse commandline args, if any. */
+  if (argc > 1)
+    simple_arg_parse(argv, packet);
 
   /* Initialize gtk */
   gtk_init(&argc, &argv);

@@ -67,8 +67,7 @@ static gint64 time_span_remaining(gint64 time_span_usec) {
 
   The timespan, in microseconds, minus the number of microseconds which have
   past in the current time span. */
-  gint64 cur_time = g_get_real_time();
-  return time_span_usec - (cur_time % time_span_usec);
+  return time_span_usec - (g_get_real_time() % time_span_usec);
 }
 
 guint64 ClockSleepSecond() {

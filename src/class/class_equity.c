@@ -35,6 +35,7 @@ POSSIBILITY OF SUCH DAMAGE.
                                  metal, meta, and equity_folder class types */
 
 #include "../include/json.h"
+#include "../include/macros.h"
 #include "../include/multicurl.h"
 #include "../include/mutex.h"
 #include "../include/workfuncs.h"
@@ -406,12 +407,14 @@ static void ExtractData() {
   }
 }
 
-static int alpha_asc(gconstpointer a, gconstpointer b)
-/* This is a callback function for stdlib sorting functions.
+static gint alpha_asc(gconstpointer a, gconstpointer b, gpointer data)
+/* This is a callback function for Glib sorting functions.
    It compares stock-structs in alphabetically ascending order,
    by the stock symbol data member.  Swapping only the pointer.
 */
 {
+  UNUSED(data)
+
   /* Cast the void pointer as a stock double pointer. */
   stock **aa = (stock **)a;
   stock **bb = (stock **)b;
@@ -425,7 +428,8 @@ static void Sort() {
 
   /* Sort the equity folder in alphabetically ascending order. */
   equity_folder *F = FolderClassObject;
-  qsort(&F->Equity[0], (gsize)F->size, sizeof(stock *), alpha_asc);
+  g_qsort_with_data((gconstpointer)&F->Equity[0], (gint)F->size,
+                    (gsize)sizeof(F->Equity[0]), alpha_asc, NULL);
 
   g_mutex_unlock(&mutexes[CLASS_MEMBER_MUTEX]);
 }

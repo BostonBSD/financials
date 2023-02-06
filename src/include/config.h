@@ -35,6 +35,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "class_types.h" /* portfolio_packet */
 
-void ReadConfig(portfolio_packet *pkg) ;
+void ReadConfig(portfolio_packet *pkg);
+gint RemoveConfigFiles(meta *D);
 
 #endif /* CONFIG_HEADER_H */
