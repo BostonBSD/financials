@@ -44,11 +44,11 @@ POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 #ifndef DB_FILE
-#define DB_FILE CONFIG_DIR "/financials.db"
+#define DB_FILE "/financials.db"
 #endif
 
 #ifndef SN_DB_FILE
-#define SN_DB_FILE CONFIG_DIR "/financials_symbols.db"
+#define SN_DB_FILE "/financials_symbols.db"
 #endif
 
 /* The main treeview font. */

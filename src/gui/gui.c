@@ -32,6 +32,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/gui.h"
 #include "../include/class_types.h" /* portfolio_packet, window_data */
 #include "../include/macros.h"
+#include "../include/workfuncs.h"
 
 static GtkBuilder *builder;
 
@@ -109,6 +110,16 @@ static void main_window_sig_connect(portfolio_packet *pkg) {
   object = GetGObject("MainTreeView");
   g_signal_connect(object, "button-press-event",
                    G_CALLBACK(GUICallback_main_treeview_click), NULL);
+  /*
+    gchar *bg_colr_css =
+        "treeview{background-color:White;}treeview:hover{background-color:"
+        "Coral;}treeview:selected{background-color:Coral;}";
+    GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(object));
+    GtkCssProvider *css_provider = gtk_css_provider_new();
+    gtk_css_provider_load_from_data(css_provider, bg_colr_css, -1, NULL);
+    gtk_style_context_add_provider(context, GTK_STYLE_PROVIDER(css_provider),
+                                   GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    g_object_unref(G_OBJECT(css_provider));*/
 }
 
 static void security_window_sig_connect() {
@@ -365,6 +376,28 @@ static void gui_signal_connect(portfolio_packet *pkg)
   other_window_sig_connect();
 }
 
+static void set_application_css() {
+  /* This will set CSS data for the screen [application-wide].
+
+     Right now we're only setting the treeview
+     [so they display correctly on dark window manager themes]. */
+  GdkDisplay *display;
+  GdkScreen *screen;
+  GtkCssProvider *provider;
+  display = gdk_display_get_default();
+  screen = gdk_display_get_default_screen(display);
+  provider = gtk_css_provider_new();
+
+  gchar *bg_colr_css = "treeview{color:Black;background-color:White;}treeview:"
+                       "hover,treeview:selected{background-color:Coral;}";
+  gtk_css_provider_load_from_data(provider, bg_colr_css, -1, NULL);
+  gtk_style_context_add_provider_for_screen(
+      screen, GTK_STYLE_PROVIDER(provider),
+      GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+
+  g_object_unref(G_OBJECT(provider));
+}
+
 /* Engineering Note */
 
 /* After the gtk_main() loop starts nearly every widget signal is connected
@@ -406,22 +439,23 @@ void GuiStart(portfolio_packet *pkg)
     exit(EXIT_FAILURE);
   }
 
+  /* Set application-wide CSS. */
+  set_application_css();
+
   /* Set whether the clocks are displayed or not.
      Start clock threads if the clocks are displayed. */
   StartClockThread(pkg);
 
   /* Add the list of stock symbols from sqlite to a struct.
-     Set two entrybox completion widgets.*/
+     Set two entrybox completion widgets. */
   StartCompletionThread(pkg);
-
-  /* Add the keyboard shortcuts to the Hotkeys window. */
-  HotkeysSetTreeview();
 
   /* Add hyperlink markup to the About window labels. */
   AboutSetLabel();
 
-  /* Make sure the main labels and treeview header fonts are set */
-  MainSetFonts(pkg);
+  /* Make sure the label and treeview header fonts are set */
+  SetLabelFonts(pkg->meta_class->font_ch);
+  pkg->meta_class->ToStringsHeadings();
 
   /* Connect callback functions to corresponding GUI signals. */
   gui_signal_connect(pkg);

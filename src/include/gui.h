@@ -49,14 +49,12 @@ void GuiStart(portfolio_packet *pkg);
 void AddColumnToTreeview(const gchar *col_name, const gint col_num,
                          GtkWidget *treeview);
 gint TreeViewClear(GtkWidget *treeview);
-gint SetFormattedLabel(GtkWidget *label, const gchar *fmt, const gchar *font,
-                       const gchar *text);
 gint CompletionSet(symbol_name_map *sn_map, guintptr gui_completion_sig);
 void StartCompletionThread(portfolio_packet *pkg);
 void StartClockThread(portfolio_packet *pkg);
+void SetLabelFonts(const gchar *font_str);
 
 /* gui_main */
-gint MainSetFonts(portfolio_packet *pkg);
 gint MainPrimaryTreeview(gpointer pkg_data);
 gint MainDefaultTreeview(gpointer pkg_data);
 gint MainFetchBTNLabel(gpointer pkg_data);
@@ -118,12 +116,8 @@ gboolean GUICallback_hide_window_on_delete(GtkWidget *window, GdkEvent *event,
                                            gpointer sig_data);
 gboolean GUICallback_window_data(GtkWidget *window, GdkEvent *event,
                                  gpointer sig_data);
-gboolean GUICallback_select_comp(GtkEntryCompletion *completion,
-                                 GtkTreeModel *model, GtkTreeIter *iter,
-                                 gpointer sig_data);
-gboolean GUICallback_cursor_comp(GtkEntryCompletion *completion,
-                                 GtkTreeModel *model, GtkTreeIter *iter,
-                                 gpointer sig_data);
+gboolean GUICallback_comp(GtkEntryCompletion *completion, GtkTreeModel *model,
+                          GtkTreeIter *iter, gpointer sig_data);
 gboolean GUICallback_main_treeview_click(GtkWidget *treeview,
                                          GdkEventButton *event);
 

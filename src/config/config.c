@@ -46,23 +46,16 @@ gint RemoveConfigFiles(meta *D) {
     ret_val++;
   if (g_remove(D->sqlite_symbol_name_db_path_ch) < 0)
     ret_val++;
-  gchar *path = g_strconcat(D->config_dir_ch, CONFIG_DIR, NULL);
-  if (g_remove(path) < 0)
+  if (g_remove(D->config_dir_ch) < 0)
     ret_val++;
-  g_free(path);
   return ret_val;
 }
 
 static void config_dir_processing(const gchar *usr_config_dir)
 /* Check if the "~/.config" and "~/.config/financials" directories exist. */
 {
-  /* Append the /financials directory to the end of user config directory path.
-   */
-  gchar *path = g_strconcat(usr_config_dir, CONFIG_DIR, NULL);
-
   /* Make dir if it doesn't exist, along with parent dirs. */
-  g_mkdir_with_parents(path, 0764);
-  g_free(path);
+  g_mkdir_with_parents(usr_config_dir, 0764);
 }
 
 void ReadConfig(portfolio_packet *pkg) {

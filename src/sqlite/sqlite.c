@@ -41,6 +41,125 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/sqlite.h"
 #include "../include/workfuncs.h"
 
+/* Create the symbolname table if it doesn't already exist. */
+static gchar *new_symname_tbl =
+    "CREATE TABLE IF NOT EXISTS symbolname(Id INTEGER PRIMARY "
+    "KEY, symbol TEXT NOT NULL, name TEXT NOT NULL); CREATE UNIQUE "
+    "INDEX IF NOT EXISTS idx_symbolname_symbol ON symbolname (symbol);";
+
+/* Create the app_tbl table if it doesn't already exist. */
+static gchar *new_app_tbl =
+    "CREATE TABLE IF NOT EXISTS app_tbl(id INTEGER PRIMARY KEY, keyword TEXT "
+    "NOT NULL, data_one TEXT NOT NULL, data_two TEXT NOT NULL); CREATE UNIQUE "
+    "INDEX IF NOT EXISTS idx_app_tbl_keyword ON app_tbl (keyword);";
+
+/* Create the equity table if it doesn't already exist. */
+static gchar *new_eqty_tbl =
+    "CREATE TABLE IF NOT EXISTS equity(Id INTEGER PRIMARY KEY, Symbol TEXT NOT "
+    "NULL, Shares TEXT NOT NULL); CREATE UNIQUE INDEX IF NOT EXISTS "
+    "idx_equity_symbol ON equity (Symbol);";
+
+/* Create the bullion table if it doesn't already exist. */
+static gchar *new_bul_tbl =
+    "CREATE TABLE IF NOT EXISTS bullion(Id INTEGER PRIMARY KEY, Metal TEXT NOT "
+    "NULL, Ounces TEXT NOT NULL, Premium TEXT NOT NULL); CREATE UNIQUE INDEX "
+    "IF NOT EXISTS idx_bullion_metal ON bullion (Metal);";
+
+static gint app_callback(gpointer data, gint argc, gchar **argv,
+                         gchar **ColName) {
+  /* argv[0] is Id, argv[1] is keyword, argv[2] is data_one, argv[3] is
+   * data_two. */
+  if (argc != 4)
+    return 1;
+  if (g_strcmp0(ColName[0], "id") != 0)
+    return 1;
+  if (g_strcmp0(ColName[1], "keyword") != 0)
+    return 1;
+  if (g_strcmp0(ColName[2], "data_one") != 0)
+    return 1;
+  if (g_strcmp0(ColName[3], "data_two") != 0)
+    return 1;
+
+  portfolio_packet *pkg = (portfolio_packet *)data;
+  meta *D = pkg->GetMetaClass();
+
+  if (!g_strcmp0(argv[1], "Stock_URL")) {
+    g_free(D->stock_url_ch);
+    D->stock_url_ch = g_strdup(argv[2] ? argv[2] : FINNHUB_URL);
+
+  } else if (!g_strcmp0(argv[1], "URL_KEY")) {
+    g_free(D->curl_key_ch);
+    D->curl_key_ch = g_strdup(argv[2] ? argv[2] : FINNHUB_URL_TOKEN);
+
+  } else if (!g_strcmp0(argv[1], "Nasdaq_Symbol_URL")) {
+    g_free(D->Nasdaq_Symbol_url_ch);
+    D->Nasdaq_Symbol_url_ch = g_strdup(argv[2] ? argv[2] : NASDAQ_SYMBOL_URL);
+
+  } else if (!g_strcmp0(argv[1], "NYSE_Symbol_URL")) {
+    g_free(D->NYSE_Symbol_url_ch);
+    D->NYSE_Symbol_url_ch = g_strdup(argv[2] ? argv[2] : NYSE_SYMBOL_URL);
+
+  } else if (!g_strcmp0(argv[1], "Updates_Per_Min")) {
+    D->updates_per_min_f = g_strtod(argv[2] ? argv[2] : "6", NULL);
+
+  } else if (!g_strcmp0(argv[1], "Updates_Hours")) {
+    D->updates_hours_f = g_strtod(argv[2] ? argv[2] : "1", NULL);
+
+  } else if (!g_strcmp0(argv[1], "Decimal_Places")) {
+    guint8 d = (guint8)g_ascii_strtoll(argv[2] ? argv[2] : "3", NULL, 10);
+    D->decimal_places_guint8 = d;
+
+  } else if (!g_strcmp0(argv[1], "Clocks_Displayed")) {
+    if (!g_strcmp0(argv[2] ? argv[2] : "TRUE", "TRUE")) {
+      D->clocks_displayed_bool = TRUE;
+    } else {
+      D->clocks_displayed_bool = FALSE;
+    }
+
+  } else if (!g_strcmp0(argv[1], "Indices_Displayed")) {
+    if (!g_strcmp0(argv[2] ? argv[2] : "TRUE", "TRUE")) {
+      D->index_bar_revealed_bool = TRUE;
+    } else {
+      D->index_bar_revealed_bool = FALSE;
+    }
+
+  } else if (!g_strcmp0(argv[1], "Main_Font")) {
+    g_free(D->font_ch);
+    D->font_ch = g_strdup(argv[2] ? argv[2] : MAIN_FONT);
+    SetFont(D->font_ch);
+
+  } else if (!g_strcmp0(argv[1], "Cash")) {
+    D->cash_f = StringToDouble(argv[2] ? argv[2] : "0");
+    DoubleToFormattedStrPango(&D->cash_mrkd_ch, D->cash_f,
+                              D->decimal_places_guint8, MON_STR, BLACK);
+
+  } else if (!g_strcmp0(argv[1], "Main_Win_Sz")) {
+    D->window_struct.main_width =
+        (gint)g_ascii_strtoll(argv[2] ? argv[2] : "0", NULL, 10);
+    D->window_struct.main_height =
+        (gint)g_ascii_strtoll(argv[3] ? argv[3] : "0", NULL, 10);
+
+  } else if (!g_strcmp0(argv[1], "Main_Win_Pos")) {
+    D->window_struct.main_x_pos =
+        (gint)g_ascii_strtoll(argv[2] ? argv[2] : "0", NULL, 10);
+    D->window_struct.main_y_pos =
+        (gint)g_ascii_strtoll(argv[3] ? argv[3] : "0", NULL, 10);
+
+  } else if (!g_strcmp0(argv[1], "Hstry_Win_Sz")) {
+    D->window_struct.history_width =
+        (gint)g_ascii_strtoll(argv[2] ? argv[2] : "0", NULL, 10);
+    D->window_struct.history_height =
+        (gint)g_ascii_strtoll(argv[3] ? argv[3] : "0", NULL, 10);
+
+  } else if (!g_strcmp0(argv[1], "Hstry_Win_Pos")) {
+    D->window_struct.history_x_pos =
+        (gint)g_ascii_strtoll(argv[2] ? argv[2] : "0", NULL, 10);
+    D->window_struct.history_y_pos =
+        (gint)g_ascii_strtoll(argv[3] ? argv[3] : "0", NULL, 10);
+  }
+  return 0;
+}
+
 static gint equity_callback(gpointer data, gint argc, gchar **argv,
                             gchar **ColName) {
   /* argv[0] is id, argv[1] is symbol, argv[2] is shares */
@@ -72,8 +191,6 @@ static void set_bul_values(bullion *B, const gchar *ounce_ch,
 static gint bullion_callback(gpointer data, gint argc, gchar **argv,
                              gchar **ColName) {
   /* argv[0] is Id, argv[1] is Metal, argv[2] is Ounces, argv[3] is Premium */
-  g_mutex_lock(&mutexes[CLASS_MEMBER_MUTEX]);
-
   if (argc != 4)
     return 1;
   if (g_strcmp0(ColName[0], "Id") != 0)
@@ -89,227 +206,22 @@ static gint bullion_callback(gpointer data, gint argc, gchar **argv,
   meta *D = pkg->GetMetaClass();
   metal *m = pkg->GetMetalClass();
 
-  if (g_strcmp0(argv[1], "gold") == 0) {
+  if (!g_strcmp0(argv[1], "gold"))
     set_bul_values(m->Gold, argv[2] ? argv[2] : "0", argv[3] ? argv[3] : "0",
                    D->decimal_places_guint8);
 
-  } else if (g_strcmp0(argv[1], "silver") == 0) {
+  else if (!g_strcmp0(argv[1], "silver"))
     set_bul_values(m->Silver, argv[2] ? argv[2] : "0", argv[3] ? argv[3] : "0",
                    D->decimal_places_guint8);
 
-  } else if (g_strcmp0(argv[1], "platinum") == 0) {
+  else if (!g_strcmp0(argv[1], "platinum"))
     set_bul_values(m->Platinum, argv[2] ? argv[2] : "0",
                    argv[3] ? argv[3] : "0", D->decimal_places_guint8);
 
-  } else if (g_strcmp0(argv[1], "palladium") == 0) {
+  else if (!g_strcmp0(argv[1], "palladium"))
     set_bul_values(m->Palladium, argv[2] ? argv[2] : "0",
                    argv[3] ? argv[3] : "0", D->decimal_places_guint8);
-  }
 
-  g_mutex_unlock(&mutexes[CLASS_MEMBER_MUTEX]);
-  return 0;
-}
-
-static gint cash_callback(gpointer data, gint argc, gchar **argv,
-                          gchar **ColName) {
-  g_mutex_lock(&mutexes[CLASS_MEMBER_MUTEX]);
-
-  /* argv[0] is id, argv[1] is value */
-  if (argc != 2)
-    return 1;
-  if (g_strcmp0(ColName[0], "Id") != 0)
-    return 1;
-  if (g_strcmp0(ColName[1], "Value") != 0)
-    return 1;
-
-  meta *mdata = (meta *)data;
-
-  mdata->cash_f = StringToDouble(argv[1] ? argv[1] : "0");
-  DoubleToFormattedStrPango(&mdata->cash_mrkd_ch, mdata->cash_f,
-                            mdata->decimal_places_guint8, MON_STR, BLACK);
-
-  g_mutex_unlock(&mutexes[CLASS_MEMBER_MUTEX]);
-  return 0;
-}
-
-static gint api_callback(gpointer data, gint argc, gchar **argv,
-                         gchar **ColName) {
-  /* argv[0] is Id, argv[1] is Keyword, argv[2] is Data */
-  g_mutex_lock(&mutexes[CLASS_MEMBER_MUTEX]);
-
-  if (argc != 3)
-    return 1;
-  if (g_strcmp0(ColName[0], "Id") != 0)
-    return 1;
-  if (g_strcmp0(ColName[1], "Keyword") != 0)
-    return 1;
-  if (g_strcmp0(ColName[2], "Data") != 0)
-    return 1;
-
-  meta *mdata = (meta *)data;
-  if (g_strcmp0(argv[1], "Stock_URL") == 0) {
-    g_free(mdata->stock_url_ch);
-    mdata->stock_url_ch = g_strdup(argv[2] ? argv[2] : FINNHUB_URL);
-
-  } else if (g_strcmp0(argv[1], "URL_KEY") == 0) {
-    g_free(mdata->curl_key_ch);
-    mdata->curl_key_ch = g_strdup(argv[2] ? argv[2] : FINNHUB_URL_TOKEN);
-
-  } else if (g_strcmp0(argv[1], "Nasdaq_Symbol_URL") == 0) {
-    g_free(mdata->Nasdaq_Symbol_url_ch);
-    mdata->Nasdaq_Symbol_url_ch =
-        g_strdup(argv[2] ? argv[2] : NASDAQ_SYMBOL_URL);
-
-  } else if (g_strcmp0(argv[1], "NYSE_Symbol_URL") == 0) {
-    g_free(mdata->NYSE_Symbol_url_ch);
-    mdata->NYSE_Symbol_url_ch = g_strdup(argv[2] ? argv[2] : NYSE_SYMBOL_URL);
-  }
-
-  g_mutex_unlock(&mutexes[CLASS_MEMBER_MUTEX]);
-
-  return 0;
-}
-
-static gint pref_callback(gpointer data, gint argc, gchar **argv,
-                          gchar **ColName) {
-  /* argv[0] is Id, argv[1] is Keyword, argv[2] is Data */
-  g_mutex_lock(&mutexes[CLASS_MEMBER_MUTEX]);
-
-  if (argc != 3)
-    return 1;
-  if (g_strcmp0(ColName[0], "Id") != 0)
-    return 1;
-  if (g_strcmp0(ColName[1], "Keyword") != 0)
-    return 1;
-  if (g_strcmp0(ColName[2], "Data") != 0)
-    return 1;
-
-  meta *mdata = (meta *)data;
-  if (g_strcmp0(argv[1], "Updates_Per_Min") == 0) {
-    mdata->updates_per_min_f = g_strtod(argv[2] ? argv[2] : "6", NULL);
-
-  } else if (g_strcmp0(argv[1], "Updates_Hours") == 0) {
-    mdata->updates_hours_f = g_strtod(argv[2] ? argv[2] : "1", NULL);
-
-  } else if (g_strcmp0(argv[1], "Decimal_Places") == 0) {
-    guint8 d = (guint8)g_ascii_strtoll(argv[2] ? argv[2] : "3", NULL, 10);
-    mdata->decimal_places_guint8 = d;
-
-  } else if (g_strcmp0(argv[1], "Clocks_Displayed") == 0) {
-    if (g_strcmp0(argv[2] ? argv[2] : "TRUE", "TRUE") == 0) {
-      mdata->clocks_displayed_bool = TRUE;
-    } else {
-      mdata->clocks_displayed_bool = FALSE;
-    }
-
-  } else if (g_strcmp0(argv[1], "Indices_Displayed") == 0) {
-    if (g_strcmp0(argv[2] ? argv[2] : "TRUE", "TRUE") == 0) {
-      mdata->index_bar_revealed_bool = TRUE;
-    } else {
-      mdata->index_bar_revealed_bool = FALSE;
-    }
-
-  } else if (g_strcmp0(argv[1], "Main_Font") == 0) {
-    g_free(mdata->font_ch);
-    mdata->font_ch = g_strdup(argv[2] ? argv[2] : MAIN_FONT);
-    SetFont(mdata->font_ch);
-  }
-
-  g_mutex_unlock(&mutexes[CLASS_MEMBER_MUTEX]);
-
-  return 0;
-}
-
-static gint main_wndwsz_callback(gpointer data, gint argc, gchar **argv,
-                                 gchar **ColName) {
-  /* argv[0] is Id, argv[1] is width, argv[2] is height */
-  g_mutex_lock(&mutexes[CLASS_MEMBER_MUTEX]);
-
-  if (argc != 3)
-    return 1;
-  if (g_strcmp0(ColName[0], "Id") != 0)
-    return 1;
-  if (g_strcmp0(ColName[1], "Width") != 0)
-    return 1;
-  if (g_strcmp0(ColName[2], "Height") != 0)
-    return 1;
-
-  window_data *window = (window_data *)data;
-  window->main_width = (gint)g_ascii_strtoll(argv[1] ? argv[1] : "0", NULL, 10);
-  window->main_height =
-      (gint)g_ascii_strtoll(argv[2] ? argv[2] : "0", NULL, 10);
-
-  g_mutex_unlock(&mutexes[CLASS_MEMBER_MUTEX]);
-  return 0;
-}
-
-static gint main_wndwpos_callback(gpointer data, gint argc, gchar **argv,
-                                  gchar **ColName) {
-  /* argv[0] is Id, argv[1] is X, argv[2] is Y */
-  g_mutex_lock(&mutexes[CLASS_MEMBER_MUTEX]);
-
-  if (argc != 3)
-    return 1;
-  if (g_strcmp0(ColName[0], "Id") != 0)
-    return 1;
-  if (g_strcmp0(ColName[1], "X") != 0)
-    return 1;
-  if (g_strcmp0(ColName[2], "Y") != 0)
-    return 1;
-
-  window_data *window = (window_data *)data;
-  window->main_x_pos = (gint)g_ascii_strtoll(argv[1] ? argv[1] : "0", NULL, 10);
-  window->main_y_pos = (gint)g_ascii_strtoll(argv[2] ? argv[2] : "0", NULL, 10);
-
-  g_mutex_unlock(&mutexes[CLASS_MEMBER_MUTEX]);
-  return 0;
-}
-
-static gint history_wndwsz_callback(gpointer data, gint argc, gchar **argv,
-                                    gchar **ColName) {
-  /* argv[0] is Id, argv[1] is height, argv[2] is width */
-  g_mutex_lock(&mutexes[CLASS_MEMBER_MUTEX]);
-
-  if (argc != 3)
-    return 1;
-  if (g_strcmp0(ColName[0], "Id") != 0)
-    return 1;
-  if (g_strcmp0(ColName[1], "Width") != 0)
-    return 1;
-  if (g_strcmp0(ColName[2], "Height") != 0)
-    return 1;
-
-  window_data *window = (window_data *)data;
-  window->history_width =
-      (gint)g_ascii_strtoll(argv[1] ? argv[1] : "0", NULL, 10);
-  window->history_height =
-      (gint)g_ascii_strtoll(argv[2] ? argv[2] : "0", NULL, 10);
-
-  g_mutex_unlock(&mutexes[CLASS_MEMBER_MUTEX]);
-  return 0;
-}
-
-static gint history_wndwpos_callback(gpointer data, gint argc, gchar **argv,
-                                     gchar **ColName) {
-  /* argv[0] is Id, argv[1] is X, argv[2] is Y */
-  g_mutex_lock(&mutexes[CLASS_MEMBER_MUTEX]);
-
-  if (argc != 3)
-    return 1;
-  if (g_strcmp0(ColName[0], "Id") != 0)
-    return 1;
-  if (g_strcmp0(ColName[1], "X") != 0)
-    return 1;
-  if (g_strcmp0(ColName[2], "Y") != 0)
-    return 1;
-
-  window_data *window = (window_data *)data;
-  window->history_x_pos =
-      (gint)g_ascii_strtoll(argv[1] ? argv[1] : "0", NULL, 10);
-  window->history_y_pos =
-      (gint)g_ascii_strtoll(argv[2] ? argv[2] : "0", NULL, 10);
-
-  g_mutex_unlock(&mutexes[CLASS_MEMBER_MUTEX]);
   return 0;
 }
 
@@ -326,7 +238,7 @@ static gint symbol_name_callback(gpointer data, gint argc, gchar **argv,
     return 1;
 
   symbol_name_map *sn_map = (symbol_name_map *)data;
-  AddSymbolToMap(argv[1] ? argv[1] : "Db Error", argv[2] ? argv[2] : "Db Error",
+  AddSymbolToMap(argv[1] ? argv[1] : "null", argv[2] ? argv[2] : "null",
                  sn_map);
 
   return 0;
@@ -353,11 +265,12 @@ static void error_msg(sqlite3 *db) {
 
 static void sqlite_run_cmd(GMutex *mutex, const gchar *db_path, gint (*func)(),
                            void *data, const gchar *cmd) {
-  /* Open the sqlite database file. */
   g_mutex_lock(mutex);
 
   gchar *err_msg = 0;
   sqlite3 *db;
+
+  /* Open the sqlite database file. */
   if (sqlite3_open(db_path, &db) != SQLITE_OK) {
     g_mutex_unlock(mutex);
     error_msg(db);
@@ -370,7 +283,10 @@ static void sqlite_run_cmd(GMutex *mutex, const gchar *db_path, gint (*func)(),
   }
 
   /* Close the sqlite database file. */
-  sqlite3_close(db);
+  if (sqlite3_close(db) != SQLITE_OK) {
+    g_mutex_unlock(mutex);
+    error_msg(db);
+  }
 
   g_mutex_unlock(mutex);
 }
@@ -382,137 +298,32 @@ void SqliteProcessing(portfolio_packet *pkg) {
   meta *D = pkg->GetMetaClass();
   window_data *W = pkg->GetWindowData();
 
-  /* Create the symbolname table if it doesn't already exist. */
-  gchar *sql_cmd = "CREATE TABLE IF NOT EXISTS symbolname(Id INTEGER PRIMARY "
-                   "KEY, symbol TEXT NOT NULL, name TEXT NOT NULL);";
+  /* Create the symbolname table if it doesn't exist. */
+  gchar *sql_cmd = new_symname_tbl;
   sqlite_run_cmd(&mutexes[SYMBOL_NAME_MAP_SQLITE_MUTEX],
                  D->sqlite_symbol_name_db_path_ch, 0, 0, sql_cmd);
 
-  /* Many of these can be combined into a singular sql_cmd statement, however I
-   * think this way is more clear. */
-
-  /* Create the prefdata table if it doesn't already exist. */
-  sql_cmd = "CREATE TABLE IF NOT EXISTS prefdata(Id INTEGER PRIMARY KEY, "
-            "Keyword TEXT NOT NULL, Data TEXT NOT NULL);";
+  /* Create the application tables if they don't exist. */
+  sql_cmd = g_strconcat(new_app_tbl, new_eqty_tbl, new_bul_tbl, NULL);
   sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
-
-  sql_cmd = "CREATE UNIQUE INDEX IF NOT EXISTS idx_prefdata_keyword ON "
-            "prefdata (Keyword);";
-  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
-
-  /* Create the apidata table if it doesn't already exist. */
-  sql_cmd = "CREATE TABLE IF NOT EXISTS apidata(Id INTEGER PRIMARY KEY, "
-            "Keyword TEXT NOT NULL, Data TEXT NOT NULL);";
-  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
-
-  sql_cmd = "CREATE UNIQUE INDEX IF NOT EXISTS idx_apidata_keyword ON "
-            "apidata (Keyword);";
-  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
-
-  /* Create the equity table if it doesn't already exist. */
-  sql_cmd = "CREATE TABLE IF NOT EXISTS equity(Id INTEGER PRIMARY KEY, Symbol "
-            "TEXT NOT NULL, Shares TEXT NOT NULL);";
-  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
-
-  sql_cmd = "CREATE UNIQUE INDEX IF NOT EXISTS idx_equity_symbol ON "
-            "equity (Symbol);";
-  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
-
-  /* Create the bullion table if it doesn't already exist. */
-  sql_cmd = "CREATE TABLE IF NOT EXISTS bullion(Id INTEGER PRIMARY KEY, Metal "
-            "TEXT NOT NULL, Ounces TEXT NOT NULL, Premium TEXT NOT NULL);";
-  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
-
-  sql_cmd = "CREATE UNIQUE INDEX IF NOT EXISTS idx_bullion_metal ON "
-            "bullion (Metal);";
-  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
-
-  /* Create the cash table if it doesn't already exist. */
-  sql_cmd = "CREATE TABLE IF NOT EXISTS cash(Id INTEGER PRIMARY KEY, Value "
-            "TEXT NOT NULL);";
-  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
-
-  sql_cmd = "CREATE UNIQUE INDEX IF NOT EXISTS idx_cash_id ON "
-            "cash (Id);";
-  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
-
-  /* Create the mainwinsize table if it doesn't already exist. */
-  sql_cmd = "CREATE TABLE IF NOT EXISTS mainwinsize(Id INTEGER PRIMARY KEY, "
-            "Width TEXT NOT NULL, Height TEXT NOT NULL);";
-  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
-
-  sql_cmd = "CREATE UNIQUE INDEX IF NOT EXISTS idx_mainwinsize_id ON "
-            "mainwinsize (Id);";
-  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
-
-  /* Create the mainwinpos table if it doesn't already exist. */
-  sql_cmd = "CREATE TABLE IF NOT EXISTS mainwinpos(Id INTEGER PRIMARY KEY, "
-            "X TEXT NOT NULL, Y TEXT NOT NULL);";
-  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
-
-  sql_cmd = "CREATE UNIQUE INDEX IF NOT EXISTS idx_mainwinpos_id ON "
-            "mainwinpos (Id);";
-  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
-
-  /* Create the historywinsize table if it doesn't already exist. */
-  sql_cmd = "CREATE TABLE IF NOT EXISTS historywinsize(Id INTEGER PRIMARY KEY, "
-            "Width TEXT NOT NULL, Height TEXT NOT NULL);";
-  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
-
-  sql_cmd = "CREATE UNIQUE INDEX IF NOT EXISTS idx_historywinsize_id ON "
-            "historywinsize (Id);";
-  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
-
-  /* Create the historywinpos table if it doesn't already exist. */
-  sql_cmd =
-      "CREATE TABLE IF NOT EXISTS historywinpos(Id INTEGER PRIMARY KEY, X "
-      "TEXT NOT NULL, Y TEXT NOT NULL);";
-  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
-
-  sql_cmd = "CREATE UNIQUE INDEX IF NOT EXISTS idx_historywinpos_id ON "
-            "historywinpos (Id);";
-  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
+  g_free(sql_cmd);
 
   /* Reset Equity Folder */
   F->Reset();
 
   /* Populate class/struct instances with saved data. */
-  sql_cmd = "SELECT * FROM prefdata;";
-  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, pref_callback, D,
-                 sql_cmd);
-
-  sql_cmd = "SELECT * FROM apidata;";
-  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, api_callback, D,
-                 sql_cmd);
+  sql_cmd = "SELECT * FROM app_tbl;";
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, app_callback,
+                 pkg, sql_cmd);
 
   sql_cmd = "SELECT * FROM equity;"; /* We always want this table selected after
-                                        apidata */
+                                        app_tbl [equity urls and dec places] */
   sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, equity_callback,
                  F, sql_cmd);
 
   sql_cmd = "SELECT * FROM bullion;";
   sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, bullion_callback,
                  pkg, sql_cmd);
-
-  sql_cmd = "SELECT * FROM cash;";
-  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, cash_callback, D,
-                 sql_cmd);
-
-  sql_cmd = "SELECT * FROM mainwinsize;";
-  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch,
-                 main_wndwsz_callback, W, sql_cmd);
-
-  sql_cmd = "SELECT * FROM mainwinpos;";
-  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch,
-                 main_wndwpos_callback, W, sql_cmd);
-
-  sql_cmd = "SELECT * FROM historywinsize;";
-  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch,
-                 history_wndwsz_callback, W, sql_cmd);
-
-  sql_cmd = "SELECT * FROM historywinpos;";
-  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch,
-                 history_wndwpos_callback, W, sql_cmd);
 
   if (W->main_width == 0 || W->main_height == 0) {
     /* The Original Production Size, if never run before */
@@ -543,44 +354,19 @@ void SqliteProcessing(portfolio_packet *pkg) {
   F->GenerateURL(pkg);
 }
 
-void SqliteEquityAdd(const gchar *symbol, const gchar *shares, meta *D) {
-  const gchar *fmt = "REPLACE INTO equity (Symbol, Shares) VALUES('%s', '%s');";
-
-  /* Create sqlite command. */
-  gushort len = g_snprintf(NULL, 0, fmt, symbol, shares) + 1;
-  gchar *sql_cmd = (gchar *)g_malloc(len);
-  g_snprintf(sql_cmd, len, fmt, symbol, shares);
-
-  /* Run the command. */
-  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
-  g_free(sql_cmd);
-}
-
-void SqliteEquityRemove(const gchar *symbol, meta *D) {
-  const gchar *fmt = "DELETE FROM equity WHERE Symbol = '%s';";
-
-  /* Create sqlite command. */
-  gushort len = g_snprintf(NULL, 0, fmt, symbol) + 1;
-  gchar *sql_cmd = (gchar *)g_malloc(len);
-  g_snprintf(sql_cmd, len, fmt, symbol);
-
-  /* Run the command. */
-  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
-  g_free(sql_cmd);
-}
-
-void SqliteEquityRemoveAll(meta *D) {
-  /* Drop the equity table then create a new one. */
-  gchar *sql_cmd =
-      "DROP TABLE equity; CREATE TABLE IF NOT EXISTS equity(Id INTEGER "
-      "PRIMARY KEY, Symbol TEXT NOT NULL, Shares TEXT NOT NULL);";
-  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
-}
-
 static gchar *vradic_sqlte_cmd(gint8 num_args_cmd, const gchar *fmt,
                                va_list arg_ptr)
 /* construct a series of sql commands from the number of args per command, a
  * format string, and a va_list of the total number of args in the series.
+   Each command is the same, with a different set of args.
+
+   For example, this func might return this string:
+
+   "REPLACE INTO bullion (Metal, Ounces, Premium) VALUES('gold', '2.2500',
+ '100.2500');REPLACE INTO bullion (Metal, Ounces, Premium) VALUES('silver',
+ '75.0000', '4.2500');"
+
+  The REPLACE instruction only allows for one row alteration per instruction.
  */
 {
   gushort args_count = 0;
@@ -606,7 +392,7 @@ static gchar *vradic_sqlte_cmd(gint8 num_args_cmd, const gchar *fmt,
     sql_cmd_fmt = sql_cmd_tmp;
   }
 
-  /* Get the size of the potential string. */
+  /* Get the size of the potential sql_cmd string. */
   gsize len = g_vsnprintf(NULL, 0, sql_cmd_fmt, arg_ptr_cpy_2) + 1;
   va_end(arg_ptr_cpy_2);
 
@@ -615,10 +401,41 @@ static gchar *vradic_sqlte_cmd(gint8 num_args_cmd, const gchar *fmt,
 
   /* Create the sql command from format and argument list. */
   g_vsnprintf(sql_cmd, len, sql_cmd_fmt, arg_ptr);
-  va_end(arg_ptr);
   g_free(sql_cmd_fmt);
 
   return sql_cmd;
+}
+
+void SqliteAppAdd(meta *D, ...)
+/* Insert or Replace a variable number of Keyword-Data associations into the
+   app_tbl table.
+
+   Take in a meta class pointer, and at least three more args: keyword,
+   data_one, and data_two; formatted as character strings.
+
+   There can be any number of Keyword-Data associations, however, each
+   association must have these three strings. The last arg must be NULL.
+
+   For example:
+   SqliteAppAdd(D,
+      "Stock_URL", D->stock_url_ch, "null",
+      "URL_KEY", D->curl_key_ch, "null",
+      "Main_Win_Sz", main_wdth_value, main_hght_value,
+      "Main_Win_Pos", main_xpos_value, main_ypos_value, NULL);
+   */
+{
+  const gchar *fmt = "REPLACE INTO app_tbl (keyword, data_one, data_two) "
+                     "VALUES('%s', '%s', '%s');";
+  va_list arg_ptr;
+
+  /* Get the sqlite command. */
+  va_start(arg_ptr, D);
+  gchar *sql_cmd = vradic_sqlte_cmd(3, fmt, arg_ptr);
+  va_end(arg_ptr);
+
+  /* Run the command. */
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
+  g_free(sql_cmd);
 }
 
 void SqliteBullionAdd(meta *D, ...)
@@ -637,7 +454,7 @@ void SqliteBullionAdd(meta *D, ...)
 {
 
   const gchar *fmt = "REPLACE INTO bullion (Metal, Ounces, Premium) "
-                     "VALUES('%s', '%s', '%s'); ";
+                     "VALUES('%s', '%s', '%s');";
 
   va_list arg_ptr;
 
@@ -651,94 +468,33 @@ void SqliteBullionAdd(meta *D, ...)
   g_free(sql_cmd);
 }
 
-void SqliteCashAdd(const gchar *value, meta *D) {
-  const gchar *fmt = "REPLACE INTO cash (Id, Value) VALUES(1, '%s');";
+void SqliteEquityAdd(const gchar *symbol, const gchar *shares, meta *D) {
+  const gchar *fmt = "REPLACE INTO equity (Symbol, Shares) VALUES('%s', '%s');";
 
   /* Create sqlite command. */
-  gushort len = g_snprintf(NULL, 0, fmt, value) + 1;
-  gchar *sql_cmd = (gchar *)g_malloc(len);
-  g_snprintf(sql_cmd, len, fmt, value);
+  gchar *sql_cmd = SnPrint(fmt, symbol, shares);
 
   /* Run the command. */
   sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
   g_free(sql_cmd);
 }
 
-void SqliteAPIPrefAdd(gint table_id, meta *D, ...)
-/* Insert or Replace a variable number of Keyword-Data pairs into the prefdata
-   or apidata table.
+void SqliteEquityRemove(const gchar *symbol, meta *D) {
+  const gchar *fmt = "DELETE FROM equity WHERE Symbol = '%s';";
 
-   Take in a table_id (enum in sqlite.h), a meta class
-   pointer, and at least two more args: Keyword, Data; formatted as character
-   strings.
-
-   There can be any number of Keyword-Data pairs, however, each pair
-   must have these two strings. The last arg must be NULL.
-
-   For example:
-   SqliteAPIPrefAdd(PREF, D, "Main_Font", D->font_ch, NULL);
-   */
-{
-  const gchar *fmt;
-  switch (table_id) {
-  case PREF:
-    fmt = "REPLACE INTO prefdata (Keyword, Data) VALUES('%s', '%s'); ";
-    break;
-  case API:
-    fmt = "REPLACE INTO apidata (Keyword, Data) VALUES('%s', '%s'); ";
-    break;
-  default:
-    g_print("SqliteAPIPrefAdd() table_id out of range.\n");
-    exit(EXIT_FAILURE);
-    break;
-  }
-
-  va_list arg_ptr;
-
-  /* Get the sqlite command. */
-  va_start(arg_ptr, D);
-  gchar *sql_cmd = vradic_sqlte_cmd(2, fmt, arg_ptr);
-  va_end(arg_ptr);
-
-  /* Run the command. */
-  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
-  g_free(sql_cmd);
-}
-
-static void sqlite_window_data_add(const gchar *fmt, gint w_x, gint h_y,
-                                   meta *D) {
   /* Create sqlite command. */
-  gushort len = g_snprintf(NULL, 0, fmt, w_x, h_y) + 1;
-  gchar *sql_cmd = (gchar *)g_malloc(len);
-  g_snprintf(sql_cmd, len, fmt, w_x, h_y);
+  gchar *sql_cmd = SnPrint(fmt, symbol);
 
   /* Run the command. */
   sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
   g_free(sql_cmd);
 }
 
-void SqliteMainWindowSizeAdd(gint width, gint height, meta *D) {
-  const gchar *fmt =
-      "REPLACE INTO mainwinsize (Id, Width, Height) VALUES(1, '%d', '%d');";
-  sqlite_window_data_add(fmt, width, height, D);
-}
-
-void SqliteMainWindowPosAdd(gint x, gint y, meta *D) {
-  const gchar *fmt =
-      "REPLACE INTO mainwinpos (Id, X, Y) VALUES(1, '%d', '%d');";
-  sqlite_window_data_add(fmt, x, y, D);
-}
-
-void SqliteHistoryWindowSizeAdd(gint width, gint height, meta *D) {
-  const gchar *fmt =
-      "REPLACE INTO historywinsize (Id, Width, Height) VALUES(1, '%d', '%d');";
-  sqlite_window_data_add(fmt, width, height, D);
-}
-
-void SqliteHistoryWindowPosAdd(gint x, gint y, meta *D) {
-  const gchar *fmt =
-      "REPLACE INTO historywinpos (Id, X, Y) VALUES(1, '%d', '%d');";
-  sqlite_window_data_add(fmt, x, y, D);
+void SqliteEquityRemoveAll(meta *D) {
+  /* Drop the equity table then create a new one. */
+  gchar *sql_cmd = g_strconcat("DROP TABLE equity;", new_eqty_tbl, NULL);
+  sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);
+  g_free(sql_cmd);
 }
 
 symbol_name_map *SqliteGetSNMap(meta *D) {
@@ -773,9 +529,7 @@ gchar *SqliteGetSNMapName(const gchar *symbol_ch, meta *D) {
   gchar *name_ch = NULL;
 
   /* Create the command. */
-  gushort len = g_snprintf(NULL, 0, fmt, symbol_ch) + 1;
-  gchar *sql_cmd = (gchar *)g_malloc(len);
-  g_snprintf(sql_cmd, len, fmt, symbol_ch);
+  gchar *sql_cmd = SnPrint(fmt, symbol_ch);
 
   /* Run the command. */
   sqlite_run_cmd(&mutexes[SYMBOL_NAME_MAP_SQLITE_MUTEX],
@@ -805,11 +559,10 @@ static void escape_apostrophy(gchar **s)
       s[0] = tmp;
 
       /* Read each character from null back to that character */
-      for (gushort j = g_utf8_strlen(s[0], -1); j >= i; j--) {
+      for (gushort j = g_utf8_strlen(s[0], -1); j >= i; j--)
         /* Shift the array one character to the right [duplicate the character]
          */
         s[0][j + 1] = s[0][j];
-      }
 
       /* Because we have a duplicate we need to skip the next increment of i */
       i++;
@@ -823,24 +576,17 @@ typedef struct {
 } meta_map_container;
 
 static gchar *add_map_to_db_cmd(symbol_name_map *sn_map) {
-  gushort len;
   gchar *tmp, *sql_cmd_tmp;
-  gchar *sql_cmd = strdup("INSERT INTO symbolname (symbol, name) VALUES");
+  gchar *sql_cmd = g_strdup("INSERT INTO symbolname (symbol, name) VALUES");
   const gchar *fmt = "('%s', '%s'),";
-  for (gushort g = 0; g < sn_map->size; g++) {
-    if (sn_map->sn_container_arr[g] == NULL || sn_map->sn_container_arr == NULL)
-      break;
 
+  for (gushort g = 0; g < sn_map->size; g++) {
     /* Insert an escape apostrophy into the string if needed. */
     escape_apostrophy(&sn_map->sn_container_arr[g]->security_name);
 
     /* Create the sub-string to add to the sql command. */
-    len = g_snprintf(NULL, 0, fmt, sn_map->sn_container_arr[g]->symbol,
-                     sn_map->sn_container_arr[g]->security_name) +
-          1;
-    tmp = (gchar *)g_malloc(len);
-    g_snprintf(tmp, len, fmt, sn_map->sn_container_arr[g]->symbol,
-               sn_map->sn_container_arr[g]->security_name);
+    tmp = SnPrint(fmt, sn_map->sn_container_arr[g]->symbol,
+                  sn_map->sn_container_arr[g]->security_name);
 
     /* Concatenate the sub-string to the end of the sql command */
     sql_cmd_tmp = g_strconcat(sql_cmd, tmp, NULL);
@@ -848,6 +594,7 @@ static gchar *add_map_to_db_cmd(symbol_name_map *sn_map) {
     g_free(sql_cmd);
     sql_cmd = sql_cmd_tmp;
   }
+
   /* Replace the last comma, in the command, with a semi-colon. */
   gchar *ch = g_utf8_strrchr(sql_cmd, -1, (gunichar)',');
   if (ch)
@@ -861,31 +608,25 @@ static gpointer add_mapping_to_database_thd(gpointer data) {
   symbol_name_map *sn_map = mmc->map;
   meta *D = mmc->metadata;
 
-  D->snmap_db_busy_bool = TRUE;
-
   /* Drop the symbolname table and create a new one. */
-  gchar *sql_cmd =
-      "DROP TABLE symbolname; CREATE TABLE IF NOT EXISTS symbolname(Id INTEGER "
-      "PRIMARY KEY, symbol TEXT NOT NULL, name TEXT NOT NULL); CREATE UNIQUE "
-      "INDEX IF NOT EXISTS idx_symbolname_symbol ON symbolname (symbol);";
+  gchar *sql_cmd = g_strconcat("DROP TABLE symbolname;", new_symname_tbl, NULL);
   sqlite_run_cmd(&mutexes[SYMBOL_NAME_MAP_SQLITE_MUTEX],
                  D->sqlite_symbol_name_db_path_ch, 0, 0, sql_cmd);
-
-  /* Insert the mapping into the table. */
+  g_free(sql_cmd);
 
   /* Create the command. */
   sql_cmd = add_map_to_db_cmd(sn_map);
 
   /* Perform the command. */
+  D->snmap_db_busy_bool = TRUE;
   sqlite_run_cmd(&mutexes[SYMBOL_NAME_MAP_SQLITE_MUTEX],
                  D->sqlite_symbol_name_db_path_ch, 0, 0, sql_cmd);
   g_free(sql_cmd);
+  D->snmap_db_busy_bool = FALSE;
 
   /* Remove the duplicate map from memory. */
   SNMapDestruct(sn_map);
   g_free(sn_map);
-
-  D->snmap_db_busy_bool = FALSE;
 
   /* Don't Free the member pointers */
   g_free(mmc);

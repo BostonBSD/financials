@@ -158,11 +158,10 @@ gint APICursorMove() {
   gboolean check = CheckValidString(Equity_URL) & CheckValidString(URL_KEY);
   check = check & CheckValidString(Nasdaq_URL) & CheckValidString(NYSE_URL);
 
-  if (check) {
+  if (check)
     gtk_widget_set_sensitive(Button, TRUE);
-  } else {
+  else
     gtk_widget_set_sensitive(Button, FALSE);
-  }
 
   return 0;
 }
@@ -267,14 +266,14 @@ static gboolean process_bullion_data(const gchar *new_ounces_ch,
   gdouble new_premium_f = g_strtod(new_premium_ch, NULL);
 
   if (new_ounces_f != B->ounce_f || new_premium_f != B->premium_f) {
-    if (B->ounce_f > 0 || new_ounces_f == 0) {
+    if (B->ounce_f > 0 || new_ounces_f == 0)
       /* We already have data for this bullion.
          Or we are deleting data for this bullion. */
       new_bullion = FALSE;
-    } else {
+    else
       /* We need to fetch data for this bullion. */
       new_bullion = TRUE;
-    }
+
     B->ounce_f = new_ounces_f;
     B->premium_f = new_premium_f;
   }
@@ -376,11 +375,10 @@ gint BullionCursorMove() {
   valid_string = valid_string & CheckValidString(Palladium_Ounces) &
                  CheckValidString(Palladium_Premium);
 
-  if (valid_num && valid_string) {
+  if (valid_num && valid_string)
     gtk_widget_set_sensitive(Button, TRUE);
-  } else {
+  else
     gtk_widget_set_sensitive(Button, FALSE);
-  }
 
   return 0;
 }
@@ -422,11 +420,10 @@ gint CashCursorMove() {
 
   const gchar *value = GetEntryText("CashSpinBTN");
 
-  if (CheckIfStringDoublePositiveNumber(value) && CheckValidString(value)) {
+  if (CheckIfStringDoublePositiveNumber(value) && CheckValidString(value))
     gtk_widget_set_sensitive(Button, TRUE);
-  } else {
+  else
     gtk_widget_set_sensitive(Button, FALSE);
-  }
 
   return 0;
 }
@@ -453,15 +450,13 @@ gint AboutShowHide() {
 void AboutSetLabel() {
   /* Set the About window labels. */
   const gchar *text =
-      "<a "
-      "href=\"https://github.com/BostonBSD/financials\">Website</a>";
+      "<a href=\"https://github.com/BostonBSD/financials\">Website</a>";
   GtkWidget *label = GetWidget("AboutWebsiteLabel");
   gtk_label_set_markup(GTK_LABEL(label), text);
 
-  text =
-      "<a href=\"https://www.flaticon.com/free-icons/trends\">Trends icon</a> "
-      "designed by Freepik from <a "
-      "href=\"https://media.flaticon.com/license/license.pdf\">Flaticon</a>";
+  text = "<a href=\"https://www.flaticon.com/free-icons/trends\">Trends "
+         "icon</a> designed by Freepik from <a "
+         "href=\"https://media.flaticon.com/license/license.pdf\">Flaticon</a>";
   label = GetWidget("AboutTrendsIconLabel");
   gtk_label_set_markup(GTK_LABEL(label), text);
 }
@@ -470,105 +465,10 @@ gint HotkeysShowHide() {
   GtkWidget *window = GetWidget("HotkeysWindow");
   gboolean visible = gtk_widget_is_visible(window);
 
-  if (visible) {
+  if (visible)
     gtk_widget_set_visible(window, FALSE);
-  } else {
+  else
     gtk_widget_set_visible(window, TRUE);
-  }
+
   return 0;
-}
-
-#define BLACK_HK_COL 0
-#define BROWN_HK_COL 1
-
-static struct {
-  const gchar *name;
-  const gchar *shortcut;
-  guint8 color_num;
-} commands[] = {{"Application Window", " ", BROWN_HK_COL},
-                {"      File", "Ctrl - F", BLACK_HK_COL},
-                {"      History", "Ctrl - R", BLACK_HK_COL},
-                {"      Quit", "Ctrl - Q", BLACK_HK_COL},
-                {" ", " ", BLACK_HK_COL},
-                {"      Edit", "Ctrl - E", BLACK_HK_COL},
-                {"      Securities", "Ctrl - S", BLACK_HK_COL},
-                {"      Bullion", "Ctrl - B", BLACK_HK_COL},
-                {"      Cash", "Ctrl - C", BLACK_HK_COL},
-                {"      API", "Ctrl - I", BLACK_HK_COL},
-                {"      Preferences", "Ctrl - P", BLACK_HK_COL},
-                {" ", " ", BLACK_HK_COL},
-                {"      Help", "Ctrl - H", BLACK_HK_COL},
-                {"      Hotkeys", "Ctrl - K", BLACK_HK_COL},
-                {"      About", "Ctrl - A", BLACK_HK_COL},
-                {" ", " ", BLACK_HK_COL},
-                {"      Get Data", "Ctrl - D", BLACK_HK_COL},
-                {" ", " ", BLACK_HK_COL},
-                {"History Window", " ", BROWN_HK_COL},
-                {"      Get Data", "Ctrl - D", BLACK_HK_COL},
-                {"      Close", "Ctrl - C", BLACK_HK_COL},
-                {" ", " ", BLACK_HK_COL},
-                {"Preferences Window", " ", BROWN_HK_COL},
-                {"      Show Clocks", "Ctrl - Z", BLACK_HK_COL},
-                {"      Show Indices", "Ctrl - X", BLACK_HK_COL},
-                {"      Get Symbols", "Ctrl - S", BLACK_HK_COL},
-                {"      Close", "Ctrl - C", BLACK_HK_COL},
-                {" ", " ", BLACK_HK_COL},
-                {"Other Windows", " ", BROWN_HK_COL},
-                {"      File", "Ctrl - F", BLACK_HK_COL},
-                {"      OK", "Ctrl - O", BLACK_HK_COL},
-                {"      Close", "Ctrl - C", BLACK_HK_COL}};
-
-void HotkeysSetTreeview() {
-  GtkWidget *TreeView = GetWidget("HotkeysTreeView");
-  gchar *cmd_name_markup = NULL, *cmd_shortcut_markup = NULL;
-
-  /* In order to display a model/store we need to set the TreeView Columns. */
-  AddColumnToTreeview("column_one", 0, TreeView);
-  AddColumnToTreeview("column_two", 1, TreeView);
-
-  /* Here we set the rows for the 2 column store */
-  GtkListStore *store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
-  GtkTreeIter iter;
-
-  const gchar *fmt_black = "<span font='Sans Regular 8' "
-                           "weight='Medium' foreground='Black'>%s</span>";
-  const gchar *fmt_brown = "<span font='Sans Regular 9' "
-                           "weight='Medium' foreground='SaddleBrown'>%s</span>";
-  const gchar *fmt;
-
-  guint8 size = (sizeof commands) / (sizeof commands[0]);
-  for (guint8 i = 0; i < size; i++) {
-    /* We mark them up slightly first. */
-    if (commands[i].color_num == BLACK_HK_COL) {
-      fmt = fmt_black;
-    } else {
-      fmt = fmt_brown;
-    }
-
-    cmd_name_markup = g_markup_printf_escaped(fmt, commands[i].name);
-    cmd_shortcut_markup = g_markup_printf_escaped(fmt, commands[i].shortcut);
-
-    /* We add them to a new row. */
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, cmd_name_markup, 1, cmd_shortcut_markup,
-                       -1);
-    g_free(cmd_name_markup);
-    g_free(cmd_shortcut_markup);
-  }
-
-  /* Add the store of data to the TreeView. */
-  gtk_tree_view_set_model(GTK_TREE_VIEW(TreeView), GTK_TREE_MODEL(store));
-  g_object_unref(store);
-
-  /* Set the TreeView header as invisible. */
-  gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(TreeView), FALSE);
-
-  /* Make the TreeView unselectable. */
-  GtkTreeSelection *select =
-      gtk_tree_view_get_selection(GTK_TREE_VIEW(TreeView));
-  gtk_tree_selection_set_mode(select, GTK_SELECTION_NONE);
-
-  /* Remove TreeView Grid Lines. */
-  gtk_tree_view_set_grid_lines(GTK_TREE_VIEW(TreeView),
-                               GTK_TREE_VIEW_GRID_LINES_NONE);
 }

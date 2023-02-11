@@ -130,34 +130,32 @@ static void ToStrings(guint8 digits_right) {
                             BLACK);
 
   /* The change in total investment in bullion. */
-  if (M->bullion_port_value_chg_f > 0) {
+  if (M->bullion_port_value_chg_f > 0)
     DoubleToFormattedStrPango(&M->bullion_port_value_chg_mrkd_ch,
                               M->bullion_port_value_chg_f, digits_right,
                               MON_STR, GREEN);
-  } else if (M->bullion_port_value_chg_f < 0) {
+  else if (M->bullion_port_value_chg_f < 0)
     DoubleToFormattedStrPango(&M->bullion_port_value_chg_mrkd_ch,
                               M->bullion_port_value_chg_f, digits_right,
                               MON_STR, RED);
-  } else {
+  else
     DoubleToFormattedStrPango(&M->bullion_port_value_chg_mrkd_ch,
                               M->bullion_port_value_chg_f, digits_right,
                               MON_STR, BLACK);
-  }
 
   /* The change in total investment in bullion as a percentage. */
-  if (M->bullion_port_value_p_chg_f > 0) {
+  if (M->bullion_port_value_p_chg_f > 0)
     DoubleToFormattedStrPango(&M->bullion_port_value_p_chg_mrkd_ch,
                               M->bullion_port_value_p_chg_f, digits_right,
                               PER_STR, GREEN);
-  } else if (M->bullion_port_value_p_chg_f < 0) {
+  else if (M->bullion_port_value_p_chg_f < 0)
     DoubleToFormattedStrPango(&M->bullion_port_value_p_chg_mrkd_ch,
                               M->bullion_port_value_p_chg_f, digits_right,
                               PER_STR, RED);
-  } else {
+  else
     DoubleToFormattedStrPango(&M->bullion_port_value_p_chg_mrkd_ch,
                               M->bullion_port_value_p_chg_f, digits_right,
                               PER_STR, BLACK);
-  }
 
   /* The Gold to Silver Ratio */
   DoubleToFormattedStr(&M->gold_silver_ratio_ch, M->gold_silver_ratio_f, 2,
@@ -180,20 +178,18 @@ static void bullion_calculations(bullion *B) {
      there is no bullion, the gain is calculated based off of the current and
      prev spot price. These gains are ordinarily
      different because of premiums. */
-  if (prev_total == 0) {
+  if (prev_total == 0)
     B->change_percent_f = CalcGain(B->spot_price_f, B->prev_closing_metal_f);
-  } else {
+  else
     B->change_percent_f = CalcGain(B->port_value_f, prev_total);
-  }
 
   /* The raw change in bullion as a percentage. */
   /* This if statement prevent's a "nan%" string in the index label. */
-  if (B->prev_closing_metal_f == 0) {
+  if (B->prev_closing_metal_f == 0)
     B->change_percent_raw_f = 0.0f;
-  } else {
+  else
     B->change_percent_raw_f =
         CalcGain(B->spot_price_f, B->prev_closing_metal_f);
-  }
 }
 
 static void Calculate() {
@@ -221,12 +217,11 @@ static void Calculate() {
 
   /* The change in total investment in bullion as a percentage. */
   gdouble prev_total = M->bullion_port_value_f - M->bullion_port_value_chg_f;
-  if (prev_total == 0.0f) {
+  if (prev_total == 0.0f)
     M->bullion_port_value_p_chg_f = 0.0f;
-  } else {
+  else
     M->bullion_port_value_p_chg_f =
         CalcGain(M->bullion_port_value_f, prev_total);
-  }
 
   /* The Gold to Silver Ratio */
   if (M->Silver->spot_price_f > 0)

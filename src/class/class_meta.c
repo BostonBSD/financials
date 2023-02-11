@@ -486,10 +486,11 @@ meta *ClassInitMeta() {
   new_class->font_ch = g_strdup(MAIN_FONT);
   SetFont(new_class->font_ch);
 
-  /* Set The User's Config Directory */
-  new_class->config_dir_ch = g_strdup(g_get_user_config_dir());
+  /* Set The User's Config Directory: ~/.config/financials */
+  new_class->config_dir_ch =
+      g_strconcat(g_get_user_config_dir(), CONFIG_DIR, NULL);
 
-  /* Append the sqlite db file paths to the end of the config directory path. */
+  /* Append the sqlite db files to the end of the config directory path. */
   new_class->sqlite_db_path_ch =
       g_strconcat(new_class->config_dir_ch, DB_FILE, NULL);
   new_class->sqlite_symbol_name_db_path_ch =

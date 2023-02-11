@@ -73,16 +73,15 @@ static void convert_equity_to_strings(stock *S, guint8 digits_right) {
                             S->prev_closing_stock_f, digits_right, MON_STR,
                             BLACK);
 
-  if (S->change_value_f > 0) {
+  if (S->change_value_f > 0)
     DoubleToFormattedStrPango(&S->change_value_mrkd_ch, S->change_value_f,
                               digits_right, MON_STR, GREEN);
-  } else if (S->change_value_f < 0) {
+  else if (S->change_value_f < 0)
     DoubleToFormattedStrPango(&S->change_value_mrkd_ch, S->change_value_f,
                               digits_right, MON_STR, RED);
-  } else {
+  else
     DoubleToFormattedStrPango(&S->change_value_mrkd_ch, S->change_value_f,
                               digits_right, MON_STR, BLACK);
-  }
 
   DoubleToFormattedStrPango(&S->num_shares_stock_mrkd_ch,
                             (double)S->num_shares_stock_int, 0, NUM_STR, BLACK);
@@ -156,9 +155,8 @@ static void convert_equity_to_strings(stock *S, guint8 digits_right) {
 static void ToStrings(guint8 digits_right) {
   equity_folder *F = FolderClassObject;
 
-  for (guint8 g = 0; g < F->size; g++) {
+  for (guint8 g = 0; g < F->size; g++)
     convert_equity_to_strings(F->Equity[g], digits_right);
-  }
 
   /* The total equity portfolio value. */
   DoubleToFormattedStrPango(&F->stock_port_value_mrkd_ch, F->stock_port_value_f,
@@ -195,11 +193,10 @@ static void ToStrings(guint8 digits_right) {
 
 static void equity_calculations(stock *S) {
   /* Calculate the stock holdings change. */
-  if (S->num_shares_stock_int > 0) {
+  if (S->num_shares_stock_int > 0)
     S->change_value_f = S->change_share_f * (gdouble)S->num_shares_stock_int;
-  } else {
+  else
     S->change_value_f = 0.0f;
-  }
 
   /* The total current investment in this equity. */
   S->current_investment_stock_f =
@@ -464,13 +461,12 @@ static void SetSecurityNames(portfolio_packet *pkg) {
                                     pkg->GetMetaClass());
     remove_dash(security_name);
 
-    if (F->Equity[g]->num_shares_stock_int) {
+    if (F->Equity[g]->num_shares_stock_int)
       StringToStrPango(&F->Equity[g]->security_name_mrkd_ch,
                        security_name ? security_name : "", BLUE);
-    } else {
+    else
       StringToStrPango(&F->Equity[g]->security_name_mrkd_ch,
                        security_name ? security_name : "", BLACK_ITALIC);
-    }
 
     if (security_name) {
       g_free(security_name);

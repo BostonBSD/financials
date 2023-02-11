@@ -38,11 +38,10 @@ gint MainFetchBTNLabel(gpointer pkg_data) {
   portfolio_packet *pkg = (portfolio_packet *)pkg_data;
   GtkWidget *label = GetWidget("FetchDataBtnLabel");
 
-  if (pkg->IsFetchingData()) {
+  if (pkg->IsFetchingData())
     gtk_label_set_label(GTK_LABEL(label), "Stop Updates");
-  } else {
+  else
     gtk_label_set_label(GTK_LABEL(label), "Get Data");
-  }
 
   return 0;
 }
@@ -80,43 +79,34 @@ static gint main_tree_view_clr() {
   return TreeViewClear(treeview);
 }
 
+static void add_hidden_column(const gchar *col_name, const gint col_num,
+                              GtkWidget *treeview) {
+  GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(
+      col_name, renderer, "text", col_num, NULL);
+  gtk_tree_view_column_set_visible(column, FALSE);
+  gtk_tree_view_column_set_min_width(column, 0);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
+}
+
 static gint main_set_columns(gint column_type) {
-  GtkCellRenderer *renderer;
-  GtkTreeViewColumn *column;
   GtkWidget *list = GetWidget("MainTreeView");
 
   /* A hidden column indicating the type of row [bullion, equity, blank space,
    * etc] */
-  renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(
-      "type_text", renderer, "text", MAIN_COLUMN_TYPE, NULL);
-  gtk_tree_view_column_set_visible(column, FALSE);
-  gtk_tree_view_column_set_min_width(column, 0);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
+  add_hidden_column("type_text", MAIN_COLUMN_TYPE, list);
 
   /* A hidden column indicating the item symbol at that row [gold, silver, stock
    * symbol, etc] */
-  renderer = gtk_cell_renderer_text_new();
-  column = gtk_tree_view_column_new_with_attributes(
-      "symbol_text", renderer, "text", MAIN_COLUMN_SYMBOL, NULL);
-  gtk_tree_view_column_set_visible(column, FALSE);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
+  add_hidden_column("symbol_text", MAIN_COLUMN_SYMBOL, list);
 
-  AddColumnToTreeview("column_one", MAIN_COLUMN_ONE, list);
-  AddColumnToTreeview("column_two", MAIN_COLUMN_TWO, list);
-  AddColumnToTreeview("column_three", MAIN_COLUMN_THREE, list);
+  for (guint8 g = MAIN_COLUMN_ONE; g <= MAIN_COLUMN_THREE; g++)
+    AddColumnToTreeview("column_name", g, list);
 
-  if (column_type == GUI_COLUMN_PRIMARY) {
+  if (column_type == GUI_COLUMN_PRIMARY)
     /* if PRIMARY treeview */
-    AddColumnToTreeview("column_four", MAIN_COLUMN_FOUR, list);
-    AddColumnToTreeview("column_five", MAIN_COLUMN_FIVE, list);
-    AddColumnToTreeview("column_six", MAIN_COLUMN_SIX, list);
-    AddColumnToTreeview("column_seven", MAIN_COLUMN_SEVEN, list);
-    AddColumnToTreeview("column_eight", MAIN_COLUMN_EIGHT, list);
-    AddColumnToTreeview("column_nine", MAIN_COLUMN_NINE, list);
-    AddColumnToTreeview("column_ten", MAIN_COLUMN_TEN, list);
-    AddColumnToTreeview("column_eleven", MAIN_COLUMN_ELEVEN, list);
-  }
+    for (guint8 g = MAIN_COLUMN_FOUR; g < MAIN_N_COLUMNS; g++)
+      AddColumnToTreeview("column_name", g, list);
 
   return 0;
 }
@@ -173,24 +163,20 @@ static GtkListStore *main_primary_store(portfolio_packet *pkg) {
         pri_h_mkd->gain_sym, MAIN_COLUMN_TEN, pri_h_mkd->total,
         MAIN_COLUMN_ELEVEN, pri_h_mkd->gain_per, -1);
 
-    if (M->Gold->ounce_f) {
+    if (M->Gold->ounce_f)
       main_prmry_add_bul_store(M->Gold, "gold", pri_h_mkd->gold, store, &iter);
-    }
 
-    if (M->Palladium->ounce_f) {
+    if (M->Palladium->ounce_f)
       main_prmry_add_bul_store(M->Palladium, "palladium", pri_h_mkd->palladium,
                                store, &iter);
-    }
 
-    if (M->Platinum->ounce_f) {
+    if (M->Platinum->ounce_f)
       main_prmry_add_bul_store(M->Platinum, "platinum", pri_h_mkd->platinum,
                                store, &iter);
-    }
 
-    if (M->Silver->ounce_f) {
+    if (M->Silver->ounce_f)
       main_prmry_add_bul_store(M->Silver, "silver", pri_h_mkd->silver, store,
                                &iter);
-    }
 
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, MAIN_COLUMN_TYPE, "blank_space_primary",
@@ -357,7 +343,8 @@ static GtkListStore *main_default_store(portfolio_packet *pkg) {
   GtkListStore *store = NULL;
   GtkTreeIter iter;
 
-  /* Set up the storage container with the number of columns and column type */
+  /* Set up the storage container with the number of columns and column type
+   */
   store = gtk_list_store_new(5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
                              G_TYPE_STRING, G_TYPE_STRING);
 
@@ -375,21 +362,20 @@ static GtkListStore *main_default_store(portfolio_packet *pkg) {
                        MAIN_COLUMN_SYMBOL, "", MAIN_COLUMN_ONE,
                        def_h_mkd->metal, MAIN_COLUMN_TWO, def_h_mkd->ounces,
                        MAIN_COLUMN_THREE, def_h_mkd->premium, -1);
-    if (M->Gold->ounce_f) {
+    if (M->Gold->ounce_f)
       main_def_add_bul_store(M->Gold, "gold", def_h_mkd->gold, store, &iter);
-    }
-    if (M->Palladium->ounce_f) {
+
+    if (M->Palladium->ounce_f)
       main_def_add_bul_store(M->Palladium, "palladium", def_h_mkd->palladium,
                              store, &iter);
-    }
-    if (M->Platinum->ounce_f) {
+
+    if (M->Platinum->ounce_f)
       main_def_add_bul_store(M->Platinum, "platinum", def_h_mkd->platinum,
                              store, &iter);
-    }
-    if (M->Silver->ounce_f) {
+
+    if (M->Silver->ounce_f)
       main_def_add_bul_store(M->Silver, "silver", def_h_mkd->silver, store,
                              &iter);
-    }
 
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter, MAIN_COLUMN_TYPE, "blank_space_default",
@@ -428,6 +414,7 @@ static GtkListStore *main_default_store(portfolio_packet *pkg) {
             continue;
           }
         }
+
         gtk_list_store_append(store, &iter);
         gtk_list_store_set(
             store, &iter, MAIN_COLUMN_TYPE, "equity", MAIN_COLUMN_SYMBOL,
@@ -482,63 +469,9 @@ static void show_indices(portfolio_packet *pkg) {
                                 D->index_bar_revealed_bool);
 }
 
-static void set_clock_header(portfolio_packet *pkg) {
-  const gchar *fmt_header = "<span foreground='Black'>%s</span>";
-
-  /* Set clock heading label */
-  GtkWidget *label = GetWidget("NewYorkTimeLabel");
-  SetFormattedLabel(label, fmt_header, pkg->meta_class->font_ch,
-                    "New York Time");
-  label = GetWidget("MarketCloseLabel");
-  SetFormattedLabel(label, fmt_header, pkg->meta_class->font_ch,
-                    "Market Closed");
-
-  /* make sure font is set on the clock value labels */
-  MainSetClocks(pkg);
-}
-
-static void set_indice_header_font(const gchar *label_name,
-                                   const gchar *label_str, const gchar *font) {
-  const gchar *format = "<span foreground='DarkSlateGrey'>%s</span>";
-
-  GtkWidget *label = GetWidget(label_name);
-  SetFormattedLabel(label, format, font, label_str);
-}
-
-static struct {
-  const gchar *labelname;
-  const gchar *labelstr;
-} lbl_name_str[] = {{"DowLabel", "Dow"},       {"NasdaqLabel", "Nasdaq"},
-                    {"SPLabel", "S&P 500"},    {"BitcoinLabel", "Bitcoin"},
-                    {"GoldLabel", "Gold"},     {"SilverLabel", "Silver"},
-                    {"GSLabel", "Gold/Silver"}};
-
-static void set_indice_header(portfolio_packet *pkg) {
-  /* Format the index header labels */
-  gushort size = sizeof lbl_name_str / sizeof lbl_name_str[0];
-  for (gushort g = 0; g < size; g++) {
-    set_indice_header_font(lbl_name_str[g].labelname, lbl_name_str[g].labelstr,
-                           pkg->meta_class->font_ch);
-  }
-}
-
-gint MainSetFonts(portfolio_packet *pkg) {
-  /* Set the clock label fonts */
-  set_clock_header(pkg);
-
-  /* Make sure the font is set on the indice header labels */
-  set_indice_header(pkg);
-
-  /* Make sure the treeview heading fonts are set */
-  pkg->meta_class->ToStringsHeadings();
-
-  return 0;
-}
-
 static void set_indice_value_label(const gchar *label_name, const gdouble chg_f,
                                    const gchar *value, const gchar *chg,
-                                   const gchar *per_chg,
-                                   PangoAttrList *attrlist) {
+                                   const gchar *per_chg) {
 
   const gchar *red_format =
       "<span foreground='black'>%s\n</span><span foreground='darkred' "
@@ -548,64 +481,48 @@ static void set_indice_value_label(const gchar *label_name, const gdouble chg_f,
       "size='small'>%s, %s</span>";
   const gchar *fmt;
 
-  if (chg_f >= 0) {
+  if (chg_f >= 0)
     fmt = green_format;
-  } else {
+  else
     fmt = red_format;
-  };
 
   GtkWidget *label = GetWidget(label_name);
   gchar *markup = g_markup_printf_escaped(fmt, value, chg, per_chg);
   gtk_label_set_markup(GTK_LABEL(label), markup);
   g_free(markup);
-  gtk_label_set_attributes((GtkLabel *)label, attrlist);
 }
 
 static void set_indices_labels(portfolio_packet *pkg) {
   meta *D = pkg->GetMetaClass();
   metal *M = pkg->GetMetalClass();
-  /* Make sure the labels have the application font set. */
-
-  /* GtkLabels need the font set manually in an attribute list. */
-  /* Need to free/destroy attrlist. */
-  PangoAttrList *attrlist = pango_attr_list_new();
-
-  PangoFontDescription *font_desc =
-      pango_font_description_from_string(pkg->meta_class->font_ch);
-
-  /* attr does not take ownership of font_desc, need to destroy font_desc */
-  PangoAttribute *attr = pango_attr_font_desc_new(font_desc);
-  /* attrlist takes ownership of attr, do not free attr */
-  pango_attr_list_insert(attrlist, attr);
 
   set_indice_value_label("DowIndexValue", D->index_dow_value_chg_f,
                          D->index_dow_value_ch, D->index_dow_value_chg_ch,
-                         D->index_dow_value_p_chg_ch, attrlist);
+                         D->index_dow_value_p_chg_ch);
 
   set_indice_value_label("NasdaqIndexValue", D->index_nasdaq_value_chg_f,
                          D->index_nasdaq_value_ch, D->index_nasdaq_value_chg_ch,
-                         D->index_nasdaq_value_p_chg_ch, attrlist);
+                         D->index_nasdaq_value_p_chg_ch);
 
   set_indice_value_label("SPIndexValue", D->index_sp_value_chg_f,
                          D->index_sp_value_ch, D->index_sp_value_chg_ch,
-                         D->index_sp_value_p_chg_ch, attrlist);
+                         D->index_sp_value_p_chg_ch);
 
-  set_indice_value_label("BitcoinValue", D->crypto_bitcoin_value_chg_f,
-                         D->crypto_bitcoin_value_ch,
-                         D->crypto_bitcoin_value_chg_ch,
-                         D->crypto_bitcoin_value_p_chg_ch, attrlist);
+  set_indice_value_label(
+      "BitcoinValue", D->crypto_bitcoin_value_chg_f, D->crypto_bitcoin_value_ch,
+      D->crypto_bitcoin_value_chg_ch, D->crypto_bitcoin_value_p_chg_ch);
 
   gchar *spot = NULL, *chg_ounce = NULL;
 
   DoubleToFormattedStr(&spot, M->Gold->spot_price_f, 2, MON_STR);
   DoubleToFormattedStr(&chg_ounce, M->Gold->change_ounce_f, 2, MON_STR);
   set_indice_value_label("GoldValue", M->Gold->change_ounce_f, spot, chg_ounce,
-                         M->Gold->change_percent_raw_ch, attrlist);
+                         M->Gold->change_percent_raw_ch);
 
   DoubleToFormattedStr(&spot, M->Silver->spot_price_f, 2, MON_STR);
   DoubleToFormattedStr(&chg_ounce, M->Silver->change_ounce_f, 2, MON_STR);
   set_indice_value_label("SilverValue", M->Silver->change_ounce_f, spot,
-                         chg_ounce, M->Silver->change_percent_raw_ch, attrlist);
+                         chg_ounce, M->Silver->change_percent_raw_ch);
 
   g_free(spot);
   g_free(chg_ounce);
@@ -615,10 +532,6 @@ static void set_indices_labels(portfolio_packet *pkg) {
                                           M->gold_silver_ratio_ch);
   gtk_label_set_markup(GTK_LABEL(label), markup);
   g_free(markup);
-  gtk_label_set_attributes((GtkLabel *)label, attrlist);
-
-  pango_font_description_free(font_desc);
-  pango_attr_list_unref(attrlist);
 }
 
 gint MainPrimaryTreeview(gpointer pkg_data) {
@@ -690,46 +603,42 @@ gint MainDefaultTreeview(gpointer pkg_data) {
   return 0;
 }
 
-static gint main_display_time(const gchar *fmt, const gchar *font,
-                              const gint ny_h, const gint ny_m) {
+static gint main_display_time(const gint ny_h, const gint ny_m) {
   GtkWidget *NYTimeValLabel = GetWidget("NYTimeLabel");
   gchar time_ch[10];
 
   /* Set the New York time label */
   g_snprintf(time_ch, 10, "%02d:%02d", ny_h, ny_m);
-  SetFormattedLabel(NYTimeValLabel, fmt, font, time_ch);
+  gtk_label_set_label(GTK_LABEL(NYTimeValLabel), time_ch);
   return 0;
 }
 
-static gint main_display_time_remaining(const gchar *fmt, const gchar *font,
-                                        const gint h, const gint m,
+static gint main_display_time_remaining(const gint h, const gint m,
                                         const gint s, const gboolean isclosed,
                                         const gboolean holiday,
                                         const gchar *holiday_str) {
   GtkWidget *CloseLabel = GetWidget("MarketCloseLabel");
   GtkWidget *TimeRemLabel = GetWidget("TimeLeftLabel");
-  const gchar *fmt_header = "<span foreground='Black'>%s</span>";
   gchar time_left_ch[10];
 
   if (isclosed) {
-    if (holiday) {
-      SetFormattedLabel(CloseLabel, fmt_header, font,
-                        holiday_str ? holiday_str : "");
-    } else {
-      SetFormattedLabel(CloseLabel, fmt_header, font, "Market Closed");
-    }
-    gtk_label_set_text(GTK_LABEL(TimeRemLabel), "");
+    if (holiday)
+      gtk_label_set_label(GTK_LABEL(CloseLabel),
+                          holiday_str ? holiday_str : "");
+    else
+      gtk_label_set_label(GTK_LABEL(CloseLabel), "Market Closed");
+
+    gtk_label_set_label(GTK_LABEL(TimeRemLabel), "");
   } else {
-    SetFormattedLabel(CloseLabel, fmt_header, font, "Market Closes In");
+    gtk_label_set_label(GTK_LABEL(CloseLabel), "Market Closes In");
     g_snprintf(time_left_ch, 10, "%02d:%02d:%02d", h, m, s);
-    SetFormattedLabel(TimeRemLabel, fmt, font, time_left_ch);
+    gtk_label_set_label(GTK_LABEL(TimeRemLabel), time_left_ch);
   }
   return 0;
 }
 
 gint MainSetClocks(gpointer pkg_data) {
   portfolio_packet *pkg = (portfolio_packet *)pkg_data;
-  const gchar *fmt = "<span foreground='DimGray'>%s</span>";
   gint h_left, m_left, s_left, h_cur, m_cur;
   gchar *holiday_str = NULL;
   gboolean holiday;
@@ -737,9 +646,9 @@ gint MainSetClocks(gpointer pkg_data) {
                                   &s_left, &h_cur, &m_cur);
   pkg->SetClosed(isclosed);
 
-  main_display_time(fmt, pkg->meta_class->font_ch, h_cur, m_cur);
-  main_display_time_remaining(fmt, pkg->meta_class->font_ch, h_left, m_left,
-                              s_left, isclosed, holiday, holiday_str);
+  main_display_time(h_cur, m_cur);
+  main_display_time_remaining(h_left, m_left, s_left, isclosed, holiday,
+                              holiday_str);
 
   return 0;
 }

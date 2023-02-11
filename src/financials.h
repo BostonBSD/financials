@@ -38,7 +38,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "include/config.h"  /* ReadConfig (), RemoveConfigFiles () */
 #include "include/globals.h" /* portfolio_packet *packet */
 #include "include/gui.h"     /* GuiStart () */
-#include "include/macros.h"  /* CONFIG_DIR */
 #include "include/mutex.h"   /* GMutex mutexes[ MUTEX_NUMBER ] */
 
 #endif /* FINANCIALS_HEADER_H */

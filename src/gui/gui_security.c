@@ -49,11 +49,10 @@ gint SecurityCursorMove() {
   const gchar *shares = GetEntryText("SecuritySharesEntryBox");
 
   if (CheckValidString(symbol) && CheckValidString(shares) &&
-      CheckIfStringLongPositiveNumber(shares)) {
+      CheckIfStringLongPositiveNumber(shares))
     gtk_widget_set_sensitive(Button, TRUE);
-  } else {
+  else
     gtk_widget_set_sensitive(Button, FALSE);
-  }
 
   return 0;
 }
@@ -87,8 +86,7 @@ gint SecurityComBoxChange(portfolio_packet *pkg) {
     g_free(symbol);
 
     remove_dash(name);
-    const gchar *fmt = "<span foreground='MidnightBlue' size='large'>%s</span>";
-    SetFormattedLabel(label, fmt, pkg->meta_class->font_ch, name ? name : "");
+    gtk_label_set_label(GTK_LABEL(label), name);
     if (name)
       g_free(name);
 
@@ -130,7 +128,7 @@ static gpointer fetch_data_for_new_stock(gpointer data) {
   g_mutex_unlock(&mutexes[CLASS_MEMBER_MUTEX]);
 
   /* Sort the equity folder, the following three statements lock the
-   * MUTEXes */
+   * mutexes */
   F->Sort(); /* The new stock is in alphabetical order within the array. */
 
   pkg->Calculate();
@@ -226,11 +224,10 @@ static gpointer remove_security_ok_thd(gpointer data) {
   }
 
   /* Update the treeview. */
-  if (pkg->IsDefaultView()) {
+  if (pkg->IsDefaultView())
     gdk_threads_add_idle(MainDefaultTreeview, data);
-  } else {
+  else
     gdk_threads_add_idle(MainPrimaryTreeview, data);
-  }
 
   g_mutex_unlock(&mutexes[FETCH_DATA_MUTEX]);
   g_thread_exit(NULL);
@@ -289,15 +286,13 @@ gint SecurityShowHide(portfolio_packet *pkg) {
     gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(ComboBox), NULL,
                               "Select a security");
 
-    if (F->size > 0) {
+    if (F->size > 0)
       gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(ComboBox), NULL,
                                 "Remove all");
-    }
 
-    for (guint8 i = 0; i < F->size; i++) {
+    for (guint8 i = 0; i < F->size; i++)
       gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(ComboBox), NULL,
                                 F->Equity[i]->symbol_stock_ch);
-    }
 
     GtkWidget *label = GetWidget("SecurityWindowLabel");
 

@@ -47,12 +47,11 @@ gdouble CalcGain(gdouble cur_price, gdouble prev_price) {
 }
 
 void CalcSumRsi(gdouble current_gain, gdouble *avg_gain, gdouble *avg_loss) {
-  if (current_gain >= 0) {
+  if (current_gain >= 0)
     *avg_gain += current_gain;
-  } else {
+  else
     /* *avg_loss += (-1 * current_gain); */
     *avg_loss -= current_gain;
-  }
 }
 
 void CalcRunAvgRsi(gdouble current_gain, gdouble *avg_gain, gdouble *avg_loss,

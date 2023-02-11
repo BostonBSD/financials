@@ -81,11 +81,10 @@ gint HistoryCursorMove() {
   const gchar *s = GetEntryText("HistorySymbolEntryBox");
   GtkWidget *Button = GetWidget("HistoryFetchDataBTN");
 
-  if (CheckValidString(s)) {
+  if (CheckValidString(s))
     gtk_widget_set_sensitive(Button, TRUE);
-  } else {
+  else
     gtk_widget_set_sensitive(Button, FALSE);
-  }
 
   return 0;
 }
@@ -103,29 +102,28 @@ static gchar *col_names[HISTORY_N_COLUMNS] = {
 static void history_set_columns() {
   GtkWidget *list = GetWidget("HistoryTreeView");
 
-  for (gushort g = 0; g < HISTORY_N_COLUMNS; g++) {
+  for (gushort g = 0; g < HISTORY_N_COLUMNS; g++)
     AddColumnToTreeview(col_names[g], g, list);
-  }
 }
 
 gint HistorySetSNLabel(gpointer string_font_data) {
   string_font *str_fnt_container = (string_font *)string_font_data;
   GtkWidget *label = GetWidget("HistoryStockSymbolLabel");
-  const gchar *fmt = "<span foreground='MidnightBlue' size='large'>%s</span>";
 
   gushort len = g_utf8_strlen(
       str_fnt_container->string ? str_fnt_container->string : "", -1);
   if (len >= 96) {
     /* We don't want names longer than 95 characters. */
     str_fnt_container->string[95] = 0;
-    /* Truncate unnecessary info after the comma. */
+    /* Truncate unnecessary info after the comma, if any. */
     gchar *ch = g_utf8_strchr(str_fnt_container->string, -1, (gunichar)',');
-    if (ch != NULL)
+    if (ch)
       *ch = 0;
   }
 
-  SetFormattedLabel(label, fmt, str_fnt_container->font,
-                    str_fnt_container->string ? str_fnt_container->string : "");
+  gtk_label_set_label(GTK_LABEL(label), str_fnt_container->string
+                                            ? str_fnt_container->string
+                                            : "");
   return 0;
 }
 
@@ -138,7 +136,7 @@ gint HistoryGetSymbol(gchar **s)
 */
 {
   const gchar *tmp = GetEntryText("HistorySymbolEntryBox");
-  /* Convert to uppercase letters, must free return value. */
+  /* Convert to uppercase letters, must free string buffer. */
   s[0] = g_ascii_strup(tmp, -1);
 
   return 0;
@@ -260,17 +258,16 @@ static gboolean history_rsi_calculate(gchar *line, history_strings *strings,
   DoubleToFormattedStrPango(&strings->volume_ch, (double)volume_long, 0,
                             NUM_STR, BLACK);
 
-  if (rsi_f >= 70.0f) {
+  if (rsi_f >= 70.0f)
     StringToStrPango(&strings->indicator_ch, "Overbought", RED);
-  } else if (rsi_f >= 60.0f) {
+  else if (rsi_f >= 60.0f)
     StringToStrPango(&strings->indicator_ch, "Overbought Warning", ORANGE);
-  } else if (rsi_f < 60.0f && rsi_f > 40.0f) {
+  else if (rsi_f < 60.0f && rsi_f > 40.0f)
     StringToStrPango(&strings->indicator_ch, "Neutral", GREY);
-  } else if (rsi_f > 30.0f) {
+  else if (rsi_f > 30.0f)
     StringToStrPango(&strings->indicator_ch, "Oversold Warning", CYAN);
-  } else {
+  else
     StringToStrPango(&strings->indicator_ch, "Oversold", GREEN);
-  }
 
   g_strfreev(token_arr);
   return TRUE;

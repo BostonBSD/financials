@@ -182,15 +182,17 @@ void GUICallback_pref_font_button(GtkFontButton *widget) {
 
   g_free(D->font_ch);
   D->font_ch = gtk_font_chooser_get_font(GTK_FONT_CHOOSER(widget));
+
   /* Set the pango_formatting.c font variable. */
   SetFont(D->font_ch);
 
   packet->equity_folder_class->SetSecurityNames(packet);
-  /* Make sure font is set on the main window
+  /* Make sure font is set on the application
      labels and the treeview header strings. */
-  MainSetFonts(packet);
+  SetLabelFonts(D->font_ch);
+  packet->meta_class->ToStringsHeadings();
 
-  /* Update the application with the new font */
+  /* Update the main treeview with the new font */
   g_thread_id = g_thread_new(NULL, GUIThread_recalculate, packet);
   g_thread_unref(g_thread_id);
 }
@@ -353,10 +355,9 @@ gboolean GUICallback_window_data(GtkWidget *window, GdkEvent *event,
   return FALSE;
 }
 
-gboolean GUICallback_select_comp(GtkEntryCompletion *completion,
-                                 GtkTreeModel *model, GtkTreeIter *iter,
-                                 gpointer sig_data)
-/* activated when an item is selected from the completion list */
+gboolean GUICallback_comp(GtkEntryCompletion *completion, GtkTreeModel *model,
+                          GtkTreeIter *iter, gpointer sig_data)
+/* activated when an item is selected or highlighted from the completion list */
 {
   UNUSED(completion)
 
@@ -364,42 +365,13 @@ gboolean GUICallback_select_comp(GtkEntryCompletion *completion,
   guintptr index_signal = (guintptr)sig_data;
   GtkWidget *EntryBox = NULL;
 
-  if (index_signal == GUI_COMPLETION_HISTORY) {
+  if (index_signal == GUI_COMPLETION_HISTORY)
     EntryBox = GetWidget("HistorySymbolEntryBox");
-  } else {
+  else
     EntryBox = GetWidget("SecuritySymbolEntryBox");
-  }
 
   gchar *item;
   /* when a match is selected insert column zero instead of column 2 */
-  gtk_tree_model_get(model, iter, 0, &item, -1);
-  gtk_entry_set_text(GTK_ENTRY(EntryBox), item);
-
-  /* move the cursor to the end of the string */
-  gtk_editable_set_position(GTK_EDITABLE(EntryBox), g_utf8_strlen(item, -1));
-  g_free(item);
-  return TRUE;
-}
-
-gboolean GUICallback_cursor_comp(GtkEntryCompletion *completion,
-                                 GtkTreeModel *model, GtkTreeIter *iter,
-                                 gpointer sig_data)
-/* activated when an item is highlighted from the completion list */
-{
-  UNUSED(completion)
-
-  /* We're using data as a value rather than a pointer. */
-  guintptr index_signal = (guintptr)sig_data;
-  GtkWidget *EntryBox = NULL;
-
-  if (index_signal == GUI_COMPLETION_HISTORY) {
-    EntryBox = GetWidget("HistorySymbolEntryBox");
-  } else {
-    EntryBox = GetWidget("SecuritySymbolEntryBox");
-  }
-
-  gchar *item;
-  /* when a match is highlighted insert column zero instead of column 2 */
   gtk_tree_model_get(model, iter, 0, &item, -1);
   gtk_entry_set_text(GTK_ENTRY(EntryBox), item);
 
@@ -453,15 +425,14 @@ static void popup_menu_delete_bullion(GtkWidget *menuitem, gpointer userdata) {
   gboolean platinum = (g_strcmp0(metal_name, "platinum") == 0);
   gboolean palladium = (g_strcmp0(metal_name, "palladium") == 0);
 
-  if (gold) {
+  if (gold)
     zeroize_bullion(M->Gold);
-  } else if (silver) {
+  else if (silver)
     zeroize_bullion(M->Silver);
-  } else if (platinum) {
+  else if (platinum)
     zeroize_bullion(M->Platinum);
-  } else if (palladium) {
+  else if (palladium)
     zeroize_bullion(M->Palladium);
-  }
 
   GThread *g_thread_id;
   g_thread_id = g_thread_new(NULL, GUIThread_recalculate, packet);
@@ -556,17 +527,16 @@ static void popup_menu_add_row(GtkWidget *menuitem, gpointer userdata) {
 
   gchar *type = (gchar *)userdata;
 
-  if (g_strcmp0(type, "equity") == 0) {
+  if (g_strcmp0(type, "equity") == 0)
     SecurityShowHide(packet);
-  } else if (g_strcmp0(type, "equity_total") == 0) {
+  else if (g_strcmp0(type, "equity_total") == 0)
     SecurityShowHide(packet);
-  } else if (g_strcmp0(type, "bullion") == 0) {
+  else if (g_strcmp0(type, "bullion") == 0)
     BullionShowHide(packet);
-  } else if (g_strcmp0(type, "bullion_total") == 0) {
+  else if (g_strcmp0(type, "bullion_total") == 0)
     BullionShowHide(packet);
-  } else if (g_strcmp0(type, "cash") == 0) {
+  else if (g_strcmp0(type, "cash") == 0)
     CashShowHide(packet);
-  }
 }
 
 static void create_menu_item(GtkWidget *menu, const gchar *menu_label_ch,
@@ -673,13 +643,12 @@ gboolean GUICallback_main_treeview_click(GtkWidget *treeview,
 
         } else if (bu_flag || bu_tot_flag || ca_flag) {
           menu = gtk_menu_new();
-          if (bu_flag || bu_tot_flag) {
+          if (bu_flag || bu_tot_flag)
             create_menu_item(menu, "Edit Bullion", popup_menu_add_row,
                              D->rght_clk_data.type);
-          } else {
+          else
             create_menu_item(menu, "Edit Cash", popup_menu_add_row,
                              D->rght_clk_data.type);
-          }
 
           if (bu_flag) {
             D->rght_clk_data.symbol[0] =
@@ -693,10 +662,9 @@ gboolean GUICallback_main_treeview_click(GtkWidget *treeview,
             g_free(menu_label);
           }
 
-          if (bu_flag || bu_tot_flag) {
+          if (bu_flag || bu_tot_flag)
             create_menu_item(menu, "Delete All Bullion",
                              popup_menu_delete_all_bullion, NULL);
-          }
 
           gtk_widget_show_all(menu);
           gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent *)event);
@@ -706,10 +674,9 @@ gboolean GUICallback_main_treeview_click(GtkWidget *treeview,
         } else if (bs_d_flag || bs_p_flag) {
           menu = gtk_menu_new();
 
-          if (bs_p_flag) {
+          if (bs_p_flag)
             create_menu_item(menu, "View Summary", popup_menu_view_summary,
                              NULL);
-          }
 
           create_menu_item(menu, "Edit Cash", popup_menu_add_row, "cash");
           create_menu_item(menu, "Edit Bullion", popup_menu_add_row, "bullion");

@@ -37,6 +37,26 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/sqlite.h"
 #include "../include/workfuncs.h"
 
+static gint alpha_asc_sec_name(gconstpointer a, gconstpointer b, gpointer data)
+/* This is a callback function for Glib sorting functions.
+   It compares symbol_to_security_name_container in alphabetically
+   ascending order, by the stock symbol data member.  Swapping only
+   the pointer.
+*/
+{
+  UNUSED(data)
+
+  /* Cast the void pointer as a symbol_to_security_name_container double
+   * pointer. */
+  symbol_to_security_name_container **aa =
+      (symbol_to_security_name_container **)a;
+  symbol_to_security_name_container **bb =
+      (symbol_to_security_name_container **)b;
+
+  /* Compare the symbol data members. */
+  return g_strcmp0(aa[0]->symbol, bb[0]->symbol);
+}
+
 static gchar *hash_table_lookup(gchar *s, const symbol_name_map *sn_map) {
   if (sn_map == NULL)
     return NULL;
@@ -59,14 +79,12 @@ gchar *GetSecurityName(gchar *s, const symbol_name_map *sn_map, meta *D)
    Must free return value. */
 {
   /* If we are currently adding a mapping to the db */
-  if (D->snmap_db_busy_bool) {
+  if (D->snmap_db_busy_bool)
     /* Look for a name in the sn_map, in memory. */
     return hash_table_lookup(s, sn_map);
-  } else {
+  else
     /* Otherwise, look for a name in the db, from hard drive. */
-    gchar *test_ch = SqliteGetSNMapName(s, D);
-    return test_ch;
-  }
+    return SqliteGetSNMapName(s, D);
 }
 
 void CreateHashTable(symbol_name_map *sn_map) {
@@ -80,57 +98,6 @@ void CreateHashTable(symbol_name_map *sn_map) {
                         sn_map->sn_container_arr[s]);
     s++;
   }
-}
-
-void SNMapDestruct(symbol_name_map *sn_map)
-/* Frees and resets all members of the sn_map
-   object.  Does not free the sn_map object. */
-{
-  if (sn_map == NULL)
-    return;
-
-  if (sn_map->sn_container_arr) {
-    for (gushort i = 0; i < sn_map->size; i++) {
-      /* Free the string members */
-      g_free(sn_map->sn_container_arr[i]->symbol);
-      sn_map->sn_container_arr[i]->symbol = NULL;
-      g_free(sn_map->sn_container_arr[i]->security_name);
-      sn_map->sn_container_arr[i]->security_name = NULL;
-      /* Free the memory that the address is pointing to */
-      g_free(sn_map->sn_container_arr[i]);
-      sn_map->sn_container_arr[i] = NULL;
-    }
-    /* Free the array of pointer addresses */
-    g_free(sn_map->sn_container_arr);
-    sn_map->sn_container_arr = NULL;
-    sn_map->size = 0;
-  }
-
-  /* Destroy the table data and free hash_table */
-  if (sn_map->hash_table) {
-    g_hash_table_destroy(sn_map->hash_table);
-    sn_map->hash_table = NULL;
-  }
-}
-
-static gint alpha_asc_sec_name(gconstpointer a, gconstpointer b, gpointer data)
-/* This is a callback function for Glib sorting functions.
-   It compares symbol_to_security_name_container in alphabetically
-   ascending order, by the stock symbol data member.  Swapping only
-   the pointer.
-*/
-{
-  UNUSED(data)
-
-  /* Cast the void pointer as a symbol_to_security_name_container double
-   * pointer. */
-  symbol_to_security_name_container **aa =
-      (symbol_to_security_name_container **)a;
-  symbol_to_security_name_container **bb =
-      (symbol_to_security_name_container **)b;
-
-  /* Compare the symbol data members. */
-  return g_strcmp0(aa[0]->symbol, bb[0]->symbol);
 }
 
 /* Symbols we don't want. */
@@ -154,12 +121,9 @@ static gboolean check_symbol(const gchar *s)
 
   gushort g = 0, size = sizeof bad_syms / sizeof bad_syms[0];
 
-  while (g < size) {
-    if (g_strrstr(s, bad_syms[g])) {
+  while (g < size)
+    if (g_strrstr(s, bad_syms[g++]))
       return FALSE;
-    }
-    g++;
-  }
 
   return TRUE;
 }
@@ -167,25 +131,30 @@ static gboolean check_symbol(const gchar *s)
 static void sub_symbol(gchar **symbol_ch, const gchar *suffix_ch) {
   gchar *tmp = NULL;
 
+  /* Locate the decimal point and replace with a null. */
   tmp = g_utf8_strchr(symbol_ch[0], -1, (gunichar)'.');
   *tmp = 0;
+
+  /* Duplcate the string without the previous suffix. */
   tmp = g_strdup(symbol_ch[0]);
   g_free(symbol_ch[0]);
+
+  /* Concatenate the new suffix to the string. */
   symbol_ch[0] = g_strconcat(tmp, suffix_ch, NULL);
   g_free(tmp);
 }
 
 static void substitute_warrant_and_unit_symbols(gchar **symbol_ch) {
-  if (symbol_ch[0] == NULL)
+  if (!symbol_ch[0])
     return;
+
   /* Warrants */
-  if (g_strrstr(symbol_ch[0], ".W")) {
+  if (g_strrstr(symbol_ch[0], ".W"))
     sub_symbol(symbol_ch, "-WT");
 
-    /* Units */
-  } else if (g_strrstr(symbol_ch[0], ".U")) {
+  /* Units */
+  else if (g_strrstr(symbol_ch[0], ".U"))
     sub_symbol(symbol_ch, "-UN");
-  }
 }
 
 void AddSymbolToMap(const gchar *symbol, const gchar *name,
@@ -218,10 +187,9 @@ static symbol_name_map *sym_name_map_dup(symbol_name_map *sn_map)
   /* Not using the hash table. */
   sn_map_dup->hash_table = NULL;
 
-  for (gushort g = 0; g < sn_map->size; g++) {
+  for (gushort g = 0; g < sn_map->size; g++)
     AddSymbolToMap(sn_map->sn_container_arr[g]->symbol,
                    sn_map->sn_container_arr[g]->security_name, sn_map_dup);
-  }
 
   return sn_map_dup;
 }
@@ -304,10 +272,9 @@ static const symbol_to_security_name_container special_syms[] = {
 static void add_special_symbols(symbol_name_map *sn_map) {
   gushort size = (sizeof special_syms) / (sizeof special_syms[0]);
 
-  for (gushort i = 0; i < size; i++) {
+  for (gushort i = 0; i < size; i++)
     AddSymbolToMap(special_syms[i].symbol, special_syms[i].security_name,
                    sn_map);
-  }
 }
 
 static void symbol_list_fetch_cleanup(gchar *line, FILE **fp,
@@ -422,6 +389,7 @@ static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
 
   /* Add special symbols such as indices, commodities, bonds, and crypto to the
    * map. */
+
   add_special_symbols(sn_map);
 
   /* Sort the security symbol array, this reorders both lists into one sorted
@@ -497,5 +465,36 @@ symbol_name_map *SymNameFetchUpdate(portfolio_packet *pkg,
 
     /* Return the current symbol-name mapping, unchanged */
     return sn_map;
+  }
+}
+
+void SNMapDestruct(symbol_name_map *sn_map)
+/* Frees and resets all members of the sn_map
+   object.  Does not free the sn_map object. */
+{
+  if (sn_map == NULL)
+    return;
+
+  if (sn_map->sn_container_arr) {
+    for (gushort i = 0; i < sn_map->size; i++) {
+      /* Free the string members */
+      g_free(sn_map->sn_container_arr[i]->symbol);
+      sn_map->sn_container_arr[i]->symbol = NULL;
+      g_free(sn_map->sn_container_arr[i]->security_name);
+      sn_map->sn_container_arr[i]->security_name = NULL;
+      /* Free the memory that the address is pointing to */
+      g_free(sn_map->sn_container_arr[i]);
+      sn_map->sn_container_arr[i] = NULL;
+    }
+    /* Free the array of pointer addresses */
+    g_free(sn_map->sn_container_arr);
+    sn_map->sn_container_arr = NULL;
+    sn_map->size = 0;
+  }
+
+  /* Destroy the table data and free hash_table */
+  if (sn_map->hash_table) {
+    g_hash_table_destroy(sn_map->hash_table);
+    sn_map->hash_table = NULL;
   }
 }

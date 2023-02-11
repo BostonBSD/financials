@@ -44,20 +44,16 @@ static void mutex_init()
 /* Initialize Mutexes */
 {
   gushort g = 0;
-  while (g < MUTEX_NUMBER) {
-    g_mutex_init(&mutexes[g]);
-    g++;
-  }
+  while (g < MUTEX_NUMBER)
+    g_mutex_init(&mutexes[g++]);
 }
 
 static void mutex_destruct()
 /* Free Mutex Resources */
 {
   gushort g = 0;
-  while (g < MUTEX_NUMBER) {
-    g_mutex_clear(&mutexes[g]);
-    g++;
-  }
+  while (g < MUTEX_NUMBER)
+    g_mutex_clear(&mutexes[g++]);
 }
 
 static void class_package_init()
@@ -80,20 +76,28 @@ static void simple_arg_parse(gchar **argv, portfolio_packet *pkg) {
             "-h --help\tPrint this help message.\n"
             "-r --reset\tRemove %s database files.\n\n",
             argv[0]);
+
+    /* Free Class Instances. */
+    class_package_destruct();
     exit(EXIT_SUCCESS);
 
   } else if (!g_strcmp0("-r", argv[1]) || !g_strcmp0("--reset", argv[1])) {
 
     gint ret = RemoveConfigFiles(pkg->GetMetaClass());
     if (ret) {
-      g_print("File removal error, is the '%s" CONFIG_DIR
-              "' directory empty or non-existent?\n",
-              pkg->meta_class->config_dir_ch);
+      g_print(
+          "File removal error, is the '%s' directory empty or non-existent?\n",
+          pkg->meta_class->config_dir_ch);
+
+      /* Free Class Instances. */
+      class_package_destruct();
       exit(EXIT_FAILURE);
     } else {
-      g_print("Config file directory '%s" CONFIG_DIR
-              "' removed successfully.\n",
+      g_print("Config file directory '%s' removed successfully.\n",
               pkg->meta_class->config_dir_ch);
+
+      /* Free Class Instances. */
+      class_package_destruct();
       exit(EXIT_SUCCESS);
     }
   }

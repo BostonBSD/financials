@@ -32,6 +32,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/class_types.h" /* portfolio_packet, meta */
 #include "../include/gui.h"
 #include "../include/macros.h"
+#include "../include/workfuncs.h"
 
 void AddColumnToTreeview(const gchar *col_name, const gint col_num,
                          GtkWidget *treeview) {
@@ -52,33 +53,6 @@ gint TreeViewClear(GtkWidget *treeview) {
     column = gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), n);
     gtk_tree_view_remove_column(GTK_TREE_VIEW(treeview), column);
   }
-
-  return 0;
-}
-
-gint SetFormattedLabel(GtkWidget *label, const gchar *fmt, const gchar *font,
-                       const gchar *text) {
-  /* Set a formatted label, can only set format strings with one string
-   * argument. */
-  PangoAttrList *attrlist = pango_attr_list_new();
-  PangoFontDescription *font_desc = pango_font_description_from_string(font);
-  PangoAttribute *attr = pango_attr_font_desc_new(font_desc);
-  pango_attr_list_insert(attrlist, attr);
-
-  gchar *markup = g_markup_printf_escaped(fmt, text);
-
-  /* gtk_label_set_markup resets the attribute list, so we need to
-     set the markup and attribute list each time this func is called.
-     gtk_label_set_markup doesn't display the font tag correctly,
-     gtk_label_set_attributes doesn't display the color correctly, so we need to
-     do both setting markup first then the attrlist. */
-  gtk_label_set_markup(GTK_LABEL(label), markup);
-  g_free(markup);
-
-  gtk_label_set_attributes(GTK_LABEL(label), attrlist);
-
-  pango_font_description_free(font_desc);
-  pango_attr_list_unref(attrlist);
 
   return 0;
 }
@@ -147,11 +121,10 @@ gint CompletionSet(symbol_name_map *sn_map, guintptr gui_completion_sig) {
     return 0;
 
   GtkWidget *EntryBox = NULL;
-  if (gui_completion_sig == GUI_COMPLETION_HISTORY) {
+  if (gui_completion_sig == GUI_COMPLETION_HISTORY)
     EntryBox = GetWidget("HistorySymbolEntryBox");
-  } else {
+  else
     EntryBox = GetWidget("SecuritySymbolEntryBox");
-  }
 
   GtkEntryCompletion *completion = gtk_entry_completion_new();
   GtkListStore *store = completion_set_store(sn_map);
@@ -173,7 +146,7 @@ gint CompletionSet(symbol_name_map *sn_map, guintptr gui_completion_sig) {
      reduces the number of results for single character keys. */
   gtk_entry_completion_set_minimum_key_length(completion, 2);
 
-  /* Connect GtkEntryCompletion signals to callbacks */
+  /* Connect GtkEntryCompletion signals to callback */
 
   /* The text column to insert is column 0
      We use a callback on the 'match-selected' signal and insert the text from
@@ -181,11 +154,9 @@ gint CompletionSet(symbol_name_map *sn_map, guintptr gui_completion_sig) {
      signal and insert the text from column 0 instead of column 2
   */
   g_signal_connect(G_OBJECT(completion), "match-selected",
-                   G_CALLBACK(GUICallback_select_comp),
-                   (gpointer)gui_completion_sig);
+                   G_CALLBACK(GUICallback_comp), (gpointer)gui_completion_sig);
   g_signal_connect(G_OBJECT(completion), "cursor-on-match",
-                   G_CALLBACK(GUICallback_cursor_comp),
-                   (gpointer)gui_completion_sig);
+                   G_CALLBACK(GUICallback_comp), (gpointer)gui_completion_sig);
 
   g_object_unref(G_OBJECT(completion));
 
@@ -199,7 +170,7 @@ void StartCompletionThread(portfolio_packet *pkg) {
      This will populate the symbol to name mapping,
      from an sqlite Db when the application loads.
 
-     The lists of symbol to name mappings need to be
+     The list of symbol to name mappings need to be
      downloaded by the user [in the preferences window]
      if the db isn't already populated. */
   g_thread_id = g_thread_new(NULL, GUIThread_completion_set, pkg);
@@ -229,4 +200,68 @@ void StartClockThread(portfolio_packet *pkg)
                                 pkg->IsClockDisplayed());
   /* Revealer animation set to 300 milliseconds */
   gtk_revealer_set_transition_duration(GTK_REVEALER(revealer), 300);
+}
+
+static void set_widget_css(GtkWidget *widget, const gchar *css) {
+  GtkCssProvider *css_provider = gtk_css_provider_new();
+
+  gtk_css_provider_load_from_data(css_provider, css, -1, NULL);
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+  gtk_style_context_add_provider(context, GTK_STYLE_PROVIDER(css_provider),
+                                 GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+
+  g_object_unref(G_OBJECT(css_provider));
+}
+
+static void set_label_font_css(const gchar *widget_name_ch, const gchar *fmt_ch,
+                               const gchar *font_ch, const gchar *fnt_sz_ch,
+                               const gchar *fg_colr_ch,
+                               const gchar *bg_colr_ch) {
+  gchar *css = SnPrint(fmt_ch, font_ch, fnt_sz_ch, fg_colr_ch, bg_colr_ch);
+  GtkWidget *widget = GetWidget(widget_name_ch);
+  set_widget_css(widget, css);
+  g_free(css);
+}
+
+void SetLabelFonts(const gchar *font_str) {
+  gchar *css_fnt_str = PangoToCssFontStr(font_str);
+
+  /* We set the CSS font here at runtime [at startup and during font selection],
+   * the color and size attributes can still be altered with Pango markup
+   * afterwards.
+   *
+   * If the font-size attribute is removed from the CSS, the size
+   * will vary with the selected fontname, although this would change the user
+   * experience [ :-) => :-( ].
+   */
+  gchar *css_fmt = "label{font:%s;font-size:%s;color:%s;background-color:%s;}";
+  set_label_font_css("SecurityWindowLabel", css_fmt, css_fnt_str, "medium",
+                     "MidnightBlue", "White");
+  set_label_font_css("HistoryStockSymbolLabel", css_fmt, css_fnt_str, "medium",
+                     "MidnightBlue", "White");
+  set_label_font_css("NewYorkTimeLabel", css_fmt, css_fnt_str, "x-small",
+                     "Black", "White");
+  set_label_font_css("MarketCloseLabel", css_fmt, css_fnt_str, "x-small",
+                     "Black", "White");
+  set_label_font_css("NYTimeLabel", css_fmt, css_fnt_str, "x-small", "DimGray",
+                     "White");
+  set_label_font_css("TimeLeftLabel", css_fmt, css_fnt_str, "x-small",
+                     "DimGray", "White");
+
+  css_fmt = "grid*{font:%s;font-size:%s;color:%s;background-color:%s;}";
+  set_label_font_css("MainIndicesHeaderGrid", css_fmt, css_fnt_str, "smaller",
+                     "DarkSlateGrey", "White");
+  /* Notice that some of the values within the following grid are red and green,
+   * this is due to Pango markup. */
+  set_label_font_css("MainIndicesValueGrid", css_fmt, css_fnt_str, "smaller",
+                     "Black", "White");
+
+  /* Make sure the background of the unused clock grid cells are set. */
+  css_fmt = "grid{background-color:%s;}";
+  gchar *css = SnPrint(css_fmt, "White");
+  GtkWidget *widget = GetWidget("MainClockGrid");
+  set_widget_css(widget, css);
+  g_free(css);
+
+  g_free(css_fnt_str);
 }

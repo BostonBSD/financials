@@ -373,9 +373,8 @@ static void history_fetch_exit(history_cleanup *hist_data) {
     g_free(hist_data->HistoryOutput);
   }
 
-  if (hist_data->symbol) {
+  if (hist_data->symbol)
     g_free(hist_data->symbol);
-  }
 
   g_thread_exit(NULL);
 }
@@ -500,9 +499,8 @@ gpointer GUIThread_pref_sym_update(gpointer pkg_data) {
                               sym_map, dstry_notify_func_snmap);
     pkg->SetSymNameMap(NULL);
 
-    if (pkg->IsDefaultView()) {
+    if (pkg->IsDefaultView())
       gdk_threads_add_idle(MainDefaultTreeview, pkg);
-    }
   }
 
   g_thread_exit(NULL);

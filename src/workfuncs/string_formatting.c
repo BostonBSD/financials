@@ -50,11 +50,9 @@ gboolean CheckValidString(const gchar *string) {
 
   /* The string cannot contain these characters  */
   gint g = 0;
-  while (string[g]) {
-    if (g_utf8_strchr("\n\"\'\\)(][}{~`, ", -1, (gunichar)string[g]))
+  while (string[g])
+    if (g_utf8_strchr("\n\"\'\\)(][}{~`, ", -1, (gunichar)string[g++]))
       return FALSE;
-    g++;
-  }
 
   return TRUE;
 }
@@ -129,18 +127,35 @@ void ToNumStr(gchar *s)
 {
   /* Read character by character until the null character is reached. */
   for (guint i = 0; s[i]; i++) {
+
     /* If s[i] is one of these characters */
     if (g_utf8_strchr("$,()%-+", -1, (gunichar)s[i])) {
+
       /* Read each character thereafter and */
-      for (guint j = i; s[j]; j++) {
+      for (guint j = i; s[j]; j++)
         /* Shift the array to the left one character [remove the character] */
         s[j] = s[j + 1];
-      }
+
       /* Check the new value of this increment [if there were a duplicate
          character]. */
       i--;
     }
   }
+}
+
+gdouble StringToDouble(const gchar *str)
+/* Take in a number string, convert to a double value.
+   The string can be formatted as a monetary string, a percent string,
+   a number formatted string [thousands gouping], or a regular number
+   string [no thousands grouping]. */
+{
+  gchar *newstr = g_strdup(str);
+
+  ToNumStr(newstr);
+  gdouble num = g_strtod(newstr, NULL);
+  g_free(newstr);
+
+  return num;
 }
 
 static gsize abs_val(const gdouble n) {
@@ -199,21 +214,6 @@ static gsize length_doub_string(const gdouble n, const guint8 dec_pts,
 
   /* The string length not including the null character. */
   return len;
-}
-
-gdouble StringToDouble(const gchar *str)
-/* Take in a number string, convert to a double value.
-   The string can be formatted as a monetary string, a percent string,
-   a number formatted string [thousands gouping], or a regular number
-   string [no thousands grouping]. */
-{
-  gchar *newstr = g_strdup(str);
-
-  ToNumStr(newstr);
-  gdouble num = g_strtod(newstr, NULL);
-  g_free(newstr);
-
-  return num;
 }
 
 void DoubleToFormattedStr(gchar **dst, const gdouble num,
@@ -334,4 +334,80 @@ void StringToMonStr(gchar **dst, const gchar *src, const guint8 digits_right)
 
   gdouble n = StringToDouble(src);
   DoubleToFormattedStr(dst, n, digits_right, MON_STR);
+}
+
+static gchar *snprint_helper(const gchar *fmt, va_list arg_ptr)
+/* Return a newly allocated string from a format string and a va_list of
+   arguments. Uses the same formatting as printf. Must free return value. */
+{
+  va_list arg_ptr_cpy;
+  va_copy(arg_ptr_cpy, arg_ptr);
+
+  /* Get the size of the potential string. */
+  gsize len = g_vsnprintf(NULL, 0, fmt, arg_ptr_cpy) + 1;
+  va_end(arg_ptr_cpy);
+
+  /* Malloc the string. */
+  gchar *str = g_malloc(len);
+
+  /* Create the string from format and argument list. */
+  g_vsnprintf(str, len, fmt, arg_ptr);
+  return str;
+}
+
+gchar *SnPrint(const gchar *fmt, ...)
+/* Return a newly allocated string from a format string and a list of
+   arguments. Uses the same formatting as printf. Must free return value. */
+{
+  va_list arg_ptr;
+
+  /* Set the arg pointer. */
+  va_start(arg_ptr, fmt);
+  gchar *str = snprint_helper(fmt, arg_ptr);
+  va_end(arg_ptr);
+
+  return str;
+}
+
+gchar *PangoToCssFontStr(const gchar *pango_fnt_str) {
+  /* This is kind of hacky, but there doesn't appear to be a canonical way of
+     converting a Pango font string to a CSS font string.
+
+     [It was the position of Gnome to use CSS at startup/compile-time,
+     and to use Pango at runtime, however, we are using CSS theming at runtime
+     due to efficiency reasons; label font attributes can be altered more
+     efficiently at runtime with CSS.  Treeview fonts are more efficiently
+     altered with Pango at runtime.]
+
+     Take in a Pango formatted font string, return a CSS formatted font
+     string.
+
+     "Arial Regular 8" -> "8px Arial Regular"
+
+     Must free return value.
+  */
+  const gchar *fmt = "%spx %s";
+
+  gchar *fnt_name_str = g_strdup(pango_fnt_str);
+
+  /* Set the last space to NULL [truncate the size portion] */
+  gchar *ch = g_utf8_strrchr(fnt_name_str, -1, (gunichar)' ');
+  if (ch)
+    *ch = 0;
+
+  /* Duplicate the size portion into a separate string. */
+  gchar *fnt_size_str = g_strdup(++ch);
+
+  /* If there are any commas, set those to NULL [pango sometimes uses a comma
+   * and a space to separate the fontname from the size] */
+  ch = g_utf8_strrchr(fnt_name_str, -1, (gunichar)',');
+  if (ch)
+    *ch = 0;
+
+  /* Create a new CSS style font string from the size and fontname. */
+  gchar *css_fnt_str = SnPrint(fmt, fnt_size_str, fnt_name_str);
+
+  g_free(fnt_name_str);
+  g_free(fnt_size_str);
+  return css_fnt_str;
 }

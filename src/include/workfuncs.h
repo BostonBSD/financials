@@ -85,6 +85,8 @@ void StringToMonStr(gchar **dst, const gchar *src, const guint8 digits_right);
 void DoubleToFormattedStr(gchar **dst, const gdouble num,
                           const guint8 digits_right, const guint format_type);
 gdouble StringToDouble(const gchar *str);
+gchar *PangoToCssFontStr(const gchar *pango_fnt_str);
+gchar *SnPrint(const gchar *fmt, ...);
 
 /* time_funcs */
 guint64 ClockSleepMinute();

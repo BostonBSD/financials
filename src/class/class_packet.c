@@ -135,9 +135,9 @@ static void FreeMainCurlData() {
   metal *M = packet->GetMetalClass();
   meta *Met = packet->GetMetaClass();
 
-  for (guint8 c = 0; c < F->size; c++) {
+  for (guint8 c = 0; c < F->size; c++)
     FreeMemtype(&F->Equity[c]->JSON);
-  }
+
   FreeMemtype(&M->Gold->CURLDATA);
   FreeMemtype(&M->Silver->CURLDATA);
   FreeMemtype(&M->Platinum->CURLDATA);
@@ -173,9 +173,8 @@ static void remove_main_curl_handles(portfolio_packet *pkg)
   g_mutex_lock(&mutexes[MULTICURL_PROG_MUTEX]);
 
   /* Equity Multicurl Operation */
-  for (guint8 i = 0; i < F->size; i++) {
+  for (guint8 i = 0; i < F->size; i++)
     curl_multi_remove_handle(pkg->multicurl_main_hnd, F->Equity[i]->easy_hnd);
-  }
 
   /* Bullion Multicurl Operation */
   curl_multi_remove_handle(pkg->multicurl_main_hnd, M->Gold->YAHOO_hnd);
@@ -253,10 +252,10 @@ static void SetIndicesDisplayed(gboolean displayed_bool) {
 static gboolean IsClosed()
 /* Market Closed flag */
 {
-  if (!packet->meta_class->clocks_displayed_bool) {
+  if (!packet->meta_class->clocks_displayed_bool)
     packet->meta_class->market_closed_bool =
         GetTimeData(NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-  }
+
   return packet->meta_class->market_closed_bool;
 }
 
@@ -327,21 +326,18 @@ static void save_sql_data_bul(const bullion *gold, const bullion *silver,
                               const bullion *palladium) {
   meta *D = packet->GetMetaClass();
 
-  gchar *gold_ounces_ch = g_markup_printf_escaped("%lf", gold->ounce_f);
-  gchar *gold_premium_ch = g_markup_printf_escaped("%lf", gold->premium_f);
-  gchar *silver_ounces_ch = g_markup_printf_escaped("%lf", silver->ounce_f);
-  gchar *silver_premium_ch = g_markup_printf_escaped("%lf", silver->premium_f);
-  gchar *platinum_ounces_ch = g_markup_printf_escaped("%lf", platinum->ounce_f);
-  gchar *platinum_premium_ch =
-      g_markup_printf_escaped("%lf", platinum->premium_f);
-  gchar *palladium_ounces_ch =
-      g_markup_printf_escaped("%lf", palladium->ounce_f);
-  gchar *palladium_premium_ch =
-      g_markup_printf_escaped("%lf", palladium->premium_f);
-  SqliteBullionAdd(
-      D, "gold", gold_ounces_ch, gold_premium_ch, "silver", silver_ounces_ch,
-      silver_premium_ch, "platinum", platinum_ounces_ch, platinum_premium_ch,
-      "palladium", palladium_ounces_ch, palladium_premium_ch, NULL);
+  gchar *gold_ounces_ch = SnPrint("%lf", gold->ounce_f);
+  gchar *gold_premium_ch = SnPrint("%lf", gold->premium_f);
+  gchar *silver_ounces_ch = SnPrint("%lf", silver->ounce_f);
+  gchar *silver_premium_ch = SnPrint("%lf", silver->premium_f);
+  gchar *platinum_ounces_ch = SnPrint("%lf", platinum->ounce_f);
+  gchar *platinum_premium_ch = SnPrint("%lf", platinum->premium_f);
+  gchar *palladium_ounces_ch = SnPrint("%lf", palladium->ounce_f);
+  gchar *palladium_premium_ch = SnPrint("%lf", palladium->premium_f);
+  SqliteBullionAdd(D, "gold", gold_ounces_ch, gold_premium_ch, "silver",
+                   silver_ounces_ch, silver_premium_ch, "platinum",
+                   platinum_ounces_ch, platinum_premium_ch, "palladium",
+                   palladium_ounces_ch, palladium_premium_ch, NULL);
   g_free(gold_ounces_ch);
   g_free(gold_premium_ch);
   g_free(silver_ounces_ch);
@@ -352,7 +348,10 @@ static void save_sql_data_bul(const bullion *gold, const bullion *silver,
   g_free(palladium_premium_ch);
 }
 
-static void save_sql_data_pref(meta *D) {
+static void save_sql_data_app(portfolio_packet *pkg) {
+  meta *D = pkg->GetMetaClass();
+  window_data *W = pkg->GetWindowData();
+
   const gchar *clks_displ_value;
   if (D->clocks_displayed_bool) {
     clks_displ_value = "TRUE";
@@ -366,49 +365,59 @@ static void save_sql_data_pref(meta *D) {
     indc_displ_value = "FALSE";
   }
 
-  gchar *dec_pl_value = g_markup_printf_escaped("%d", D->decimal_places_guint8);
-  gchar *up_per_min_value =
-      g_markup_printf_escaped("%lf", D->updates_per_min_f);
-  gchar *up_hours_value = g_markup_printf_escaped("%lf", D->updates_hours_f);
+  gchar *dec_pl_value = SnPrint("%d", D->decimal_places_guint8);
+  gchar *up_per_min_value = SnPrint("%lf", D->updates_per_min_f);
+  gchar *up_hours_value = SnPrint("%lf", D->updates_hours_f);
 
-  SqliteAPIPrefAdd(
-      PREF, D, "Main_Font", D->font_ch, "Clocks_Displayed", clks_displ_value,
-      "Indices_Displayed", indc_displ_value, "Decimal_Places", dec_pl_value,
-      "Updates_Per_Min", up_per_min_value, "Updates_Hours", up_hours_value,
+  gchar *cash_value = SnPrint("%lf", D->cash_f);
+
+  gchar *main_wdth_value = SnPrint("%d", W->main_width);
+  gchar *main_hght_value = SnPrint("%d", W->main_height);
+  gchar *main_xpos_value = SnPrint("%d", W->main_x_pos);
+  gchar *main_ypos_value = SnPrint("%d", W->main_y_pos);
+
+  gchar *hstry_wdth_value = SnPrint("%d", W->history_width);
+  gchar *hstry_hght_value = SnPrint("%d", W->history_height);
+  gchar *hstry_xpos_value = SnPrint("%d", W->history_x_pos);
+  gchar *hstry_ypos_value = SnPrint("%d", W->history_y_pos);
+
+  const gchar *null_str = "null";
+  /* We want the cash_value to be after dec_pl_value, such that dec_pl_value is
+   * read before cash_value on a SELECT * statement. */
+  SqliteAppAdd(
+      D, "Stock_URL", D->stock_url_ch, null_str, "URL_KEY", D->curl_key_ch,
+      null_str, "Nasdaq_Symbol_URL", D->Nasdaq_Symbol_url_ch, null_str,
+      "NYSE_Symbol_URL", D->NYSE_Symbol_url_ch, null_str, "Main_Font",
+      D->font_ch, null_str, "Clocks_Displayed", clks_displ_value, null_str,
+      "Indices_Displayed", indc_displ_value, null_str, "Decimal_Places",
+      dec_pl_value, null_str, "Updates_Per_Min", up_per_min_value, null_str,
+      "Updates_Hours", up_hours_value, null_str, "Cash", cash_value, null_str,
+      "Main_Win_Sz", main_wdth_value, main_hght_value, "Main_Win_Pos",
+      main_xpos_value, main_ypos_value, "Hstry_Win_Sz", hstry_wdth_value,
+      hstry_hght_value, "Hstry_Win_Pos", hstry_xpos_value, hstry_ypos_value,
       NULL);
+
   g_free(dec_pl_value);
   g_free(up_per_min_value);
   g_free(up_hours_value);
-}
 
-static void save_sql_data_api(meta *D) {
-  SqliteAPIPrefAdd(API, D, "Stock_URL", D->stock_url_ch, "URL_KEY",
-                            D->curl_key_ch, "Nasdaq_Symbol_URL",
-                            D->Nasdaq_Symbol_url_ch, "NYSE_Symbol_URL",
-                            D->NYSE_Symbol_url_ch, NULL);
+  g_free(cash_value);
+
+  g_free(main_wdth_value);
+  g_free(main_hght_value);
+  g_free(main_xpos_value);
+  g_free(main_ypos_value);
+
+  g_free(hstry_wdth_value);
+  g_free(hstry_hght_value);
+  g_free(hstry_xpos_value);
+  g_free(hstry_ypos_value);
 }
 
 static void SaveSqlData() {
   metal *M = packet->GetMetalClass();
-  meta *D = packet->GetMetaClass();
-  window_data *W = packet->GetWindowData();
-
-  /* Save the Window Size and Location. */
-  SqliteMainWindowSizeAdd(W->main_width, W->main_height, D);
-  SqliteMainWindowPosAdd(W->main_x_pos, W->main_y_pos, D);
-  SqliteHistoryWindowSizeAdd(W->history_width, W->history_height, D);
-  SqliteHistoryWindowPosAdd(W->history_x_pos, W->history_y_pos, D);
-
-  /* Save preference info. */
-  save_sql_data_pref(D);
-
-  /* Save api info. */
-  save_sql_data_api(D);
-
-  /* Save cash info. */
-  gchar *value = g_markup_printf_escaped("%lf", D->cash_f);
-  SqliteCashAdd(value, D);
-  g_free(value);
+  /* Save application info. */
+  save_sql_data_app(packet);
 
   /* Save bullion info. */
   save_sql_data_bul(M->Gold, M->Silver, M->Platinum, M->Palladium);

@@ -407,7 +407,7 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">0.1.1</property>
+                    <property name="label" translatable="yes">0.2.0</property>
                     <property name="justify">center</property>
                     <attributes>
                       <attribute name="font-desc" value="Oxygen-Sans 11"/>
@@ -1342,13 +1342,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                       <object class="GtkLabel" id="HistoryStockSymbolLabel">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Oxygen-Sans 10"/>
-                          <attribute name="style" value="normal"/>
-                          <attribute name="weight" value="normal"/>
-                          <attribute name="variant" value="normal"/>
-                          <attribute name="foreground" value="#09023610962f"/>
-                        </attributes>
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
@@ -1543,52 +1536,1560 @@ POSSIBILITY OF SUCH DAMAGE.</property>
     <property name="icon">Stocks-icon.png</property>
     <property name="skip-pager-hint">True</property>
     <child>
-      <object class="GtkBox">
+      <!-- n-columns=3 n-rows=4 -->
+      <object class="GtkGrid">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="valign">start</property>
-        <property name="margin-start">3</property>
-        <property name="margin-end">3</property>
-        <property name="margin-top">3</property>
-        <property name="margin-bottom">3</property>
-        <property name="hexpand">True</property>
-        <property name="orientation">vertical</property>
-        <property name="homogeneous">True</property>
-        <property name="baseline-position">top</property>
+        <property name="margin-start">10</property>
+        <property name="margin-end">10</property>
+        <property name="margin-top">10</property>
+        <property name="margin-bottom">10</property>
+        <property name="row-spacing">10</property>
+        <property name="column-spacing">10</property>
+        <property name="column-homogeneous">True</property>
         <child>
-          <object class="GtkScrolledWindow" id="ShortcutScrolledWindow">
+          <!-- n-columns=4 n-rows=4 -->
+          <object class="GtkGrid">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="valign">start</property>
-            <property name="hexpand">True</property>
-            <property name="hscrollbar-policy">never</property>
-            <property name="vscrollbar-policy">never</property>
-            <property name="shadow-type">out</property>
-            <property name="min-content-width">200</property>
-            <property name="min-content-height">300</property>
-            <property name="max-content-height">700</property>
-            <property name="propagate-natural-width">True</property>
-            <property name="propagate-natural-height">True</property>
+            <property name="row-spacing">5</property>
+            <property name="column-spacing">5</property>
             <child>
-              <object class="GtkTreeView" id="HotkeysTreeView">
+              <object class="GtkAspectFrame">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="valign">start</property>
-                <property name="hexpand">True</property>
-                <property name="headers-visible">False</property>
-                <property name="headers-clickable">False</property>
-                <property name="show-expanders">False</property>
-                <child internal-child="selection">
-                  <object class="GtkTreeSelection"/>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Ctrl</property>
+                    <property name="justify">center</property>
+                  </object>
                 </child>
               </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Ctrl</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Ctrl</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">+</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">+</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">+</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">F</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">2</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">R</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">2</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Q</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">2</property>
+                <property name="top-attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">File</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">3</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">History</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">3</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Quit</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">3</property>
+                <property name="top-attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Get Data</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">3</property>
+                <property name="top-attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">D</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">2</property>
+                <property name="top-attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Ctrl</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">+</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">3</property>
+              </packing>
             </child>
           </object>
           <packing>
-            <property name="expand">True</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
+            <property name="left-attach">0</property>
+            <property name="top-attach">1</property>
           </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">start</property>
+            <property name="label" translatable="yes">General</property>
+            <attributes>
+              <attribute name="weight" value="bold"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">0</property>
+          </packing>
+        </child>
+        <child>
+          <!-- n-columns=4 n-rows=6 -->
+          <object class="GtkGrid">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="row-spacing">5</property>
+            <property name="column-spacing">5</property>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Ctrl</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Ctrl</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Ctrl</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Ctrl</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Ctrl</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">4</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Ctrl</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">5</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">+</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">+</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">+</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">+</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">+</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">4</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">+</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">5</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">E</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">2</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">S</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">2</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">B</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">2</property>
+                <property name="top-attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">C</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">2</property>
+                <property name="top-attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">I</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">2</property>
+                <property name="top-attach">4</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">P</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">2</property>
+                <property name="top-attach">5</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Edit</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">3</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Securities</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">3</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Bullion</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">3</property>
+                <property name="top-attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Cash</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">3</property>
+                <property name="top-attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">API</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">3</property>
+                <property name="top-attach">4</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Preferences</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">3</property>
+                <property name="top-attach">5</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">1</property>
+          </packing>
+        </child>
+        <child>
+          <!-- n-columns=4 n-rows=3 -->
+          <object class="GtkGrid">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="row-spacing">5</property>
+            <property name="column-spacing">5</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Help</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">3</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">H</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">2</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">+</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">+</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">+</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">K</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">2</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">A</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">2</property>
+                <property name="top-attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Ctrl</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Ctrl</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Ctrl</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Hotkeys</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">3</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">About</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">3</property>
+                <property name="top-attach">2</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">start</property>
+            <property name="label" translatable="yes">History Window</property>
+            <attributes>
+              <attribute name="weight" value="bold"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">2</property>
+          </packing>
+        </child>
+        <child>
+          <!-- n-columns=4 n-rows=2 -->
+          <object class="GtkGrid">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="row-spacing">5</property>
+            <property name="column-spacing">5</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Get Data</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">3</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Close</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">3</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">D</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">2</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">C</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">2</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">+</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">+</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Ctrl</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Ctrl</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">start</property>
+            <property name="label" translatable="yes">Preferences Window</property>
+            <attributes>
+              <attribute name="weight" value="bold"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">2</property>
+          </packing>
+        </child>
+        <child>
+          <!-- n-columns=4 n-rows=4 -->
+          <object class="GtkGrid">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="row-spacing">5</property>
+            <property name="column-spacing">5</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Show Clocks</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">3</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Show Indices</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">3</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Get Symbols</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">3</property>
+                <property name="top-attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Close</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">3</property>
+                <property name="top-attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Z</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">2</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">X</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">2</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">S</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">2</property>
+                <property name="top-attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">C</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">2</property>
+                <property name="top-attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">+</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">+</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">+</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">+</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Ctrl</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Ctrl</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Ctrl</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Ctrl</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">3</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">start</property>
+            <property name="label" translatable="yes">Other Windows</property>
+            <attributes>
+              <attribute name="weight" value="bold"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">2</property>
+          </packing>
+        </child>
+        <child>
+          <!-- n-columns=4 n-rows=3 -->
+          <object class="GtkGrid">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="row-spacing">5</property>
+            <property name="column-spacing">5</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">File</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">3</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">OK</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">3</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Close</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">3</property>
+                <property name="top-attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">C</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">2</property>
+                <property name="top-attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">O</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">2</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">F</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">2</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">+</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">+</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">+</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Ctrl</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Ctrl</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Ctrl</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">2</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="left-attach">2</property>
+            <property name="top-attach">3</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
         </child>
       </object>
     </child>
@@ -1791,12 +3292,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                                         <property name="margin-start">3</property>
                                         <property name="margin-end">3</property>
                                         <property name="label" translatable="yes">New York Time</property>
-                                        <attributes>
-                                          <attribute name="font-desc" value="Oxygen-Sans 9"/>
-                                          <attribute name="style" value="normal"/>
-                                          <attribute name="weight" value="semilight"/>
-                                          <attribute name="variant" value="normal"/>
-                                        </attributes>
                                       </object>
                                       <packing>
                                         <property name="expand">False</property>
@@ -1811,13 +3306,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                                         <property name="halign">center</property>
                                         <property name="label" translatable="yes">00:00</property>
                                         <property name="justify">center</property>
-                                        <attributes>
-                                          <attribute name="font-desc" value="Oxygen-Sans Bold 10"/>
-                                          <attribute name="style" value="normal"/>
-                                          <attribute name="weight" value="medium"/>
-                                          <attribute name="variant" value="normal"/>
-                                          <attribute name="foreground" value="#130d2d174a3d"/>
-                                        </attributes>
                                       </object>
                                       <packing>
                                         <property name="expand">False</property>
@@ -1854,12 +3342,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                                         <property name="margin-start">3</property>
                                         <property name="margin-end">3</property>
                                         <property name="label" translatable="yes">Market Closes In</property>
-                                        <attributes>
-                                          <attribute name="font-desc" value="Oxygen-Sans 9"/>
-                                          <attribute name="style" value="normal"/>
-                                          <attribute name="weight" value="semilight"/>
-                                          <attribute name="variant" value="normal"/>
-                                        </attributes>
                                       </object>
                                       <packing>
                                         <property name="expand">False</property>
@@ -1874,13 +3356,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                                         <property name="halign">center</property>
                                         <property name="label" translatable="yes">00:00:00</property>
                                         <property name="justify">center</property>
-                                        <attributes>
-                                          <attribute name="font-desc" value="Oxygen-Sans Bold 10"/>
-                                          <attribute name="style" value="normal"/>
-                                          <attribute name="weight" value="medium"/>
-                                          <attribute name="variant" value="normal"/>
-                                          <attribute name="foreground" value="#130d2d174a3d"/>
-                                        </attributes>
                                       </object>
                                       <packing>
                                         <property name="expand">False</property>
@@ -1945,7 +3420,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                                     </child>
                                     <child>
                                       <!-- n-columns=7 n-rows=1 -->
-                                      <object class="GtkGrid">
+                                      <object class="GtkGrid" id="MainIndicesHeaderGrid">
                                         <property name="visible">True</property>
                                         <property name="can-focus">False</property>
                                         <property name="column-homogeneous">True</property>
@@ -1956,14 +3431,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                                             <property name="halign">center</property>
                                             <property name="label" translatable="yes">Dow</property>
                                             <property name="justify">center</property>
-                                            <attributes>
-                                              <attribute name="font-desc" value="Oxygen-Sans 10"/>
-                                              <attribute name="style" value="normal"/>
-                                              <attribute name="weight" value="book"/>
-                                              <attribute name="variant" value="normal"/>
-                                              <attribute name="foreground" value="#1c1c7171d8d8"/>
-                                              <attribute name="underline-color" value="#636345452c2c"/>
-                                            </attributes>
                                           </object>
                                           <packing>
                                             <property name="left-attach">0</property>
@@ -1977,14 +3444,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                                             <property name="halign">center</property>
                                             <property name="label" translatable="yes">Nasdaq</property>
                                             <property name="justify">center</property>
-                                            <attributes>
-                                              <attribute name="font-desc" value="Oxygen-Sans 10"/>
-                                              <attribute name="style" value="normal"/>
-                                              <attribute name="weight" value="book"/>
-                                              <attribute name="variant" value="normal"/>
-                                              <attribute name="foreground" value="#1c1c7171d8d8"/>
-                                              <attribute name="underline-color" value="#636345452c2c"/>
-                                            </attributes>
                                           </object>
                                           <packing>
                                             <property name="left-attach">1</property>
@@ -1997,14 +3456,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                                             <property name="can-focus">False</property>
                                             <property name="halign">center</property>
                                             <property name="label" translatable="yes">S&amp;P 500</property>
-                                            <attributes>
-                                              <attribute name="font-desc" value="Oxygen-Sans 10"/>
-                                              <attribute name="style" value="normal"/>
-                                              <attribute name="weight" value="book"/>
-                                              <attribute name="variant" value="normal"/>
-                                              <attribute name="foreground" value="#1c1c7171d8d8"/>
-                                              <attribute name="underline-color" value="#636345452c2c"/>
-                                            </attributes>
                                           </object>
                                           <packing>
                                             <property name="left-attach">2</property>
@@ -2017,14 +3468,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                                             <property name="can-focus">False</property>
                                             <property name="halign">center</property>
                                             <property name="label" translatable="yes">Bitcoin</property>
-                                            <attributes>
-                                              <attribute name="font-desc" value="Oxygen-Sans 10"/>
-                                              <attribute name="style" value="normal"/>
-                                              <attribute name="weight" value="book"/>
-                                              <attribute name="variant" value="normal"/>
-                                              <attribute name="foreground" value="#1c1c7171d8d8"/>
-                                              <attribute name="underline-color" value="#636345452c2c"/>
-                                            </attributes>
                                           </object>
                                           <packing>
                                             <property name="left-attach">3</property>
@@ -2037,14 +3480,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                                             <property name="can-focus">False</property>
                                             <property name="halign">center</property>
                                             <property name="label" translatable="yes">Gold/Silver</property>
-                                            <attributes>
-                                              <attribute name="font-desc" value="Oxygen-Sans 10"/>
-                                              <attribute name="style" value="normal"/>
-                                              <attribute name="weight" value="book"/>
-                                              <attribute name="variant" value="normal"/>
-                                              <attribute name="foreground" value="#1c1c7171d8d8"/>
-                                              <attribute name="underline-color" value="#636345452c2c"/>
-                                            </attributes>
                                           </object>
                                           <packing>
                                             <property name="left-attach">6</property>
@@ -2057,14 +3492,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                                             <property name="can-focus">False</property>
                                             <property name="halign">center</property>
                                             <property name="label" translatable="yes">Gold</property>
-                                            <attributes>
-                                              <attribute name="font-desc" value="Oxygen-Sans 10"/>
-                                              <attribute name="style" value="normal"/>
-                                              <attribute name="weight" value="book"/>
-                                              <attribute name="variant" value="normal"/>
-                                              <attribute name="foreground" value="#1c1c7171d8d8"/>
-                                              <attribute name="underline-color" value="#636345452c2c"/>
-                                            </attributes>
                                           </object>
                                           <packing>
                                             <property name="left-attach">4</property>
@@ -2077,14 +3504,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                                             <property name="can-focus">False</property>
                                             <property name="halign">center</property>
                                             <property name="label" translatable="yes">Silver</property>
-                                            <attributes>
-                                              <attribute name="font-desc" value="Oxygen-Sans 10"/>
-                                              <attribute name="style" value="normal"/>
-                                              <attribute name="weight" value="book"/>
-                                              <attribute name="variant" value="normal"/>
-                                              <attribute name="foreground" value="#1c1c7171d8d8"/>
-                                              <attribute name="underline-color" value="#636345452c2c"/>
-                                            </attributes>
                                           </object>
                                           <packing>
                                             <property name="left-attach">5</property>
@@ -2111,7 +3530,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                                     </child>
                                     <child>
                                       <!-- n-columns=7 n-rows=1 -->
-                                      <object class="GtkGrid">
+                                      <object class="GtkGrid" id="MainIndicesValueGrid">
                                         <property name="visible">True</property>
                                         <property name="can-focus">False</property>
                                         <property name="column-homogeneous">True</property>
@@ -2123,12 +3542,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                                             <property name="label" translatable="yes">33,536.70
 3245345</property>
                                             <property name="justify">center</property>
-                                            <attributes>
-                                              <attribute name="font-desc" value="Oxygen-Sans Bold 9"/>
-                                              <attribute name="style" value="normal"/>
-                                              <attribute name="weight" value="medium"/>
-                                              <attribute name="variant" value="normal"/>
-                                            </attributes>
                                           </object>
                                           <packing>
                                             <property name="left-attach">0</property>
@@ -2142,12 +3555,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                                             <property name="halign">center</property>
                                             <property name="label" translatable="yes">11,196.22</property>
                                             <property name="justify">center</property>
-                                            <attributes>
-                                              <attribute name="font-desc" value="Oxygen-Sans Bold 9"/>
-                                              <attribute name="style" value="normal"/>
-                                              <attribute name="weight" value="medium"/>
-                                              <attribute name="variant" value="normal"/>
-                                            </attributes>
                                           </object>
                                           <packing>
                                             <property name="left-attach">1</property>
@@ -2161,12 +3568,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                                             <property name="halign">center</property>
                                             <property name="label" translatable="yes">3,957.25</property>
                                             <property name="justify">center</property>
-                                            <attributes>
-                                              <attribute name="font-desc" value="Oxygen-Sans Bold 9"/>
-                                              <attribute name="style" value="normal"/>
-                                              <attribute name="weight" value="medium"/>
-                                              <attribute name="variant" value="normal"/>
-                                            </attributes>
                                           </object>
                                           <packing>
                                             <property name="left-attach">2</property>
@@ -2180,12 +3581,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                                             <property name="halign">center</property>
                                             <property name="label" translatable="yes">80</property>
                                             <property name="justify">center</property>
-                                            <attributes>
-                                              <attribute name="font-desc" value="Oxygen-Sans Bold 9"/>
-                                              <attribute name="style" value="normal"/>
-                                              <attribute name="weight" value="medium"/>
-                                              <attribute name="variant" value="normal"/>
-                                            </attributes>
                                           </object>
                                           <packing>
                                             <property name="left-attach">3</property>
@@ -2199,12 +3594,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                                             <property name="halign">center</property>
                                             <property name="label" translatable="yes">80</property>
                                             <property name="justify">center</property>
-                                            <attributes>
-                                              <attribute name="font-desc" value="Oxygen-Sans Bold 9"/>
-                                              <attribute name="style" value="normal"/>
-                                              <attribute name="weight" value="medium"/>
-                                              <attribute name="variant" value="normal"/>
-                                            </attributes>
                                           </object>
                                           <packing>
                                             <property name="left-attach">6</property>
@@ -2218,12 +3607,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                                             <property name="halign">center</property>
                                             <property name="label" translatable="yes">80</property>
                                             <property name="justify">center</property>
-                                            <attributes>
-                                              <attribute name="font-desc" value="Oxygen-Sans Bold 9"/>
-                                              <attribute name="style" value="normal"/>
-                                              <attribute name="weight" value="medium"/>
-                                              <attribute name="variant" value="normal"/>
-                                            </attributes>
                                           </object>
                                           <packing>
                                             <property name="left-attach">4</property>
@@ -2237,12 +3620,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                                             <property name="halign">center</property>
                                             <property name="label" translatable="yes">80</property>
                                             <property name="justify">center</property>
-                                            <attributes>
-                                              <attribute name="font-desc" value="Oxygen-Sans Bold 9"/>
-                                              <attribute name="style" value="normal"/>
-                                              <attribute name="weight" value="medium"/>
-                                              <attribute name="variant" value="normal"/>
-                                            </attributes>
                                           </object>
                                           <packing>
                                             <property name="left-attach">5</property>
@@ -2881,13 +4258,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                   <object class="GtkLabel" id="SecurityWindowLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <attributes>
-                      <attribute name="font-desc" value="Oxygen-Sans 12"/>
-                      <attribute name="style" value="normal"/>
-                      <attribute name="weight" value="normal"/>
-                      <attribute name="variant" value="normal"/>
-                      <attribute name="foreground" value="#09023610962f"/>
-                    </attributes>
                   </object>
                   <packing>
                     <property name="expand">False</property>

@@ -311,7 +311,7 @@ struct meta {
   gchar *crypto_bitcoin_value_chg_ch;
   gchar *crypto_bitcoin_value_p_chg_ch;
 
-  gchar *config_dir_ch;     /* Path to the user's config directory */
+  gchar *config_dir_ch;     /* Path to the application config directory */
   gchar *sqlite_db_path_ch; /* Path to the sqlite db file */
   gchar *sqlite_symbol_name_db_path_ch; /* Path to the sqlite symbol-name db
                                            file */
