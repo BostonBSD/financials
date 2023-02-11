@@ -110,16 +110,6 @@ static void main_window_sig_connect(portfolio_packet *pkg) {
   object = GetGObject("MainTreeView");
   g_signal_connect(object, "button-press-event",
                    G_CALLBACK(GUICallback_main_treeview_click), NULL);
-  /*
-    gchar *bg_colr_css =
-        "treeview{background-color:White;}treeview:hover{background-color:"
-        "Coral;}treeview:selected{background-color:Coral;}";
-    GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(object));
-    GtkCssProvider *css_provider = gtk_css_provider_new();
-    gtk_css_provider_load_from_data(css_provider, bg_colr_css, -1, NULL);
-    gtk_style_context_add_provider(context, GTK_STYLE_PROVIDER(css_provider),
-                                   GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-    g_object_unref(G_OBJECT(css_provider));*/
 }
 
 static void security_window_sig_connect() {
