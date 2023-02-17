@@ -336,14 +336,12 @@ gboolean GUICallback_window_data(GtkWidget *window, GdkEvent *event,
   case GUI_MAIN_WINDOW:
     W->main_width = width;
     W->main_height = height;
-
     W->main_x_pos = x;
     W->main_y_pos = y;
     break;
   case GUI_HISTORY_WINDOW:
     W->history_width = width;
     W->history_height = height;
-
     W->history_x_pos = x;
     W->history_y_pos = y;
     break;

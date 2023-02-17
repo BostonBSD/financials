@@ -57,6 +57,12 @@ typedef struct {
   gint history_width;
   gint history_x_pos;
   gint history_y_pos;
+  gboolean
+      main_win_maximized_bool : 1; /* Indicates if the main window is maximized
+                                      or not. Default is FALSE. */
+  gboolean
+      histry_win_maximized_bool : 1; /* Indicates if the history window is
+                                        maximized or not. Default is FALSE. */
 } window_data;
 
 typedef struct {

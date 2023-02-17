@@ -407,7 +407,7 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">0.2.0</property>
+                    <property name="label" translatable="yes">0.2.1</property>
                     <property name="justify">center</property>
                     <attributes>
                       <attribute name="font-desc" value="Oxygen-Sans 11"/>
@@ -1694,18 +1694,6 @@ POSSIBILITY OF SUCH DAMAGE.</property>
               <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Q</property>
-                <property name="justify">center</property>
-              </object>
-              <packing>
-                <property name="left-attach">2</property>
-                <property name="top-attach">2</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
                 <property name="label" translatable="yes">File</property>
                 <property name="justify">center</property>
               </object>
@@ -1800,6 +1788,26 @@ POSSIBILITY OF SUCH DAMAGE.</property>
               <packing>
                 <property name="left-attach">1</property>
                 <property name="top-attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkAspectFrame">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Q</property>
+                    <property name="justify">center</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left-attach">2</property>
+                <property name="top-attach">2</property>
               </packing>
             </child>
           </object>
@@ -4155,6 +4163,8 @@ POSSIBILITY OF SUCH DAMAGE.</property>
   <object class="GtkWindow" id="SecurityWindow">
     <property name="can-focus">False</property>
     <property name="resizable">False</property>
+    <property name="default-width">350</property>
+    <property name="default-height">200</property>
     <property name="destroy-with-parent">True</property>
     <property name="icon">Stocks-icon.png</property>
     <property name="skip-pager-hint">True</property>
@@ -4308,7 +4318,8 @@ POSSIBILITY OF SUCH DAMAGE.</property>
             <property name="receives-default">True</property>
             <property name="tooltip-text" translatable="yes">Commit Changes</property>
             <property name="halign">center</property>
-            <property name="valign">end</property>
+            <property name="valign">center</property>
+            <property name="vexpand">True</property>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
@@ -4319,8 +4330,8 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                 </attributes>
               </object>
             </child>
-            <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
             <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+            <accelerator key="o" signal="activate" modifiers="GDK_CONTROL_MASK"/>
           </object>
           <packing>
             <property name="expand">False</property>

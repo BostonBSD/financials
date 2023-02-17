@@ -286,26 +286,26 @@ static void ToStringsIndices() {
 /* The order of the strings, in these struct inits, is important,
    they match similar names within the struct definitions
    (in class_types.h). */
-static primary_heading primary_headings = {
+static const primary_heading primary_headings = {
     "Bullion",  "Metal",     "Ounces", "Premium",   "High",
     "Low",      "Pr. Close", "Chg",    "Gain ($)",  "Total",
     "Gain (%)", "Gold",      "Silver", "Platinum",  "Palladium",
     "Equity",   "Symbol",    "Shares", "Price",     "Open",
     "Asset",    "Value",     "Cash",   "Portfolio", "Portfolio has no assets."};
 
-static default_heading default_headings = {"Bullion",
-                                           "Metal",
-                                           "Ounces",
-                                           "Premium",
-                                           "Gold",
-                                           "Silver",
-                                           "Platinum",
-                                           "Palladium",
-                                           "Equity",
-                                           "Symbol",
-                                           "Shares",
-                                           "Cash",
-                                           "Portfolio has no assets."};
+static const default_heading default_headings = {"Bullion",
+                                                 "Metal",
+                                                 "Ounces",
+                                                 "Premium",
+                                                 "Gold",
+                                                 "Silver",
+                                                 "Platinum",
+                                                 "Palladium",
+                                                 "Equity",
+                                                 "Symbol",
+                                                 "Shares",
+                                                 "Cash",
+                                                 "Portfolio has no assets."};
 
 static void format_primary_headings_pango(primary_heading *pri_h_mkd) {
 

@@ -33,6 +33,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "../include/class.h" /* The class init and destruct funcs are required 
                                        in the class methods, includes portfolio_packet 
                                        metal, meta, and equity_folder class types */
+#include "../include/gui.h"
 #include "../include/multicurl.h"
 #include "../include/mutex.h"
 #include "../include/sqlite.h"
@@ -353,17 +354,30 @@ static void save_sql_data_app(portfolio_packet *pkg) {
   window_data *W = pkg->GetWindowData();
 
   const gchar *clks_displ_value;
-  if (D->clocks_displayed_bool) {
+  if (D->clocks_displayed_bool)
     clks_displ_value = "TRUE";
-  } else {
+  else
     clks_displ_value = "FALSE";
-  }
+
   const gchar *indc_displ_value;
-  if (D->index_bar_revealed_bool) {
+  if (D->index_bar_revealed_bool)
     indc_displ_value = "TRUE";
-  } else {
+  else
     indc_displ_value = "FALSE";
-  }
+
+  const gchar *main_win_mxmzd_value;
+  if ((D->window_struct.main_win_maximized_bool =
+           gtk_window_is_maximized(GTK_WINDOW(GetGObject("MainWindow")))))
+    main_win_mxmzd_value = "TRUE";
+  else
+    main_win_mxmzd_value = "FALSE";
+
+  const gchar *hstry_win_mxmzd_value;
+  if ((D->window_struct.histry_win_maximized_bool =
+           gtk_window_is_maximized(GTK_WINDOW(GetGObject("HistoryWindow")))))
+    hstry_win_mxmzd_value = "TRUE";
+  else
+    hstry_win_mxmzd_value = "FALSE";
 
   gchar *dec_pl_value = SnPrint("%d", D->decimal_places_guint8);
   gchar *up_per_min_value = SnPrint("%lf", D->updates_per_min_f);
@@ -382,20 +396,21 @@ static void save_sql_data_app(portfolio_packet *pkg) {
   gchar *hstry_ypos_value = SnPrint("%d", W->history_y_pos);
 
   const gchar *null_str = "null";
-  /* We want the cash_value to be after dec_pl_value, such that dec_pl_value is
-   * read before cash_value on a SELECT * statement. */
+  /* We want "Cash" to be after "Decimal_Places", such that "Decimal_Places"
+   * is read before "Cash" on a SELECT * statement. */
   SqliteAppAdd(
       D, "Stock_URL", D->stock_url_ch, null_str, "URL_KEY", D->curl_key_ch,
       null_str, "Nasdaq_Symbol_URL", D->Nasdaq_Symbol_url_ch, null_str,
       "NYSE_Symbol_URL", D->NYSE_Symbol_url_ch, null_str, "Main_Font",
       D->font_ch, null_str, "Clocks_Displayed", clks_displ_value, null_str,
-      "Indices_Displayed", indc_displ_value, null_str, "Decimal_Places",
-      dec_pl_value, null_str, "Updates_Per_Min", up_per_min_value, null_str,
-      "Updates_Hours", up_hours_value, null_str, "Cash", cash_value, null_str,
-      "Main_Win_Sz", main_wdth_value, main_hght_value, "Main_Win_Pos",
-      main_xpos_value, main_ypos_value, "Hstry_Win_Sz", hstry_wdth_value,
-      hstry_hght_value, "Hstry_Win_Pos", hstry_xpos_value, hstry_ypos_value,
-      NULL);
+      "Indices_Displayed", indc_displ_value, null_str, "Main_Win_Maxmzd",
+      main_win_mxmzd_value, null_str, "Hstry_Win_Maxmzd", hstry_win_mxmzd_value,
+      null_str, "Decimal_Places", dec_pl_value, null_str, "Updates_Per_Min",
+      up_per_min_value, null_str, "Updates_Hours", up_hours_value, null_str,
+      "Cash", cash_value, null_str, "Main_Win_Sz", main_wdth_value,
+      main_hght_value, "Main_Win_Pos", main_xpos_value, main_ypos_value,
+      "Hstry_Win_Sz", hstry_wdth_value, hstry_hght_value, "Hstry_Win_Pos",
+      hstry_xpos_value, hstry_ypos_value, NULL);
 
   g_free(dec_pl_value);
   g_free(up_per_min_value);

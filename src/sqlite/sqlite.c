@@ -67,7 +67,7 @@ static gchar *new_bul_tbl =
 
 static gint app_callback(gpointer data, gint argc, gchar **argv,
                          gchar **ColName) {
-  /* argv[0] is Id, argv[1] is keyword, argv[2] is data_one, argv[3] is
+  /* argv[0] is id, argv[1] is keyword, argv[2] is data_one, argv[3] is
    * data_two. */
   if (argc != 4)
     return 1;
@@ -123,6 +123,20 @@ static gint app_callback(gpointer data, gint argc, gchar **argv,
       D->index_bar_revealed_bool = FALSE;
     }
 
+  } else if (!g_strcmp0(argv[1], "Main_Win_Maxmzd")) {
+    if (!g_strcmp0(argv[2] ? argv[2] : "TRUE", "TRUE")) {
+      D->window_struct.main_win_maximized_bool = TRUE;
+    } else {
+      D->window_struct.main_win_maximized_bool = FALSE;
+    }
+
+  } else if (!g_strcmp0(argv[1], "Hstry_Win_Maxmzd")) {
+    if (!g_strcmp0(argv[2] ? argv[2] : "TRUE", "TRUE")) {
+      D->window_struct.histry_win_maximized_bool = TRUE;
+    } else {
+      D->window_struct.histry_win_maximized_bool = FALSE;
+    }
+
   } else if (!g_strcmp0(argv[1], "Main_Font")) {
     g_free(D->font_ch);
     D->font_ch = g_strdup(argv[2] ? argv[2] : MAIN_FONT);
@@ -162,7 +176,7 @@ static gint app_callback(gpointer data, gint argc, gchar **argv,
 
 static gint equity_callback(gpointer data, gint argc, gchar **argv,
                             gchar **ColName) {
-  /* argv[0] is id, argv[1] is symbol, argv[2] is shares */
+  /* argv[0] is Id, argv[1] is Symbol, argv[2] is Shares */
   if (argc != 3)
     return 1;
   if (g_strcmp0(ColName[0], "Id") != 0)
@@ -357,7 +371,7 @@ void SqliteProcessing(portfolio_packet *pkg) {
 static gchar *vradic_sqlte_cmd(gint8 num_args_cmd, const gchar *fmt,
                                va_list arg_ptr)
 /* construct a series of sql commands from the number of args per command, a
- * format string, and a va_list of the total number of args in the series.
+ * format string, and a va_list of the args in the series.
    Each command is the same, with a different set of args.
 
    For example, this func might return this string:

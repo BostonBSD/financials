@@ -185,8 +185,8 @@ void StartClockThread(portfolio_packet *pkg)
 
   GtkWidget *revealer = GetWidget("MainClockRevealer");
   if (pkg->IsClockDisplayed()) {
-    /* Start the clock threads. */
-    /* gdk_threads_add_idle (in these threads) creates a pending event for the
+    /* Start the clock thread. */
+    /* gdk_threads_add_idle (in this thread) creates a pending event for the
        gtk_main loop. When the gtk_main loop starts the event will be processed.
     */
     g_cond_init(&D->gthread_clocks_cond);
@@ -233,6 +233,11 @@ void SetLabelFonts(const gchar *font_str) {
    * If the font-size attribute is removed from the CSS, the size
    * will vary with the selected fontname, although this would change the user
    * experience [ :-) => :-( ].
+   *
+   * The font can also be added to the Pango markup
+   * for a similar effect in set_indice_value_label(), set_indices_labels(),
+   * main_display_time(), main_display_time_remaining(), HistorySetSNLabel(),
+   * and SecurityComBoxChange(): gui_main.c, gui_history.c, and gui_security.c.
    */
   gchar *css_fmt = "label{font:%s;font-size:%s;color:%s;background-color:%s;}";
   set_label_font_css("SecurityWindowLabel", css_fmt, css_fnt_str, "medium",

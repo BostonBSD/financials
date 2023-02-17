@@ -84,7 +84,8 @@ static void convert_equity_to_strings(stock *S, guint8 digits_right) {
                               digits_right, MON_STR, BLACK);
 
   DoubleToFormattedStrPango(&S->num_shares_stock_mrkd_ch,
-                            (double)S->num_shares_stock_int, 0, NUM_STR, BLACK);
+                            (gdouble)S->num_shares_stock_int, 0, NUM_STR,
+                            BLACK);
   switch (S->num_shares_stock_int) {
   case 0:
 
@@ -315,8 +316,8 @@ static void AddStock(const gchar *symbol, const gchar *shares)
   F->Equity[F->size]->num_shares_stock_int =
       (guint)g_ascii_strtoll(shares ? shares : "0", NULL, 10);
   DoubleToFormattedStrPango(&F->Equity[F->size]->num_shares_stock_mrkd_ch,
-                            (double)F->Equity[F->size]->num_shares_stock_int, 0,
-                            NUM_STR, BLACK);
+                            (gdouble)F->Equity[F->size]->num_shares_stock_int,
+                            0, NUM_STR, BLACK);
 
   /* Add The Stock Symbol To the stock object */
   /* This string is used to process the stock. */
@@ -412,7 +413,7 @@ static gint alpha_asc(gconstpointer a, gconstpointer b, gpointer data)
 {
   UNUSED(data)
 
-  /* Cast the void pointer as a stock double pointer. */
+  /* Cast the gconstpointer as a stock double pointer. */
   stock **aa = (stock **)a;
   stock **bb = (stock **)b;
 
@@ -440,7 +441,7 @@ static void remove_dash(gchar *s)
   if (s == NULL || s[0] == '-')
     return;
   gchar *ch = g_utf8_strchr(s, -1, (gunichar)'-');
-  if (ch != NULL)
+  if (ch)
     ch[-1] = 0;
 }
 

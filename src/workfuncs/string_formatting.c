@@ -116,20 +116,24 @@ void CopyString(gchar **dst, const gchar *src)
 }
 
 void ToNumStr(gchar *s)
-/* Remove all dollar signs '$', commas ',', braces '(',
-   percent signs '%', negative signs '-', and plus
-   signs '+'  from a string. */
+/* Remove all dollar signs '$', commas ',', braces '(' ')',
+   percent signs '%', and plus signs '+'  from a string. */
 
 /* This assumes a en_US locale, other locales would
    need to edit this function or provide their own
    [other locales use commas and decimals differently,
    different currency symbol]. */
 {
+  /* If we find a starting brace, replace with a negative sign. */
+  gchar *ch = g_utf8_strchr(s, -1, (gunichar)'(');
+  if (ch)
+    *ch = '-';
+
   /* Read character by character until the null character is reached. */
   for (guint i = 0; s[i]; i++) {
 
     /* If s[i] is one of these characters */
-    if (g_utf8_strchr("$,()%-+", -1, (gunichar)s[i])) {
+    if (g_utf8_strchr("$,%+)", -1, (gunichar)s[i])) {
 
       /* Read each character thereafter and */
       for (guint j = i; s[j]; j++)
@@ -398,7 +402,7 @@ gchar *PangoToCssFontStr(const gchar *pango_fnt_str) {
   /* Duplicate the size portion into a separate string. */
   gchar *fnt_size_str = g_strdup(++ch);
 
-  /* If there are any commas, set those to NULL [pango sometimes uses a comma
+  /* If there are any commas, set those to NULL [Pango sometimes uses a comma
    * and a space to separate the fontname from the size] */
   ch = g_utf8_strrchr(fnt_name_str, -1, (gunichar)',');
   if (ch)

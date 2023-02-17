@@ -362,6 +362,7 @@ static GtkListStore *main_default_store(portfolio_packet *pkg) {
                        MAIN_COLUMN_SYMBOL, "", MAIN_COLUMN_ONE,
                        def_h_mkd->metal, MAIN_COLUMN_TWO, def_h_mkd->ounces,
                        MAIN_COLUMN_THREE, def_h_mkd->premium, -1);
+
     if (M->Gold->ounce_f)
       main_def_add_bul_store(M->Gold, "gold", def_h_mkd->gold, store, &iter);
 

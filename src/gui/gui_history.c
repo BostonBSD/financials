@@ -95,7 +95,7 @@ gint HistoryTreeViewClear() {
   return TreeViewClear(treeview);
 }
 
-static gchar *col_names[HISTORY_N_COLUMNS] = {
+static const gchar *col_names[HISTORY_N_COLUMNS] = {
     "Date", "Price",    "High", "Low", "Open",     "Pr. Close",
     "Chg",  "Gain (%)", "Vol.", "RSI", "Indicator"};
 

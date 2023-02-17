@@ -32,7 +32,6 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "../include/class_types.h" /* Includes portfolio_packet, metal, meta, 
                                              and equity_folder class types */
-
 #include "../include/macros.h"
 #include "../include/multicurl.h"
 #include "../include/mutex.h"

@@ -59,7 +59,11 @@ static void main_window_sig_connect(portfolio_packet *pkg) {
   window = GetGObject("MainWindow");
   g_signal_connect(window, "destroy", G_CALLBACK(GUICallbackHandler),
                    (gpointer)MAIN_EXIT);
-  gtk_window_resize(GTK_WINDOW(window), W->main_width, W->main_height);
+  if (pkg->meta_class->window_struct.main_win_maximized_bool) {
+    gtk_window_maximize(GTK_WINDOW(window));
+  } else {
+    gtk_window_resize(GTK_WINDOW(window), W->main_width, W->main_height);
+  }
   gtk_window_move(GTK_WINDOW(window), W->main_x_pos, W->main_y_pos);
 
   g_signal_connect(window, "configure-event",
@@ -294,7 +298,11 @@ static void history_window_sig_connect(portfolio_packet *pkg) {
   g_signal_connect(window, "delete_event",
                    G_CALLBACK(GUICallback_hide_window_on_delete),
                    (gpointer)HISTORY_TOGGLE_BTN);
-  gtk_window_resize(GTK_WINDOW(window), W->history_width, W->history_height);
+  if (pkg->meta_class->window_struct.histry_win_maximized_bool) {
+    gtk_window_maximize(GTK_WINDOW(window));
+  } else {
+    gtk_window_resize(GTK_WINDOW(window), W->history_width, W->history_height);
+  }
   gtk_window_move(GTK_WINDOW(window), W->history_x_pos, W->history_y_pos);
 
   g_signal_connect(window, "configure-event",
