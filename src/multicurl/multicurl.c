@@ -69,6 +69,7 @@ static gushort remove_handles(CURLM *mh) {
     } else {
       g_fprintf(stderr, "error: after curl_multi_info_read(), CURLMsg=%d\n",
                 msg->msg);
+      return_value++;
     }
   }
   return return_value;

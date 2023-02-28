@@ -379,12 +379,8 @@ static void set_application_css() {
 
      Right now we're only setting the treeview
      [so they display correctly on dark window manager themes]. */
-  GdkDisplay *display;
-  GdkScreen *screen;
-  GtkCssProvider *provider;
-  display = gdk_display_get_default();
-  screen = gdk_display_get_default_screen(display);
-  provider = gtk_css_provider_new();
+  GdkScreen *screen = gdk_display_get_default_screen(gdk_display_get_default());
+  GtkCssProvider *provider = gtk_css_provider_new();
 
   gchar *bg_colr_css = "treeview{color:Black;background-color:White;}treeview:"
                        "hover,treeview:selected{background-color:Coral;}";
@@ -451,20 +447,19 @@ void GuiStart(portfolio_packet *pkg)
   /* Add hyperlink markup to the About window labels. */
   AboutSetLabel();
 
+  /* Make sure the security names are set with pango style markups. */
+  pkg->SetSecurityNames();
+
   /* Make sure the label and treeview header fonts are set */
   SetLabelFonts(pkg->meta_class->font_ch);
   pkg->meta_class->ToStringsHeadings();
 
-  /* Connect callback functions to corresponding GUI signals. */
-  gui_signal_connect(pkg);
-
-  /* Set the default treeview.
-     This treeview is already set in the GUIThread_completion_set thread
-     [created in StartCompletionThread()], however, there may be a db read
-     delay before it is displayed. So we set it here showing any available data.
-   */
+  /* Set the default treeview. */
   pkg->ToStrings();
   MainDefaultTreeview(pkg);
+
+  /* Connect callback functions to corresponding GUI signals. */
+  gui_signal_connect(pkg);
 
   /* Start the gtk_main loop. */
   gtk_main();

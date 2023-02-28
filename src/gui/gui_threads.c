@@ -520,9 +520,6 @@ gpointer GUIThread_completion_set(gpointer pkg_data) {
   if (pkg->IsExitingApp())
     g_thread_exit(NULL);
 
-  /* Make sure the security names are set with pango style markups. */
-  pkg->SetSecurityNames();
-
   /* Destroy the sn_map after setting the two widgets
    * [dstry_notify_func_snmap()]. */
   if (sym_map) {
@@ -531,10 +528,6 @@ gpointer GUIThread_completion_set(gpointer pkg_data) {
                               sym_map, dstry_notify_func_snmap);
     pkg->SetSymNameMap(NULL);
   }
-
-  /* Set the default treeview. */
-  if (pkg->IsDefaultView())
-    gdk_threads_add_idle(MainDefaultTreeview, pkg);
 
   g_thread_exit(NULL);
   return NULL;
