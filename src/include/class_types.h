@@ -68,22 +68,17 @@ typedef struct {
 typedef struct {
   gchar *bullion;
   gchar *metal;
-  gchar *ounces;
   gchar *premium;
-  gchar *high;
-  gchar *low;
+  gchar *cost;
+  gchar *range;
   gchar *prev_closing;
   gchar *chg;
-  gchar *gain_sym;
+  gchar *day_gain;
   gchar *total;
-  gchar *gain_per;
-  gchar *gold;
-  gchar *silver;
-  gchar *platinum;
-  gchar *palladium;
+  gchar *total_cost;
+  gchar *total_gain;
   gchar *equity;
   gchar *symbol;
-  gchar *shares;
   gchar *price;
   gchar *opening;
   gchar *asset;
@@ -91,23 +86,7 @@ typedef struct {
   gchar *cash;
   gchar *portfolio;
   gchar *no_assets;
-} primary_heading;
-
-typedef struct {
-  gchar *bullion;
-  gchar *metal;
-  gchar *ounces;
-  gchar *premium;
-  gchar *gold;
-  gchar *silver;
-  gchar *platinum;
-  gchar *palladium;
-  gchar *equity;
-  gchar *symbol;
-  gchar *shares;
-  gchar *cash;
-  gchar *no_assets;
-} default_heading;
+} heading_str_t;
 
 /* class type definitions */
 struct bullion {
@@ -124,19 +103,25 @@ struct bullion {
   gdouble change_value_f;
   gdouble change_percent_f;
   gdouble change_percent_raw_f; /* The gain not including premium values. */
+  gdouble cost_basis_f;         /* Cost per ounce. */
+  gdouble total_cost_f;         /* Total cost of this investment. */
+  gdouble total_gain_value_f; /* Total gain of this investment as a value [since
+                                 purchase]. */
+  gdouble
+      total_gain_percent_f; /* Total gain of this investment as a percent. */
 
   /* Pango Markup language strings */
+  gchar *metal_mrkd_ch;
   gchar *spot_price_mrkd_ch;
   gchar *premium_mrkd_ch;
   gchar *port_value_mrkd_ch;
-  gchar *ounce_mrkd_ch;
 
-  gchar *high_metal_mrkd_ch;
-  gchar *low_metal_mrkd_ch;
+  gchar *cost_mrkd_ch;
+  gchar *range_mrkd_ch;
   gchar *prev_closing_metal_mrkd_ch;
   gchar *change_ounce_mrkd_ch;
-  gchar *change_value_mrkd_ch;
-  gchar *change_percent_mrkd_ch;
+  gchar *total_cost_mrkd_ch;
+  gchar *total_gain_mrkd_ch;
 
   /* Unmarked strings */
   gchar *change_percent_raw_ch;
@@ -155,16 +140,21 @@ struct metal {
 
   /* Data Variables */
   gdouble bullion_port_value_f;
-  gdouble bullion_port_value_chg_f;
-  gdouble bullion_port_value_p_chg_f;
+  gdouble bullion_port_day_gain_val_f;
+  gdouble bullion_port_day_gain_per_f;
   gdouble gold_silver_ratio_f;
 
+  gdouble bullion_port_cost_f;
+  gdouble bullion_port_total_gain_value_f;
+  gdouble bullion_port_total_gain_percent_f;
+
   /* Pango Markup language strings */
-  gchar *bullion_port_value_mrkd_ch;       /* Total value of bullion holdings */
-  gchar *bullion_port_value_chg_mrkd_ch;   /* Total value of bullion holdings
-                                             change */
-  gchar *bullion_port_value_p_chg_mrkd_ch; /* Total value of bullion holdings
-                                             percent change */
+  gchar *bullion_port_value_mrkd_ch;    /* Total value of bullion holdings */
+  gchar *bullion_port_day_gain_mrkd_ch; /* Total value of bullion holdings
+                                           change */
+
+  gchar *bullion_port_cost_mrkd_ch;       /* Total cost of bullion holdings */
+  gchar *bullion_port_total_gain_mrkd_ch; /* Total gain of bullion holdings */
 
   /* Unmarked strings */
   gchar *gold_silver_ratio_ch;
@@ -178,7 +168,7 @@ struct metal {
 
 struct stock {
   /* Data Variables */
-  guint num_shares_stock_int; /* Cannot hold more than 4294967295 shares
+  guint quantity_int; /* Cannot hold more than 4294967295 shares
                                         of stock on most 64-bit machines */
 
   gdouble current_price_stock_f;
@@ -189,6 +179,11 @@ struct stock {
   gdouble change_share_f;
   gdouble change_value_f;
   gdouble change_percent_f;
+  gdouble cost_basis_f;       /* Cost per share. */
+  gdouble total_cost_f;       /* Total cost of this investment. */
+  gdouble total_gain_value_f; /* Total gain of this investment as a value. */
+  gdouble
+      total_gain_percent_f; /* Total gain of this investment as a percent. */
 
   gdouble current_investment_stock_f; /* The total current investment in
                                               the stock. */
@@ -196,16 +191,15 @@ struct stock {
   /* Pango Markup language strings */
   gchar *security_name_mrkd_ch;
   gchar *current_price_stock_mrkd_ch;
-  gchar *high_stock_mrkd_ch;
-  gchar *low_stock_mrkd_ch;
+  gchar *cost_mrkd_ch;
+  gchar *range_mrkd_ch;
   gchar *opening_stock_mrkd_ch;
   gchar *prev_closing_stock_mrkd_ch;
   gchar *change_share_stock_mrkd_ch;
-  gchar *change_value_mrkd_ch;
-  gchar *change_percent_mrkd_ch;
   gchar *current_investment_stock_mrkd_ch;
   gchar *symbol_stock_mrkd_ch;
-  gchar *num_shares_stock_mrkd_ch;
+  gchar *total_cost_mrkd_ch;
+  gchar *total_gain_mrkd_ch;
 
   /* Unmarked strings */
   gchar *symbol_stock_ch;   /* The stock symbol in all caps, it's used to create
@@ -223,18 +217,21 @@ struct equity_folder {
 
   /* Data Variables */
   gdouble stock_port_value_f;
-  gdouble stock_port_value_chg_f;
-  gdouble stock_port_value_p_chg_f;
+  gdouble stock_port_day_gain_val_f;
+  gdouble stock_port_day_gain_per_f;
+  gdouble stock_port_cost_f;
+  gdouble stock_port_total_gain_value_f;
+  gdouble stock_port_total_gain_percent_f;
 
   /* Can have up to 255 stocks [0-254]: 8 bits. */
   guint8 size;
 
   /* Pango Markup language strings */
-  gchar *stock_port_value_mrkd_ch; /* Total value of equity holdings */
-  gchar
-      *stock_port_value_chg_mrkd_ch; /* Total value of equity holdings change */
-  gchar *stock_port_value_p_chg_mrkd_ch; /* Total value of equity holdings
-                                      percent change */
+  gchar *stock_port_value_mrkd_ch;      /* Total value of equity holdings */
+  gchar *stock_port_day_gain_mrkd_ch;   /* Total value of equity holdings day
+                                            change */
+  gchar *stock_port_cost_mrkd_ch;       /* Total cost of equity holdings */
+  gchar *stock_port_total_gain_mrkd_ch; /* Total gain of equity holdings */
 
   /* Method/Function pointers */
   void (*ToStrings)(guint8 digits_right);
@@ -242,7 +239,7 @@ struct equity_folder {
   void (*GenerateURL)(portfolio_packet *pkg);
   gint (*SetUpCurl)(portfolio_packet *pkg);
   void (*ExtractData)();
-  void (*AddStock)(const gchar *symbol, const gchar *shares);
+  void (*AddStock)(const gchar *symbol, const gchar *shares, const gchar *cost);
   void (*Sort)();
   void (*Reset)();
   void (*RemoveStock)(const gchar *s);
@@ -259,11 +256,16 @@ struct meta {
 
   gdouble cash_f; /* Total value of cash */
 
-  gdouble portfolio_port_value_f;     /* Total value of the entire portfolio */
-  gdouble portfolio_port_value_chg_f; /* Total value of the entire
-                                               portfolio change */
-  gdouble portfolio_port_value_p_chg_f; /* Total value of the entire
-                                                portfolio percent change */
+  gdouble portfolio_value_f;          /* Total value of the entire portfolio */
+  gdouble portfolio_day_gain_value_f; /* Total daily gain of the entire
+                                               portfolio as a value */
+  gdouble portfolio_day_gain_percent_f;   /* Total daily gain of the entire
+                                                  portfolio as a percent change*/
+  gdouble portfolio_cost_f;               /* Total cost of portfolio. */
+  gdouble portfolio_total_gain_value_f;   /* Total gain of portfolio as a
+                                                  value. */
+  gdouble portfolio_total_gain_percent_f; /* Total gain of portfolio as a
+                                                  percent. */
 
   gdouble index_dow_value_f;
   gdouble index_dow_value_chg_f;
@@ -287,13 +289,14 @@ struct meta {
   guint8 decimal_places_guint8;
 
   /* Pango Markup language strings */
-  primary_heading pri_h_mkd;
-  default_heading def_h_mkd;
+  heading_str_t headings_mkd;
 
   gchar *cash_mrkd_ch;
-  gchar *portfolio_port_value_mrkd_ch;
-  gchar *portfolio_port_value_chg_mrkd_ch;
-  gchar *portfolio_port_value_p_chg_mrkd_ch;
+  gchar *portfolio_value_mrkd_ch;
+  gchar *portfolio_day_gain_mrkd_ch;
+
+  gchar *portfolio_cost_mrkd_ch;       /* Total cost of portfolio holdings */
+  gchar *portfolio_total_gain_mrkd_ch; /* Total gain of portfolio holdings */
 
   /* Unmarked strings */
   gchar *stock_url_ch;         /* First component of the stock request URL */
@@ -406,8 +409,7 @@ struct portfolio_packet {
   void (*SetMainCurlCanceled)(gboolean canceled_bool);
   gdouble (*GetHoursOfUpdates)();
   gdouble (*GetUpdatesPerMinute)();
-  gpointer (*GetPrimaryHeadings)();
-  gpointer (*GetDefaultHeadings)();
+  gpointer (*GetHeadings)();
   void (*SaveSqlData)();
   gpointer (*GetWindowData)();
   gpointer (*GetMetaClass)();

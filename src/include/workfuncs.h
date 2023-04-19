@@ -63,6 +63,15 @@ void DoubleToFormattedStrPango(gchar **dst, const gdouble num,
                                const guint8 digits_right,
                                const guint format_type, const guint color);
 void StringToStrPango(gchar **dst, const gchar *src, const guint color);
+void RangeStrPango(gchar **dest, const double low_f, const double high_f,
+                   const guint8 digits_right);
+void ChangeStrPango(gchar **dest, const double value_f, const double percent_f,
+                    const guint8 digits_right);
+void TotalStrPango(gchar **dest, const double total_f, const double gain_f,
+                   const guint8 digits_right);
+void SymbolStrPango(gchar **dest, const gchar *symbol_ch,
+                    const double quantity_f, const guint8 digits_right,
+                    const guint color);
 
 /* sn_map */
 void AddSymbolToMap(const gchar *symbol, const gchar *name,

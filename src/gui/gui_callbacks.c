@@ -150,6 +150,7 @@ void GUICallback_security_stack(GObject *gobject) {
   GtkWidget *ComboBox = GetWidget("SecurityComboBox");
   GtkWidget *EntryBoxSymbol = GetWidget("SecuritySymbolEntryBox");
   GtkWidget *EntryBoxShares = GetWidget("SecuritySharesEntryBox");
+  GtkWidget *EntryBoxCost = GetWidget("SecurityCostEntryBox");
   GtkWidget *Button = GetWidget("SecurityOkBTN");
 
   if (g_strcmp0(name, "add") == 0) {
@@ -158,21 +159,25 @@ void GUICallback_security_stack(GObject *gobject) {
     gtk_combo_box_set_active(GTK_COMBO_BOX(ComboBox), 0);
     gtk_widget_set_sensitive(EntryBoxSymbol, TRUE);
     gtk_widget_set_sensitive(EntryBoxShares, TRUE);
+    gtk_widget_set_sensitive(EntryBoxCost, TRUE);
     gtk_widget_set_sensitive(Button, FALSE);
 
     /* Reset EntryBoxes */
     gtk_entry_set_text(GTK_ENTRY(EntryBoxSymbol), "");
     gtk_entry_set_text(GTK_ENTRY(EntryBoxShares), "");
+    gtk_entry_set_text(GTK_ENTRY(EntryBoxCost), "");
   } else {
     gtk_combo_box_set_button_sensitivity(GTK_COMBO_BOX(ComboBox),
                                          GTK_SENSITIVITY_AUTO);
     gtk_widget_set_sensitive(EntryBoxSymbol, FALSE);
     gtk_widget_set_sensitive(EntryBoxShares, FALSE);
+    gtk_widget_set_sensitive(EntryBoxCost, FALSE);
     gtk_widget_set_sensitive(Button, FALSE);
 
     /* Reset EntryBoxes */
     gtk_entry_set_text(GTK_ENTRY(EntryBoxSymbol), "");
     gtk_entry_set_text(GTK_ENTRY(EntryBoxShares), "");
+    gtk_entry_set_text(GTK_ENTRY(EntryBoxCost), "");
   }
 }
 
@@ -410,6 +415,7 @@ static void popup_menu_view_summary() {
 static void zeroize_bullion(bullion *B) {
   B->ounce_f = 0.0f;
   B->premium_f = 0.0f;
+  B->cost_basis_f = 0.0f;
 }
 
 static void popup_menu_delete_bullion(GtkWidget *menuitem, gpointer userdata) {

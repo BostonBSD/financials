@@ -47,9 +47,11 @@ gint SecurityCursorMove() {
   GtkWidget *Button = GetWidget("SecurityOkBTN");
   const gchar *symbol = GetEntryText("SecuritySymbolEntryBox");
   const gchar *shares = GetEntryText("SecuritySharesEntryBox");
+  const gchar *cost = GetEntryText("SecurityCostEntryBox");
 
   if (CheckValidString(symbol) && CheckValidString(shares) &&
-      CheckIfStringLongPositiveNumber(shares))
+      CheckValidString(cost) && CheckIfStringLongPositiveNumber(shares) &&
+      CheckIfStringDoublePositiveNumber(cost))
     gtk_widget_set_sensitive(Button, TRUE);
   else
     gtk_widget_set_sensitive(Button, FALSE);
@@ -138,14 +140,14 @@ static gpointer fetch_data_for_new_stock(gpointer data) {
 }
 
 static void add_equity_to_folder(gchar *symbol, const gchar *shares,
-                                 portfolio_packet *pkg) {
+                                 const gchar *cost, portfolio_packet *pkg) {
   equity_folder *F = pkg->GetEquityFolderClass();
 
   /* Remove the stock if it already exists. */
   F->RemoveStock(symbol);
 
   /* Add a new stock object to the end of the folder's Equity array. */
-  F->AddStock(symbol, shares);
+  F->AddStock(symbol, shares, cost);
 
   /* Generate the Equity Request URLs. */
   F->GenerateURL(pkg);
@@ -156,6 +158,7 @@ static void add_equity_to_folder(gchar *symbol, const gchar *shares,
   if (pkg->IsDefaultView()) {
     /* Sort the equity folder. */
     F->Sort();
+    pkg->ToStrings();
     gdk_threads_add_idle(MainDefaultTreeview, pkg);
   } else {
     /* Fetch the data for the new stock */
@@ -178,10 +181,10 @@ static gpointer add_security_ok_thd(gpointer data) {
   /* Convert to uppercase letters, must free return value. */
   gchar *symbol = g_ascii_strup(tmp, -1);
   const gchar *shares = GetEntryText("SecuritySharesEntryBox");
+  const gchar *cost = GetEntryText("SecurityCostEntryBox");
 
-  SqliteEquityAdd(symbol, shares, D);
-  add_equity_to_folder(symbol, shares, package);
-
+  SqliteEquityAdd(symbol, shares, cost, D);
+  add_equity_to_folder(symbol, shares, cost, package);
   g_free(symbol);
 
   g_mutex_unlock(&mutexes[FETCH_DATA_MUTEX]);
@@ -273,6 +276,9 @@ gint SecurityShowHide(portfolio_packet *pkg) {
     gtk_widget_grab_focus(EntryBox);
 
     EntryBox = GetWidget("SecuritySharesEntryBox");
+    gtk_entry_set_text(GTK_ENTRY(EntryBox), "");
+
+    EntryBox = GetWidget("SecurityCostEntryBox");
     gtk_entry_set_text(GTK_ENTRY(EntryBox), "");
     g_object_set(G_OBJECT(EntryBox), "activates-default", TRUE, NULL);
 

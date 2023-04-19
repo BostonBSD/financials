@@ -60,97 +60,46 @@ static void convert_equity_to_strings(stock *S, guint8 digits_right) {
                             S->current_price_stock_f, digits_right, MON_STR,
                             BLACK);
 
-  DoubleToFormattedStrPango(&S->high_stock_mrkd_ch, S->high_stock_f,
-                            digits_right, MON_STR, BLACK);
-
-  DoubleToFormattedStrPango(&S->low_stock_mrkd_ch, S->low_stock_f, digits_right,
-                            MON_STR, BLACK);
-
   DoubleToFormattedStrPango(&S->opening_stock_mrkd_ch, S->opening_stock_f,
                             digits_right, MON_STR, BLACK);
+
+  DoubleToFormattedStrPango(&S->cost_mrkd_ch, S->cost_basis_f, digits_right,
+                            MON_STR, BLACK);
+
+  RangeStrPango(&S->range_mrkd_ch, S->low_stock_f, S->high_stock_f,
+                digits_right);
 
   DoubleToFormattedStrPango(&S->prev_closing_stock_mrkd_ch,
                             S->prev_closing_stock_f, digits_right, MON_STR,
                             BLACK);
 
-  if (S->change_value_f > 0)
-    DoubleToFormattedStrPango(&S->change_value_mrkd_ch, S->change_value_f,
-                              digits_right, MON_STR, GREEN);
-  else if (S->change_value_f < 0)
-    DoubleToFormattedStrPango(&S->change_value_mrkd_ch, S->change_value_f,
-                              digits_right, MON_STR, RED);
-  else
-    DoubleToFormattedStrPango(&S->change_value_mrkd_ch, S->change_value_f,
-                              digits_right, MON_STR, BLACK);
+  ChangeStrPango(&S->change_share_stock_mrkd_ch, S->change_share_f,
+                 S->change_percent_f, digits_right);
 
-  DoubleToFormattedStrPango(&S->num_shares_stock_mrkd_ch,
-                            (gdouble)S->num_shares_stock_int, 0, NUM_STR,
-                            BLACK);
-  switch (S->num_shares_stock_int) {
+  switch (S->quantity_int) {
   case 0:
 
-    if (S->change_share_f > 0) {
-      DoubleToFormattedStrPango(&S->change_share_stock_mrkd_ch,
-                                S->change_share_f, digits_right, MON_STR,
-                                GREEN_ITALIC);
-
-      DoubleToFormattedStrPango(&S->change_percent_mrkd_ch, S->change_percent_f,
-                                digits_right, PER_STR, GREEN_ITALIC);
-
-    } else if (S->change_share_f < 0) {
-      DoubleToFormattedStrPango(&S->change_share_stock_mrkd_ch,
-                                S->change_share_f, digits_right, MON_STR,
-                                RED_ITALIC);
-
-      DoubleToFormattedStrPango(&S->change_percent_mrkd_ch, S->change_percent_f,
-                                digits_right, PER_STR, RED_ITALIC);
-
-    } else {
-      DoubleToFormattedStrPango(&S->change_share_stock_mrkd_ch,
-                                S->change_share_f, digits_right, MON_STR,
-                                BLACK_ITALIC);
-
-      DoubleToFormattedStrPango(&S->change_percent_mrkd_ch, S->change_percent_f,
-                                digits_right, PER_STR, BLACK_ITALIC);
-    }
-
-    StringToStrPango(&S->symbol_stock_mrkd_ch, S->symbol_stock_ch,
-                     BLACK_ITALIC);
+    SymbolStrPango(&S->symbol_stock_mrkd_ch, S->symbol_stock_ch,
+                   (gdouble)S->quantity_int, 0, BLACK_ITALIC);
     break;
   default:
 
-    if (S->change_share_f > 0) {
-      DoubleToFormattedStrPango(&S->change_share_stock_mrkd_ch,
-                                S->change_share_f, digits_right, MON_STR,
-                                GREEN);
-
-      DoubleToFormattedStrPango(&S->change_percent_mrkd_ch, S->change_percent_f,
-                                digits_right, PER_STR, GREEN);
-
-    } else if (S->change_share_f < 0) {
-      DoubleToFormattedStrPango(&S->change_share_stock_mrkd_ch,
-                                S->change_share_f, digits_right, MON_STR, RED);
-
-      DoubleToFormattedStrPango(&S->change_percent_mrkd_ch, S->change_percent_f,
-                                digits_right, PER_STR, RED);
-
-    } else {
-      DoubleToFormattedStrPango(&S->change_share_stock_mrkd_ch,
-                                S->change_share_f, digits_right, MON_STR,
-                                BLACK);
-
-      DoubleToFormattedStrPango(&S->change_percent_mrkd_ch, S->change_percent_f,
-                                digits_right, PER_STR, BLACK);
-    }
-
-    StringToStrPango(&S->symbol_stock_mrkd_ch, S->symbol_stock_ch, BLUE);
+    SymbolStrPango(&S->symbol_stock_mrkd_ch, S->symbol_stock_ch,
+                   (gdouble)S->quantity_int, 0, BLUE);
     break;
   }
 
   /* The total current investment in this equity. */
-  DoubleToFormattedStrPango(&S->current_investment_stock_mrkd_ch,
-                            S->current_investment_stock_f, digits_right,
-                            MON_STR, BLACK);
+  TotalStrPango(&S->current_investment_stock_mrkd_ch,
+                S->current_investment_stock_f, S->change_value_f, digits_right);
+
+  /* The total cost of this investment. */
+  DoubleToFormattedStrPango(&S->total_cost_mrkd_ch, S->total_cost_f,
+                            digits_right, MON_STR, BLACK);
+
+  /* The total investment gain since purchase [value and percentage]. */
+  ChangeStrPango(&S->total_gain_mrkd_ch, S->total_gain_value_f,
+                 S->total_gain_percent_f, digits_right);
 }
 
 static void ToStrings(guint8 digits_right) {
@@ -163,45 +112,43 @@ static void ToStrings(guint8 digits_right) {
   DoubleToFormattedStrPango(&F->stock_port_value_mrkd_ch, F->stock_port_value_f,
                             digits_right, MON_STR, BLACK);
 
-  if (F->stock_port_value_chg_f > 0) {
-    /* The equity portfolio's change in value. */
-    DoubleToFormattedStrPango(&F->stock_port_value_chg_mrkd_ch,
-                              F->stock_port_value_chg_f, digits_right, MON_STR,
-                              GREEN);
+  /* The equity portfolio's change in value. */
+  ChangeStrPango(&F->stock_port_day_gain_mrkd_ch, F->stock_port_day_gain_val_f,
+                 F->stock_port_day_gain_per_f, digits_right);
 
-    /* The change in total investment in equity as a percentage. */
-    DoubleToFormattedStrPango(&F->stock_port_value_p_chg_mrkd_ch,
-                              F->stock_port_value_p_chg_f, digits_right,
-                              PER_STR, GREEN);
-  } else if (F->stock_port_value_chg_f < 0) {
-    DoubleToFormattedStrPango(&F->stock_port_value_chg_mrkd_ch,
-                              F->stock_port_value_chg_f, digits_right, MON_STR,
-                              RED);
+  /* The total cost of the equity portfolio. */
+  DoubleToFormattedStrPango(&F->stock_port_cost_mrkd_ch, F->stock_port_cost_f,
+                            digits_right, MON_STR, BLACK);
 
-    DoubleToFormattedStrPango(&F->stock_port_value_p_chg_mrkd_ch,
-                              F->stock_port_value_p_chg_f, digits_right,
-                              PER_STR, RED);
-  } else {
-    DoubleToFormattedStrPango(&F->stock_port_value_chg_mrkd_ch,
-                              F->stock_port_value_chg_f, digits_right, MON_STR,
-                              BLACK);
-
-    DoubleToFormattedStrPango(&F->stock_port_value_p_chg_mrkd_ch,
-                              F->stock_port_value_p_chg_f, digits_right,
-                              PER_STR, BLACK);
-  }
+  /* The total portfolio gain since purchase [value and percentage]. */
+  ChangeStrPango(&F->stock_port_total_gain_mrkd_ch,
+                 F->stock_port_total_gain_value_f,
+                 F->stock_port_total_gain_percent_f, digits_right);
 }
 
 static void equity_calculations(stock *S) {
   /* Calculate the stock holdings change. */
-  if (S->num_shares_stock_int > 0)
-    S->change_value_f = S->change_share_f * (gdouble)S->num_shares_stock_int;
+  if (S->quantity_int > 0)
+    S->change_value_f = S->change_share_f * (gdouble)S->quantity_int;
   else
     S->change_value_f = 0.0f;
 
   /* The total current investment in this equity. */
   S->current_investment_stock_f =
-      (gdouble)S->num_shares_stock_int * S->current_price_stock_f;
+      (gdouble)S->quantity_int * S->current_price_stock_f;
+
+  /* The total cost of this investment. */
+  S->total_cost_f = S->cost_basis_f * (gdouble)S->quantity_int;
+
+  /* The total investment gain since purchase. */
+  S->total_gain_value_f = S->current_investment_stock_f - S->total_cost_f;
+
+  /* The total investment gain, as a percentage, since purchase. */
+  if (S->total_cost_f > 0)
+    S->total_gain_percent_f =
+        CalcGain(S->current_investment_stock_f, S->total_cost_f);
+  else
+    S->total_gain_percent_f = 0.0f;
 }
 
 static void Calculate() {
@@ -209,7 +156,8 @@ static void Calculate() {
 
   /* Equity Calculations. */
   F->stock_port_value_f = 0.0f;
-  F->stock_port_value_chg_f = 0.0f;
+  F->stock_port_day_gain_val_f = 0.0f;
+  F->stock_port_cost_f = 0.0f;
 
   for (guint8 g = 0; g < F->size; g++) {
     equity_calculations(F->Equity[g]);
@@ -219,12 +167,26 @@ static void Calculate() {
 
     /* Add the equity's change in value to the equity portfolio's change in
      * value. */
-    F->stock_port_value_chg_f += F->Equity[g]->change_value_f;
+    F->stock_port_day_gain_val_f += F->Equity[g]->change_value_f;
+
+    /* Add the equity cost to the portfolio cost. */
+    F->stock_port_cost_f += F->Equity[g]->total_cost_f;
   }
 
   /* The change in total investment in equity as a percentage. */
-  gdouble prev_total = F->stock_port_value_f - F->stock_port_value_chg_f;
-  F->stock_port_value_p_chg_f = CalcGain(F->stock_port_value_f, prev_total);
+  gdouble prev_total = F->stock_port_value_f - F->stock_port_day_gain_val_f;
+  F->stock_port_day_gain_per_f = CalcGain(F->stock_port_value_f, prev_total);
+
+  /* The gain as a value, since purchase. */
+  F->stock_port_total_gain_value_f =
+      F->stock_port_value_f - F->stock_port_cost_f;
+
+  /* The gain as a percentage, since purchase. */
+  if (F->stock_port_cost_f > 0)
+    F->stock_port_total_gain_percent_f =
+        CalcGain(F->stock_port_value_f, F->stock_port_cost_f);
+  else
+    F->stock_port_total_gain_percent_f = 0.0f;
 }
 
 static void GenerateURL(portfolio_packet *pkg) {
@@ -295,7 +257,8 @@ static void Reset() {
   g_mutex_unlock(&mutexes[CLASS_MEMBER_MUTEX]);
 }
 
-static void AddStock(const gchar *symbol, const gchar *shares)
+static void AddStock(const gchar *symbol, const gchar *shares,
+                     const gchar *cost)
 /* Adds a new stock object to our folder,
    increments size. */
 {
@@ -312,29 +275,29 @@ static void AddStock(const gchar *symbol, const gchar *shares)
   /* class_init_equity returns an object pointer. */
   F->Equity[F->size] = class_init_equity();
 
-  /* Add The Shares To the stock object */
-  F->Equity[F->size]->num_shares_stock_int =
+  /* Add the Shares to the stock object */
+  F->Equity[F->size]->quantity_int =
       (guint)g_ascii_strtoll(shares ? shares : "0", NULL, 10);
-  DoubleToFormattedStrPango(&F->Equity[F->size]->num_shares_stock_mrkd_ch,
-                            (gdouble)F->Equity[F->size]->num_shares_stock_int,
-                            0, NUM_STR, BLACK);
+
+  /* Add the Cost to the stock object */
+  F->Equity[F->size]->cost_basis_f = g_ascii_strtod(cost ? cost : "0.0", NULL);
 
   /* Add The Stock Symbol To the stock object */
   /* This string is used to process the stock. */
   CopyString(&F->Equity[F->size]->symbol_stock_ch, symbol);
 
-  switch (F->Equity[F->size]->num_shares_stock_int) {
+  switch (F->Equity[F->size]->quantity_int) {
     /* This string is used on TreeViews. */
   case 0:
-    StringToStrPango(&F->Equity[F->size]->symbol_stock_mrkd_ch, symbol,
-                     BLACK_ITALIC);
+    SymbolStrPango(&F->Equity[F->size]->symbol_stock_mrkd_ch, symbol,
+                   (gdouble)F->Equity[F->size]->quantity_int, 0, BLACK_ITALIC);
     break;
   default:
-    StringToStrPango(&F->Equity[F->size]->symbol_stock_mrkd_ch, symbol, BLUE);
+    SymbolStrPango(&F->Equity[F->size]->symbol_stock_mrkd_ch, symbol,
+                   (gdouble)F->Equity[F->size]->quantity_int, 0, BLUE);
     break;
   }
   F->size++;
-
   g_mutex_unlock(&mutexes[CLASS_MEMBER_MUTEX]);
 }
 
@@ -359,7 +322,7 @@ static void RemoveStock(const gchar *s)
         j++;
       }
       /* g_realloc will free memory if assigned a smaller new value. */
-      tmp = g_realloc(F->Equity, (F->size - 1) * sizeof(stock *));
+      tmp = g_realloc(F->Equity, (F->size * sizeof(stock *)));
       if (tmp)
         F->Equity = tmp;
       F->size--;
@@ -462,7 +425,7 @@ static void SetSecurityNames(portfolio_packet *pkg) {
                                     pkg->GetMetaClass());
     remove_dash(security_name);
 
-    if (F->Equity[g]->num_shares_stock_int)
+    if (F->Equity[g]->quantity_int)
       StringToStrPango(&F->Equity[g]->security_name_mrkd_ch,
                        security_name ? security_name : "", BLUE);
     else
@@ -484,7 +447,8 @@ static stock *class_init_equity() {
   stock *new_class = (stock *)g_malloc(sizeof(*new_class));
 
   /* Initialize Variables */
-  new_class->num_shares_stock_int = 0;
+  new_class->quantity_int = 0;
+  new_class->cost_basis_f = 0.0f;
 
   new_class->current_price_stock_f = 0.0f;
   new_class->high_stock_f = 0.0f;
@@ -495,17 +459,20 @@ static stock *class_init_equity() {
   new_class->change_value_f = 0.0f;
   new_class->change_percent_f = 0.0f;
   new_class->current_investment_stock_f = 0.0f;
+  new_class->total_cost_f = 0.0f;
+  new_class->total_gain_value_f = 0.0f;
+  new_class->total_gain_percent_f = 0.0f;
 
   new_class->current_price_stock_mrkd_ch = NULL;
-  new_class->high_stock_mrkd_ch = NULL;
-  new_class->low_stock_mrkd_ch = NULL;
+  new_class->cost_mrkd_ch = NULL;
+  new_class->range_mrkd_ch = NULL;
   new_class->opening_stock_mrkd_ch = NULL;
   new_class->prev_closing_stock_mrkd_ch = NULL;
   new_class->change_share_stock_mrkd_ch = NULL;
-  new_class->change_value_mrkd_ch = NULL;
-  new_class->change_percent_mrkd_ch = NULL;
   new_class->current_investment_stock_mrkd_ch = NULL;
-  new_class->num_shares_stock_mrkd_ch = NULL;
+  new_class->total_cost_mrkd_ch = NULL;
+  new_class->total_gain_mrkd_ch = NULL;
+
   new_class->symbol_stock_mrkd_ch = NULL;
   new_class->security_name_mrkd_ch = NULL;
 
@@ -530,12 +497,16 @@ equity_folder *ClassInitEquityFolder() {
 
   /* Initialize Variables */
   new_class->stock_port_value_mrkd_ch = NULL;
-  new_class->stock_port_value_chg_mrkd_ch = NULL;
-  new_class->stock_port_value_p_chg_mrkd_ch = NULL;
+  new_class->stock_port_day_gain_mrkd_ch = NULL;
+  new_class->stock_port_cost_mrkd_ch = NULL;
+  new_class->stock_port_total_gain_mrkd_ch = NULL;
 
   new_class->stock_port_value_f = 0.0f;
-  new_class->stock_port_value_chg_f = 0.0f;
-  new_class->stock_port_value_p_chg_f = 0.0f;
+  new_class->stock_port_day_gain_val_f = 0.0f;
+  new_class->stock_port_day_gain_per_f = 0.0f;
+  new_class->stock_port_cost_f = 0.0f;
+  new_class->stock_port_total_gain_value_f = 0.0f;
+  new_class->stock_port_total_gain_percent_f = 0.0f;
 
   /* Connect Function Pointers To Function Definitions */
   new_class->ToStrings = ToStrings;
@@ -563,13 +534,13 @@ static void class_destruct_equity(stock *stock_class) {
     g_free(stock_class->current_price_stock_mrkd_ch);
     stock_class->current_price_stock_mrkd_ch = NULL;
   }
-  if (stock_class->high_stock_mrkd_ch) {
-    g_free(stock_class->high_stock_mrkd_ch);
-    stock_class->high_stock_mrkd_ch = NULL;
+  if (stock_class->cost_mrkd_ch) {
+    g_free(stock_class->cost_mrkd_ch);
+    stock_class->cost_mrkd_ch = NULL;
   }
-  if (stock_class->low_stock_mrkd_ch) {
-    g_free(stock_class->low_stock_mrkd_ch);
-    stock_class->low_stock_mrkd_ch = NULL;
+  if (stock_class->range_mrkd_ch) {
+    g_free(stock_class->range_mrkd_ch);
+    stock_class->range_mrkd_ch = NULL;
   }
   if (stock_class->opening_stock_mrkd_ch) {
     g_free(stock_class->opening_stock_mrkd_ch);
@@ -583,23 +554,17 @@ static void class_destruct_equity(stock *stock_class) {
     g_free(stock_class->change_share_stock_mrkd_ch);
     stock_class->change_share_stock_mrkd_ch = NULL;
   }
-  if (stock_class->change_value_mrkd_ch) {
-    g_free(stock_class->change_value_mrkd_ch);
-    stock_class->change_value_mrkd_ch = NULL;
-  }
-  if (stock_class->change_percent_mrkd_ch) {
-    g_free(stock_class->change_percent_mrkd_ch);
-    stock_class->change_percent_mrkd_ch = NULL;
-  }
-
   if (stock_class->current_investment_stock_mrkd_ch) {
     g_free(stock_class->current_investment_stock_mrkd_ch);
     stock_class->current_investment_stock_mrkd_ch = NULL;
   }
-
-  if (stock_class->num_shares_stock_mrkd_ch) {
-    g_free(stock_class->num_shares_stock_mrkd_ch);
-    stock_class->num_shares_stock_mrkd_ch = NULL;
+  if (stock_class->total_cost_mrkd_ch) {
+    g_free(stock_class->total_cost_mrkd_ch);
+    stock_class->total_cost_mrkd_ch = NULL;
+  }
+  if (stock_class->total_gain_mrkd_ch) {
+    g_free(stock_class->total_gain_mrkd_ch);
+    stock_class->total_gain_mrkd_ch = NULL;
   }
 
   if (stock_class->symbol_stock_mrkd_ch) {
@@ -648,10 +613,13 @@ void ClassDestructEquityFolder(equity_folder *F) {
   /* Free Pointer Memory */
   if (F->stock_port_value_mrkd_ch)
     g_free(F->stock_port_value_mrkd_ch);
-  if (F->stock_port_value_chg_mrkd_ch)
-    g_free(F->stock_port_value_chg_mrkd_ch);
-  if (F->stock_port_value_p_chg_mrkd_ch)
-    g_free(F->stock_port_value_p_chg_mrkd_ch);
+  if (F->stock_port_day_gain_mrkd_ch)
+    g_free(F->stock_port_day_gain_mrkd_ch);
+
+  if (F->stock_port_cost_mrkd_ch)
+    g_free(F->stock_port_cost_mrkd_ch);
+  if (F->stock_port_total_gain_mrkd_ch)
+    g_free(F->stock_port_total_gain_mrkd_ch);
 
   if (F)
     g_free(F);

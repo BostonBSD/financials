@@ -59,42 +59,23 @@ static void ToStringsPortfolio() {
                             Met->decimal_places_guint8, MON_STR, BLACK);
 
   /* The total portfolio value. */
-  DoubleToFormattedStrPango(&Met->portfolio_port_value_mrkd_ch,
-                            Met->portfolio_port_value_f,
+  DoubleToFormattedStrPango(&Met->portfolio_value_mrkd_ch,
+                            Met->portfolio_value_f, Met->decimal_places_guint8,
+                            MON_STR, BLACK);
+
+  /* The change in total portfolio value. */
+  ChangeStrPango(&Met->portfolio_day_gain_mrkd_ch,
+                 Met->portfolio_day_gain_value_f,
+                 Met->portfolio_day_gain_percent_f, Met->decimal_places_guint8);
+
+  /* The total portfolio cost. */
+  DoubleToFormattedStrPango(&Met->portfolio_cost_mrkd_ch, Met->portfolio_cost_f,
                             Met->decimal_places_guint8, MON_STR, BLACK);
 
-  if (Met->portfolio_port_value_chg_f > 0) {
-
-    /* The change in total portfolio value. */
-    DoubleToFormattedStrPango(&Met->portfolio_port_value_chg_mrkd_ch,
-                              Met->portfolio_port_value_chg_f,
-                              Met->decimal_places_guint8, MON_STR, GREEN);
-
-    /* The change in total portfolio value as a percentage. */
-    DoubleToFormattedStrPango(&Met->portfolio_port_value_p_chg_mrkd_ch,
-                              Met->portfolio_port_value_p_chg_f,
-                              Met->decimal_places_guint8, PER_STR, GREEN);
-
-  } else if (Met->portfolio_port_value_chg_f < 0) {
-
-    DoubleToFormattedStrPango(&Met->portfolio_port_value_chg_mrkd_ch,
-                              Met->portfolio_port_value_chg_f,
-                              Met->decimal_places_guint8, MON_STR, RED);
-
-    DoubleToFormattedStrPango(&Met->portfolio_port_value_p_chg_mrkd_ch,
-                              Met->portfolio_port_value_p_chg_f,
-                              Met->decimal_places_guint8, PER_STR, RED);
-
-  } else {
-
-    DoubleToFormattedStrPango(&Met->portfolio_port_value_chg_mrkd_ch,
-                              Met->portfolio_port_value_chg_f,
-                              Met->decimal_places_guint8, MON_STR, BLACK);
-
-    DoubleToFormattedStrPango(&Met->portfolio_port_value_p_chg_mrkd_ch,
-                              Met->portfolio_port_value_p_chg_f,
-                              Met->decimal_places_guint8, PER_STR, BLACK);
-  }
+  /* The total portfolio gain since purchase. */
+  ChangeStrPango(
+      &Met->portfolio_total_gain_mrkd_ch, Met->portfolio_total_gain_value_f,
+      Met->portfolio_total_gain_percent_f, Met->decimal_places_guint8);
 }
 
 static void CalculatePortfolio(portfolio_packet *pkg) {
@@ -103,20 +84,31 @@ static void CalculatePortfolio(portfolio_packet *pkg) {
   equity_folder *F = pkg->GetEquityFolderClass();
 
   /* The total portfolio value. */
-  Met->portfolio_port_value_f =
+  Met->portfolio_value_f =
       M->bullion_port_value_f + F->stock_port_value_f + Met->cash_f;
 
   /* The change in total portfolio value. */
   /* Edit the next line as needed, if you want to
      add a change value besides equity and bullion to the portfolio. */
-  Met->portfolio_port_value_chg_f =
-      F->stock_port_value_chg_f + M->bullion_port_value_chg_f;
+  Met->portfolio_day_gain_value_f =
+      F->stock_port_day_gain_val_f + M->bullion_port_day_gain_val_f;
 
   /* The change in total portfolio value as a percentage. */
-  gdouble prev_total =
-      Met->portfolio_port_value_f - Met->portfolio_port_value_chg_f;
-  Met->portfolio_port_value_p_chg_f =
-      CalcGain(Met->portfolio_port_value_f, prev_total);
+  gdouble prev_total = Met->portfolio_value_f - Met->portfolio_day_gain_value_f;
+  Met->portfolio_day_gain_percent_f =
+      CalcGain(Met->portfolio_value_f, prev_total);
+
+  /* The cost of the portfolio */
+  Met->portfolio_cost_f =
+      M->bullion_port_cost_f + F->stock_port_cost_f + Met->cash_f;
+
+  /* The gain of the portfolio, as a value */
+  Met->portfolio_total_gain_value_f =
+      Met->portfolio_value_f - Met->portfolio_cost_f;
+
+  /* The gain of the portfolio, as a percentage */
+  Met->portfolio_total_gain_percent_f =
+      CalcGain(Met->portfolio_value_f, Met->portfolio_cost_f);
 }
 
 static void StopHistoryCurl() {
@@ -283,165 +275,94 @@ static void ToStringsIndices() {
                        Met->crypto_bitcoin_value_p_chg_f, 2, PER_STR);
 }
 
-/* The order of the strings, in these struct inits, is important,
-   they match similar names within the struct definitions
+/* The order of the strings, in this struct init, is important,
+   they match similar names within the struct definition
    (in class_types.h). */
-static const primary_heading primary_headings = {
-    "Bullion",  "Metal",     "Ounces", "Premium",   "High",
-    "Low",      "Pr. Close", "Chg",    "Gain ($)",  "Total",
-    "Gain (%)", "Gold",      "Silver", "Platinum",  "Palladium",
-    "Equity",   "Symbol",    "Shares", "Price",     "Open",
-    "Asset",    "Value",     "Cash",   "Portfolio", "Portfolio has no assets."};
+static const heading_str_t heading_str = {
+    "Bullion",    "Metal",  "Premium", "Cost",      "Range",
+    "Pr. Close",  "Chg",    "Gain",    "Total",     "Total Cost",
+    "Total Gain", "Equity", "Symbol",  "Price",     "Open",
+    "Asset",      "Value",  "Cash",    "Portfolio", "Portfolio has no assets."};
 
-static const default_heading default_headings = {"Bullion",
-                                                 "Metal",
-                                                 "Ounces",
-                                                 "Premium",
-                                                 "Gold",
-                                                 "Silver",
-                                                 "Platinum",
-                                                 "Palladium",
-                                                 "Equity",
-                                                 "Symbol",
-                                                 "Shares",
-                                                 "Cash",
-                                                 "Portfolio has no assets."};
+static void format_heading_str_pango(heading_str_t *headings_mkd) {
 
-static void format_primary_headings_pango(primary_heading *pri_h_mkd) {
-
-  StringToStrPango(&pri_h_mkd->metal, primary_headings.metal,
+  StringToStrPango(&headings_mkd->metal, heading_str.metal,
                    HEADING_UNLN_FORMAT);
-  StringToStrPango(&pri_h_mkd->ounces, primary_headings.ounces,
+  StringToStrPango(&headings_mkd->price, heading_str.price,
                    HEADING_UNLN_FORMAT);
-  StringToStrPango(&pri_h_mkd->price, primary_headings.price,
-                   HEADING_UNLN_FORMAT);
-  StringToStrPango(&pri_h_mkd->premium, primary_headings.premium,
-                   HEADING_UNLN_FORMAT);
-  StringToStrPango(&pri_h_mkd->high, primary_headings.high,
-                   HEADING_UNLN_FORMAT);
-  StringToStrPango(&pri_h_mkd->low, primary_headings.low, HEADING_UNLN_FORMAT);
-  StringToStrPango(&pri_h_mkd->prev_closing, primary_headings.prev_closing,
-                   HEADING_UNLN_FORMAT);
-  StringToStrPango(&pri_h_mkd->chg, primary_headings.chg, HEADING_UNLN_FORMAT);
-  StringToStrPango(&pri_h_mkd->gain_sym, primary_headings.gain_sym,
-                   HEADING_UNLN_FORMAT);
-  StringToStrPango(&pri_h_mkd->total, primary_headings.total,
-                   HEADING_UNLN_FORMAT);
-  StringToStrPango(&pri_h_mkd->gain_per, primary_headings.gain_per,
+  StringToStrPango(&headings_mkd->premium, heading_str.premium,
                    HEADING_UNLN_FORMAT);
 
-  StringToStrPango(&pri_h_mkd->symbol, primary_headings.symbol,
+  StringToStrPango(&headings_mkd->cost, heading_str.cost, HEADING_UNLN_FORMAT);
+  StringToStrPango(&headings_mkd->range, heading_str.range,
                    HEADING_UNLN_FORMAT);
-  StringToStrPango(&pri_h_mkd->shares, primary_headings.shares,
-                   HEADING_UNLN_FORMAT);
-  StringToStrPango(&pri_h_mkd->opening, primary_headings.opening,
-                   HEADING_UNLN_FORMAT);
-
-  StringToStrPango(&pri_h_mkd->asset, primary_headings.asset,
-                   HEADING_UNLN_FORMAT);
-  StringToStrPango(&pri_h_mkd->value, primary_headings.value,
+  StringToStrPango(&headings_mkd->prev_closing, heading_str.prev_closing,
                    HEADING_UNLN_FORMAT);
 
-  StringToStrPango(&pri_h_mkd->cash, primary_headings.cash,
+  StringToStrPango(&headings_mkd->chg, heading_str.chg, HEADING_UNLN_FORMAT);
+  StringToStrPango(&headings_mkd->day_gain, heading_str.day_gain,
+                   HEADING_UNLN_FORMAT);
+  StringToStrPango(&headings_mkd->total, heading_str.total,
+                   HEADING_UNLN_FORMAT);
+
+  StringToStrPango(&headings_mkd->total_cost, heading_str.total_cost,
+                   HEADING_UNLN_FORMAT);
+  StringToStrPango(&headings_mkd->total_gain, heading_str.total_gain,
+                   HEADING_UNLN_FORMAT);
+  StringToStrPango(&headings_mkd->symbol, heading_str.symbol,
+                   HEADING_UNLN_FORMAT);
+
+  StringToStrPango(&headings_mkd->opening, heading_str.opening,
+                   HEADING_UNLN_FORMAT);
+  StringToStrPango(&headings_mkd->asset, heading_str.asset,
+                   HEADING_UNLN_FORMAT);
+  StringToStrPango(&headings_mkd->value, heading_str.value,
+                   HEADING_UNLN_FORMAT);
+
+  StringToStrPango(&headings_mkd->cash, heading_str.cash,
                    HEADING_ASST_TYPE_FORMAT);
-  StringToStrPango(&pri_h_mkd->bullion, primary_headings.bullion,
+  StringToStrPango(&headings_mkd->bullion, heading_str.bullion,
                    HEADING_ASST_TYPE_FORMAT);
-  StringToStrPango(&pri_h_mkd->equity, primary_headings.equity,
-                   HEADING_ASST_TYPE_FORMAT);
-  StringToStrPango(&pri_h_mkd->portfolio, primary_headings.portfolio,
+  StringToStrPango(&headings_mkd->equity, heading_str.equity,
                    HEADING_ASST_TYPE_FORMAT);
 
-  StringToStrPango(&pri_h_mkd->gold, primary_headings.gold, BLUE);
-  StringToStrPango(&pri_h_mkd->silver, primary_headings.silver, BLUE);
-  StringToStrPango(&pri_h_mkd->platinum, primary_headings.platinum, BLUE);
-  StringToStrPango(&pri_h_mkd->palladium, primary_headings.palladium, BLUE);
-  StringToStrPango(&pri_h_mkd->no_assets, primary_headings.no_assets, BLUE);
+  StringToStrPango(&headings_mkd->portfolio, heading_str.portfolio,
+                   HEADING_ASST_TYPE_FORMAT);
+  StringToStrPango(&headings_mkd->no_assets, heading_str.no_assets, BLUE);
 }
 
-static void format_default_headings_pango(default_heading *def_h_mkd) {
+static void free_heading_str(heading_str_t *headings_mkd) {
+  g_free(headings_mkd->bullion);
+  g_free(headings_mkd->metal);
+  g_free(headings_mkd->premium);
 
-  StringToStrPango(&def_h_mkd->metal, default_headings.metal,
-                   HEADING_UNLN_FORMAT);
-  StringToStrPango(&def_h_mkd->ounces, default_headings.ounces,
-                   HEADING_UNLN_FORMAT);
-  StringToStrPango(&def_h_mkd->premium, default_headings.premium,
-                   HEADING_UNLN_FORMAT);
-  StringToStrPango(&def_h_mkd->symbol, default_headings.symbol,
-                   HEADING_UNLN_FORMAT);
-  StringToStrPango(&def_h_mkd->shares, default_headings.shares,
-                   HEADING_UNLN_FORMAT);
+  g_free(headings_mkd->cost);
+  g_free(headings_mkd->range);
+  g_free(headings_mkd->prev_closing);
 
-  StringToStrPango(&def_h_mkd->bullion, default_headings.bullion,
-                   HEADING_ASST_TYPE_FORMAT);
-  StringToStrPango(&def_h_mkd->equity, default_headings.equity,
-                   HEADING_ASST_TYPE_FORMAT);
-  StringToStrPango(&def_h_mkd->cash, default_headings.cash,
-                   HEADING_ASST_TYPE_FORMAT);
+  g_free(headings_mkd->chg);
+  g_free(headings_mkd->day_gain);
+  g_free(headings_mkd->total);
 
-  StringToStrPango(&def_h_mkd->gold, default_headings.gold, BLUE);
-  StringToStrPango(&def_h_mkd->silver, default_headings.silver, BLUE);
-  StringToStrPango(&def_h_mkd->platinum, default_headings.platinum, BLUE);
-  StringToStrPango(&def_h_mkd->palladium, default_headings.palladium, BLUE);
-  StringToStrPango(&def_h_mkd->no_assets, default_headings.no_assets, BLUE);
-}
+  g_free(headings_mkd->total_cost);
+  g_free(headings_mkd->total_gain);
+  g_free(headings_mkd->equity);
 
-static void free_primary_headings(primary_heading *pri_h_mkd) {
-  g_free(pri_h_mkd->bullion);
-  g_free(pri_h_mkd->metal);
-  g_free(pri_h_mkd->ounces);
+  g_free(headings_mkd->symbol);
+  g_free(headings_mkd->price);
+  g_free(headings_mkd->opening);
 
-  g_free(pri_h_mkd->premium);
-  g_free(pri_h_mkd->high);
-  g_free(pri_h_mkd->low);
+  g_free(headings_mkd->asset);
+  g_free(headings_mkd->value);
+  g_free(headings_mkd->cash);
 
-  g_free(pri_h_mkd->prev_closing);
-  g_free(pri_h_mkd->chg);
-  g_free(pri_h_mkd->gain_sym);
-
-  g_free(pri_h_mkd->total);
-  g_free(pri_h_mkd->gain_per);
-  g_free(pri_h_mkd->gold);
-
-  g_free(pri_h_mkd->silver);
-  g_free(pri_h_mkd->platinum);
-  g_free(pri_h_mkd->palladium);
-
-  g_free(pri_h_mkd->equity);
-  g_free(pri_h_mkd->symbol);
-  g_free(pri_h_mkd->shares);
-
-  g_free(pri_h_mkd->price);
-  g_free(pri_h_mkd->opening);
-  g_free(pri_h_mkd->asset);
-
-  g_free(pri_h_mkd->value);
-  g_free(pri_h_mkd->cash);
-  g_free(pri_h_mkd->portfolio);
-
-  g_free(pri_h_mkd->no_assets);
-}
-
-static void free_default_headings(default_heading *def_h_mkd) {
-  g_free(def_h_mkd->bullion);
-  g_free(def_h_mkd->metal);
-  g_free(def_h_mkd->ounces);
-
-  g_free(def_h_mkd->premium);
-  g_free(def_h_mkd->gold);
-  g_free(def_h_mkd->silver);
-
-  g_free(def_h_mkd->platinum);
-  g_free(def_h_mkd->palladium);
-  g_free(def_h_mkd->equity);
-
-  g_free(def_h_mkd->symbol);
-  g_free(def_h_mkd->shares);
+  g_free(headings_mkd->portfolio);
+  g_free(headings_mkd->no_assets);
 }
 
 static void ToStringsHeadings() {
   meta *D = MetaClassObject;
-  format_default_headings_pango(&D->def_h_mkd);
-  format_primary_headings_pango(&D->pri_h_mkd);
+  format_heading_str_pango(&D->headings_mkd);
 }
 
 /* Class Init Functions */
@@ -462,9 +383,11 @@ meta *ClassInitMeta() {
   new_class->NYSE_Symbol_url_ch = g_strdup(NYSE_SYMBOL_URL);
 
   new_class->cash_mrkd_ch = NULL;
-  new_class->portfolio_port_value_mrkd_ch = NULL;
-  new_class->portfolio_port_value_chg_mrkd_ch = NULL;
-  new_class->portfolio_port_value_p_chg_mrkd_ch = NULL;
+  new_class->portfolio_value_mrkd_ch = NULL;
+  new_class->portfolio_day_gain_mrkd_ch = NULL;
+
+  new_class->portfolio_cost_mrkd_ch = NULL;
+  new_class->portfolio_total_gain_mrkd_ch = NULL;
 
   new_class->index_dow_value_ch = NULL;
   new_class->index_dow_value_chg_ch = NULL;
@@ -498,13 +421,16 @@ meta *ClassInitMeta() {
 
   /* The pango funcs require each dest string to point to allocated space
                 or NULL, they use realloc. */
-  new_class->pri_h_mkd = (primary_heading){NULL};
-  new_class->def_h_mkd = (default_heading){NULL};
+  new_class->headings_mkd = (heading_str_t){NULL};
 
   new_class->cash_f = 0.0f;
-  new_class->portfolio_port_value_f = 0.0f;
-  new_class->portfolio_port_value_chg_f = 0.0f;
-  new_class->portfolio_port_value_p_chg_f = 0.0f;
+  new_class->portfolio_value_f = 0.0f;
+  new_class->portfolio_day_gain_value_f = 0.0f;
+  new_class->portfolio_day_gain_percent_f = 0.0f;
+  new_class->portfolio_cost_f = 0.0f;
+  new_class->portfolio_total_gain_value_f = 0.0f;
+  new_class->portfolio_total_gain_percent_f = 0.0f;
+
   new_class->updates_per_min_f = 6.0f;
   new_class->updates_hours_f = 1.0f;
 
@@ -563,8 +489,7 @@ meta *ClassInitMeta() {
 /* Class Destruct Functions */
 void ClassDestructMeta(meta *meta_class) {
   /* Free Memory */
-  free_primary_headings(&meta_class->pri_h_mkd);
-  free_default_headings(&meta_class->def_h_mkd);
+  free_heading_str(&meta_class->headings_mkd);
 
   if (meta_class->rght_clk_data.type)
     g_free(meta_class->rght_clk_data.type);
@@ -592,12 +517,15 @@ void ClassDestructMeta(meta *meta_class) {
 
   if (meta_class->cash_mrkd_ch)
     g_free(meta_class->cash_mrkd_ch);
-  if (meta_class->portfolio_port_value_mrkd_ch)
-    g_free(meta_class->portfolio_port_value_mrkd_ch);
-  if (meta_class->portfolio_port_value_chg_mrkd_ch)
-    g_free(meta_class->portfolio_port_value_chg_mrkd_ch);
-  if (meta_class->portfolio_port_value_p_chg_mrkd_ch)
-    g_free(meta_class->portfolio_port_value_p_chg_mrkd_ch);
+  if (meta_class->portfolio_value_mrkd_ch)
+    g_free(meta_class->portfolio_value_mrkd_ch);
+  if (meta_class->portfolio_day_gain_mrkd_ch)
+    g_free(meta_class->portfolio_day_gain_mrkd_ch);
+
+  if (meta_class->portfolio_cost_mrkd_ch)
+    g_free(meta_class->portfolio_cost_mrkd_ch);
+  if (meta_class->portfolio_total_gain_mrkd_ch)
+    g_free(meta_class->portfolio_total_gain_mrkd_ch);
 
   if (meta_class->index_dow_value_ch)
     g_free(meta_class->index_dow_value_ch);

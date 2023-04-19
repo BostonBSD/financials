@@ -56,14 +56,14 @@ static gchar *new_app_tbl =
 /* Create the equity table if it doesn't already exist. */
 static gchar *new_eqty_tbl =
     "CREATE TABLE IF NOT EXISTS equity(Id INTEGER PRIMARY KEY, Symbol TEXT NOT "
-    "NULL, Shares TEXT NOT NULL); CREATE UNIQUE INDEX IF NOT EXISTS "
-    "idx_equity_symbol ON equity (Symbol);";
+    "NULL, Shares TEXT NOT NULL, Cost TEXT NOT NULL); CREATE UNIQUE INDEX IF "
+    "NOT EXISTS idx_equity_symbol ON equity (Symbol);";
 
 /* Create the bullion table if it doesn't already exist. */
 static gchar *new_bul_tbl =
     "CREATE TABLE IF NOT EXISTS bullion(Id INTEGER PRIMARY KEY, Metal TEXT NOT "
-    "NULL, Ounces TEXT NOT NULL, Premium TEXT NOT NULL); CREATE UNIQUE INDEX "
-    "IF NOT EXISTS idx_bullion_metal ON bullion (Metal);";
+    "NULL, Ounces TEXT NOT NULL, Premium TEXT NOT NULL, Cost TEXT NOT NULL); "
+    "CREATE UNIQUE INDEX IF NOT EXISTS idx_bullion_metal ON bullion (Metal);";
 
 static gint app_callback(gpointer data, gint argc, gchar **argv,
                          gchar **ColName) {
@@ -176,8 +176,8 @@ static gint app_callback(gpointer data, gint argc, gchar **argv,
 
 static gint equity_callback(gpointer data, gint argc, gchar **argv,
                             gchar **ColName) {
-  /* argv[0] is Id, argv[1] is Symbol, argv[2] is Shares */
-  if (argc != 3)
+  /* argv[0] is Id, argv[1] is Symbol, argv[2] is Shares, argv[3] is Cost */
+  if (argc != 4)
     return 1;
   if (g_strcmp0(ColName[0], "Id") != 0)
     return 1;
@@ -185,27 +185,34 @@ static gint equity_callback(gpointer data, gint argc, gchar **argv,
     return 1;
   if (g_strcmp0(ColName[2], "Shares") != 0)
     return 1;
+  if (g_strcmp0(ColName[3], "Cost") != 0)
+    return 1;
 
   equity_folder *F = (equity_folder *)data;
-  F->AddStock(argv[1], argv[2]);
+  F->AddStock(argv[1], argv[2], argv[3]);
 
   return 0;
 }
 
 static void set_bul_values(bullion *B, const gchar *ounce_ch,
-                           const gchar *premium_ch, gushort digits_right) {
+                           const gchar *premium_ch, const gchar *cost_ch,
+                           gushort digits_right) {
   B->ounce_f = StringToDouble(ounce_ch);
-  DoubleToFormattedStrPango(&B->ounce_mrkd_ch, B->ounce_f, 4, NUM_STR, BLACK);
 
   B->premium_f = StringToDouble(premium_ch);
   DoubleToFormattedStrPango(&B->premium_mrkd_ch, B->premium_f, digits_right,
+                            MON_STR, BLACK);
+
+  B->cost_basis_f = StringToDouble(cost_ch);
+  DoubleToFormattedStrPango(&B->cost_mrkd_ch, B->cost_basis_f, digits_right,
                             MON_STR, BLACK);
 }
 
 static gint bullion_callback(gpointer data, gint argc, gchar **argv,
                              gchar **ColName) {
-  /* argv[0] is Id, argv[1] is Metal, argv[2] is Ounces, argv[3] is Premium */
-  if (argc != 4)
+  /* argv[0] is Id, argv[1] is Metal, argv[2] is Ounces, argv[3] is Premium,
+   * argv[4] is Cost */
+  if (argc != 5)
     return 1;
   if (g_strcmp0(ColName[0], "Id") != 0)
     return 1;
@@ -215,6 +222,8 @@ static gint bullion_callback(gpointer data, gint argc, gchar **argv,
     return 1;
   if (g_strcmp0(ColName[3], "Premium") != 0)
     return 1;
+  if (g_strcmp0(ColName[4], "Cost") != 0)
+    return 1;
 
   portfolio_packet *pkg = (portfolio_packet *)data;
   meta *D = pkg->GetMetaClass();
@@ -222,19 +231,21 @@ static gint bullion_callback(gpointer data, gint argc, gchar **argv,
 
   if (!g_strcmp0(argv[1], "gold"))
     set_bul_values(m->Gold, argv[2] ? argv[2] : "0", argv[3] ? argv[3] : "0",
-                   D->decimal_places_guint8);
+                   argv[4] ? argv[4] : "0", D->decimal_places_guint8);
 
   else if (!g_strcmp0(argv[1], "silver"))
     set_bul_values(m->Silver, argv[2] ? argv[2] : "0", argv[3] ? argv[3] : "0",
-                   D->decimal_places_guint8);
+                   argv[4] ? argv[4] : "0", D->decimal_places_guint8);
 
   else if (!g_strcmp0(argv[1], "platinum"))
     set_bul_values(m->Platinum, argv[2] ? argv[2] : "0",
-                   argv[3] ? argv[3] : "0", D->decimal_places_guint8);
+                   argv[3] ? argv[3] : "0", argv[4] ? argv[4] : "0",
+                   D->decimal_places_guint8);
 
   else if (!g_strcmp0(argv[1], "palladium"))
     set_bul_values(m->Palladium, argv[2] ? argv[2] : "0",
-                   argv[3] ? argv[3] : "0", D->decimal_places_guint8);
+                   argv[3] ? argv[3] : "0", argv[4] ? argv[4] : "0",
+                   D->decimal_places_guint8);
 
   return 0;
 }
@@ -330,8 +341,9 @@ void SqliteProcessing(portfolio_packet *pkg) {
   sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, app_callback,
                  pkg, sql_cmd);
 
-  sql_cmd = "SELECT * FROM equity;"; /* We always want this table selected after
-                                        app_tbl [equity urls and dec places] */
+  sql_cmd =
+      "SELECT * FROM equity;"; /* We always want the next two tables selected
+                                  after app_tbl [equity urls and dec places] */
   sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, equity_callback,
                  F, sql_cmd);
 
@@ -467,14 +479,14 @@ void SqliteBullionAdd(meta *D, ...)
 */
 {
 
-  const gchar *fmt = "REPLACE INTO bullion (Metal, Ounces, Premium) "
-                     "VALUES('%s', '%s', '%s');";
+  const gchar *fmt = "REPLACE INTO bullion (Metal, Ounces, Premium, Cost) "
+                     "VALUES('%s', '%s', '%s', '%s');";
 
   va_list arg_ptr;
 
   /* Get the sqlite command. */
   va_start(arg_ptr, D);
-  gchar *sql_cmd = vradic_sqlte_cmd(3, fmt, arg_ptr);
+  gchar *sql_cmd = vradic_sqlte_cmd(4, fmt, arg_ptr);
   va_end(arg_ptr);
 
   /* Run the command. */
@@ -482,11 +494,13 @@ void SqliteBullionAdd(meta *D, ...)
   g_free(sql_cmd);
 }
 
-void SqliteEquityAdd(const gchar *symbol, const gchar *shares, meta *D) {
-  const gchar *fmt = "REPLACE INTO equity (Symbol, Shares) VALUES('%s', '%s');";
+void SqliteEquityAdd(const gchar *symbol, const gchar *shares,
+                     const gchar *cost, meta *D) {
+  const gchar *fmt =
+      "REPLACE INTO equity (Symbol, Shares, Cost) VALUES('%s', '%s', '%s');";
 
   /* Create sqlite command. */
-  gchar *sql_cmd = SnPrint(fmt, symbol, shares);
+  gchar *sql_cmd = SnPrint(fmt, symbol, shares, cost);
 
   /* Run the command. */
   sqlite_run_cmd(&mutexes[SQLITE_MUTEX], D->sqlite_db_path_ch, 0, 0, sql_cmd);

@@ -96,8 +96,8 @@ gint HistoryTreeViewClear() {
 }
 
 static const gchar *col_names[HISTORY_N_COLUMNS] = {
-    "Date", "Price",    "High", "Low", "Open",     "Pr. Close",
-    "Chg",  "Gain (%)", "Vol.", "RSI", "Indicator"};
+    "Date", "Price",    "Open", "Range", "Pr. Close",
+    "Chg",  "Gain (%)", "Vol.", "RSI",   "Indicator"};
 
 static void history_set_columns() {
   GtkWidget *list = GetWidget("HistoryTreeView");
@@ -182,8 +182,7 @@ static gboolean history_rsi_ready(gdouble gain_f, gdouble *rsi_f, gint state) {
 typedef struct {
   gchar *date_ch;
   gchar *price_ch;
-  gchar *high_ch;
-  gchar *low_ch;
+  gchar *range_ch;
   gchar *opening_ch;
   gchar *prev_closing_ch;
   gchar *change_ch;
@@ -235,12 +234,11 @@ static gboolean history_rsi_calculate(gchar *line, history_strings *strings,
   DoubleToFormattedStrPango(&strings->prev_closing_ch, prev_price_f, 2, MON_STR,
                             BLACK);
   DoubleToFormattedStrPango(&strings->price_ch, cur_price_f, 2, MON_STR, BLACK);
-  StringToStrPango(&strings->high_ch, token_arr[2] ? token_arr[2] : "0",
-                   STR_TO_MON_STR);
-  StringToStrPango(&strings->low_ch, token_arr[3] ? token_arr[3] : "0",
-                   STR_TO_MON_STR);
   StringToStrPango(&strings->opening_ch, token_arr[1] ? token_arr[1] : "0",
                    STR_TO_MON_STR);
+  double high_f = g_strtod(token_arr[2] ? token_arr[2] : "0", NULL);
+  double low_f = g_strtod(token_arr[3] ? token_arr[3] : "0", NULL);
+  RangeStrPango(&strings->range_ch, low_f, high_f, 2);
   change_f = cur_price_f - prev_price_f;
   if (change_f > 0) {
     DoubleToFormattedStrPango(&strings->change_ch, change_f, 2, MON_STR, GREEN);
@@ -282,8 +280,7 @@ static void history_set_store_cleanup(history_strings *history_strs) {
   g_free(history_strs->rsi_ch);
   g_free(history_strs->volume_ch);
   g_free(history_strs->price_ch);
-  g_free(history_strs->high_ch);
-  g_free(history_strs->low_ch);
+  g_free(history_strs->range_ch);
   g_free(history_strs->opening_ch);
   g_free(history_strs->change_ch);
   g_free(history_strs->prev_closing_ch);
@@ -336,13 +333,11 @@ static void history_set_store(GtkListStore *store, const gchar *curl_data,
     gtk_list_store_set(
         store, &iter, HISTORY_COLUMN_ONE, history_strs.date_ch,
         HISTORY_COLUMN_TWO, history_strs.price_ch, HISTORY_COLUMN_THREE,
-        history_strs.high_ch, HISTORY_COLUMN_FOUR, history_strs.low_ch,
-        HISTORY_COLUMN_FIVE, history_strs.opening_ch, HISTORY_COLUMN_SIX,
-        history_strs.prev_closing_ch, HISTORY_COLUMN_SEVEN,
-        history_strs.change_ch, HISTORY_COLUMN_EIGHT, history_strs.gain_ch,
-        HISTORY_COLUMN_NINE, history_strs.volume_ch, HISTORY_COLUMN_TEN,
-        history_strs.rsi_ch, HISTORY_COLUMN_ELEVEN, history_strs.indicator_ch,
-        -1);
+        history_strs.opening_ch, HISTORY_COLUMN_FOUR, history_strs.range_ch,
+        HISTORY_COLUMN_FIVE, history_strs.prev_closing_ch, HISTORY_COLUMN_SIX,
+        history_strs.change_ch, HISTORY_COLUMN_SEVEN, history_strs.gain_ch,
+        HISTORY_COLUMN_EIGHT, history_strs.volume_ch, HISTORY_COLUMN_NINE,
+        history_strs.rsi_ch, HISTORY_COLUMN_TEN, history_strs.indicator_ch, -1);
   }
   g_free(line);
   fclose(fp);
@@ -356,7 +351,7 @@ GtkListStore *HistoryMakeStore(const gchar *data_str, const gsize string_len) {
   store = gtk_list_store_new(HISTORY_N_COLUMNS, G_TYPE_STRING, G_TYPE_STRING,
                              G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
                              G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-                             G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+                             G_TYPE_STRING, G_TYPE_STRING);
 
   /* Add data to the storage container, pass in the data_str pointer and the
    * string length [not including null]. */

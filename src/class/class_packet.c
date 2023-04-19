@@ -216,9 +216,7 @@ static void StopMultiCurlAll() {
   remove_main_curl_handles(packet);
 }
 
-static gpointer GetPrimaryHeadings() { return &packet->meta_class->pri_h_mkd; }
-
-static gpointer GetDefaultHeadings() { return &packet->meta_class->def_h_mkd; }
+static gpointer GetHeadings() { return &packet->meta_class->headings_mkd; }
 
 static gpointer GetWindowData() { return &packet->meta_class->window_struct; }
 
@@ -329,24 +327,33 @@ static void save_sql_data_bul(const bullion *gold, const bullion *silver,
 
   gchar *gold_ounces_ch = SnPrint("%lf", gold->ounce_f);
   gchar *gold_premium_ch = SnPrint("%lf", gold->premium_f);
+  gchar *gold_cost_ch = SnPrint("%lf", gold->cost_basis_f);
   gchar *silver_ounces_ch = SnPrint("%lf", silver->ounce_f);
   gchar *silver_premium_ch = SnPrint("%lf", silver->premium_f);
+  gchar *silver_cost_ch = SnPrint("%lf", silver->cost_basis_f);
   gchar *platinum_ounces_ch = SnPrint("%lf", platinum->ounce_f);
   gchar *platinum_premium_ch = SnPrint("%lf", platinum->premium_f);
+  gchar *platinum_cost_ch = SnPrint("%lf", platinum->cost_basis_f);
   gchar *palladium_ounces_ch = SnPrint("%lf", palladium->ounce_f);
   gchar *palladium_premium_ch = SnPrint("%lf", palladium->premium_f);
-  SqliteBullionAdd(D, "gold", gold_ounces_ch, gold_premium_ch, "silver",
-                   silver_ounces_ch, silver_premium_ch, "platinum",
-                   platinum_ounces_ch, platinum_premium_ch, "palladium",
-                   palladium_ounces_ch, palladium_premium_ch, NULL);
+  gchar *palladium_cost_ch = SnPrint("%lf", palladium->cost_basis_f);
+  SqliteBullionAdd(
+      D, "gold", gold_ounces_ch, gold_premium_ch, gold_cost_ch, "silver",
+      silver_ounces_ch, silver_premium_ch, silver_cost_ch, "platinum",
+      platinum_ounces_ch, platinum_premium_ch, platinum_cost_ch, "palladium",
+      palladium_ounces_ch, palladium_premium_ch, palladium_cost_ch, NULL);
   g_free(gold_ounces_ch);
   g_free(gold_premium_ch);
+  g_free(gold_cost_ch);
   g_free(silver_ounces_ch);
   g_free(silver_premium_ch);
+  g_free(silver_cost_ch);
   g_free(platinum_ounces_ch);
   g_free(platinum_premium_ch);
+  g_free(platinum_cost_ch);
   g_free(palladium_ounces_ch);
   g_free(palladium_premium_ch);
+  g_free(palladium_cost_ch);
 }
 
 static void save_sql_data_app(portfolio_packet *pkg) {
@@ -470,8 +477,7 @@ void ClassInitPortfolioPacket() {
   new_class->SetMainCurlCanceled = SetMainCurlCanceled;
   new_class->GetHoursOfUpdates = GetHoursOfUpdates;
   new_class->GetUpdatesPerMinute = GetUpdatesPerMinute;
-  new_class->GetPrimaryHeadings = GetPrimaryHeadings;
-  new_class->GetDefaultHeadings = GetDefaultHeadings;
+  new_class->GetHeadings = GetHeadings;
   new_class->SaveSqlData = SaveSqlData;
   new_class->GetWindowData = GetWindowData;
   new_class->GetMetaClass = GetMetaClass;

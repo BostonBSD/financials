@@ -147,6 +147,10 @@ static void security_window_sig_connect() {
   object = GetGObject("SecuritySharesEntryBox");
   g_signal_connect(object, "changed", G_CALLBACK(GUICallbackHandler),
                    (gpointer)SECURITY_CURSOR_MOVE);
+
+  object = GetGObject("SecurityCostEntryBox");
+  g_signal_connect(object, "changed", G_CALLBACK(GUICallbackHandler),
+                   (gpointer)SECURITY_CURSOR_MOVE);
 }
 
 static void bullion_window_sig_connect() {
@@ -174,11 +178,19 @@ static void bullion_window_sig_connect() {
   g_signal_connect(object, "changed", G_CALLBACK(GUICallbackHandler),
                    (gpointer)BUL_CURSOR_MOVE);
 
+  object = GetGObject("BullionGoldCostEntryBox");
+  g_signal_connect(object, "changed", G_CALLBACK(GUICallbackHandler),
+                   (gpointer)BUL_CURSOR_MOVE);
+
   object = GetGObject("BullionSilverOuncesEntryBox");
   g_signal_connect(object, "changed", G_CALLBACK(GUICallbackHandler),
                    (gpointer)BUL_CURSOR_MOVE);
 
   object = GetGObject("BullionSilverPremiumEntryBox");
+  g_signal_connect(object, "changed", G_CALLBACK(GUICallbackHandler),
+                   (gpointer)BUL_CURSOR_MOVE);
+
+  object = GetGObject("BullionSilverCostEntryBox");
   g_signal_connect(object, "changed", G_CALLBACK(GUICallbackHandler),
                    (gpointer)BUL_CURSOR_MOVE);
 
@@ -190,11 +202,19 @@ static void bullion_window_sig_connect() {
   g_signal_connect(object, "changed", G_CALLBACK(GUICallbackHandler),
                    (gpointer)BUL_CURSOR_MOVE);
 
+  object = GetGObject("BullionPlatinumCostEntryBox");
+  g_signal_connect(object, "changed", G_CALLBACK(GUICallbackHandler),
+                   (gpointer)BUL_CURSOR_MOVE);
+
   object = GetGObject("BullionPalladiumOuncesEntryBox");
   g_signal_connect(object, "changed", G_CALLBACK(GUICallbackHandler),
                    (gpointer)BUL_CURSOR_MOVE);
 
   object = GetGObject("BullionPalladiumPremiumEntryBox");
+  g_signal_connect(object, "changed", G_CALLBACK(GUICallbackHandler),
+                   (gpointer)BUL_CURSOR_MOVE);
+
+  object = GetGObject("BullionPalladiumCostEntryBox");
   g_signal_connect(object, "changed", G_CALLBACK(GUICallbackHandler),
                    (gpointer)BUL_CURSOR_MOVE);
 

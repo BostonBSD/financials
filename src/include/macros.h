@@ -33,6 +33,11 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef MACROS_HEADER_H
 #define MACROS_HEADER_H
 
+/* The application version */
+#ifndef VERSION_STRING
+#define VERSION_STRING "0.3.0"
+#endif
+
 /* To suppress unused argument warnings. */
 #ifndef UNUSED
 #define UNUSED(x) (void)x;
@@ -68,24 +73,24 @@ POSSIBILITY OF SUCH DAMAGE.
 
 /* The Yahoo! URL Macros are used by the GetYahooUrl ()
  * function */
-#ifndef YAHOO_URL_START
-#define YAHOO_URL_START "https://query1.finance.yahoo.com/v7/finance/download/"
+#ifndef YAHOO_URL_ONE
+#define YAHOO_URL_ONE "https://query1.finance.yahoo.com/v7/finance/download/"
 #endif
 
-#ifndef YAHOO_URL_MIDDLE_ONE
-#define YAHOO_URL_MIDDLE_ONE "?period1="
+#ifndef YAHOO_URL_TWO
+#define YAHOO_URL_TWO "?period1="
 #endif
 
-#ifndef YAHOO_URL_MIDDLE_TWO
-#define YAHOO_URL_MIDDLE_TWO "&period2="
+#ifndef YAHOO_URL_THREE
+#define YAHOO_URL_THREE "&period2="
 #endif
 
-#ifndef YAHOO_URL_END
-#define YAHOO_URL_END "&interval=1d&events=history&includeAdjustedClose=TRUE"
+#ifndef YAHOO_URL_FOUR
+#define YAHOO_URL_FOUR "&interval=1d&events=history&includeAdjustedClose=TRUE"
 #endif
 
 /* The symbol URL macros are used by the ClassInitMeta () [class_meta.c] and
- * api_callback () [sqlite.c] functions */
+ * app_callback () [sqlite.c] functions */
 #ifndef NASDAQ_SYMBOL_URL
 #define NASDAQ_SYMBOL_URL                                                      \
   "http://www.nasdaqtrader.com/dynamic/SymDir/nasdaqlisted.txt"

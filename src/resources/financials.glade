@@ -404,10 +404,9 @@
                 <property name="orientation">vertical</property>
                 <property name="spacing">7</property>
                 <child>
-                  <object class="GtkLabel">
+                  <object class="GtkLabel" id="AboutVersionLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">0.2.2</property>
                     <property name="justify">center</property>
                     <attributes>
                       <attribute name="font-desc" value="Oxygen-Sans 11"/>
@@ -671,7 +670,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                 <property name="label-xalign">0</property>
                 <property name="shadow-type">none</property>
                 <child>
-                  <!-- n-columns=2 n-rows=2 -->
+                  <!-- n-columns=3 n-rows=2 -->
                   <object class="GtkGrid">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
@@ -696,6 +695,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                       <object class="GtkEntry" id="BullionGoldOuncesEntryBox">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
+                        <property name="tooltip-text" translatable="yes">Number of ounces</property>
                         <property name="halign">center</property>
                         <property name="valign">center</property>
                         <property name="max-length">10</property>
@@ -727,15 +727,48 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                       <object class="GtkEntry" id="BullionGoldPremiumEntryBox">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
+                        <property name="tooltip-text" translatable="yes">Premium per ounce</property>
                         <property name="halign">center</property>
                         <property name="valign">center</property>
                         <property name="max-length">10</property>
                         <property name="xalign">0.5</property>
-                        <property name="placeholder-text" translatable="yes">$$$</property>
+                        <property name="placeholder-text" translatable="yes">Premium per ounce</property>
                         <property name="input-purpose">alpha</property>
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Cost</property>
+                        <property name="justify">center</property>
+                        <attributes>
+                          <attribute name="font-desc" value="Oxygen-Sans 10"/>
+                        </attributes>
+                      </object>
+                      <packing>
+                        <property name="left-attach">2</property>
+                        <property name="top-attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="BullionGoldCostEntryBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="tooltip-text" translatable="yes">Cost per ounce</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="max-length">10</property>
+                        <property name="xalign">0.5</property>
+                        <property name="placeholder-text" translatable="yes">Cost per ounce</property>
+                        <property name="input-purpose">alpha</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">2</property>
                         <property name="top-attach">1</property>
                       </packing>
                     </child>
@@ -763,7 +796,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                 <property name="label-xalign">0</property>
                 <property name="shadow-type">none</property>
                 <child>
-                  <!-- n-columns=2 n-rows=2 -->
+                  <!-- n-columns=3 n-rows=2 -->
                   <object class="GtkGrid">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
@@ -803,6 +836,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                       <object class="GtkEntry" id="BullionSilverOuncesEntryBox">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
+                        <property name="tooltip-text" translatable="yes">Number of ounces</property>
                         <property name="halign">center</property>
                         <property name="valign">center</property>
                         <property name="max-length">10</property>
@@ -819,15 +853,48 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                       <object class="GtkEntry" id="BullionSilverPremiumEntryBox">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
+                        <property name="tooltip-text" translatable="yes">Premium per ounce</property>
                         <property name="halign">center</property>
                         <property name="valign">center</property>
                         <property name="max-length">10</property>
                         <property name="xalign">0.5</property>
-                        <property name="placeholder-text" translatable="yes">$$$</property>
+                        <property name="placeholder-text" translatable="yes">Premium per ounce</property>
                         <property name="input-purpose">alpha</property>
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Cost</property>
+                        <property name="justify">center</property>
+                        <attributes>
+                          <attribute name="font-desc" value="Oxygen-Sans 10"/>
+                        </attributes>
+                      </object>
+                      <packing>
+                        <property name="left-attach">2</property>
+                        <property name="top-attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="BullionSilverCostEntryBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="tooltip-text" translatable="yes">Cost per ounce</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="max-length">10</property>
+                        <property name="xalign">0.5</property>
+                        <property name="placeholder-text" translatable="yes">Cost per ounce</property>
+                        <property name="input-purpose">alpha</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">2</property>
                         <property name="top-attach">1</property>
                       </packing>
                     </child>
@@ -855,7 +922,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                 <property name="label-xalign">0</property>
                 <property name="shadow-type">none</property>
                 <child>
-                  <!-- n-columns=2 n-rows=2 -->
+                  <!-- n-columns=3 n-rows=2 -->
                   <object class="GtkGrid">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
@@ -895,6 +962,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                       <object class="GtkEntry" id="BullionPlatinumOuncesEntryBox">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
+                        <property name="tooltip-text" translatable="yes">Number of ounces</property>
                         <property name="halign">center</property>
                         <property name="valign">center</property>
                         <property name="max-length">10</property>
@@ -911,15 +979,48 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                       <object class="GtkEntry" id="BullionPlatinumPremiumEntryBox">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
+                        <property name="tooltip-text" translatable="yes">Premium per ounce</property>
                         <property name="halign">center</property>
                         <property name="valign">center</property>
                         <property name="max-length">10</property>
                         <property name="xalign">0.5</property>
-                        <property name="placeholder-text" translatable="yes">$$$</property>
+                        <property name="placeholder-text" translatable="yes">Premium per ounce</property>
                         <property name="input-purpose">alpha</property>
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Cost</property>
+                        <property name="justify">center</property>
+                        <attributes>
+                          <attribute name="font-desc" value="Oxygen-Sans 10"/>
+                        </attributes>
+                      </object>
+                      <packing>
+                        <property name="left-attach">2</property>
+                        <property name="top-attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="BullionPlatinumCostEntryBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="tooltip-text" translatable="yes">Cost per ounce</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="max-length">10</property>
+                        <property name="xalign">0.5</property>
+                        <property name="placeholder-text" translatable="yes">Cost per ounce</property>
+                        <property name="input-purpose">alpha</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">2</property>
                         <property name="top-attach">1</property>
                       </packing>
                     </child>
@@ -948,7 +1049,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                 <property name="label-xalign">0</property>
                 <property name="shadow-type">none</property>
                 <child>
-                  <!-- n-columns=2 n-rows=2 -->
+                  <!-- n-columns=3 n-rows=2 -->
                   <object class="GtkGrid">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
@@ -988,6 +1089,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                       <object class="GtkEntry" id="BullionPalladiumOuncesEntryBox">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
+                        <property name="tooltip-text" translatable="yes">Number of ounces</property>
                         <property name="halign">center</property>
                         <property name="valign">center</property>
                         <property name="max-length">10</property>
@@ -1004,15 +1106,48 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                       <object class="GtkEntry" id="BullionPalladiumPremiumEntryBox">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
+                        <property name="tooltip-text" translatable="yes">Premium per ounce</property>
                         <property name="halign">center</property>
                         <property name="valign">center</property>
                         <property name="max-length">10</property>
                         <property name="xalign">0.5</property>
-                        <property name="placeholder-text" translatable="yes">$$$</property>
+                        <property name="placeholder-text" translatable="yes">Premium per ounce</property>
                         <property name="input-purpose">alpha</property>
                       </object>
                       <packing>
                         <property name="left-attach">1</property>
+                        <property name="top-attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Cost</property>
+                        <property name="justify">center</property>
+                        <attributes>
+                          <attribute name="font-desc" value="Oxygen-Sans 10"/>
+                        </attributes>
+                      </object>
+                      <packing>
+                        <property name="left-attach">2</property>
+                        <property name="top-attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="BullionPalladiumCostEntryBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="tooltip-text" translatable="yes">Cost per ounce</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="max-length">10</property>
+                        <property name="xalign">0.5</property>
+                        <property name="placeholder-text" translatable="yes">Cost per ounce</property>
+                        <property name="input-purpose">alpha</property>
+                      </object>
+                      <packing>
+                        <property name="left-attach">2</property>
                         <property name="top-attach">1</property>
                       </packing>
                     </child>
@@ -3931,7 +4066,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
               <object class="GtkImage">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="stock">gtk-add</property>
+                <property name="icon-name">list-add</property>
                 <property name="icon_size">1</property>
               </object>
             </child>
@@ -3954,7 +4089,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
               <object class="GtkImage">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="stock">gtk-help</property>
+                <property name="icon-name">help-contents</property>
                 <property name="icon_size">1</property>
               </object>
             </child>
@@ -4220,6 +4355,8 @@ POSSIBILITY OF SUCH DAMAGE.</property>
             <property name="font">Sans 12</property>
             <property name="language">en-us</property>
             <property name="preview-text"/>
+            <property name="show-preview-entry">False</property>
+            <property name="title" translatable="yes"/>
           </object>
           <packing>
             <property name="left-attach">1</property>
@@ -4302,6 +4439,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
         <property name="can-focus">False</property>
         <property name="margin-bottom">5</property>
         <property name="orientation">vertical</property>
+        <property name="spacing">5</property>
         <child>
           <object class="GtkStack" id="SecurityStack">
             <property name="visible">True</property>
@@ -4311,7 +4449,7 @@ POSSIBILITY OF SUCH DAMAGE.</property>
             <property name="transition-type">slide-left-right</property>
             <property name="interpolate-size">True</property>
             <child>
-              <!-- n-columns=1 n-rows=4 -->
+              <!-- n-columns=1 n-rows=6 -->
               <object class="GtkGrid">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
@@ -4378,6 +4516,37 @@ POSSIBILITY OF SUCH DAMAGE.</property>
                   <packing>
                     <property name="left-attach">0</property>
                     <property name="top-attach">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Cost</property>
+                    <attributes>
+                      <attribute name="font-desc" value="Oxygen-Sans 10"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">4</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkEntry" id="SecurityCostEntryBox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="tooltip-text" translatable="yes">Cost per share</property>
+                    <property name="halign">center</property>
+                    <property name="valign">center</property>
+                    <property name="max-length">10</property>
+                    <property name="xalign">0.5</property>
+                    <property name="placeholder-text" translatable="yes">Cost per share</property>
+                    <property name="input-purpose">digits</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">5</property>
                   </packing>
                 </child>
               </object>

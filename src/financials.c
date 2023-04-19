@@ -74,12 +74,13 @@ static void simple_arg_parse(gchar **argv, portfolio_packet *pkg) {
     g_print("Help Message\n"
             "---------------\n"
             "-h --help\tPrint this help message.\n"
+            "-v --version\tDisplay the version.\n"
             "-r --reset\tRemove %s database files.\n\n",
             argv[0]);
 
-    /* Free Class Instances. */
-    class_package_destruct();
-    exit(EXIT_SUCCESS);
+  } else if (!g_strcmp0("-v", argv[1]) || !g_strcmp0("--version", argv[1])) {
+
+    g_print(VERSION_STRING "\n");
 
   } else if (!g_strcmp0("-r", argv[1]) || !g_strcmp0("--reset", argv[1])) {
 
@@ -95,12 +96,11 @@ static void simple_arg_parse(gchar **argv, portfolio_packet *pkg) {
     } else {
       g_print("Config file directory '%s' removed successfully.\n",
               pkg->meta_class->config_dir_ch);
-
-      /* Free Class Instances. */
-      class_package_destruct();
-      exit(EXIT_SUCCESS);
     }
   }
+  /* Free Class Instances. */
+  class_package_destruct();
+  exit(EXIT_SUCCESS);
 }
 
 gint main(gint argc, gchar *argv[]) {

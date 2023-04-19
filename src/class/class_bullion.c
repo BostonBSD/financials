@@ -50,9 +50,10 @@ static metal *
     MetalClassObject; /* A class handle to the bullion class object pointers. */
 
 /* Class Method (also called Function) Definitions */
-static void convert_bullion_to_strings(bullion *B, guint8 digits_right) {
+static void convert_bullion_to_strings(bullion *B, gchar *metal_ch,
+                                       guint8 digits_right) {
   /* Basic metal data */
-  DoubleToFormattedStrPango(&B->ounce_mrkd_ch, B->ounce_f, 4, NUM_STR, BLACK);
+  SymbolStrPango(&B->metal_mrkd_ch, metal_ch, B->ounce_f, 4, BLUE);
 
   DoubleToFormattedStrPango(&B->premium_mrkd_ch, B->premium_f, digits_right,
                             MON_STR, BLACK);
@@ -61,11 +62,11 @@ static void convert_bullion_to_strings(bullion *B, guint8 digits_right) {
                             B->prev_closing_metal_f, digits_right, MON_STR,
                             BLACK);
 
-  DoubleToFormattedStrPango(&B->high_metal_mrkd_ch, B->high_metal_f,
-                            digits_right, MON_STR, BLACK);
-
-  DoubleToFormattedStrPango(&B->low_metal_mrkd_ch, B->low_metal_f, digits_right,
+  DoubleToFormattedStrPango(&B->cost_mrkd_ch, B->cost_basis_f, digits_right,
                             MON_STR, BLACK);
+
+  RangeStrPango(&B->range_mrkd_ch, B->low_metal_f, B->high_metal_f,
+                digits_right);
 
   DoubleToFormattedStrPango(&B->spot_price_mrkd_ch, B->spot_price_f,
                             digits_right, MON_STR, BLACK);
@@ -73,55 +74,35 @@ static void convert_bullion_to_strings(bullion *B, guint8 digits_right) {
   DoubleToFormattedStrPango(&B->premium_mrkd_ch, B->premium_f, digits_right,
                             MON_STR, BLACK);
 
+  /* The change in spot price per ounce. */
+  ChangeStrPango(&B->change_ounce_mrkd_ch, B->change_ounce_f,
+                 B->change_percent_f, digits_right);
+
   /* The total invested in this metal */
-  DoubleToFormattedStrPango(&B->port_value_mrkd_ch, B->port_value_f,
-                            digits_right, MON_STR, BLACK);
-
-  if (B->change_ounce_f > 0) {
-    /* The change in spot price per ounce. */
-    DoubleToFormattedStrPango(&B->change_ounce_mrkd_ch, B->change_ounce_f,
-                              digits_right, MON_STR, GREEN);
-
-    /* The change in total investment in this metal. */
-    DoubleToFormattedStrPango(&B->change_value_mrkd_ch, B->change_value_f,
-                              digits_right, MON_STR, GREEN);
-
-    /* The change in total investment in this metal as a percentage. */
-    DoubleToFormattedStrPango(&B->change_percent_mrkd_ch, B->change_percent_f,
-                              digits_right, PER_STR, GREEN);
-  } else if (B->change_ounce_f < 0) {
-    DoubleToFormattedStrPango(&B->change_ounce_mrkd_ch, B->change_ounce_f,
-                              digits_right, MON_STR, RED);
-
-    DoubleToFormattedStrPango(&B->change_value_mrkd_ch, B->change_value_f,
-                              digits_right, MON_STR, RED);
-
-    DoubleToFormattedStrPango(&B->change_percent_mrkd_ch, B->change_percent_f,
-                              digits_right, PER_STR, RED);
-  } else {
-    DoubleToFormattedStrPango(&B->change_ounce_mrkd_ch, B->change_ounce_f,
-                              digits_right, MON_STR, BLACK);
-
-    DoubleToFormattedStrPango(&B->change_value_mrkd_ch, B->change_value_f,
-                              digits_right, MON_STR, BLACK);
-
-    DoubleToFormattedStrPango(&B->change_percent_mrkd_ch, B->change_percent_f,
-                              digits_right, PER_STR, BLACK);
-  }
+  TotalStrPango(&B->port_value_mrkd_ch, B->port_value_f, B->change_value_f,
+                digits_right);
 
   /* The raw change in bullion as a percentage. */
   DoubleToFormattedStr(&B->change_percent_raw_ch, B->change_percent_raw_f, 2,
                        PER_STR);
+
+  /* The total cost of this metal. */
+  DoubleToFormattedStrPango(&B->total_cost_mrkd_ch, B->total_cost_f,
+                            digits_right, MON_STR, BLACK);
+
+  /* The total gain since purchase [value and percentage]. */
+  ChangeStrPango(&B->total_gain_mrkd_ch, B->total_gain_value_f,
+                 B->total_gain_percent_f, digits_right);
 }
 
 static void ToStrings(guint8 digits_right) {
   metal *M = MetalClassObject;
-  convert_bullion_to_strings(M->Gold, digits_right);
-  convert_bullion_to_strings(M->Silver, digits_right);
+  convert_bullion_to_strings(M->Gold, "Gold", digits_right);
+  convert_bullion_to_strings(M->Silver, "Silver", digits_right);
   if (M->Platinum->ounce_f > 0)
-    convert_bullion_to_strings(M->Platinum, digits_right);
+    convert_bullion_to_strings(M->Platinum, "Platinum", digits_right);
   if (M->Palladium->ounce_f > 0)
-    convert_bullion_to_strings(M->Palladium, digits_right);
+    convert_bullion_to_strings(M->Palladium, "Palladium", digits_right);
 
   /* The total investment in bullion. */
   DoubleToFormattedStrPango(&M->bullion_port_value_mrkd_ch,
@@ -129,36 +110,23 @@ static void ToStrings(guint8 digits_right) {
                             BLACK);
 
   /* The change in total investment in bullion. */
-  if (M->bullion_port_value_chg_f > 0)
-    DoubleToFormattedStrPango(&M->bullion_port_value_chg_mrkd_ch,
-                              M->bullion_port_value_chg_f, digits_right,
-                              MON_STR, GREEN);
-  else if (M->bullion_port_value_chg_f < 0)
-    DoubleToFormattedStrPango(&M->bullion_port_value_chg_mrkd_ch,
-                              M->bullion_port_value_chg_f, digits_right,
-                              MON_STR, RED);
-  else
-    DoubleToFormattedStrPango(&M->bullion_port_value_chg_mrkd_ch,
-                              M->bullion_port_value_chg_f, digits_right,
-                              MON_STR, BLACK);
-
-  /* The change in total investment in bullion as a percentage. */
-  if (M->bullion_port_value_p_chg_f > 0)
-    DoubleToFormattedStrPango(&M->bullion_port_value_p_chg_mrkd_ch,
-                              M->bullion_port_value_p_chg_f, digits_right,
-                              PER_STR, GREEN);
-  else if (M->bullion_port_value_p_chg_f < 0)
-    DoubleToFormattedStrPango(&M->bullion_port_value_p_chg_mrkd_ch,
-                              M->bullion_port_value_p_chg_f, digits_right,
-                              PER_STR, RED);
-  else
-    DoubleToFormattedStrPango(&M->bullion_port_value_p_chg_mrkd_ch,
-                              M->bullion_port_value_p_chg_f, digits_right,
-                              PER_STR, BLACK);
+  ChangeStrPango(&M->bullion_port_day_gain_mrkd_ch,
+                 M->bullion_port_day_gain_val_f, M->bullion_port_day_gain_per_f,
+                 digits_right);
 
   /* The Gold to Silver Ratio */
   DoubleToFormattedStr(&M->gold_silver_ratio_ch, M->gold_silver_ratio_f, 2,
                        NUM_STR);
+
+  /* The total cost of the metal portfolio. */
+  DoubleToFormattedStrPango(&M->bullion_port_cost_mrkd_ch,
+                            M->bullion_port_cost_f, digits_right, MON_STR,
+                            BLACK);
+
+  /* The total portfolio gain since purchase [value and percentage]. */
+  ChangeStrPango(&M->bullion_port_total_gain_mrkd_ch,
+                 M->bullion_port_total_gain_value_f,
+                 M->bullion_port_total_gain_percent_f, digits_right);
 }
 
 static void bullion_calculations(bullion *B) {
@@ -189,6 +157,15 @@ static void bullion_calculations(bullion *B) {
   else
     B->change_percent_raw_f =
         CalcGain(B->spot_price_f, B->prev_closing_metal_f);
+
+  /* The total cost */
+  B->total_cost_f = B->cost_basis_f * B->ounce_f;
+
+  /* The total gain since purchase */
+  B->total_gain_value_f = B->port_value_f - B->total_cost_f;
+
+  /* The total gain since purchase, percentage*/
+  B->total_gain_percent_f = CalcGain(B->port_value_f, B->total_cost_f);
 }
 
 static void Calculate() {
@@ -209,22 +186,35 @@ static void Calculate() {
                             M->Palladium->port_value_f;
 
   /* The change in total investment in bullion. */
-  M->bullion_port_value_chg_f = M->Gold->change_value_f;
-  M->bullion_port_value_chg_f += M->Silver->change_value_f;
-  M->bullion_port_value_chg_f += M->Platinum->change_value_f;
-  M->bullion_port_value_chg_f += M->Palladium->change_value_f;
+  M->bullion_port_day_gain_val_f = M->Gold->change_value_f;
+  M->bullion_port_day_gain_val_f += M->Silver->change_value_f;
+  M->bullion_port_day_gain_val_f += M->Platinum->change_value_f;
+  M->bullion_port_day_gain_val_f += M->Palladium->change_value_f;
 
   /* The change in total investment in bullion as a percentage. */
-  gdouble prev_total = M->bullion_port_value_f - M->bullion_port_value_chg_f;
+  gdouble prev_total = M->bullion_port_value_f - M->bullion_port_day_gain_val_f;
   if (prev_total == 0.0f)
-    M->bullion_port_value_p_chg_f = 0.0f;
+    M->bullion_port_day_gain_per_f = 0.0f;
   else
-    M->bullion_port_value_p_chg_f =
+    M->bullion_port_day_gain_per_f =
         CalcGain(M->bullion_port_value_f, prev_total);
 
   /* The Gold to Silver Ratio */
   if (M->Silver->spot_price_f > 0)
     M->gold_silver_ratio_f = M->Gold->spot_price_f / M->Silver->spot_price_f;
+
+  /* The total cost of all bullion */
+  M->bullion_port_cost_f = M->Gold->total_cost_f + M->Silver->total_cost_f +
+                           M->Platinum->total_cost_f +
+                           M->Palladium->total_cost_f;
+
+  /* The total gain of all bullion, since purchase, value. */
+  M->bullion_port_total_gain_value_f =
+      M->bullion_port_value_f - M->bullion_port_cost_f;
+
+  /* The total gain of all bullion, since purchase, percentage. */
+  M->bullion_port_total_gain_percent_f =
+      CalcGain(M->bullion_port_value_f, M->bullion_port_cost_f);
 }
 
 static gint SetUpCurl(portfolio_packet *pkg) {
@@ -324,20 +314,25 @@ static bullion *class_init_bullion() {
   new_class->change_percent_f = 0.0f;
   new_class->change_percent_raw_f = 0.0f;
 
+  new_class->cost_basis_f = 0.0f;
+  new_class->total_cost_f = 0.0f;
+  new_class->total_gain_value_f = 0.0f;
+  new_class->total_gain_percent_f = 0.0f;
+
   new_class->url_ch = NULL;
 
+  new_class->metal_mrkd_ch = NULL;
   new_class->spot_price_mrkd_ch = NULL;
   new_class->premium_mrkd_ch = NULL;
   new_class->port_value_mrkd_ch = NULL;
-  new_class->ounce_mrkd_ch = NULL;
 
-  new_class->high_metal_mrkd_ch = NULL;
-  new_class->low_metal_mrkd_ch = NULL;
+  new_class->cost_mrkd_ch = NULL;
+  new_class->range_mrkd_ch = NULL;
   new_class->prev_closing_metal_mrkd_ch = NULL;
   new_class->change_ounce_mrkd_ch = NULL;
-  new_class->change_value_mrkd_ch = NULL;
-  new_class->change_percent_mrkd_ch = NULL;
   new_class->change_percent_raw_ch = NULL;
+  new_class->total_cost_mrkd_ch = NULL;
+  new_class->total_gain_mrkd_ch = NULL;
 
   new_class->YAHOO_hnd = curl_easy_init();
   new_class->CURLDATA.memory = NULL;
@@ -359,14 +354,20 @@ metal *ClassInitMetal() {
 
   /* Initialize Variables */
   new_class->bullion_port_value_f = 0.0f;
-  new_class->bullion_port_value_chg_f = 0.0f;
-  new_class->bullion_port_value_p_chg_f = 0.0f;
+  new_class->bullion_port_day_gain_val_f = 0.0f;
+  new_class->bullion_port_day_gain_per_f = 0.0f;
   new_class->gold_silver_ratio_f = 0.0f;
 
+  new_class->bullion_port_cost_f = 0.0f;
+  new_class->bullion_port_total_gain_value_f = 0.0f;
+  new_class->bullion_port_total_gain_percent_f = 0.0f;
+
   new_class->bullion_port_value_mrkd_ch = NULL;
-  new_class->bullion_port_value_chg_mrkd_ch = NULL;
-  new_class->bullion_port_value_p_chg_mrkd_ch = NULL;
+  new_class->bullion_port_day_gain_mrkd_ch = NULL;
   new_class->gold_silver_ratio_ch = NULL;
+
+  new_class->bullion_port_cost_mrkd_ch = NULL;
+  new_class->bullion_port_total_gain_mrkd_ch = NULL;
 
   /* Connect Function Pointers To Function Definitions */
   new_class->ToStrings = ToStrings;
@@ -384,6 +385,8 @@ metal *ClassInitMetal() {
 /* Class Destruct Functions */
 static void class_destruct_bullion(bullion *bullion_class) {
   /* Free Memory */
+  if (bullion_class->metal_mrkd_ch)
+    g_free(bullion_class->metal_mrkd_ch);
   if (bullion_class->url_ch)
     g_free(bullion_class->url_ch);
   if (bullion_class->spot_price_mrkd_ch)
@@ -392,23 +395,21 @@ static void class_destruct_bullion(bullion *bullion_class) {
     g_free(bullion_class->premium_mrkd_ch);
   if (bullion_class->port_value_mrkd_ch)
     g_free(bullion_class->port_value_mrkd_ch);
-  if (bullion_class->ounce_mrkd_ch)
-    g_free(bullion_class->ounce_mrkd_ch);
 
-  if (bullion_class->high_metal_mrkd_ch)
-    g_free(bullion_class->high_metal_mrkd_ch);
-  if (bullion_class->low_metal_mrkd_ch)
-    g_free(bullion_class->low_metal_mrkd_ch);
+  if (bullion_class->cost_mrkd_ch)
+    g_free(bullion_class->cost_mrkd_ch);
+  if (bullion_class->range_mrkd_ch)
+    g_free(bullion_class->range_mrkd_ch);
   if (bullion_class->prev_closing_metal_mrkd_ch)
     g_free(bullion_class->prev_closing_metal_mrkd_ch);
   if (bullion_class->change_ounce_mrkd_ch)
     g_free(bullion_class->change_ounce_mrkd_ch);
-  if (bullion_class->change_value_mrkd_ch)
-    g_free(bullion_class->change_value_mrkd_ch);
-  if (bullion_class->change_percent_mrkd_ch)
-    g_free(bullion_class->change_percent_mrkd_ch);
   if (bullion_class->change_percent_raw_ch)
     g_free(bullion_class->change_percent_raw_ch);
+  if (bullion_class->total_cost_mrkd_ch)
+    g_free(bullion_class->total_cost_mrkd_ch);
+  if (bullion_class->total_gain_mrkd_ch)
+    g_free(bullion_class->total_gain_mrkd_ch);
 
   if (bullion_class->YAHOO_hnd)
     curl_easy_cleanup(bullion_class->YAHOO_hnd);
@@ -436,12 +437,14 @@ void ClassDestructMetal(metal *metal_handle) {
   /* Free Pointer Memory */
   if (metal_handle->bullion_port_value_mrkd_ch)
     g_free(metal_handle->bullion_port_value_mrkd_ch);
-  if (metal_handle->bullion_port_value_chg_mrkd_ch)
-    g_free(metal_handle->bullion_port_value_chg_mrkd_ch);
-  if (metal_handle->bullion_port_value_p_chg_mrkd_ch)
-    g_free(metal_handle->bullion_port_value_p_chg_mrkd_ch);
+  if (metal_handle->bullion_port_day_gain_mrkd_ch)
+    g_free(metal_handle->bullion_port_day_gain_mrkd_ch);
   if (metal_handle->gold_silver_ratio_ch)
     g_free(metal_handle->gold_silver_ratio_ch);
+  if (metal_handle->bullion_port_cost_mrkd_ch)
+    g_free(metal_handle->bullion_port_cost_mrkd_ch);
+  if (metal_handle->bullion_port_total_gain_mrkd_ch)
+    g_free(metal_handle->bullion_port_total_gain_mrkd_ch);
 
   if (metal_handle)
     g_free(metal_handle);

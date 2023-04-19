@@ -267,3 +267,116 @@ void DoubleToFormattedStrPango(gchar **dst, const gdouble num,
   StringToStrPango(dst, tmp, color);
   g_free(tmp);
 }
+
+void RangeStrPango(gchar **dest, const double low_f, const double high_f,
+                   const guint8 digits_right) {
+  gchar *low_ch = NULL, *high_ch = NULL, *range_ch = NULL;
+
+  /* Create the monetary format strings. */
+  DoubleToFormattedStr(&low_ch, low_f, digits_right, MON_STR);
+
+  DoubleToFormattedStr(&high_ch, high_f, digits_right, MON_STR);
+
+  /* Create the unmarked string. */
+  range_ch = SnPrint("%s - %s", low_ch, high_ch);
+
+  /* Create the marked up string. */
+  StringToStrPango(dest, range_ch, BLACK);
+
+  g_free(low_ch);
+  g_free(high_ch);
+  g_free(range_ch);
+}
+
+void ChangeStrPango(gchar **dest, const double value_f, const double percent_f,
+                    const guint8 digits_right) {
+  gchar *value_ch = NULL, *percent_ch = NULL, *val_per_ch = NULL;
+
+  /* Create the monetary and percent format strings. */
+  DoubleToFormattedStr(&value_ch, value_f, digits_right, MON_STR);
+
+  DoubleToFormattedStr(&percent_ch, percent_f, digits_right, PER_STR);
+
+  /* Create the unmarked string. */
+  val_per_ch = SnPrint("%s\n%s", value_ch, percent_ch);
+
+  /* Create the marked up string. */
+  if (value_f < 0) {
+    StringToStrPango(dest, val_per_ch, RED);
+  } else if (value_f > 0) {
+    StringToStrPango(dest, val_per_ch, GREEN);
+  } else {
+    StringToStrPango(dest, val_per_ch, BLACK);
+  }
+
+  g_free(value_ch);
+  g_free(percent_ch);
+  g_free(val_per_ch);
+}
+
+void TotalStrPango(gchar **dest, const double total_f, const double gain_f,
+                   const guint8 digits_right) {
+  gchar *total_ch = NULL, *gain_ch = NULL, *tmp_ch = NULL;
+  gchar *total_mrkd_ch = NULL, *gain_mrkd_ch = NULL;
+
+  /* Create the monetary format strings. */
+  DoubleToFormattedStr(&tmp_ch, total_f, digits_right, MON_STR);
+  total_ch = SnPrint("%s\n", tmp_ch);
+  g_free(tmp_ch);
+
+  DoubleToFormattedStr(&gain_ch, gain_f, digits_right, MON_STR);
+
+  /* Create the first marked string. */
+  StringToStrPango(&total_mrkd_ch, total_ch, BLACK);
+
+  /* Create the second marked string. */
+  if (gain_f < 0) {
+    StringToStrPango(&gain_mrkd_ch, gain_ch, RED);
+  } else if (gain_f > 0) {
+    StringToStrPango(&gain_mrkd_ch, gain_ch, GREEN);
+  } else {
+    StringToStrPango(&gain_mrkd_ch, gain_ch, BLACK);
+  }
+
+  /* Find allocation size */
+  gsize len = g_snprintf(NULL, 0, "%s%s", total_mrkd_ch, gain_mrkd_ch) + 1;
+  tmp_ch = g_realloc(dest[0], len);
+  dest[0] = tmp_ch;
+
+  g_snprintf(dest[0], len, "%s%s", total_mrkd_ch, gain_mrkd_ch);
+
+  g_free(total_ch);
+  g_free(gain_ch);
+  g_free(total_mrkd_ch);
+  g_free(gain_mrkd_ch);
+}
+
+void SymbolStrPango(gchar **dest, const gchar *symbol_ch,
+                    const double quantity_f, const guint8 digits_right,
+                    const guint color) {
+  gchar *quantity_ch = NULL, *tmp_ch = NULL;
+  gchar *symbol_mrkd_ch = NULL, *quantity_mrkd_ch = NULL;
+
+  /* Create the unmarked strings. */
+  tmp_ch = SnPrint("%s\n", symbol_ch);
+
+  DoubleToFormattedStr(&quantity_ch, quantity_f, digits_right, NUM_STR);
+
+  /* Create the first marked string. */
+  StringToStrPango(&symbol_mrkd_ch, tmp_ch, color);
+  g_free(tmp_ch);
+
+  /* Create the second marked string. */
+  StringToStrPango(&quantity_mrkd_ch, quantity_ch, BLACK);
+
+  /* Find allocation size */
+  gsize len = g_snprintf(NULL, 0, "%s%s", symbol_mrkd_ch, quantity_mrkd_ch) + 1;
+  tmp_ch = g_realloc(dest[0], len);
+  dest[0] = tmp_ch;
+
+  g_snprintf(dest[0], len, "%s%s", symbol_mrkd_ch, quantity_mrkd_ch);
+
+  g_free(quantity_ch);
+  g_free(symbol_mrkd_ch);
+  g_free(quantity_mrkd_ch);
+}

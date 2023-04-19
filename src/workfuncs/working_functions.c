@@ -143,8 +143,8 @@ void GetYahooUrl(gchar **url_ch, const gchar *symbol_ch, guint period) {
   end_time = unix_time_sec();
   start_time = end_time - (gint64)period;
 
-  const gchar *fmt = YAHOO_URL_START
-      "%s" YAHOO_URL_MIDDLE_ONE "%ld" YAHOO_URL_MIDDLE_TWO "%ld" YAHOO_URL_END;
+  const gchar *fmt = YAHOO_URL_ONE "%s" YAHOO_URL_TWO "%ld" YAHOO_URL_THREE
+                                   "%ld" YAHOO_URL_FOUR;
 
   len = g_snprintf(NULL, 0, fmt, symbol_ch, start_time, end_time) + 1;
   gchar *tmp = g_realloc(url_ch[0], len);

@@ -41,7 +41,8 @@ void SqliteProcessing(portfolio_packet *pkg);
 void SqliteAppAdd(meta *D, ...);
 void SqliteBullionAdd(meta *D, ...);
 
-void SqliteEquityAdd(const gchar *symbol, const gchar *shares, meta *D);
+void SqliteEquityAdd(const gchar *symbol, const gchar *shares,
+                     const gchar *cost, meta *D);
 void SqliteEquityRemove(const gchar *symbol, meta *D);
 void SqliteEquityRemoveAll(meta *D);
 
