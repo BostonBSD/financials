@@ -61,17 +61,17 @@ static void convert_equity_to_strings(stock *S, guint8 digits_right) {
                             BLACK);
 
   DoubleToFormattedStrPango(&S->opening_stock_mrkd_ch, S->opening_stock_f,
-                            digits_right, MON_STR, BLACK);
+                            digits_right, MON_STR, GREY);
 
   DoubleToFormattedStrPango(&S->cost_mrkd_ch, S->cost_basis_f, digits_right,
-                            MON_STR, BLACK);
+                            MON_STR, GREY);
 
   RangeStrPango(&S->range_mrkd_ch, S->low_stock_f, S->high_stock_f,
                 digits_right);
 
   DoubleToFormattedStrPango(&S->prev_closing_stock_mrkd_ch,
                             S->prev_closing_stock_f, digits_right, MON_STR,
-                            BLACK);
+                            GREY);
 
   ChangeStrPango(&S->change_share_stock_mrkd_ch, S->change_share_f,
                  S->change_percent_f, digits_right);
@@ -298,6 +298,8 @@ static void AddStock(const gchar *symbol, const gchar *shares,
     break;
   }
   F->size++;
+  /* We don't sort here because we might want to alter the new stock object,
+   * which will be at the end of the unsorted array. */
   g_mutex_unlock(&mutexes[CLASS_MEMBER_MUTEX]);
 }
 
@@ -314,14 +316,21 @@ static void RemoveStock(const gchar *s)
 
   guint8 j, i = 0;
   while (i < F->size) {
+    /* If we find a matching stock object. */
     if (g_strcmp0(s, F->Equity[i]->symbol_stock_ch) == 0) {
+      /* Remove the object. */
       class_destruct_equity(F->Equity[i]);
       j = i;
+      /* Shift the stock object array to the left by one. */
       while (j < F->size - 1) {
         F->Equity[j] = F->Equity[j + 1];
         j++;
       }
-      /* g_realloc will free memory if assigned a smaller new value. */
+      /* Resize the array, g_realloc will free memory if assigned a smaller new
+       * value. This will leave us with an extra element (if we removed the last
+       * element, leaving a zero size array, g_realloc will destroy the array,
+       * preventing us from adding a future element, instead we leave an extra
+       * empty array element). */
       tmp = g_realloc(F->Equity, (F->size * sizeof(stock *)));
       if (tmp)
         F->Equity = tmp;

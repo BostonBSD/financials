@@ -55,24 +55,21 @@ static void convert_bullion_to_strings(bullion *B, gchar *metal_ch,
   /* Basic metal data */
   SymbolStrPango(&B->metal_mrkd_ch, metal_ch, B->ounce_f, 4, BLUE);
 
-  DoubleToFormattedStrPango(&B->premium_mrkd_ch, B->premium_f, digits_right,
-                            MON_STR, BLACK);
-
-  DoubleToFormattedStrPango(&B->prev_closing_metal_mrkd_ch,
-                            B->prev_closing_metal_f, digits_right, MON_STR,
-                            BLACK);
-
-  DoubleToFormattedStrPango(&B->cost_mrkd_ch, B->cost_basis_f, digits_right,
-                            MON_STR, BLACK);
-
-  RangeStrPango(&B->range_mrkd_ch, B->low_metal_f, B->high_metal_f,
-                digits_right);
-
   DoubleToFormattedStrPango(&B->spot_price_mrkd_ch, B->spot_price_f,
                             digits_right, MON_STR, BLACK);
 
   DoubleToFormattedStrPango(&B->premium_mrkd_ch, B->premium_f, digits_right,
                             MON_STR, BLACK);
+
+  DoubleToFormattedStrPango(&B->cost_mrkd_ch, B->cost_basis_f, digits_right,
+                            MON_STR, GREY);
+
+  RangeStrPango(&B->range_mrkd_ch, B->low_metal_f, B->high_metal_f,
+                digits_right);
+
+  DoubleToFormattedStrPango(&B->prev_closing_metal_mrkd_ch,
+                            B->prev_closing_metal_f, digits_right, MON_STR,
+                            GREY);
 
   /* The change in spot price per ounce. */
   ChangeStrPango(&B->change_ounce_mrkd_ch, B->change_ounce_f,
@@ -82,7 +79,7 @@ static void convert_bullion_to_strings(bullion *B, gchar *metal_ch,
   TotalStrPango(&B->port_value_mrkd_ch, B->port_value_f, B->change_value_f,
                 digits_right);
 
-  /* The raw change in bullion as a percentage. */
+  /* The raw change in bullion as a percentage (not pango). */
   DoubleToFormattedStr(&B->change_percent_raw_ch, B->change_percent_raw_f, 2,
                        PER_STR);
 

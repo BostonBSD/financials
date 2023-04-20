@@ -230,9 +230,9 @@ static gboolean history_rsi_calculate(gchar *line, history_strings *strings,
   }
 
   StringToStrPango(&strings->date_ch,
-                   token_arr[0] ? token_arr[0] : "0000-00-00", CHOCOLATE);
+                   token_arr[0] ? token_arr[0] : "0000-00-00", SIENNA);
   DoubleToFormattedStrPango(&strings->prev_closing_ch, prev_price_f, 2, MON_STR,
-                            BLACK);
+                            GREY);
   DoubleToFormattedStrPango(&strings->price_ch, cur_price_f, 2, MON_STR, BLACK);
   StringToStrPango(&strings->opening_ch, token_arr[1] ? token_arr[1] : "0",
                    STR_TO_MON_STR);
@@ -254,7 +254,7 @@ static gboolean history_rsi_calculate(gchar *line, history_strings *strings,
   volume_long =
       (gulong)g_ascii_strtoll(token_arr[6] ? token_arr[6] : "0", NULL, 10);
   DoubleToFormattedStrPango(&strings->volume_ch, (double)volume_long, 0,
-                            NUM_STR, BLACK);
+                            NUM_STR, GREY);
 
   if (rsi_f >= 70.0f)
     StringToStrPango(&strings->indicator_ch, "Overbought", RED);

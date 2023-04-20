@@ -180,6 +180,11 @@ void StringToStrPango(gchar **dst, const gchar *src, const guint color)
     wght = wght_attr("Medium");
     create_markup(dst, format_four, font, fg, wght, src);
     break;
+  case SIENNA:
+    fg = fg_attr("Sienna");
+    wght = wght_attr("Medium");
+    create_markup(dst, format_four, font, fg, wght, src);
+    break;
   case BLACK_ITALIC:
     fg = fg_attr("Black");
     wght = wght_attr("Medium");
@@ -208,7 +213,7 @@ void StringToStrPango(gchar **dst, const gchar *src, const guint color)
     /* This is a special conversion, make sure the string can be converted to a
      * double */
     StringToMonStr(&tmp, src, 2);
-    fg = fg_attr("Black");
+    fg = fg_attr("DarkSlateGrey");
     wght = wght_attr("Medium");
     create_markup(dst, format_four, font, fg, wght, tmp);
     break;
@@ -281,7 +286,7 @@ void RangeStrPango(gchar **dest, const double low_f, const double high_f,
   range_ch = SnPrint("%s - %s", low_ch, high_ch);
 
   /* Create the marked up string. */
-  StringToStrPango(dest, range_ch, BLACK);
+  StringToStrPango(dest, range_ch, GREY);
 
   g_free(low_ch);
   g_free(high_ch);
@@ -367,7 +372,7 @@ void SymbolStrPango(gchar **dest, const gchar *symbol_ch,
   g_free(tmp_ch);
 
   /* Create the second marked string. */
-  StringToStrPango(&quantity_mrkd_ch, quantity_ch, BLACK);
+  StringToStrPango(&quantity_mrkd_ch, quantity_ch, SIENNA);
 
   /* Find allocation size */
   gsize len = g_snprintf(NULL, 0, "%s%s", symbol_mrkd_ch, quantity_mrkd_ch) + 1;
