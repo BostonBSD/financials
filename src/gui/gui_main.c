@@ -259,7 +259,7 @@ static GtkListStore *main_primary_store(portfolio_packet *pkg) {
     gtk_list_store_set(store, &iter, MAIN_COLUMN_TYPE, "cash",
                        MAIN_COLUMN_SYMBOL, "", MAIN_COLUMN_ONE,
                        headings_mkd->cash, MAIN_COLUMN_TWO, D->cash_mrkd_ch,
-                       MAIN_COLUMN_FOUR, D->cash_mrkd_ch, -1);
+                       MAIN_COLUMN_FOUR, D->cash_cost_mrkd_ch, -1);
 
     no_assets = FALSE;
   }

@@ -292,6 +292,7 @@ struct meta {
   heading_str_t headings_mkd;
 
   gchar *cash_mrkd_ch;
+  gchar *cash_cost_mrkd_ch;
   gchar *portfolio_value_mrkd_ch;
   gchar *portfolio_day_gain_mrkd_ch;
 

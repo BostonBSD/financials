@@ -57,6 +57,8 @@ static void ToStringsPortfolio() {
   /* The cash value. */
   DoubleToFormattedStrPango(&Met->cash_mrkd_ch, Met->cash_f,
                             Met->decimal_places_guint8, MON_STR, BLACK);
+  DoubleToFormattedStrPango(&Met->cash_cost_mrkd_ch, Met->cash_f,
+                            Met->decimal_places_guint8, MON_STR, GREY);
 
   /* The total portfolio value. */
   DoubleToFormattedStrPango(&Met->portfolio_value_mrkd_ch,
@@ -70,7 +72,7 @@ static void ToStringsPortfolio() {
 
   /* The total portfolio cost. */
   DoubleToFormattedStrPango(&Met->portfolio_cost_mrkd_ch, Met->portfolio_cost_f,
-                            Met->decimal_places_guint8, MON_STR, BLACK);
+                            Met->decimal_places_guint8, MON_STR, GREY);
 
   /* The total portfolio gain since purchase. */
   ChangeStrPango(
@@ -383,6 +385,7 @@ meta *ClassInitMeta() {
   new_class->NYSE_Symbol_url_ch = g_strdup(NYSE_SYMBOL_URL);
 
   new_class->cash_mrkd_ch = NULL;
+  new_class->cash_cost_mrkd_ch = NULL;
   new_class->portfolio_value_mrkd_ch = NULL;
   new_class->portfolio_day_gain_mrkd_ch = NULL;
 
@@ -517,6 +520,8 @@ void ClassDestructMeta(meta *meta_class) {
 
   if (meta_class->cash_mrkd_ch)
     g_free(meta_class->cash_mrkd_ch);
+  if (meta_class->cash_cost_mrkd_ch)
+    g_free(meta_class->cash_cost_mrkd_ch);
   if (meta_class->portfolio_value_mrkd_ch)
     g_free(meta_class->portfolio_value_mrkd_ch);
   if (meta_class->portfolio_day_gain_mrkd_ch)

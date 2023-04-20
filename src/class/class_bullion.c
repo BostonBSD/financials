@@ -85,7 +85,7 @@ static void convert_bullion_to_strings(bullion *B, gchar *metal_ch,
 
   /* The total cost of this metal. */
   DoubleToFormattedStrPango(&B->total_cost_mrkd_ch, B->total_cost_f,
-                            digits_right, MON_STR, BLACK);
+                            digits_right, MON_STR, GREY);
 
   /* The total gain since purchase [value and percentage]. */
   ChangeStrPango(&B->total_gain_mrkd_ch, B->total_gain_value_f,
@@ -118,7 +118,7 @@ static void ToStrings(guint8 digits_right) {
   /* The total cost of the metal portfolio. */
   DoubleToFormattedStrPango(&M->bullion_port_cost_mrkd_ch,
                             M->bullion_port_cost_f, digits_right, MON_STR,
-                            BLACK);
+                            GREY);
 
   /* The total portfolio gain since purchase [value and percentage]. */
   ChangeStrPango(&M->bullion_port_total_gain_mrkd_ch,

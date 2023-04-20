@@ -95,7 +95,7 @@ static void convert_equity_to_strings(stock *S, guint8 digits_right) {
 
   /* The total cost of this investment. */
   DoubleToFormattedStrPango(&S->total_cost_mrkd_ch, S->total_cost_f,
-                            digits_right, MON_STR, BLACK);
+                            digits_right, MON_STR, GREY);
 
   /* The total investment gain since purchase [value and percentage]. */
   ChangeStrPango(&S->total_gain_mrkd_ch, S->total_gain_value_f,
@@ -118,7 +118,7 @@ static void ToStrings(guint8 digits_right) {
 
   /* The total cost of the equity portfolio. */
   DoubleToFormattedStrPango(&F->stock_port_cost_mrkd_ch, F->stock_port_cost_f,
-                            digits_right, MON_STR, BLACK);
+                            digits_right, MON_STR, GREY);
 
   /* The total portfolio gain since purchase [value and percentage]. */
   ChangeStrPango(&F->stock_port_total_gain_mrkd_ch,
