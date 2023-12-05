@@ -63,8 +63,11 @@ static void convert_equity_to_strings(stock *S, guint8 digits_right) {
   DoubleToFormattedStrPango(&S->opening_stock_mrkd_ch, S->opening_stock_f,
                             digits_right, MON_STR, GREY);
 
-  DoubleToFormattedStrPango(&S->cost_mrkd_ch, S->cost_basis_f, digits_right,
-                            MON_STR, GREY);
+  if (S->cost_basis_f == 0)
+    ClearStr(&S->cost_mrkd_ch);
+  else
+    DoubleToFormattedStrPango(&S->cost_mrkd_ch, S->cost_basis_f, digits_right,
+                              MON_STR, GREY);
 
   RangeStrPango(&S->range_mrkd_ch, S->low_stock_f, S->high_stock_f,
                 digits_right);
@@ -90,16 +93,26 @@ static void convert_equity_to_strings(stock *S, guint8 digits_right) {
   }
 
   /* The total current investment in this equity. */
-  TotalStrPango(&S->current_investment_stock_mrkd_ch,
-                S->current_investment_stock_f, S->change_value_f, digits_right);
+  if (S->current_investment_stock_f == 0)
+    ClearStr(&S->current_investment_stock_mrkd_ch);
+  else
+    TotalStrPango(&S->current_investment_stock_mrkd_ch,
+                  S->current_investment_stock_f, S->change_value_f,
+                  digits_right);
 
   /* The total cost of this investment. */
-  DoubleToFormattedStrPango(&S->total_cost_mrkd_ch, S->total_cost_f,
-                            digits_right, MON_STR, GREY);
+  if (S->total_cost_f == 0)
+    ClearStr(&S->total_cost_mrkd_ch);
+  else
+    DoubleToFormattedStrPango(&S->total_cost_mrkd_ch, S->total_cost_f,
+                              digits_right, MON_STR, GREY);
 
   /* The total investment gain since purchase [value and percentage]. */
-  ChangeStrPango(&S->total_gain_mrkd_ch, S->total_gain_value_f,
-                 S->total_gain_percent_f, digits_right);
+  if (S->total_gain_value_f == 0)
+    ClearStr(&S->total_gain_mrkd_ch);
+  else
+    ChangeStrPango(&S->total_gain_mrkd_ch, S->total_gain_value_f,
+                   S->total_gain_percent_f, digits_right);
 }
 
 static void ToStrings(guint8 digits_right) {

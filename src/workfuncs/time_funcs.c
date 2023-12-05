@@ -39,7 +39,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #define OPEN_HOUR 9
 #define OPEN_MINUTE 30
 #define CLOSING_HOUR 16
-#define CLOSING_HOUR_BLACK_FRIDAY 13
+#define CLOSING_HOUR_EARLY_CLOSE 13
 
 /*  ISO 8601 (Glib) enumerates months and weekdays starting with 1.
     This is different from ISO 9945-1:1996 (struct tm), which
@@ -165,6 +165,14 @@ static gboolean check_holiday(gint year, gint month, gint dayofmonth,
     }
     break;
   case JUL:
+    /* The day before US Independence Day */
+    if (dayofmonth == 3 && weekday != SAT && weekday != SUN &&
+        hour >= CLOSING_HOUR_EARLY_CLOSE) {
+      holiday_str[0] = "Market Closed Early - US Independence Holiday";
+      return TRUE;
+      break;
+    }
+
     /* US Independence Day */
     if (dayofmonth == 4) {
       holiday_str[0] = "Market Closed - US Independence Day";
@@ -194,14 +202,23 @@ static gboolean check_holiday(gint year, gint month, gint dayofmonth,
       return TRUE;
       break;
     }
+
     /* Black Friday */
     if (weekday == FRI && dayofmonth >= 23 && dayofmonth <= 29 &&
-        hour >= CLOSING_HOUR_BLACK_FRIDAY) {
+        hour >= CLOSING_HOUR_EARLY_CLOSE) {
       holiday_str[0] = "Market Closed Early - Black Friday";
       return TRUE;
     }
     break;
   case DEC:
+    /* Christmas Eve */
+    if (dayofmonth == 24 && weekday != SAT && weekday != SUN &&
+        hour >= CLOSING_HOUR_EARLY_CLOSE) {
+      holiday_str[0] = "Market Closed Early - Christmas Eve";
+      return TRUE;
+      break;
+    }
+
     /* Christmas Day */
     if (dayofmonth == 25) {
       holiday_str[0] = "Market Closed - Christmas Day";
@@ -248,7 +265,7 @@ gboolean GetTimeData(gboolean *holiday, gchar **holiday_str, gint *h_r,
 
   */
 
-  /* The NYSE/NASDAQ Markets are open from 09:30 to 16:00 EST. */
+  /* The NYSE/NASDAQ Markets are open from 09:30 to 16:00 EST most days. */
   gboolean closed;
 
   /* Get the GDateTime object for the New York timezone. */
@@ -292,11 +309,16 @@ gboolean GetTimeData(gboolean *holiday, gchar **holiday_str, gint *h_r,
     if (s_r)
       *s_r = 0;
     closed = TRUE;
-    /* Open: closes early on black friday */
-  } else if (month == NOV && weekday == FRI && dayofmonth >= 23 &&
-             dayofmonth <= 29) {
+    /* Open: closes early if today is the day before July 4th, black friday, or
+     * the day before Christmas. */
+  } else if ((month == JUL && dayofmonth == 3 && weekday != SAT &&
+              weekday != SUN) ||
+             (month == NOV && weekday == FRI && dayofmonth >= 23 &&
+              dayofmonth <= 29) ||
+             (month == DEC && dayofmonth == 24 && weekday != SAT &&
+              weekday != SUN)) {
     if (h_r)
-      *h_r = CLOSING_HOUR_BLACK_FRIDAY - 1 - hour;
+      *h_r = CLOSING_HOUR_EARLY_CLOSE - 1 - hour;
     if (m_r)
       *m_r = 59 - min;
     if (s_r)

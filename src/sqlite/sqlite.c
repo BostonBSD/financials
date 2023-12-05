@@ -467,15 +467,15 @@ void SqliteAppAdd(meta *D, ...)
 void SqliteBullionAdd(meta *D, ...)
 /* Insert or Replace a variable number of metals into the bullion table.
 
-   Take in a meta class pointer, and at least three more args:
-   Metal, Ounces, Premium formatted as character strings.
+   Take in a meta class pointer, and at least four more args:
+   Metal, Ounces, Premium, Cost formatted as character strings.
 
-   There can be any number of metals, however, each metal must have these three
+   There can be any number of metals, however, each metal must have these four
    strings. The last arg must be NULL.
 
    For example:
-   SqliteBullionAdd(D, "gold", gold_ounces_ch, gold_premium_ch, "silver",
-   silver_ounces_ch, silver_premium_ch, NULL);
+   SqliteBullionAdd(D, "gold", gold_ounces_ch, gold_premium_ch, gold_cost_ch,
+   "silver", silver_ounces_ch, silver_premium_ch, silver_cost_ch, NULL);
 */
 {
 

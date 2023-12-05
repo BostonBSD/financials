@@ -415,3 +415,9 @@ gchar *PangoToCssFontStr(const gchar *pango_fnt_str) {
   g_free(fnt_size_str);
   return css_fnt_str;
 }
+
+void ClearStr(gchar **str) {
+  gchar *tmp = g_realloc(str[0], g_utf8_strlen("", -1) + 1);
+  str[0] = tmp;
+  g_snprintf(str[0], 1, "");
+}

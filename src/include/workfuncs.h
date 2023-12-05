@@ -97,6 +97,7 @@ void DoubleToFormattedStr(gchar **dst, const gdouble num,
 gdouble StringToDouble(const gchar *str);
 gchar *PangoToCssFontStr(const gchar *pango_fnt_str);
 gchar *SnPrint(const gchar *fmt, ...);
+void ClearStr(gchar **str);
 
 /* time_funcs */
 guint64 ClockSleepMinute();

@@ -244,22 +244,22 @@ void SetLabelFonts(const gchar *font_str) {
                      "MidnightBlue", "White");
   set_label_font_css("HistoryStockSymbolLabel", css_fmt, css_fnt_str, "medium",
                      "MidnightBlue", "White");
-  set_label_font_css("NewYorkTimeLabel", css_fmt, css_fnt_str, "x-small",
-                     "Black", "White");
-  set_label_font_css("MarketCloseLabel", css_fmt, css_fnt_str, "x-small",
-                     "Black", "White");
-  set_label_font_css("NYTimeLabel", css_fmt, css_fnt_str, "x-small", "DimGray",
+  set_label_font_css("NewYorkTimeLabel", css_fmt, css_fnt_str, "small", "Black",
                      "White");
-  set_label_font_css("TimeLeftLabel", css_fmt, css_fnt_str, "x-small",
-                     "DimGray", "White");
+  set_label_font_css("MarketCloseLabel", css_fmt, css_fnt_str, "small", "Black",
+                     "White");
+  set_label_font_css("NYTimeLabel", css_fmt, css_fnt_str, "small", "DimGray",
+                     "White");
+  set_label_font_css("TimeLeftLabel", css_fmt, css_fnt_str, "small", "DimGray",
+                     "White");
 
   css_fmt = "grid*{font:%s;font-size:%s;color:%s;background-color:%s;}";
-  set_label_font_css("MainIndicesHeaderGrid", css_fmt, css_fnt_str, "smaller",
-                     "DarkSlateGrey", "White");
+  set_label_font_css("MainIndicesHeaderGrid", css_fmt, css_fnt_str, "medium",
+                     "DarkSlateGrey", "Bisque");
   /* Notice that some of the values within the following grid are red and green,
    * this is due to Pango markup. */
-  set_label_font_css("MainIndicesValueGrid", css_fmt, css_fnt_str, "smaller",
-                     "Black", "White");
+  set_label_font_css("MainIndicesValueGrid", css_fmt, css_fnt_str, "medium",
+                     "Black", "Bisque");
 
   /* Make sure the background of the unused clock grid cells are set. */
   css_fmt = "grid{background-color:%s;}";
