@@ -384,10 +384,29 @@ gboolean GUICallback_comp(GtkEntryCompletion *completion, GtkTreeModel *model,
   return TRUE;
 }
 
+static gchar *get_correct_symbol(gchar *s) {
+  /* Return the bullion futures symbol, if bullion, otherwise return the symbol
+   */
+  gboolean gold = (g_strcmp0(s, "gold") == 0);
+  gboolean silver = (g_strcmp0(s, "silver") == 0);
+  gboolean platinum = (g_strcmp0(s, "platinum") == 0);
+  gboolean palladium = (g_strcmp0(s, "palladium") == 0);
+
+  if (gold)
+    return "GC=F";
+  else if (silver)
+    return "SI=F";
+  else if (platinum)
+    return "PL=F";
+  else if (palladium)
+    return "PA=F";
+
+  return s;
+}
+
 static void popup_menu_history_data(GtkWidget *menuitem, gpointer userdata) {
   UNUSED(menuitem)
-
-  gchar *symbol = (gchar *)userdata;
+  gchar *symbol = get_correct_symbol((gchar *)userdata);
 
   GtkWidget *Window = GetWidget("HistoryWindow");
   GtkWidget *EntryBox = GetWidget("HistorySymbolEntryBox");
@@ -647,14 +666,19 @@ gboolean GUICallback_main_treeview_click(GtkWidget *treeview,
 
         } else if (bu_flag || bu_tot_flag || ca_flag) {
           menu = gtk_menu_new();
-          if (bu_flag || bu_tot_flag)
+          if (bu_tot_flag)
             create_menu_item(menu, "Edit Bullion", popup_menu_add_row,
                              D->rght_clk_data.type);
-          else
+          if (ca_flag)
             create_menu_item(menu, "Edit Cash", popup_menu_add_row,
                              D->rght_clk_data.type);
 
           if (bu_flag) {
+            create_menu_item(menu, "View History", popup_menu_history_data,
+                             D->rght_clk_data.symbol);
+            create_menu_item(menu, "Edit Bullion", popup_menu_add_row,
+                             D->rght_clk_data.type);
+
             D->rght_clk_data.symbol[0] =
                 g_ascii_toupper(D->rght_clk_data.symbol[0]);
             gchar *menu_label =

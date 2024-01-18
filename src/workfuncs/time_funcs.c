@@ -311,12 +311,10 @@ gboolean GetTimeData(gboolean *holiday, gchar **holiday_str, gint *h_r,
     closed = TRUE;
     /* Open: closes early if today is the day before July 4th, black friday, or
      * the day before Christmas. */
-  } else if ((month == JUL && dayofmonth == 3 && weekday != SAT &&
-              weekday != SUN) ||
+  } else if ((month == JUL && dayofmonth == 3) ||
              (month == NOV && weekday == FRI && dayofmonth >= 23 &&
               dayofmonth <= 29) ||
-             (month == DEC && dayofmonth == 24 && weekday != SAT &&
-              weekday != SUN)) {
+             (month == DEC && dayofmonth == 24)) {
     if (h_r)
       *h_r = CLOSING_HOUR_EARLY_CLOSE - 1 - hour;
     if (m_r)
