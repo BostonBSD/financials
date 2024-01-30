@@ -155,6 +155,13 @@ static void substitute_warrant_and_unit_symbols(gchar **symbol_ch) {
   /* Units */
   else if (g_strrstr(symbol_ch[0], ".U"))
     sub_symbol(symbol_ch, "-UN");
+
+  /* .A and .B shares */
+  else if (g_strrstr(symbol_ch[0], ".A"))
+    sub_symbol(symbol_ch, "-A");
+
+  else if (g_strrstr(symbol_ch[0], ".B"))
+    sub_symbol(symbol_ch, "-B");
 }
 
 void AddSymbolToMap(const gchar *symbol, const gchar *name,
@@ -365,8 +372,8 @@ static symbol_name_map *symbol_list_fetch(portfolio_packet *pkg) {
         continue;
       }
 
-      /* Warrant and Unit symbols are different on Yahoo!
-         Make appropriate changes, if needed. */
+      /* Warrant, Unit, and stock class symbols [BRK.A -> BRK-A] are different
+         on Yahoo! Make appropriate changes, if needed. */
       tmp_symbol = g_strdup(symbol_token);
       substitute_warrant_and_unit_symbols(&tmp_symbol);
 

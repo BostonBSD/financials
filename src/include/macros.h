@@ -35,7 +35,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 /* The application version */
 #ifndef VERSION_STRING
-#define VERSION_STRING "0.3.3"
+#define VERSION_STRING "0.3.4"
 #endif
 
 /* To suppress unused argument warnings. */
