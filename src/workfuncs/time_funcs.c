@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022-2023 BostonBSD. All rights reserved.
+Copyright (c) 2022-2024 BostonBSD. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -112,7 +112,7 @@ static void easter(gint Y, gint *month, gint *day)
 static gboolean check_holiday(gint year, gint month, gint dayofmonth,
                               gint weekday, gint hour, gchar **holiday_str) {
   /* Take in the year, month, dayofmonth, weekday, hour, and a holiday string
-   * buffer. Return whether it is a holiday or not. Populate *holiday_str with
+   * pointer. Return whether it is a holiday or not. Populate *holiday_str with
    * a string, if holiday, otherwise NULL. */
   gint easter_month, easter_day;
 
@@ -270,7 +270,7 @@ gboolean GetTimeData(gboolean *holiday, gchar **holiday_str, gint *h_r,
 
   /* Get the GDateTime object for the New York timezone. */
   /* g_time_zone_new() is deprecated in Glib 2.68, however, its replacement;
-   * g_time_zone_new_identifier() is unavailable on earlier variations used
+   * g_time_zone_new_identifier() is unavailable in earlier variations used
    * by some OSs; Debian. */
   GTimeZone *ny_tz = g_time_zone_new(NEW_YORK_TIME_ZONE);
   GDateTime *dt = g_date_time_new_now(ny_tz);

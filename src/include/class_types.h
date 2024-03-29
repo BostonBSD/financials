@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022-2023 BostonBSD. All rights reserved.
+Copyright (c) 2022-2024 BostonBSD. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -57,11 +57,10 @@ typedef struct {
   gint history_width;
   gint history_x_pos;
   gint history_y_pos;
+  gboolean main_win_maximized_bool; /* Indicates if the main window is maximized
+                                           or not. Default is FALSE. */
   gboolean
-      main_win_maximized_bool : 1; /* Indicates if the main window is maximized
-                                      or not. Default is FALSE. */
-  gboolean
-      histry_win_maximized_bool : 1; /* Indicates if the history window is
+      histry_win_maximized_bool; /* Indicates if the history window is
                                         maximized or not. Default is FALSE. */
 } window_data;
 
@@ -327,23 +326,20 @@ struct meta {
                                            file */
   gchar *font_ch;                       /* The application font */
 
-  gboolean
-      fetching_data_bool : 1; /* Indicates a fetch operation in progress. */
-  gboolean
-      market_closed_bool : 1; /* Indicates if the market is open or closed. */
-  gboolean exit_app_bool : 1; /* Indicates if we are exiting the application. */
-  gboolean multicurl_cancel_main_bool : 1; /* Indicates if we should cancel the
+  gboolean fetching_data_bool; /* Indicates a fetch operation in progress. */
+  gboolean market_closed_bool; /* Indicates if the market is open or closed. */
+  gboolean exit_app_bool; /* Indicates if we are exiting the application. */
+  gboolean multicurl_cancel_main_bool; /* Indicates if we should cancel the
                                             main multicurl request. */
-  gboolean index_bar_revealed_bool : 1;    /* Indicates if the indices bar is
+  gboolean index_bar_revealed_bool;    /* Indicates if the indices bar is
                                             revealed or not. */
-  gboolean clocks_displayed_bool : 1;      /* Indicates if the clocks are
+  gboolean clocks_displayed_bool;      /* Indicates if the clocks are
                                                      displayed or not. */
   gboolean
-      main_win_default_view_bool : 1; /* Indicates if the main window
+      main_win_default_view_bool; /* Indicates if the main window
                                        treeview is displaying the default or
                                        the primary view. Default is TRUE. */
-  gboolean
-      snmap_db_busy_bool : 1; /* Indicates if the snmap db is busy or not. */
+  gboolean snmap_db_busy_bool; /* Indicates if the snmap db is busy or not. */
 
   CURL *history_hnd;           /* History Data cURL Easy Handle. */
   CURL *NASDAQ_completion_hnd; /* NASDAQ Symbol list cURL Easy Handle. */

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022-2023 BostonBSD. All rights reserved.
+Copyright (c) 2022-2024 BostonBSD. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -35,7 +35,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 /* The application version */
 #ifndef VERSION_STRING
-#define VERSION_STRING "0.3.4"
+#define VERSION_STRING "0.3.5"
 #endif
 
 /* To suppress unused argument warnings. */

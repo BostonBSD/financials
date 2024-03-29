@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022-2023 BostonBSD. All rights reserved.
+Copyright (c) 2022-2024 BostonBSD. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -92,7 +92,7 @@ static gboolean main_fetch_sleep_init(gint64 start_curl,
 
 static gboolean main_fetch_awakens(gint64 start_curl, portfolio_packet *pkg) {
   /* If hours to update is zero, the market is closed, or fetching was canceled;
-   * exit thread berore sleep. */
+   * exit thread before sleep. */
   if (!pkg->GetHoursOfUpdates() || pkg->IsClosed() || !pkg->IsFetchingData())
     return TRUE;
 

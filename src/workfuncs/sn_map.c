@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022-2023 BostonBSD. All rights reserved.
+Copyright (c) 2022-2024 BostonBSD. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -156,12 +156,21 @@ static void substitute_warrant_and_unit_symbols(gchar **symbol_ch) {
   else if (g_strrstr(symbol_ch[0], ".U"))
     sub_symbol(symbol_ch, "-UN");
 
-  /* .A and .B shares */
+  /* .A, .B, .C, .R, and .V shares */
   else if (g_strrstr(symbol_ch[0], ".A"))
     sub_symbol(symbol_ch, "-A");
 
   else if (g_strrstr(symbol_ch[0], ".B"))
     sub_symbol(symbol_ch, "-B");
+
+  else if (g_strrstr(symbol_ch[0], ".C"))
+    sub_symbol(symbol_ch, "-C");
+
+  else if (g_strrstr(symbol_ch[0], ".R"))
+    sub_symbol(symbol_ch, "-R");
+
+  else if (g_strrstr(symbol_ch[0], ".V"))
+    sub_symbol(symbol_ch, "-V");
 }
 
 void AddSymbolToMap(const gchar *symbol, const gchar *name,
@@ -274,7 +283,18 @@ static const symbol_to_security_name_container special_syms[] = {
     {"DASH-USD", "Dash Digital Cash ( US Dollars )"},
     {"DOGE-USD", "Dogecoin ( US Dollars )"},
     {"ADA-USD", "Cardano Token ( US Dollars )"},
-    {"MATIC-USD", "Polygon Coin ( US Dollars )"}};
+    {"MATIC-USD", "Polygon Coin ( US Dollars )"},
+    {"PAXG-USD", "Gold Coin PAX, One Troy Ounce ( US Dollars )"},
+    {"XAUT-USD", "Gold Coin Tether, One Troy Ounce ( US Dollars )"},
+    {"DGX-USD", "Gold Token Digix ( US Dollars )"},
+    {"KAG-USD", "Silver Token Kinesis, One Troy Ounce ( US Dollars )"},
+    {"LSILVER-USD", "Silver Coin Lyfe, One Gram ( US Dollars )"},
+
+    /* OTC and other Stocks */
+    {"MSBHF", "Mitsubishi Corporation"},
+    {"ARRNF", "American Rare Earths Limited"},
+    {"THORF", "Thor Energy Plc"},
+    {"SYHBF", "Skyharbour Resources Limited"}};
 
 static void add_special_symbols(symbol_name_map *sn_map) {
   gushort size = (sizeof special_syms) / (sizeof special_syms[0]);
